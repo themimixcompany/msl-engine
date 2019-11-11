@@ -12,3 +12,7 @@
     (let ((val (make-string (file-length stream))))
       (read-sequence val stream)
       val)))
+
+(defun resolve-system-file (file system)
+  "Return the path of FILE relative to current system."
+  (uiop:merge-pathnames* file (asdf:system-source-directory (asdf:find-system system))))

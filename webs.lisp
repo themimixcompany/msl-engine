@@ -4,10 +4,7 @@
 
 (defvar *connections* (make-hash-table))
 
-(defvar *html*
-  (slurp-file (uiop:merge-pathnames*
-               "index.html"
-               (asdf:system-source-directory (asdf:find-system :webs)))))
+(defvar *html* (slurp-file (resolve-system-file "index.html" :webs)))
 
 (defun handle-new-connection (con)
   (setf (gethash con *connections*)
