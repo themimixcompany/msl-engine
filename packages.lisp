@@ -1,6 +1,7 @@
 ;;;; packages.lisp
 
-(defpackage #:ws
+(defpackage #:engine
   (:use #:cl)
-  (:export #:start-server
-           #:start-echo-server))
+  (:export #:start-websocket-server
+           #:main
+           #:build))
