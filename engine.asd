@@ -7,6 +7,7 @@
   :version "0.0.1"
   :serial t
   :depends-on (#:clack
+               #:clack-handler-hunchentoot
                #:websocket-driver
                #:alexandria
                #:bordeaux-threads
