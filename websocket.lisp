@@ -85,7 +85,7 @@
 
 (defun start-echo-server ()
   "Start the WebSocket echo server."
-  (setf *echo-server* (start-server #'echo-server 12345)))
+  (setf *echo-server* (start-server #'echo-server 202020)))
 
 (defun stop-echo-server ()
   "Stop the WebSocket echo server."
@@ -94,7 +94,7 @@
 
 (defun start-chat-server ()
   "Start the WebSocket chat server."
-  (setf *chat-server* (start-server #'chat-server 12345)))
+  (setf *chat-server* (start-server #'chat-server 202020)))
 
 (defun stop-chat-server ()
   "Stop the WebSocket chat server."
