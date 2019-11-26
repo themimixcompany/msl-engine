@@ -9,5 +9,5 @@
                        ((uiop:os-unix-p) "_linux")
                        (t (error "No matching OS found."))))
          (path (pathname (mof:cat "engine/engine" suffix))))
-    (uiop:ensure-all-directories-exist '("engine"))
-    (sb-ext:save-lisp-and-die path :toplevel #'engine:main :executable t)))
+    (uiop:ensure-all-directories-exist (list (namestring path)))
+    (trivial-dump-core:save-executable path #'engine:main)))

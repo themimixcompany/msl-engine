@@ -11,7 +11,9 @@
                #:websocket-driver
                #:alexandria
                #:bordeaux-threads
-               #:mof)
+               #:mof
+               #:cl-ppcre
+               #:trivial-dump-core)
   :components ((:file "packages")
                (:file "websocket")
                (:file "build")))
