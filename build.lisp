@@ -16,7 +16,7 @@
                        ((uiop:os-windows-p) "_windows.exe")
                        ((uiop:os-unix-p) "_linux")
                        (t (error "No matching OS found."))))
-         (path (pathname (mof:cat "engine/engine" suffix))))
+         (path (pathname (mof:cat "src/engine/engine" suffix))))
     (uiop:ensure-all-directories-exist (list (namestring path)))
     (set-debugger-hook)
     (trivial-dump-core:save-executable path #'engine:main)))
