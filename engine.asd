@@ -4,7 +4,7 @@
   :description "engine"
   :author "Rommel MARTINEZ <rom@mimix.io>"
   :license  "Blue Oak License"
-  :version "0.0.1"
+  :version "0.0.2"
   :serial t
   :depends-on (#:clack
                #:clack-handler-hunchentoot
