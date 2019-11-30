@@ -2,7 +2,10 @@
 
 (in-package #:engine)
 
-(defun set-debugger-hook ()
+(defgeneric build (&optional root)
+  (:documentation "Build the executable of the engine for different OSes."))
+
+(defmethod build :before (&optional root)
   (setf *debugger-hook*
         (lambda (condition hook)
           (declare (ignore hook))
@@ -10,13 +13,16 @@
           (finish-output *error-output*)
           (uiop:quit))))
 
-(defun build ()
-  "Build the executable of the engine for different OSes."
-  (let* ((suffix (cond ((uiop:os-macosx-p) "_macos")
-                       ((uiop:os-windows-p) "_windows.exe")
-                       ((uiop:os-unix-p) "_linux")
-                       (t (error "No matching OS found."))))
-         (path (pathname (mof:cat "src/engine/engine" suffix))))
-    (uiop:ensure-all-directories-exist (list (namestring path)))
-    (set-debugger-hook)
-    (trivial-dump-core:save-executable path #'engine:main)))
+(defmethod build (&optional (root *default-pathname-defaults*))
+  (let ((arch (string (uiop:architecture))))
+    (labels ((make-name (name)
+               (let ((suffix (cond ((string= name "windows") (mof:cat name "_" arch ".exe"))
+                                   (t (mof:cat name "_" arch)))))
+                 (mof:cat "engine_" suffix))))
+      (let* ((base-name (cond ((uiop:os-unix-p) (make-name "unix"))
+                              ((uiop:os-windows-p) (make-name "windows"))
+                              ((uiop:os-macosx-p) (make-name "macos"))
+                              (t (error "No matching OS found."))))
+             (path (uiop:merge-pathnames* root base-name)))
+        (uiop:ensure-all-directories-exist (list (namestring path)))
+        (trivial-dump-core:save-executable path #'engine:main)))))
