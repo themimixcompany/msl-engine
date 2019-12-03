@@ -74,16 +74,16 @@
 (defun main ()
   (start-websocket-server)
   (handler-case (bt:join-thread (find-if (lambda (thread)
-                                            (search "hunchentoot" (bt:thread-name thread)))
+                                           (search "hunchentoot" (bt:thread-name thread)))
                                          (bt:all-threads)))
     (#+sbcl sb-sys:interactive-interrupt
-      #+ccl ccl:interrupt-signal-condition
-      #+clisp system::simple-interrupt-condition
-      #+ecl ext:interactive-interrupt
-      #+allegro excl:interrupt-signal
-      #+lispworks mp:process-interrupt
-      () (progn
-           (format *error-output* "Aborting.~&")
-           (clack:stop *echo-server*)
-           (uiop:quit)))
+     #+ccl ccl:interrupt-signal-condition
+     #+clisp system::simple-interrupt-condition
+     #+ecl ext:interactive-interrupt
+     #+allegro excl:interrupt-signal
+     #+lispworks mp:process-interrupt
+     () (progn
+          (format *error-output* "Aborting.~&")
+          (clack:stop *echo-server*)
+          (uiop:quit)))
     (error (c) (format t "Woops, an unknown error occured:~&~a~&" c))))

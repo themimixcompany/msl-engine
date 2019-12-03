@@ -23,6 +23,12 @@
                               ((uiop:os-windows-p) (make-name "windows"))
                               ((uiop:os-macosx-p) (make-name "macos"))
                               (t (error "No matching OS found."))))
-             (path (uiop:merge-pathnames* root base-name)))
+             (path (uiop:subpathname* root base-name)))
         (uiop:ensure-all-directories-exist (list (namestring path)))
-        (trivial-dump-core:save-executable path #'engine:main)))))
+        #+sbcl
+        (sb-ext:save-lisp-and-die path :toplevel #'engine:main :executable t)
+        #+ccl
+        (ccl:save-application path :toplevel-function #'engine:main :prepend-kernel t)
+        #+clisp
+        (ext:saveinitmem path :init-function #'(lambda () (funcall 'engine:main) (ext:exit))
+                              :executable t :norc t)))))

@@ -12,8 +12,7 @@
                #:alexandria
                #:bordeaux-threads
                #:mof
-               #:cl-ppcre
-               #:trivial-dump-core)
+               #:cl-ppcre)
   :components ((:file "packages")
                (:file "websocket")
                (:file "build")))
