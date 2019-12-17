@@ -3,7 +3,7 @@
 (asdf:defsystem #:engine
   :description "engine"
   :author "Rommel MARTINEZ <rom@mimix.io>"
-  :license  "Blue Oak License"
+  :license  "BlueOak-1.0.0"
   :version "0.0.2"
   :serial t
   :depends-on (#:clack

@@ -12,6 +12,12 @@
 (defvar *user-base-id* 1000
   "The base integer user ID for connections.")
 
+(defvar *msl-start-port* 60000
+  "The starting port for (msl) communication.")
+
+(defvar *admin-start-port* 60500
+  "The starting port for admin access.")
+
 (defun get-new-user-id ()
   "Return a new fresh user ID."
   (incf *user-base-id*))
@@ -60,7 +66,7 @@
 
 (defun start-echo-server ()
   "Start the WebSocket echo server."
-  (setf *echo-server* (start-server #'echo-server 9797)))
+  (setf *echo-server* (start-server #'echo-server *msl-start-port*)))
 
 (defun stop-echo-server ()
   "Stop the WebSocket echo server."
