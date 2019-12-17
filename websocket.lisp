@@ -1,22 +1,20 @@
 ;;;; websocket.lisp
 
-(in-package #:engine)
+(in-package #:streams)
+
+
+;;;-----------------------------------------------------------------------------
+;;; General
+;;;-----------------------------------------------------------------------------
 
 (defvar *connections* (make-hash-table)
   "The table of connections, where the keys are server instances while the values are the user IDs.")
 
-(defvar *html*
-  (mof:slurp-file (mof:resolve-system-file "index.html" :engine))
-  "The default HTML browser code.")
-
 (defvar *user-base-id* 1000
   "The base integer user ID for connections.")
 
-(defvar *msl-start-port* 60000
-  "The starting port for (msl) communication.")
-
-(defvar *admin-start-port* 60500
-  "The starting port for admin access.")
+(defvar *servers* nil
+  "A list of running websocket server instances.")
 
 (defun get-new-user-id ()
   "Return a new fresh user ID."
@@ -38,13 +36,33 @@
     (loop :for con :being :the :hash-key :of *connections*
           :do (websocket-driver:send con message))))
 
-(defun echo-server (env)
+(defun start-server (server port)
+  "Start SERVER using Clack."
+  (clack:clackup server :port port))
+
+(defun stop-server (server)
+  "Stop SERVER."
+  (clack:stop server))
+
+
+;;;-----------------------------------------------------------------------------
+;;; MSL interface
+;;;-----------------------------------------------------------------------------
+
+(defvar *msl-start-port* 60000
+  "The starting port for (msl) communication.")
+
+(defvar *msl-server* nil
+  "The msl server instance.")
+
+(defun msl-server (env)
+  "Handle requests to the msl server."
   (let ((ws (websocket-driver:make-server env)))
     (websocket-driver:on :open ws
                          (lambda () (handle-open-connection ws)))
 
     (websocket-driver:on :message ws
-                         (lambda (message) (echo-message ws message)))
+                         (lambda (message) (msl-message ws message)))
 
     (websocket-driver:on :close ws
                          (lambda (&key code reason)
@@ -54,31 +72,83 @@
       (declare (ignore responder))
       (websocket-driver:start-connection ws))))
 
-(defun start-server (server port)
-  "Start SERVER using Clack."
-  (clack:clackup server :port port))
+(defun start-msl-server ()
+  "Start the msl websocket server."
+  (let ((server (start-server #'msl-server *msl-start-port*)))
+    (setf *msl-server* server)
+    server))
 
-(defun stop-server (server)
-  "Stop SERVER."
-  (clack:stop server))
+(defun stop-msl-server ()
+  "Stop the msl websocket server."
+  (stop-server *msl-server*)
+  (setf *msl-server* nil))
 
-(defvar *echo-server* nil "The echo server.")
 
-(defun start-echo-server ()
-  "Start the WebSocket echo server."
-  (setf *echo-server* (start-server #'echo-server *msl-start-port*)))
+;;;-----------------------------------------------------------------------------
+;;; Admin interface
+;;;-----------------------------------------------------------------------------
 
-(defun stop-echo-server ()
-  "Stop the WebSocket echo server."
-  (stop-server *echo-server*)
-  (setf *echo-server* nil))
+(defvar *admin-start-port* 60500
+  "The starting port for admin access.")
 
-(defun start-websocket-server (&rest args)
-  "Start the designated WebSocket server."
-  (apply #'start-echo-server args))
+(defvar *admin-server* nil
+  "The admin server instance.")
+
+(defun admin-server (env)
+  "Handle requests to the admin server."
+  (let ((ws (websocket-driver:make-server env)))
+    (websocket-driver:on :open ws
+                         (lambda () (handle-open-connection ws)))
+
+    (websocket-driver:on :message ws
+                         (lambda (message) (admin-message ws message)))
+
+    (websocket-driver:on :close ws
+                         (lambda (&key code reason)
+                           (declare (ignore code reason))
+                           (handle-close-connection ws)))
+    (lambda (responder)
+      (declare (ignore responder))
+      (websocket-driver:start-connection ws))))
+
+(defun start-admin-server ()
+  "Start the admin websocket server."
+  (let ((server (start-server #'admin-server *admin-start-port*)))
+    (setf *admin-server* server)
+    server))
+
+(defun stop-admin-server ()
+  "Stop the admin websocket server."
+  (stop-server *admin-server*)
+  (setf *admin-server* nil))
+
+
+;;;-----------------------------------------------------------------------------
+;;; Top-level
+;;;-----------------------------------------------------------------------------
+
+(defun start-websocket-server (server &rest args)
+  "Start the designated websocket server."
+  (let ((server (apply server args)))
+    (push server *servers*)
+    server))
+
+(defun stop-websocket-servers ()
+  "Stop all the websocket servers."
+  (progn
+    (format *error-output* "Aborting.~&")
+    (loop :for server :in *servers*
+          :do (progn
+                (format t "~A~%" server)
+                (clack:stop server)))
+    (setf *servers* nil)
+    (uiop:quit)))
 
 (defun main ()
-  (start-websocket-server)
+  "The main entrypoint of the module."
+  (start-websocket-server #'start-msl-server)
+  (start-websocket-server #'start-admin-server)
+
   (handler-case (bt:join-thread (find-if (lambda (thread)
                                            (search "hunchentoot" (bt:thread-name thread)))
                                          (bt:all-threads)))
@@ -88,8 +158,6 @@
      #+ecl ext:interactive-interrupt
      #+allegro excl:interrupt-signal
      #+lispworks mp:process-interrupt
-     () (progn
-          (format *error-output* "Aborting.~&")
-          (clack:stop *echo-server*)
-          (uiop:quit)))
-    (error (c) (format t "Woops, an unknown error occured:~&~a~&" c))))
+     () (stop-websocket-servers))
+    (error (c)
+      (format t "Woops, an unknown error occured:~&~a~&" c))))
