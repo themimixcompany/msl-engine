@@ -62,7 +62,7 @@
                          (lambda () (handle-open-connection ws)))
 
     (websocket-driver:on :message ws
-                         (lambda (message) (msl-message ws message)))
+                         (lambda (message) (echo-message ws message)))
 
     (websocket-driver:on :close ws
                          (lambda (&key code reason)
@@ -101,7 +101,7 @@
                          (lambda () (handle-open-connection ws)))
 
     (websocket-driver:on :message ws
-                         (lambda (message) (admin-message ws message)))
+                         (lambda (message) (echo-message ws message)))
 
     (websocket-driver:on :close ws
                          (lambda (&key code reason)
