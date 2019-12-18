@@ -20,10 +20,16 @@
   "Return a new fresh user ID."
   (incf *user-base-id*))
 
+(defun format-msl (type text)
+  "Return a string formatted for MSL."
+  (format nil "(@~A ~A)" type text))
+
 (defun handle-open-connection (connection)
   "Add a new entry to the connections table, with the connection itself as the key."
   (setf (gethash connection *connections*)
-        (format nil "user-~A" (get-new-user-id))))
+        (format nil "user-~A" (get-new-user-id)))
+  (websocket-driver:send connection
+                         (format-msl "VER" (asdf:system-version (asdf:find-system :streams)))))
 
 (defun echo-message (connection message)
   "Echo back MESSAGE to CONNECTION."
