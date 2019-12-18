@@ -6,6 +6,7 @@
   (:documentation "Build the executable of streams for different platforms."))
 
 (defmethod build :before (&optional root)
+  (declare (ignorable root))
   (setf *debugger-hook*
         (lambda (condition hook)
           (declare (ignore hook))
