@@ -10,7 +10,7 @@
 (defsystem #:streams
   :description "streams"
   :author "Rommel MARTINEZ <rom@mimix.io>"
-  :license  "BlueOak-1.0.0"
+  :license "BlueOak-1.0.0"
   :version "1.0.1"
   :serial t
   :depends-on (#:uiop
@@ -28,7 +28,6 @@
                #:alexandria
                #:bordeaux-threads
                #+sbcl #:sb-sprof)
-  :serial t
   :components ((:file "packages")
                (:file "websocket")
                (:file "build")
