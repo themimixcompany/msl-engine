@@ -5,10 +5,7 @@
   (:export #:start-websocket-server
            #:stop-websocket-server
            #:main
-           #:build
-           ;; #:import-csv-file
-           ;; #:filter-csv-file
-           ))
+           #:build))
 
 (defpackage #:streams/tests
   (:use #:cl

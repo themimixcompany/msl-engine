@@ -3,7 +3,7 @@
 (in-package #:streams/core)
 
 (defgeneric build (&optional root)
-  (:documentation "Build the executable of the streams for different OSes."))
+  (:documentation "Build the executable of streams for different platforms."))
 
 (defmethod build :before (&optional root)
   (setf *debugger-hook*
@@ -28,7 +28,7 @@
         #+sbcl
         (sb-ext:save-lisp-and-die path :toplevel #'streams/core:main :executable t)
         #+ccl
-        (ccl:save-application path :toplevel-function #'streams:main :prepend-kernel t)
+        (ccl:save-application path :toplevel-function #'streams/core:main :prepend-kernel t)
         #+clisp
-        (ext:saveinitmem path :init-function #'(lambda () (funcall 'streams:main) (ext:exit))
+        (ext:saveinitmem path :init-function #'(lambda () (funcall 'streams/core:main) (ext:exit))
                               :executable t :norc t)))))
