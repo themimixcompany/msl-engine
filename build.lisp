@@ -1,6 +1,6 @@
 ;;;; build.lisp
 
-(in-package #:streams)
+(in-package #:streams/core)
 
 (defgeneric build (&optional root)
   (:documentation "Build the executable of the streams for different OSes."))
@@ -26,7 +26,7 @@
              (path (uiop:subpathname* root base-name)))
         (uiop:ensure-all-directories-exist (list (namestring path)))
         #+sbcl
-        (sb-ext:save-lisp-and-die path :toplevel #'streams:main :executable t)
+        (sb-ext:save-lisp-and-die path :toplevel #'streams/core:main :executable t)
         #+ccl
         (ccl:save-application path :toplevel-function #'streams:main :prepend-kernel t)
         #+clisp

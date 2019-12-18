@@ -1,7 +1,15 @@
 ;;;; packages.lisp
 
-(defpackage #:streams
+(defpackage #:streams/core
   (:use #:cl)
   (:export #:start-websocket-server
+           #:stop-websocket-server
            #:main
-           #:build))
+           #:build
+           ;; #:import-csv-file
+           ;; #:filter-csv-file
+           ))
+
+(defpackage #:streams/tests
+  (:use #:cl
+        #:streams/core))

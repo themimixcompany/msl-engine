@@ -1,6 +1,6 @@
 ;;;; websocket.lisp
 
-(in-package #:streams)
+(in-package #:streams/core)
 
 
 ;;;-----------------------------------------------------------------------------
