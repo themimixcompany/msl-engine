@@ -13,15 +13,8 @@
   :license "BlueOak-1.0.0"
   :version "1.0.1"
   :serial t
-  :depends-on (#:uiop
-               #:cl-ppcre
-               #:cl-csv
-               #:cl-nlp
+  :depends-on (#:cl-ppcre
                #:mof
-               #:closer-mop
-               #:cl-cpus
-               #:lparallel
-               #:cl-xlsx
                #:clack
                #:clack-handler-hunchentoot
                #:websocket-driver
@@ -30,20 +23,4 @@
                #+sbcl #:sb-sprof)
   :components ((:file "packages")
                (:file "websocket")
-               (:file "build")
-               (:file "globals")
-               (:file "classes")
-               (:file "nlp")
-               (:file "setup")
-               (:file "common")
-               (:file "world")
-               (:file "clos")
-               (:file "dump")
-               (:file "void")
-               (:file "unit")
-               (:file "constraints")
-               (:file "matching")
-               (:file "import")
-               (:file "writers")
-               (:file "initialize")
-               (:file "tests")))
+               (:file "build")))
