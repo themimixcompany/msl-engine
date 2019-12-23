@@ -11,7 +11,7 @@
   :description "streams"
   :author "Rommel MARTINEZ <rom@mimix.io>"
   :license "BlueOak-1.0.0"
-  :version "1.0.1"
+  :version "1.0.2"
   :serial t
   :depends-on (#:cl-ppcre
                #:mof
