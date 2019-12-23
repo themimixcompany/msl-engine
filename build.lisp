@@ -7,12 +7,7 @@
 
 (defmethod build :before (&optional root)
   (declare (ignorable root))
-  (setf *debugger-hook*
-        (lambda (condition hook)
-          (declare (ignore hook))
-          (format *error-output* "Caught error: ~A" condition)
-          (finish-output *error-output*)
-          (uiop:quit))))
+  (hide-debugger-output))
 
 (defmethod build (&optional (root *default-pathname-defaults*))
   (let ((arch (string (uiop:architecture))))

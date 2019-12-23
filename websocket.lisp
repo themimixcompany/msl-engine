@@ -16,6 +16,8 @@
 (defvar *servers* nil
   "A list of running websocket server instances.")
 
+(defvar *system-version* #.(asdf:system-version (asdf:find-system :streams)))
+
 (defun get-new-user-id ()
   "Return a new fresh user ID."
   (incf *user-base-id*))
@@ -24,12 +26,20 @@
   "Return a string formatted for MSL."
   (format nil "(@~A ~A)" type text))
 
+(defmacro format-output (&rest args)
+  "Apply CL:FORMAT to ARGS then force the output."
+  (apply #'format args)
+  (force-output *standard-output*))
+
 (defun handle-open-connection (connection)
   "Add a new entry to the connections table, with the connection itself as the key."
   (setf (gethash connection *connections*)
         (format nil "user-~A" (get-new-user-id)))
-  (websocket-driver:send connection
-                         (format-msl "VER" (asdf:system-version (asdf:find-system :streams)))))
+  (format-output t "Connection: ~A" connection)
+  ;; (websocket-driver:send connection (format-msl "VER" (asdf:system-version (asdf:find-system :streams))))
+  ;; (websocket-driver:send connection (format-msl "VER" "1.0.1"))
+  (websocket-driver:send connection (format-msl "VER" *system-version*))
+  )
 
 (defun echo-message (connection message)
   "Echo back MESSAGE to CONNECTION."
@@ -135,20 +145,18 @@
 
 (defun start-websocket-server (server &rest args)
   "Start the designated websocket server."
+  (format t "Starting websocket server...~%")
   (let ((server (apply server args)))
     (push server *servers*)
     server))
 
 (defun stop-websocket-servers ()
   "Stop all the websocket servers."
-  (progn
-    (format *error-output* "Aborting.~&")
-    (loop :for server :in *servers*
-          :do (progn
-                (format t "~A~%" server)
-                (clack:stop server)))
-    (setf *servers* nil)
-    (uiop:quit)))
+  (hide-debugger-output)
+  (format *error-output* "Aborting.~&")
+  (loop :for server :in *servers* :do (clack:stop server))
+  (setf *servers* nil)
+  (uiop:quit))
 
 (defun main ()
   "The main entrypoint of the module."
@@ -166,4 +174,4 @@
      #+lispworks mp:process-interrupt
      () (stop-websocket-servers))
     (error (c)
-      (format t "Woops, an unknown error occured:~&~a~&" c))))
+      (format t "Oops, an unknown error occured:~&~A~&" c))))
