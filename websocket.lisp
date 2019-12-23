@@ -36,10 +36,7 @@
   (setf (gethash connection *connections*)
         (format nil "user-~A" (get-new-user-id)))
   (format-output t "Connection: ~A" connection)
-  ;; (websocket-driver:send connection (format-msl "VER" (asdf:system-version (asdf:find-system :streams))))
-  ;; (websocket-driver:send connection (format-msl "VER" "1.0.1"))
-  (websocket-driver:send connection (format-msl "VER" *system-version*))
-  )
+  (websocket-driver:send connection (format-msl "VER" *system-version*)))
 
 (defun echo-message (connection message)
   "Echo back MESSAGE to CONNECTION."
