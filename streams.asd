@@ -22,5 +22,6 @@
                #:bordeaux-threads
                #+sbcl #:sb-sprof)
   :components ((:file "packages")
+               (:file "utils")
                (:file "websocket")
                (:file "build")))
