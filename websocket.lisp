@@ -16,7 +16,9 @@
 (defvar *servers* nil
   "A list of running websocket server instances.")
 
-(defvar *system-version* #.(asdf:system-version (asdf:find-system :streams)))
+(defvar *system-version*
+  #.(asdf:system-version (asdf:find-system :streams))
+  "The introspected version of this system.")
 
 (defun get-new-user-id ()
   "Return a new fresh user ID."

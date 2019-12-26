@@ -19,8 +19,7 @@
                #:clack-handler-hunchentoot
                #:websocket-driver
                #:alexandria
-               #:bordeaux-threads
-               #+sbcl #:sb-sprof)
+               #:bordeaux-threads)
   :components ((:file "packages")
                (:file "utils")
                (:file "websocket")
