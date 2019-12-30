@@ -1,13 +1,17 @@
 ;;;; build.lisp
 
-(in-package #:streams/core)
+(uiop:define-package #:streams/build
+    (:use #:cl)
+  (:export #:build))
+
+(in-package #:streams/build)
 
 (defgeneric build (&optional root)
   (:documentation "Build the executable of streams for different platforms."))
 
 (defmethod build :before (&optional root)
   (declare (ignorable root))
-  (hide-debugger-output))
+  (streams/utils:hide-debugger-output))
 
 (defmethod build (&optional (root *default-pathname-defaults*))
   (let ((arch (string (uiop:architecture))))
@@ -22,9 +26,10 @@
              (path (uiop:subpathname* root base-name)))
         (uiop:ensure-all-directories-exist (list (namestring path)))
         #+sbcl
-        (sb-ext:save-lisp-and-die path :toplevel #'streams/core:main :executable t)
+        (sb-ext:save-lisp-and-die path :toplevel #'streams/serve:serve :executable t)
         #+ccl
-        (ccl:save-application path :toplevel-function #'streams/core:main :prepend-kernel t)
+        (ccl:save-application path :toplevel-function #'streams/serve:serve :prepend-kernel t)
         #+clisp
-        (ext:saveinitmem path :init-function #'(lambda () (funcall 'streams/core:main) (ext:exit))
+        (ext:saveinitmem path :init-function #'(lambda () (funcall 'streams/serve:serve)
+                                                 (ext:exit))
                               :executable t :norc t)))))

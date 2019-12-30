@@ -1,6 +1,10 @@
 ;;;; utils.lisp
 
-(in-package #:streams/core)
+(uiop:define-package #:streams/utils
+    (:use #:cl)
+  (:export #:hide-debugger-output))
+
+(in-package #:streams/utils)
 
 (defun hide-debugger-output ()
   "Hide the debugger output."
@@ -9,4 +13,3 @@
           (declare (ignore hook))
           (format *error-output* "Caught error: ~A" condition)
           (finish-output *error-output*))))
-
