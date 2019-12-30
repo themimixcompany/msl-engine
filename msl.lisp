@@ -7,7 +7,7 @@
 
 (defparameter *table* (make-hash-table :test #'equal))
 
-(defun bit-value (table key &optional (value nil valuep))
+(defun unit-value (table key &optional (value nil valuep))
   "Get or set VALUE under KEY in TABLE."
   (if valuep
       (setf (gethash key table) value)
@@ -17,16 +17,16 @@
           val))))
 
 (defun @ (&rest args)
-  "Apply BIT-VALUE to ARGS."
-  (apply #'bit-value args))
+  "Apply UNIT-VALUE to ARGS."
+  (apply #'unit-value args))
 
-(defun bit-explore (table)
+(defun unit-explore (table)
   "Display the contents of table."
   (maphash #'(lambda (k v) (format t "~A: ~A~%" k v)) table))
 
 ;;; NOTE: Is it ideal to use 'VALUE as table key?
 
-(defun bit-protect-0 (parent key value)
+(defun unit-protect-0 (parent key value)
   (let ((current (gethash key parent)))
     (cond ((and (not (hash-table-p current)) (hash-table-p value))
            (setf (gethash 'value value) current)))
@@ -34,18 +34,18 @@
     value))
 
 ;;; NOTE: Should a mechanism be created to lock a value?
-(defun bit-protect (table key value)
+(defun unit-protect (table key value)
   "Set VALUE under KEY in TABLE if key is not a table."
-  (let ((val (bit-value table key)))
+  (let ((val (unit-value table key)))
     (if (hash-table-p val)
         nil
-        (bit-value table key value))))
+        (unit-value table key value))))
 
-(defparameter *bits*
+(defparameter *units*
   '((boyfriend (gender m))
     (boyfriend (age 23))
     (favorite-food "creme brulee"))
-  "A test bit tree.")
+  "A test unit tree.")
 
 (defun aggregate-key (tree key)
   "Find all subtrees in TREE where its CAR is KEY, then return a fresh tree wherein the CAR is KEY and CDR are all matches found."
@@ -60,3 +60,6 @@
         ((null list) (nreverse acc))
         ((eql key (caar list)) (aggregate-key-cond (cdr list) key (cons (cadar list) acc)))
         (t (aggregate-key-cond (cdr list) key acc))))
+
+(defun unit (key &optional value)
+  nil)
