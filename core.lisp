@@ -49,6 +49,10 @@
         u
       (setf uid counter))))
 
-(defun make-unit (universe)
+(defun make-unit (value universe)
   "Return a new unit instance."
-  (make-instance 'unit :universe universe))
+  (make-instance 'unit :uvalue value :universe universe))
+
+;;; TODO:
+;;; - Add more support for MSL expressions
+;;; - Maybe separate the parser and interpreter

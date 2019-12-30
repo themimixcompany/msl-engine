@@ -5,26 +5,9 @@
 
 (in-package #:streams/msl)
 
-(defparameter *table* (make-hash-table :test #'equal))
-
-(defun unit-value (table key &optional (value nil valuep))
-  "Get or set VALUE under KEY in TABLE."
-  (if valuep
-      (setf (gethash key table) value)
-      (multiple-value-bind (val existsp)
-          (gethash key table)
-        (when existsp
-          val))))
-
-(defun @ (&rest args)
-  "Apply UNIT-VALUE to ARGS."
-  (apply #'unit-value args))
-
 (defun unit-explore (table)
   "Display the contents of table."
   (maphash #'(lambda (k v) (format t "~A: ~A~%" k v)) table))
-
-;;; NOTE: Is it ideal to use 'VALUE as table key?
 
 (defun unit-protect-0 (parent key value)
   (let ((current (gethash key parent)))
@@ -41,7 +24,11 @@
         nil
         (unit-value table key value))))
 
-(defparameter *units*
+(defparameter *test-table*
+  (make-hash-table :test #'equal)
+  "A test unit table.")
+
+(defparameter *test-units*
   '((boyfriend (gender m))
     (boyfriend (age 23))
     (favorite-food "creme brulee"))
@@ -61,5 +48,19 @@
         ((eql key (caar list)) (aggregate-key-cond (cdr list) key (cons (cadar list) acc)))
         (t (aggregate-key-cond (cdr list) key acc))))
 
-(defun unit (key &optional value)
-  nil)
+(defun unit (table key &optional (value nil valuep))
+  "Get or set VALUE under KEY in TABLE."
+  (if valuep
+      (setf (gethash key table) value)
+      (multiple-value-bind (val existsp)
+          (gethash key table)
+        (when existsp
+          val))))
+
+(defun @ (&rest args)
+  "Apply UNIT to ARGS. This is different from SETFing the SYMBOL-FUNCTION slot."
+  (apply #'unit args))
+
+;;; TODO:
+;;; - Link this module with streams/core.
+;;; - Write unit chaining.
