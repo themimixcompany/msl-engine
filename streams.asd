@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "BlueOak-1.0.0"
-  :version "1.1.0"
+  :version "1.1.1"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:mof
@@ -22,8 +22,8 @@
                #:bordeaux-threads
                "streams/utils"
                "streams/globals"
+               "streams/channels"
                "streams/core"
                "streams/serve"
-               "streams/msl"
                "streams/build"
                "streams/initialize"))
