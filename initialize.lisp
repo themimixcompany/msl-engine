@@ -6,6 +6,6 @@
 
 (defun initialize-universe ()
   "Initialize the universe."
-  (setf streams/globals:*universe* (streams/core:make-universe)))
+  (setf streams/globals:*universe* (streams/channels:make-universe)))
 
 (initialize-universe)

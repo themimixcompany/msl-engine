@@ -2,7 +2,7 @@
 
 (uiop:define-package #:streams/globals
     (:use #:cl)
-  (:export #:*initial-ucounter*
+  (:export #:*initial-acounter*
            #:*universe*))
 
 (in-package #:streams/globals)
@@ -10,5 +10,5 @@
 (defparameter *universe* nil
   "The top-level structure for the universe.")
 
-(defparameter *initial-ucounter* 1000
-  "The initial unit counter value.")
+(defparameter *initial-acounter* 1000
+  "The initial atxm counter value.")
