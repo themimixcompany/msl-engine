@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/build
     (:use #:cl)
+  (:nicknames #:s/build)
   (:export #:build))
 
 (in-package #:streams/build)
@@ -11,7 +12,7 @@
 
 (defmethod build :before (&optional root)
   (declare (ignorable root))
-  (streams/utils:hide-debugger-output))
+  (streams/common:hide-debugger-output))
 
 (defmethod build (&optional (root *default-pathname-defaults*))
   (let ((arch (string (uiop:architecture))))

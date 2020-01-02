@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/initialize
     (:use #:cl)
+  (:nicknames #:s/initialize)
   (:export #:initialize-universe))
 
 (defun initialize-universe ()
