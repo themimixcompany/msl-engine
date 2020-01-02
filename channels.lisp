@@ -64,7 +64,12 @@
   "Instantiate an atxm and set the global symbol value."
   (let* ((atxm (apply #'make-atxm data))
          (name (getf (data atxm) :primary-key)))
-    (setf (symbol-value name) (getf (data atxm) :primary-value))))
+    (handler-bind ((unbound-variable #'(lambda (c)
+                                         (declare (ignore c))
+                                         (use-value nil))))
+      (unless (symbol-value name)
+        (setf (symbol-value name) (getf (data atxm) :primary-value))
+        atxm))))
 
 (defun dump-atxm (atxm)
   "Display the contents of ATXM."
