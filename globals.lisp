@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/globals
     (:use #:cl)
+  (:nicknames #:s/globals)
   (:export #:*initial-acounter*
            #:*universe*))
 

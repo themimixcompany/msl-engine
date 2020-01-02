@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/serve
     (:use #:cl)
+  (:nicknames #:s/serve)
   (:export #:serve))
 
 (in-package #:streams/serve)
@@ -155,7 +156,7 @@
 
 (defun stop-websocket-servers ()
   "Stop all the websocket servers."
-  (streams/utils:hide-debugger-output)
+  (streams/common:hide-debugger-output)
   (format *error-output* "Aborting.~&")
   (loop :for server :in *servers* :do (clack:stop server))
   (setf *servers* nil)

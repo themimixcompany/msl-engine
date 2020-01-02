@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "BlueOak-1.0.0"
-  :version "1.1.1"
+  :version "1.2.0"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:mof
@@ -20,7 +20,8 @@
                #:websocket-driver
                #:alexandria
                #:bordeaux-threads
-               "streams/utils"
+               #:closer-mop
+               "streams/common"
                "streams/globals"
                "streams/channels"
                "streams/core"

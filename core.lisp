@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/core
     (:use #:cl)
+  (:nicknames #:s/core)
   (:export #:@))
 
 (in-package #:streams/core)
@@ -58,16 +59,20 @@
         (when existsp
           val))))
 
+;;; (@ walt "Walt Disney")
+;;; (@ walt "Walt Disney" :no 10 :species "human")
+;;; (@ walt :value "Walt Disney" :no 10 :species "human")
 (defmacro @ (&rest args)
-  "Return a new atxm instance."
-  `(let ((atxm (streams/channels:make-atxm ,args)))
-    ;; Update atable with the car of atxm name as key and the cdr of atxm value as value
+  "foo"
+  `(let ((atxm (streams/channels:make-atxm ,@args)))
+     ;; Note: update atable with the car of atxm name as key and the cdr of atxm value as value
+     ;; Note: restructuring should happen here before the value gets created
      (when atxm
        atxm)))
 
 ;;; (resolve-atxm '(@ foo Foo Bar Baz :bar "bar" :baz 0)) =>
 ;;; (@ foo "Foo Bar Baz" :bar "bar" :baz 0)
 (defun resolve-atxm (atxm)
-  "Expand ATXM into its constituent parts."
+  "Expand ATXM into its constituent parts with respect to the surrounding context."
   (declare (ignorable atxm))
   nil)
