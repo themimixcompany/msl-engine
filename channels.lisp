@@ -60,6 +60,12 @@
     (when properties
       (make-instance 'atxm :data properties :universe streams/globals:*universe*))))
 
+(defun build-atxm (&rest data)
+  "Instantiate an atxm and set the global symbol value."
+  (let* ((atxm (apply #'make-atxm data))
+         (name (getf (data atxm) :primary-key)))
+    (setf (symbol-value name) (getf (data atxm) :primary-value))))
+
 (defun dump-atxm (atxm)
   "Display the contents of ATXM."
   (loop :for slot :in (streams/common:slots atxm)
