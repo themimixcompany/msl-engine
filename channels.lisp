@@ -25,6 +25,14 @@
        :initform -1
        :reader id
        :documentation "The unique numeric id of a atxm.")
+   (type :initarg :type
+         :initform nil
+         :reader type
+         :documentation "The type of an atxm, whether it is machine, stream, canon, view, or basic.")
+   (name :initarg :name
+         :initform nil
+         :reader name
+         :documentation "")
    (data :initarg :data
          :initform nil
          :reader data
@@ -59,6 +67,10 @@
   (let ((properties (streams/common:build-properties data)))
     (when properties
       (make-instance 'atxm :data properties :universe streams/globals:*universe*))))
+
+(defun make-atxm (&rest data)
+  "Return a new atxm instance from DATA."
+  nil)
 
 (defun build-atxm (&rest data)
   "Instantiate an atxm and set the global symbol value."
