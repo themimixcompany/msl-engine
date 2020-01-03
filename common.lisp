@@ -74,29 +74,3 @@
   (let ((*readtable* (copy-readtable nil)))
     (setf (readtable-case *readtable*) :preserve)
     (read-from-string string)))
-
-;;; Write validator
-;;; Write scanner
-;;; Write parser
-(defun atxm-data-p (data)
-  "Return true if DATA is a valid atxm."
-  (or (and (symbolp data) (not (keywordp data)))
-      (stringp data)))
-
-(defun read-atxm-data-0 (&rest data)
-  "Read the atxm data iteratively."
-  (loop :for item :in data
-        :when (atxm-data-p item)
-        :collect item :into symbols
-        :when (keywordp item)
-        :return symbols))
-
-(defun read-atxm-data (&rest body)
-  "Read the atxm data from BODY recursively. The first value retured is the main data while the second value returned is the metadata."
-  (labels ((fn (args data)
-             (cond ((keywordp (car args)) (values (nreverse data) args))
-                   ((null args) (values (nreverse data) nil))
-                   ((atxm-data-p (car args))
-                    (fn (cdr args) (cons (car args) data)))
-                   (t (fn (cddr args) data)))))
-    (fn body nil)))

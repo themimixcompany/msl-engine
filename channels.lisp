@@ -25,10 +25,10 @@
        :initform -1
        :reader id
        :documentation "The unique numeric id of a atxm.")
-   (type :initarg :type
-         :initform nil
-         :reader type
-         :documentation "The type of an atxm, whether it is machine, stream, canon, view, or basic.")
+   (category :initarg :category
+             :initform nil
+             :reader category
+             :documentation "The category of an atxm, whether it is machine, stream, canon, view, or basic.")
    (name :initarg :name
          :initform nil
          :reader name
@@ -62,28 +62,58 @@
   "Return an instance of the universe."
   (make-instance 'universe))
 
-(defun make-atxm (&rest data)
-  "Return a new atxm instance from DATA."
-  (let ((properties (streams/common:build-properties data)))
-    (when properties
-      (make-instance 'atxm :data properties :universe streams/globals:*universe*))))
+;; (defun make-atxm (&rest data)
+;;   "Return a new atxm instance from DATA."
+;;   (let ((properties (streams/common:build-properties data)))
+;;     (when properties
+;;       (make-instance 'atxm :data properties :universe streams/globals:*universe*))))
 
-(defun make-atxm (&rest data)
-  "Return a new atxm instance from DATA."
-  nil)
-
-(defun build-atxm (&rest data)
-  "Instantiate an atxm and set the global symbol value."
-  (let* ((atxm (apply #'make-atxm data))
-         (name (getf (data atxm) :primary-key)))
-    (handler-bind ((unbound-variable #'(lambda (c)
-                                         (declare (ignore c))
-                                         (use-value nil))))
-      (unless (symbol-value name)
-        (setf (symbol-value name) (getf (data atxm) :primary-value))
-        atxm))))
+;; (defun build-atxm (&rest data)
+;;   "Instantiate an atxm and set the global symbol value."
+;;   (let* ((atxm (apply #'make-atxm data))
+;;          (name (getf (data atxm) :primary-key)))
+;;     (handler-bind ((unbound-variable #'(lambda (c)
+;;                                          (declare (ignore c))
+;;                                          (use-value nil))))
+;;       (unless (symbol-value name)
+;;         (setf (symbol-value name) (getf (data atxm) :primary-value))
+;;         atxm))))
 
 (defun dump-atxm (atxm)
   "Display the contents of ATXM."
   (loop :for slot :in (streams/common:slots atxm)
         :do (format t "~A: ~S~%" slot (funcall slot atxm))))
+
+(defun atxm-data-p (data)
+  "Return true if DATA is a valid atxm."
+  (or (and (symbolp data) (not (keywordp data)))
+      (stringp data)))
+
+(defun read-atxm (&rest body)
+  "Read the atxm data from BODY recursively. The first value retured is the main data while the second value returned is the metadata."
+  (labels ((fn (args data)
+             (cond ((keywordp (car args)) (values (nreverse data) args))
+                   ((null args) (values (nreverse data) nil))
+                   ((atxm-data-p (car args))
+                    (fn (cdr args) (cons (car args) data)))
+                   (t (fn (cddr args) data)))))
+    (fn body nil)))
+
+;;; Write reader
+;;; Write validator
+;;; Write scanner
+;;; Write parser
+
+(defun make-atxm (category name data metadata &key universe)
+  "Return a new atxm instance from arguments."
+  (make-instance 'atxm :category category :name name
+                       :data data :metadata metadata
+                       :universe (or universe streams/globals:*universe*)))
+
+(defun build-atxm (&rest body)
+  "Return an atxm instance from BODY."
+  (multiple-value-bind (data metadata)
+      (apply #'read-atxm body)
+    (destructuring-bind (name &rest value)
+        data
+      (make-atxm 'basic name value metadata))))
