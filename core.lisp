@@ -91,6 +91,21 @@
     (declare (ignore v kv))
     k))
 
+
+(defmacro set-context (context &body body)
+  "Set the current context to CONTEXT then evaluate BODY."
+  `(let ((streams/globals:*context* ,context))
+     ,@body))
+
+(defmacro write-context (context)
+  "Build a context symbol."
+  (read-from-string (mof:cat "streams/globals:" (string context))))
+
+(defmacro set-context-2 (context &body body)
+  "Set the current context to CONTEXT then evaluate BODY."
+  `(let ((streams/globals:*context* (write-context ,context)))
+     ,@body))
+
 (defun evaluate-mx-atom (&rest values)
   "Evaluate an mx-atom under VALUES, store into the current context, then return the mx-atom and the context as two separate values."
   (let* ((mx-atom (apply #'build-mx-atom values))
@@ -102,4 +117,3 @@
       (setf (hash key) mx-atom)
       (values (hash key)
               (context)))))
-
