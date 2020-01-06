@@ -9,6 +9,7 @@
 
 (in-package #:streams/channels)
 
+;;; Note: should a universe contain all levels?
 (defclass universe ()
   ((acounter :initarg :acounter
              :initform streams/globals:*initial-acounter*
@@ -20,6 +21,34 @@
            :documentation "The top-level colletion of atxms."))
   (:documentation "The top-level data structure for atxms including information about the current atxm counter and the main table."))
 
+(defclass machine ()
+  ((table :initarg :table
+          :initform (make-hash-table)
+          :accessor table
+          :documentation ""))
+  (:documentation ""))
+
+(defclass world ()
+  ((table :initarg :table
+          :initform (make-hash-table)
+          :accessor table
+          :documentation ""))
+  (:documentation ""))
+
+(defclass strexm ()
+  ((table :initarg :table
+          :initform (make-hash-table)
+          :accessor table
+          :documentation ""))
+  (:documentation ""))
+
+(defclass view ()
+  ((table :initarg :table
+          :initform (make-hash-table)
+          :accessor table
+          :documentation ""))
+  (:documentation ""))
+
 (defclass atxm ()
   ((id :initarg :id
        :initform -1
@@ -29,10 +58,6 @@
              :initform nil
              :reader category
              :documentation "The category of an atxm, whether it is machine, stream, canon, view, or basic.")
-   (name :initarg :name
-         :initform nil
-         :reader name
-         :documentation "")
    (data :initarg :data
          :initform nil
          :reader data
@@ -51,6 +76,7 @@
   "See SPAWN-COUNTER."
   (spawn-counter universe acounter))
 
+;;; Note: should the table in universe be updated to reflect the existence of the new atxm?
 (defmethod initialize-instance :after ((a atxm) &key universe)
   "Initialize ATXM A in UNIVERSE."
   (let ((counter (spawn-acounter universe)))
@@ -61,23 +87,6 @@
 (defun make-universe ()
   "Return an instance of the universe."
   (make-instance 'universe))
-
-;; (defun make-atxm (&rest data)
-;;   "Return a new atxm instance from DATA."
-;;   (let ((properties (streams/common:build-properties data)))
-;;     (when properties
-;;       (make-instance 'atxm :data properties :universe streams/globals:*universe*))))
-
-;; (defun build-atxm (&rest data)
-;;   "Instantiate an atxm and set the global symbol value."
-;;   (let* ((atxm (apply #'make-atxm data))
-;;          (name (getf (data atxm) :primary-key)))
-;;     (handler-bind ((unbound-variable #'(lambda (c)
-;;                                          (declare (ignore c))
-;;                                          (use-value nil))))
-;;       (unless (symbol-value name)
-;;         (setf (symbol-value name) (getf (data atxm) :primary-value))
-;;         atxm))))
 
 (defun dump-atxm (atxm)
   "Display the contents of ATXM."
@@ -99,21 +108,51 @@
                    (t (fn (cddr args) data)))))
     (fn body nil)))
 
-;;; Write reader
-;;; Write validator
-;;; Write scanner
-;;; Write parser
+(defun assoc-key (key items)
+  "Return the key found in items if key is found."
+  (let ((val (assoc key items)))
+    (when val
+      (car val))))
 
-(defun make-atxm (category name data metadata &key universe)
+(defun assoc-value (key items)
+  "Return the value found in items if key is found."
+  (let ((val (assoc key items)))
+    (when val
+      (cdr val))))
+
+(defun dotted-pair-p (pair)
+  "Return true if LIST is a dotted list."
+  (cond ((atom (cdr pair)) t)
+        ((listp (cdr pair)) nil)
+        (t nil)))
+
+(defun build-pairs (items)
+  "Group items into pairs."
+  (when (evenp (length items))
+    (labels ((fn (items acc)
+               (cond ((null items) (nreverse acc))
+                     (t (fn (cddr items)
+                            (cons (list (first items) (second items))
+                                  acc))))))
+      (fn items nil))))
+
+(defun build-map (items &key (test #'keywordp))
+  "Create key-value mappings from ITEMS."
+  (loop :for item :in (build-pairs items)
+        :when (funcall test (car item))
+        :collect (cons (first item) (second item))))
+
+;;; Note: extend UNIVERSE to apply to context tables
+(defun make-atxm (category data metadata &key universe)
   "Return a new atxm instance from arguments."
-  (make-instance 'atxm :category category :name name
+  (make-instance 'atxm :category category
                        :data data :metadata metadata
                        :universe (or universe streams/globals:*universe*)))
 
-(defun build-atxm (&rest body)
-  "Return an atxm instance from BODY."
+(defun build-atxm (&rest args)
+  "Return an atxm instance from args."
   (multiple-value-bind (data metadata)
-      (apply #'read-atxm body)
-    (destructuring-bind (name &rest value)
-        data
-      (make-atxm 'basic name value metadata))))
+      (apply #'read-atxm args)
+    (let ((head (build-map data :test #'symbolp))
+          (body (build-map metadata)))
+      (make-atxm 'basic head body))))
