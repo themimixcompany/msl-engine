@@ -9,7 +9,7 @@
            #:propertiesp
            #:build-properties
            #:read-preserve
-           #:read-mx-atom))
+           #:dump-table))
 
 (in-package #:streams/common)
 
@@ -74,3 +74,8 @@
   (let ((*readtable* (copy-readtable nil)))
     (setf (readtable-case *readtable*) :preserve)
     (read-from-string string)))
+
+(defun dump-table (table)
+  "Print the contents of hash table TABLE."
+  (maphash #'(lambda (k v) (format t "~A => ~A~%" k v))
+           table))

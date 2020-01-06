@@ -76,14 +76,6 @@
   (declare (ignorable mx-atom))
   nil)
 
-;; (defun dispatch (type args)
-;;   "Invoke the function or macro designated under TYPE with ARGS as input values."
-;;   (let ((context *context*))
-;;     (cond ((null context)))))
-
-;;; - Contexts are created on-the-fly when none exists, while respecting context hierarchies.
-;;; - The context operations—(M, W, S, V, C)—have the ability to set the context except @.
-
 (defun mx-atom-key (mx-atom)
   "Return the first key used to identify MX-ATOM."
   (destructuring-bind ((k . v) &optional kv)
@@ -91,23 +83,17 @@
     (declare (ignore v kv))
     k))
 
-
-(defmacro set-context (context &body body)
-  "Set the current context to CONTEXT then evaluate BODY."
-  `(let ((streams/globals:*context* ,context))
-     ,@body))
-
 (defmacro write-context (context)
-  "Build a context symbol."
+  "Build a context symbol from the globals."
   (read-from-string (mof:cat "streams/globals:" (string context))))
 
-(defmacro set-context-2 (context &body body)
+(defmacro set-context (context &body body)
   "Set the current context to CONTEXT then evaluate BODY."
   `(let ((streams/globals:*context* (write-context ,context)))
      ,@body))
 
 (defun evaluate-mx-atom (&rest values)
-  "Evaluate an mx-atom under VALUES, store into the current context, then return the mx-atom and the context as two separate values."
+  "Evaluate an mx-atom under VALUES, store into the current context, then return the mx-atom and the context as values."
   (let* ((mx-atom (apply #'build-mx-atom values))
          (key (mx-atom-key mx-atom)))
     (macrolet ((context ()
@@ -117,3 +103,8 @@
       (setf (hash key) mx-atom)
       (values (hash key)
               (context)))))
+
+;;; Note: use symbol-macros to designate the contexts
+
+(defun dispatch ()
+  nil)
