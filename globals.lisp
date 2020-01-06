@@ -11,7 +11,7 @@
            #:*mx-view*
            #:*mx-canon*
            #:*context*
-           #:*base-context*))
+           #:*mx-base*))
 
 (in-package #:streams/globals)
 
@@ -36,9 +36,10 @@
 (defparameter *mx-canon* nil
   "The current canon context.")
 
-;;; Note: enable support for context chaining
 (defparameter *context* nil
-  "The immediate surrounding context for any given operation. Defaults to MX-BASE.")
+  "The immediate surrounding context for any given operation.")
 
-(defparameter *base-context* nil
-  "The fallback context for @ operations.")
+(defparameter *mx-base* nil
+  "The fallback context for atom operations.")
+
+;;; Note: enable support for context chaining
