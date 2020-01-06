@@ -7,72 +7,99 @@
 
 (in-package #:streams/core)
 
-(defun atxm-explore (table)
-  "Display the contents of table."
-  (maphash #'(lambda (k v) (format t "~A: ~A~%" k v)) table))
+(defun dump-mx-atom (mx-atom)
+  "Display the contents of MX-ATOM."
+  (loop :for slot :in (streams/common:slots mx-atom)
+        :do (format t "~A: ~S~%" slot (funcall slot mx-atom))))
 
-(defun atxm-protect-0 (parent key value)
-  (let ((current (gethash key parent)))
-    (cond ((and (not (hash-table-p current)) (hash-table-p value))
-           (setf (gethash 'value value) current)))
-    (setf (gethash key parent) value)
-    value))
+(defun mx-atom-data-p (data)
+  "Return true if DATA is a valid mx-atom."
+  (or (and (symbolp data) (not (keywordp data)))
+      (stringp data)))
 
-;;; NOTE: Should a mechanism be created to lock a value?
-;; (defun atxm-protect (table key value)
-;;   "Set VALUE under KEY in TABLE if key is not a table."
-;;   (let ((val (atxm-value table key)))
-;;     (if (hash-table-p val)
-;;         nil
-;;         (atxm-value table key value))))
+(defun read-mx-atom (&rest body)
+  "Read the mx-atom data from BODY recursively. The first value retured is the main data while the second value returned is the metadata."
+  (labels ((fn (args data)
+             (cond ((keywordp (car args)) (values (nreverse data) args))
+                   ((null args) (values (nreverse data) nil))
+                   ((mx-atom-data-p (car args))
+                    (fn (cdr args) (cons (car args) data)))
+                   (t (fn (cddr args) data)))))
+    (fn body nil)))
 
-(defparameter *test-table*
-  (make-hash-table :test #'equal)
-  "A test atxm table.")
+(defun assoc-key (key items)
+  "Return the key found in ITEMS if KEY is found."
+  (let ((val (assoc key items)))
+    (when val
+      (car val))))
 
-(defparameter *test-atxms*
-  '((boyfriend (gender m))
-    (boyfriend (age 23))
-    (favorite-food "creme brulee"))
-  "A test atxm tree.")
+(defun assoc-value (key items)
+  "Return the value found in ITEMS if KEY is found."
+  (let ((val (assoc key items)))
+    (when val
+      (cdr val))))
 
-(defun aggregate-key (tree key)
-  "Find all subtrees in TREE where its CAR is KEY, then return a fresh tree wherein the CAR is KEY and CDR are all matches found."
-  (loop :for item :in (copy-tree tree)
-        :when (eql (car item) key)
-        :nconc (cdr item) :into acc
-        :finally (return (if acc (cons key acc) nil))))
+(defun dotted-pair-p (pair)
+  "Return true if LIST is a dotted list."
+  (cond ((atom (cdr pair)) t)
+        ((listp (cdr pair)) nil)
+        (t nil)))
 
-(defun aggregate-key-cond (list key &optional acc)
-  "Find all subtrees in TREE where its CAR is KEY, then return a fresh tree wherein the CAR is KEY and CDR are all matches found."
-  (cond ((and (null list) acc) (cons key (nreverse acc)))
-        ((null list) (nreverse acc))
-        ((eql key (caar list)) (aggregate-key-cond (cdr list) key (cons (cadar list) acc)))
-        (t (aggregate-key-cond (cdr list) key acc))))
+(defun build-pairs (items)
+  "Group items into pairs."
+  (when (evenp (length items))
+    (labels ((fn (items acc)
+               (cond ((null items) (nreverse acc))
+                     (t (fn (cddr items)
+                            (cons (list (first items) (second items))
+                                  acc))))))
+      (fn items nil))))
 
-(defun atxm (table key &optional (value nil valuep))
-  "Get or set VALUE under KEY in TABLE."
-  (if valuep
-      (setf (gethash key table) value)
-      (multiple-value-bind (val existsp)
-          (gethash key table)
-        (when existsp
-          val))))
+(defun build-map (items &key (test #'keywordp) (constructor #'cons))
+  "Create key-value mappings from ITEMS."
+  (loop :for item :in (build-pairs items)
+        :when (funcall test (car item))
+        :collect (destructuring-bind (k v)
+                     item
+                   (funcall constructor k v))))
 
-;;; (@ walt "Walt Disney")
-;;; (@ walt "Walt Disney" :no 10 :species "human")
-;;; (@ walt :value "Walt Disney" :no 10 :species "human")
-(defmacro @ (&rest args)
-  "foo"
-  `(let ((atxm (streams/channels:make-atxm ,@args)))
-     ;; Note: update atable with the car of atxm name as key and the cdr of atxm value as value
-     ;; Note: restructuring should happen here before the value gets created
-     (when atxm
-       atxm)))
+(defun build-mx-atom (&rest args)
+  "Return a valid MX-ATOM from ARGS."
+  (multiple-value-bind (data metadata)
+      (apply #'read-mx-atom args)
+    (let ((head (build-map data :test #'symbolp))
+          (body (build-map metadata)))
+      (streams/channels:make-mx-atom 'basic head body))))
 
-;;; (resolve-atxm '(@ foo Foo Bar Baz :bar "bar" :baz 0)) =>
-;;; (@ foo "Foo Bar Baz" :bar "bar" :baz 0)
-(defun resolve-atxm (atxm)
-  "Expand ATXM into its constituent parts with respect to the surrounding context."
-  (declare (ignorable atxm))
+(defun resolve-mx-atom (mx-atom)
+  "Expand MX-ATOM into its constituent parts with respect to the surrounding context."
+  (declare (ignorable mx-atom))
   nil)
+
+;; (defun dispatch (type args)
+;;   "Invoke the function or macro designated under TYPE with ARGS as input values."
+;;   (let ((context *context*))
+;;     (cond ((null context)))))
+
+;;; - Contexts are created on-the-fly when none exists, while respecting context hierarchies.
+;;; - The context operations—(M, W, S, V, C)—have the ability to set the context except @.
+
+(defun mx-atom-key (mx-atom)
+  "Return the first key used to identify MX-ATOM."
+  (destructuring-bind ((k . v) &optional kv)
+      (streams/channels:data mx-atom)
+    (declare (ignore v kv))
+    k))
+
+(defun evaluate-mx-atom (&rest values)
+  "Evaluate an mx-atom under VALUES, store into the current context, then return the mx-atom and the context as two separate values."
+  (let* ((mx-atom (apply #'build-mx-atom values))
+         (key (mx-atom-key mx-atom)))
+    (macrolet ((context ()
+                 `(streams/channels:table streams/globals:*context*))
+               (hash (k)
+                 `(gethash ,k (context))))
+      (setf (hash key) mx-atom)
+      (values (hash key)
+              (context)))))
+

@@ -9,7 +9,7 @@
            #:propertiesp
            #:build-properties
            #:read-preserve
-           #:read-atxm))
+           #:read-mx-atom))
 
 (in-package #:streams/common)
 
@@ -62,7 +62,7 @@
        (eql (elt properties 2) :primary-value)))
 
 (defun build-properties (properties)
-  "Ensure that PROPERTIES is a plist that conforms to a proper atxm structure."
+  "Ensure that PROPERTIES is a plist that conforms to a proper mx-atom structure."
   (destructuring-bind (p-key p-value &rest body)
       properties
     (let ((props `(:primary-key ,p-key :primary-value ,p-value ,@body)))
