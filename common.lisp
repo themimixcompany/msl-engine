@@ -9,7 +9,11 @@
            #:propertiesp
            #:build-properties
            #:read-preserve
-           #:dump-table))
+           #:dump-object
+           #:dump-table
+           #:assoc-key
+           #:assoc-value
+           #:dotted-pair-p))
 
 (in-package #:streams/common)
 
@@ -75,7 +79,31 @@
     (setf (readtable-case *readtable*) :preserve)
     (read-from-string string)))
 
+(defun dump-object (object)
+  "Display the contents of OBJECT."
+  (loop :for slot :in (streams/common:slots object)
+        :do (format t "~A: ~S~%" slot (funcall slot object))))
+
 (defun dump-table (table)
   "Print the contents of hash table TABLE."
   (maphash #'(lambda (k v) (format t "~A => ~A~%" k v))
            table))
+
+(defun assoc-key (key items)
+  "Return the key found in ITEMS if KEY is found."
+  (let ((val (assoc key items)))
+    (when val
+      (car val))))
+
+(defun assoc-value (key items)
+  "Return the value found in ITEMS if KEY is found."
+  (let ((val (assoc key items)))
+    (when val
+      (cdr val))))
+
+(defun dotted-pair-p (pair)
+  "Return true if LIST is a dotted list."
+  (cond ((atom (cdr pair)) t)
+        ((listp (cdr pair)) nil)
+        (t nil)))
+

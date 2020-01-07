@@ -22,7 +22,7 @@
   "The top-level structure for the mx-universe.")
 
 (defparameter *mx-machine* nil
-  "The current machine context.")
+  "The current machine context, also the fallback context for mx-atom operations.")
 
 (defparameter *mx-world* nil
   "The current world context.")
@@ -38,8 +38,3 @@
 
 (defparameter *context* nil
   "The immediate surrounding context for any given operation.")
-
-(defparameter *mx-base* nil
-  "The fallback context for atom operations.")
-
-;;; Note: enable support for context chaining

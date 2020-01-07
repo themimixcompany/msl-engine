@@ -4,9 +4,10 @@
     (:use #:cl)
   (:nicknames #:s/channels)
   (:export #:make-mx-universe
-           #:make-mx-base
+           #:make-mx-machine
            #:make-mx-atom
            #:dump-mx-atom
+           #:name
            #:table
            #:id
            #:data
@@ -26,39 +27,43 @@
            :documentation "The top-level colletion of mx-atoms."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
-(defclass mx-base ()
-  ((table :initarg :table
-          :initform (make-hash-table)
-          :accessor table
-          :documentation ""))
-  (:documentation "The default store to use when there are no other available contexts."))
-
 (defclass mx-machine ()
-  ((table :initarg :table
+  ((name :initarg :name
+         :initform (uiop:hostname)
+         :reader name
+         :documentation "The name to designate the mx-machine instance. Defaults to the the hostname.")
+   (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation ""))
-  (:documentation ""))
+          :documentation "The mx-atom table for the mx-machine context."))
+  (:documentation "The default store to use when there are no other available contexts. When no names are specified the hostname is used for the instantiation."))
 
 (defclass mx-world ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation ""))
+          :documentation "The mx-atom table for the mx-world context."))
   (:documentation ""))
 
 (defclass mx-stream ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation ""))
+          :documentation "The mx-atom table for the mx-stream context."))
   (:documentation ""))
 
 (defclass mx-view ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation ""))
+          :documentation "The mx-atom table for the mx-view context."))
+  (:documentation ""))
+
+(defclass mx-canon ()
+  ((table :initarg :table
+          :initform (make-hash-table)
+          :accessor table
+          :documentation "The mx-atom table for the mx-canon context."))
   (:documentation ""))
 
 (defclass mx-atom ()
@@ -95,13 +100,31 @@
         a
       (setf id counter))))
 
+(defmethod print-object ((a mx-atom) stream)
+  (print-unreadable-object (a stream :type t)
+    (with-slots (id)
+        a
+      (format stream "~A" id))))
+
+(defmethod print-object ((h hash-table) stream)
+  (print-unreadable-object (h stream :type t)
+    (let ((test (hash-table-test h))
+          (count (hash-table-count h)))
+      (format stream "~A ~A" test count))))
+
 (defun make-mx-universe ()
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
 
-(defun make-mx-base ()
-  "Return an instance of the mx-base class."
-  (make-instance 'mx-base))
+(defun make-mx-machine (&optional name)
+  "Return an instance of the mx-machine class."
+  (if name
+      (make-instance 'mx-machine :name name)
+      (make-instance 'mx-machine)))
+
+(defmacro make-mx-machine-2 (&optional name)
+  "Return an instance of the mx-machine class."
+  `(make-instance 'mx-machine ,@(if name `(:name ,name) ())))
 
 (defun make-mx-atom (category data metadata &key mx-universe)
   "Return a new mx-atom instance from arguments."
