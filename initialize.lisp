@@ -11,7 +11,7 @@
 
 (defun initialize-base-context ()
   "Initialize the baseline context."
-  (setf streams/globals:*mx-base* (streams/channels:make-mx-base)))
+  (setf streams/globals:*mx-machine* (streams/channels:make-mx-machine)))
 
 (initialize-mx-universe)
 (initialize-base-context)

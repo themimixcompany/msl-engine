@@ -3,14 +3,10 @@
 (uiop:define-package #:streams/core
     (:use #:cl)
   (:nicknames #:s/core)
-  (:export #:@))
+  (:export #:mx-atom
+           #:@))
 
 (in-package #:streams/core)
-
-(defun dump-mx-atom (mx-atom)
-  "Display the contents of MX-ATOM."
-  (loop :for slot :in (streams/common:slots mx-atom)
-        :do (format t "~A: ~S~%" slot (funcall slot mx-atom))))
 
 (defun mx-atom-data-p (data)
   "Return true if DATA is a valid mx-atom."
@@ -26,24 +22,6 @@
                     (fn (cdr args) (cons (car args) data)))
                    (t (fn (cddr args) data)))))
     (fn body nil)))
-
-(defun assoc-key (key items)
-  "Return the key found in ITEMS if KEY is found."
-  (let ((val (assoc key items)))
-    (when val
-      (car val))))
-
-(defun assoc-value (key items)
-  "Return the value found in ITEMS if KEY is found."
-  (let ((val (assoc key items)))
-    (when val
-      (cdr val))))
-
-(defun dotted-pair-p (pair)
-  "Return true if LIST is a dotted list."
-  (cond ((atom (cdr pair)) t)
-        ((listp (cdr pair)) nil)
-        (t nil)))
 
 (defun build-pairs (items)
   "Group items into pairs."
@@ -83,28 +61,59 @@
     (declare (ignore v kv))
     k))
 
-(defmacro write-context (context)
-  "Build a context symbol from the globals."
-  (read-from-string (mof:cat "streams/globals:" (string context))))
+(defun mx-atom-value (mx-atom)
+  "Return the first value used to identify MX-ATOM."
+  (destructuring-bind ((k . v) &optional kv)
+      (streams/channels:data mx-atom)
+    (declare (ignore k kv))
+    v))
 
-(defmacro set-context (context &body body)
+(defmacro write-context (context)
+  "Build a context symbol."
+  (let* ((symbol (ecase context
+                  (m 'machine)
+                  (w 'world)
+                  (s 'stream)
+                  (v 'view)
+                  (c 'canon)))
+         (var (mof:cat "streams/globals:*mx-" (string symbol) "*")))
+    (read-from-string var)))
+
+;;; Note: accept a second value for the name of the subcontext
+(defmacro context (context &body body)
   "Set the current context to CONTEXT then evaluate BODY."
   `(let ((streams/globals:*context* (write-context ,context)))
      ,@body))
 
+;;; Note: enable embedding of other mx-atom expressions
 (defun evaluate-mx-atom (&rest values)
   "Evaluate an mx-atom under VALUES, store into the current context, then return the mx-atom and the context as values."
-  (let* ((mx-atom (apply #'build-mx-atom values))
-         (key (mx-atom-key mx-atom)))
-    (macrolet ((context ()
-                 `(streams/channels:table streams/globals:*context*))
-               (hash (k)
-                 `(gethash ,k (context))))
-      (setf (hash key) mx-atom)
-      (values (hash key)
-              (context)))))
+  (macrolet ((context ()
+               `(streams/channels:table streams/globals:*context*))
+             (hash (k)
+               `(gethash ,k (context))))
+    (destructuring-bind (name &body body)
+        values
+      (declare (ignorable body))
+      (if (mof:solop values)
+          (multiple-value-bind (v presentp)
+              (hash name)
+            (when presentp
+              (values v
+                      (context))))
+          (let* ((mx-atom (apply #'build-mx-atom values))
+                 (key (mx-atom-key mx-atom)))
+            (setf (hash key) mx-atom)
+            (values (hash key)
+                    (context)))))))
 
-;;; Note: use symbol-macros to designate the contexts
+(defun mx-atom (&rest values)
+  "Return the primary mx-atom value from the evaluation of VALUES."
+  (multiple-value-bind (a h)
+      (apply #'evaluate-mx-atom values)
+    (declare (ignorable h))
+    (mx-atom-value a)))
 
-(defun dispatch ()
-  nil)
+(defun @ (&rest args)
+  "Apply MX-ATOM to ARGS."
+  (apply #'mx-atom args))
