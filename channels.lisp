@@ -155,19 +155,19 @@
           mx-universe
         (setf (gethash name atable) mx-atom)))))
 
-(defmethod initialize-instance :after ((m mx-machine) &key mx-universe)
+(defmethod print-object ((mx-atom mx-atom) stream)
+  (print-unreadable-object (mx-atom stream :type t)
+    (with-slots (id)
+        mx-atom
+      (format stream "~A" id))))
+
+(defmethod initialize-instance :after ((mx-machine mx-machine) &key mx-universe)
   "Initialize MX-MACHINE A in MX-UNIVERSE."
   (with-slots (name)
-      m
+      mx-machine
     (with-slots (mtable)
         mx-universe
-      (setf (gethash name mtable) m))))
-
-(defmethod print-object ((a mx-atom) stream)
-  (print-unreadable-object (a stream :type t)
-    (with-slots (id)
-        a
-      (format stream "~A" id))))
+      (setf (gethash name mtable) mx-machine))))
 
 (defmethod print-object ((h hash-table) stream)
   (print-unreadable-object (h stream :type t)
