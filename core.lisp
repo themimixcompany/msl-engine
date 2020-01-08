@@ -76,11 +76,9 @@
                   (s 'stream)
                   (v 'view)
                   (c 'canon)))
-         (var (mof:cat "streams/ethers:*mx-" (string symbol) "*")))
+         (var (mof:cat "STREAMS/ETHERS:*MX-" (string symbol) "*")))
     (read-from-string var)))
 
-;;; Note: accept a second value for the name of the subcontext
-;;; Note: generate the context on-the-fly if it does not exist, yet
 (defmacro context (context &body body)
   "Set the current context to CONTEXT then evaluate BODY."
   `(let ((streams/ethers:*context* (write-context ,context)))
@@ -102,7 +100,6 @@
   "Return the current context or the default context."
   (or streams/ethers:*context* streams/ethers:*mx-machine*))
 
-;;; Note: enable embedding of other mx-atom expressions
 (defun evaluate-mx-atom (&rest values)
   "Evaluate an mx-atom expression under VALUES, store into the current ctext, then return the mx-atom and the ctext as values."
   (macrolet ((ctext ()
