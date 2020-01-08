@@ -1,9 +1,10 @@
-;;;; globals.lisp
+;;;; ethers.lisp
 
-(uiop:define-package #:streams/globals
+(uiop:define-package #:streams/ethers
     (:use #:cl)
-  (:nicknames #:s/globals)
-  (:export #:*initial-acounter*
+  (:nicknames #:s/ethers)
+  (:export #:*initial-mcounter*
+           #:*initial-acounter*
            #:*mx-universe*
            #:*mx-machine*
            #:*mx-world*
@@ -13,12 +14,15 @@
            #:*context*
            #:*mx-base*))
 
-(in-package #:streams/globals)
+(in-package #:streams/ethers)
 
-(defparameter *initial-acounter* 1000
+(defvar *initial-mcounter* 10000
   "The initial mx-atom counter value.")
 
-(defparameter *mx-universe* nil
+(defvar *initial-acounter* 1000
+  "The initial mx-atom counter value.")
+
+(defvar *mx-universe* nil
   "The top-level structure for the mx-universe.")
 
 (defparameter *mx-machine* nil

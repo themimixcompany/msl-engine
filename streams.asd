@@ -22,7 +22,7 @@
                #:bordeaux-threads
                #:closer-mop
                "streams/common"
-               "streams/globals"
+               "streams/ethers"
                "streams/channels"
                "streams/core"
                "streams/serve"
