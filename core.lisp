@@ -8,38 +8,23 @@
 
 (in-package #:streams/core)
 
-(defun mx-atom-data-p (data)
-  "Return true if DATA is a valid mx-atom."
-  (or (and (symbolp data) (not (keywordp data)))
-      (stringp data)))
-
-(defun read-mx-atom (&rest body)
-  "Read the mx-atom data from BODY recursively. The first value retured is the main data while the second value returned is the metadata."
-  (labels ((fn (args data)
-             (cond ((keywordp (car args)) (values (nreverse data) args))
-                   ((null args) (values (nreverse data) nil))
-                   ((mx-atom-data-p (car args))
-                    (fn (cdr args) (cons (car args) data)))
-                   (t (fn (cddr args) data)))))
-    (fn body nil)))
-
-(defun mx-atom-data-p-2 (value)
+(defun mx-atom-data-p (value)
   "Return true if VALUE is a valid mx-atom data.."
   (or (and (symbolp value) (not (keywordp value)))
       (stringp value)))
 
-(defun mx-atom-metadata-p-2 (value)
+(defun mx-atom-metadata-p (value)
   "Return true if VALUE is a valid mx-atom metadata."
   (keywordp value))
 
-(defun read-mx-atom-2 (name &rest body)
+(defun read-mx-atom (name &rest body)
   "Read the mx-atom data from NAME and BODY recursively, and return the result of the read as multiple values."
   (labels ((fn (args data metadata)
              (cond ((null args)
                     (values name (nreverse data) metadata))
-                   ((mx-atom-data-p-2 (car args))
+                   ((mx-atom-data-p (car args))
                     (fn (cdr args) (cons (car args) data) metadata))
-                   ((mx-atom-metadata-p-2 (car args))
+                   ((mx-atom-metadata-p (car args))
                     (fn (cddr args) data (append (list (car args) (cadr args)) metadata)))
                    (t (fn (cdr args) data metadata)))))
     (fn body nil nil)))
@@ -64,17 +49,11 @@
 
 (defun build-mx-atom (&rest args)
   "Return a valid MX-ATOM from ARGS."
-  (multiple-value-bind (data metadata)
-      (apply #'read-mx-atom args)
-    (let ((head (build-map data :test #'symbolp))
-          (body (build-map metadata)))
-      (streams/channels:make-mx-atom 'a head body))))
-
-(defun build-mx-atom-2 (&rest args)
-  "Return a valid MX-ATOM from ARGS."
   (multiple-value-bind (name data metadata)
-      (apply #'read-mx-atom-2 args)
-    (streams/channels:make-mx-atom-2 'a name data (nreverse (build-map metadata)))))
+      (apply #'read-mx-atom args)
+    (let ((data (s/common:build-string data))
+          (metadata (nreverse (build-map metadata))))
+      (streams/channels:make-mx-atom 'a name data metadata))))
 
 (defun resolve-mx-atom (mx-atom)
   "Expand MX-ATOM into its constituent parts with respect to the surrounding context."
@@ -83,18 +62,10 @@
 
 (defun mx-atom-name (mx-atom)
   "Return the name used to identify MX-ATOM."
-  ;; (destructuring-bind ((k . v) &optional kv)
-  ;;     (streams/channels:data mx-atom)
-  ;;   (declare (ignore v kv))
-  ;;   k)
   (streams/channels:name mx-atom))
 
 (defun mx-atom-data (mx-atom)
   "Return the first value used to identify MX-ATOM."
-  ;; (destructuring-bind ((k . v) &optional kv)
-  ;;     (streams/channels:data mx-atom)
-  ;;   (declare (ignore k kv))
-  ;;   v)
   (streams/channels:data mx-atom))
 
 (defmacro write-context (context)
@@ -132,7 +103,6 @@
   (or streams/ethers:*context* streams/ethers:*mx-machine*))
 
 ;;; Note: enable embedding of other mx-atom expressions
-;;; Note: enable context defaulting
 (defun evaluate-mx-atom (&rest values)
   "Evaluate an mx-atom expression under VALUES, store into the current ctext, then return the mx-atom and the ctext as values."
   (macrolet ((ctext ()
@@ -141,7 +111,7 @@
                `(gethash ,k (ctext))))
     (destructuring-bind (name &body body)
         values
-      (declare (ignorable body))
+      (declare (ignore body))
       (if (mof:solop values)
           (multiple-value-bind (v presentp)
               (hash name)
@@ -151,41 +121,13 @@
           (let* ((mx-atom (apply #'build-mx-atom values))
                  (key (mx-atom-name mx-atom)))
             (setf (hash key) mx-atom)
-            (values (hash key)
-                    (ctext)))))))
-
-(defun evaluate-mx-atom-2 (&rest values)
-  "Evaluate an mx-atom expression under VALUES, store into the current ctext, then return the mx-atom and the ctext as values."
-  (macrolet ((ctext ()
-               `(streams/channels:table (yield-context)))
-             (hash (k)
-               `(gethash ,k (ctext))))
-    (destructuring-bind (name &body body)
-        values
-      (declare (ignorable body))
-      (if (mof:solop values)
-          (multiple-value-bind (v presentp)
-              (hash name)
-            (when presentp
-              (values v
-                      (ctext))))
-          (let* ((mx-atom (apply #'build-mx-atom-2 values))
-                 (key (mx-atom-name mx-atom)))
-            (setf (hash key) mx-atom)
             (values mx-atom
                     (ctext)))))))
 
 (defun mx-atom (&rest values)
   "Return the result of evaluating VALUES."
-  (multiple-value-bind (a x)
-      (apply #'evaluate-mx-atom values)
-    (values (mx-atom-data a)
-            x)))
-
-(defun mx-atom-2 (&rest values)
-  "Return the result of evaluating VALUES."
   (multiple-value-bind (mx-atom table)
-      (apply #'evaluate-mx-atom-2 values)
+      (apply #'evaluate-mx-atom values)
     (when mx-atom
       (values (mx-atom-data mx-atom)
               mx-atom
@@ -197,7 +139,3 @@
 (defun @ (&rest args)
   "Apply MX-ATOM to ARGS."
   (apply #'mx-atom args))
-
-(defun @-2 (&rest args)
-  "Apply MX-ATOM to ARGS."
-  (apply #'mx-atom-2 args))

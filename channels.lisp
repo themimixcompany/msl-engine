@@ -4,12 +4,14 @@
     (:use #:cl)
   (:nicknames #:s/channels)
   (:export #:make-mx-universe
-           #:atable
            #:mtable
+           #:wtable
+           #:stable
+           #:vtable
+           #:ctable
+           #:atable
            #:make-mx-machine
            #:make-mx-atom
-           #:make-mx-atom-2
-           #:dump-mx-atom
            #:name
            #:table
            #:id
@@ -18,7 +20,6 @@
 
 (in-package #:streams/channels)
 
-;;; Note: should an MX-UNIVERSE instance contain reference to all contexts/namespaces?
 (defclass mx-universe ()
   ((mcounter :initarg :mcounter
              :initform streams/ethers:*initial-mcounter*
@@ -28,6 +29,38 @@
            :initform (make-hash-table :test #'equal)
            :accessor mtable
            :documentation "The top-level colletion of mx-machine, where the key is the name of mx-machine and the value is the instance of that mx-machine.")
+   (wcounter :initarg :wcounter
+             :initform streams/ethers:*initial-wcounter*
+             :accessor wcounter
+             :documentation "The top-level mx-world counter.")
+   (wtable :initarg :wtable
+           :initform (make-hash-table :test #'equal)
+           :accessor wtable
+           :documentation "The top-level colletion of mx-world, where the key is the name of mx-world and the value is the instance of that mx-world.")
+   (scounter :initarg :scounter
+             :initform streams/ethers:*initial-scounter*
+             :accessor scounter
+             :documentation "The top-level mx-stream counter.")
+   (stable :initarg :stable
+           :initform (make-hash-table :test #'equal)
+           :accessor stable
+           :documentation "The top-level colletion of mx-stream, where the key is the name of mx-stream and the value is the instance of that mx-stream.")
+   (vcounter :initarg :vcounter
+             :initform streams/ethers:*initial-vcounter*
+             :accessor vcounter
+             :documentation "The top-level mx-view counter.")
+   (vtable :initarg :vtable
+           :initform (make-hash-table :test #'equal)
+           :accessor vtable
+           :documentation "The top-level colletion of mx-view, where the key is the name of mx-view and the value is the instance of that mx-view.")
+   (ccounter :initarg :ccounter
+             :initform streams/ethers:*initial-ccounter*
+             :accessor ccounter
+             :documentation "The top-level mx-canon counter.")
+   (ctable :initarg :ctable
+           :initform (make-hash-table :test #'equal)
+           :accessor ctable
+           :documentation "The top-level colletion of mx-canon, where the key is the name of mx-canon and the value is the instance of that mx-canon.")
    (acounter :initarg :acounter
              :initform streams/ethers:*initial-acounter*
              :accessor acounter
@@ -54,28 +87,28 @@
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-world context."))
-  (:documentation ""))
+  (:documentation "The structure to designate worlds."))
 
 (defclass mx-stream ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-stream context."))
-  (:documentation ""))
+  (:documentation "The structure to designate streams."))
 
 (defclass mx-view ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-view context."))
-  (:documentation ""))
+  (:documentation "The structure to designate views."))
 
 (defclass mx-canon ()
   ((table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-canon context."))
-  (:documentation ""))
+  (:documentation "The structure to designate canons."))
 
 (defclass mx-atom ()
   ((id :initarg :id
@@ -98,7 +131,7 @@
              :initform nil
              :reader metadata
              :documentation "The secondary data of an mx-atom which contains information about the DATA slot."))
-  (:documentation "The class for holding information about mx-atoms."))
+  (:documentation "The structure to designate atoms."))
 
 (defmacro update-counter (mx-universe accessor)
   "Update the counter in MX-UNIVERSE with ACCESSOR."
@@ -114,13 +147,12 @@
 (defmethod initialize-instance :after ((a mx-atom) &key mx-universe)
   "Initialize MX-ATOM A in MX-UNIVERSE."
   (let ((counter (update-acounter mx-universe)))
-    (with-slots (id)
+    (with-slots (id name)
         a
-      (setf id counter))
-    ;; (with-slots (atable)
-    ;;     mx-universe
-    ;;   )
-    ))
+      (setf id counter)
+      (with-slots (atable)
+          mx-universe
+        (setf (gethash name atable) a)))))
 
 (defmethod print-object ((a mx-atom) stream)
   (print-unreadable-object (a stream :type t)
@@ -138,23 +170,25 @@
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
 
+(defun dump-mx-universe ()
+  "Dump the contents of the mx-universe."
+  (let* ((slots (streams/common:slots streams/ethers:*mx-universe*))
+         (string-slots (mapcar #'streams/common:string-convert slots))
+         (table-readers (loop :for item :in string-slots
+                              :when (search "TABLE" item)
+                              :collect (read-from-string item))))
+    (loop :for table :in table-readers
+          :do (progn
+                (format t "> ~A~%" table)
+                (streams/common:dump-table (funcall table streams/ethers:*mx-universe*))))))
+
 (defun make-mx-machine (&optional name)
   "Return an instance of the mx-machine class."
   (if name
       (make-instance 'mx-machine :name name)
       (make-instance 'mx-machine)))
 
-(defmacro make-mx-machine-2 (&optional name)
-  "Return an instance of the mx-machine class."
-  `(make-instance 'mx-machine ,@(if name `(:name ,name) ())))
-
-(defun make-mx-atom (category data metadata &key mx-universe)
-  "Return a new mx-atom instance from arguments."
-  (make-instance 'mx-atom :category category
-                          :data data :metadata metadata
-                          :mx-universe (or mx-universe streams/ethers:*mx-universe*)))
-
-(defun make-mx-atom-2 (category name data metadata &key mx-universe)
+(defun make-mx-atom (category name data metadata &key mx-universe)
   "Return a new mx-atom instance from arguments."
   (make-instance 'mx-atom :category category
                           :name name :data data :metadata metadata

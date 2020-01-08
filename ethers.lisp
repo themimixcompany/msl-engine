@@ -4,6 +4,10 @@
     (:use #:cl)
   (:nicknames #:s/ethers)
   (:export #:*initial-mcounter*
+           #:*initial-wcounter*
+           #:*initial-scounter*
+           #:*initial-vcounter*
+           #:*initial-ccounter*
            #:*initial-acounter*
            #:*mx-universe*
            #:*mx-machine*
@@ -16,10 +20,22 @@
 
 (in-package #:streams/ethers)
 
-(defvar *initial-mcounter* 10000
-  "The initial mx-atom counter value.")
+(defvar *initial-mcounter* 10000000
+  "The initial mx-machine counter value.")
 
-(defvar *initial-acounter* 1000
+(defvar *initial-wcounter* 1000000
+  "The initial mx-world counter value.")
+
+(defvar *initial-scounter* 100000
+  "The initial mx-stream counter value.")
+
+(defvar *initial-vcounter* 10000
+  "The initial mx-view counter value.")
+
+(defvar *initial-ccounter* 1000
+  "The initial mx-canon counter value.")
+
+(defvar *initial-acounter* 100
   "The initial mx-atom counter value.")
 
 (defvar *mx-universe* nil

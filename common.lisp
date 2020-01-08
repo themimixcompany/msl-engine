@@ -6,14 +6,14 @@
   (:export #:hide-debugger-output
            #:defclass*
            #:slots
-           #:propertiesp
-           #:build-properties
            #:read-preserve
            #:dump-object
            #:dump-table
            #:assoc-key
            #:assoc-value
-           #:dotted-pair-p))
+           #:dotted-pair-p
+           #:string-convert
+           #:build-string))
 
 (in-package #:streams/common)
 
@@ -53,26 +53,6 @@
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun propertiesp (properties)
-  "Return true if PROPERTIES is a proper properties data, where PROPERTIES is a key-value plist and that the 0th and 2nd items must be :PRIMARY-KEY and :PRIMARY-VALUE, respectively. An example of a valid PROPERTIES data is:
-
-(:PRIMARY-KEY 'WALT :PRIMARY-VALUE \"Walt Disney\" :NO 10 :SPECIES \"human\")
-"
-  (and (evenp (length properties))
-       (every #'keywordp (loop :for key :in properties :by #'cddr :collect key))
-       (member :primary-key properties)
-       (eql (elt properties 0) :primary-key)
-       (member :primary-value properties)
-       (eql (elt properties 2) :primary-value)))
-
-(defun build-properties (properties)
-  "Ensure that PROPERTIES is a plist that conforms to a proper mx-atom structure."
-  (destructuring-bind (p-key p-value &rest body)
-      properties
-    (let ((props `(:primary-key ,p-key :primary-value ,p-value ,@body)))
-      (when (propertiesp props)
-        props))))
-
 (defun read-preserve (string)
   "Read from STRING preserving case."
   (let ((*readtable* (copy-readtable nil)))
@@ -82,7 +62,7 @@
 (defun dump-object (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (streams/common:slots object)
-        :do (format t "~A: ~S~%" slot (funcall slot object))))
+        :do (format t "~A -> ~S~%" slot (funcall slot object))))
 
 (defun dump-table (table)
   "Print the contents of hash table TABLE."
@@ -107,3 +87,14 @@
         ((listp (cdr pair)) nil)
         (t nil)))
 
+(defun string-convert (value)
+  "Convert VALUE to a string."
+  (etypecase value
+    (number (format nil "~A" value))
+    (string value)
+    (t (string value))))
+
+(defun build-string (items)
+  "Return a string from the concatenation of items."
+  (let ((strings (loop :for item :in items :collect (string-convert item))))
+    (format nil "~{~A~^ ~}" strings)))
