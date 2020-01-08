@@ -4,8 +4,11 @@
     (:use #:cl)
   (:nicknames #:s/channels)
   (:export #:make-mx-universe
+           #:atable
+           #:mtable
            #:make-mx-machine
            #:make-mx-atom
+           #:make-mx-atom-2
            #:dump-mx-atom
            #:name
            #:table
@@ -15,16 +18,24 @@
 
 (in-package #:streams/channels)
 
-;;; Note: should an MX-UNIVERSE instance contain all levels?
+;;; Note: should an MX-UNIVERSE instance contain reference to all contexts/namespaces?
 (defclass mx-universe ()
-  ((acounter :initarg :acounter
-             :initform streams/globals:*initial-acounter*
+  ((mcounter :initarg :mcounter
+             :initform streams/ethers:*initial-mcounter*
+             :accessor mcounter
+             :documentation "The top-level mx-machine counter.")
+   (mtable :initarg :mtable
+           :initform (make-hash-table :test #'equal)
+           :accessor mtable
+           :documentation "The top-level colletion of mx-machine, where the key is the name of mx-machine and the value is the instance of that mx-machine.")
+   (acounter :initarg :acounter
+             :initform streams/ethers:*initial-acounter*
              :accessor acounter
              :documentation "The top-level mx-atom counter.")
    (atable :initarg :atable
-           :initform (make-hash-table)
+           :initform (make-hash-table :test #'equal)
            :accessor atable
-           :documentation "The top-level colletion of mx-atoms."))
+           :documentation "The top-level colletion of mx-atoms, where the key is the name of the mx-atom an dthe value is the instance of that mx-atom."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-machine ()
@@ -74,7 +85,11 @@
    (category :initarg :category
              :initform nil
              :reader category
-             :documentation "The category of an mx-atom, whether it is mx-machine, mx-stream, mx-canon, mx-view, or basic.")
+             :documentation "The category of an mx-atom, whether it is m, s, c, v, or a")
+   (name :initarg :name
+         :initform nil
+         :reader name
+         :documentation "The name of an mx-atom.")
    (data :initarg :data
          :initform nil
          :reader data
@@ -85,20 +100,27 @@
              :documentation "The secondary data of an mx-atom which contains information about the DATA slot."))
   (:documentation "The class for holding information about mx-atoms."))
 
-(defmacro spawn-counter (mx-universe accessor)
-  "Generate a new counter in MX-UNIVERSE with ACCESSOR."
+(defmacro update-counter (mx-universe accessor)
+  "Update the counter in MX-UNIVERSE with ACCESSOR."
   `(progn (incf (,accessor ,mx-universe))
           (,accessor ,mx-universe)))
-(defun spawn-acounter (mx-universe)
-  "See SPAWN-COUNTER."
-  (spawn-counter mx-universe acounter))
+(defun update-mcounter (mx-universe)
+  "See UPDATE-COUNTER."
+  (update-counter mx-universe mcounter))
+(defun update-acounter (mx-universe)
+  "See UPDATE-COUNTER."
+  (update-counter mx-universe acounter))
 
 (defmethod initialize-instance :after ((a mx-atom) &key mx-universe)
   "Initialize MX-ATOM A in MX-UNIVERSE."
-  (let ((counter (spawn-acounter mx-universe)))
+  (let ((counter (update-acounter mx-universe)))
     (with-slots (id)
         a
-      (setf id counter))))
+      (setf id counter))
+    ;; (with-slots (atable)
+    ;;     mx-universe
+    ;;   )
+    ))
 
 (defmethod print-object ((a mx-atom) stream)
   (print-unreadable-object (a stream :type t)
@@ -130,4 +152,10 @@
   "Return a new mx-atom instance from arguments."
   (make-instance 'mx-atom :category category
                           :data data :metadata metadata
-                          :mx-universe (or mx-universe streams/globals:*mx-universe*)))
+                          :mx-universe (or mx-universe streams/ethers:*mx-universe*)))
+
+(defun make-mx-atom-2 (category name data metadata &key mx-universe)
+  "Return a new mx-atom instance from arguments."
+  (make-instance 'mx-atom :category category
+                          :name name :data data :metadata metadata
+                          :mx-universe (or mx-universe streams/ethers:*mx-universe*)))
