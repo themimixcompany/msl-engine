@@ -17,7 +17,13 @@
            #:table
            #:id
            #:data
-           #:metadata))
+           #:metadata
+
+           #:mx-machine
+           #:mx-world
+           #:mx-stream
+           #:mx-view
+           #:mx-canon))
 
 (in-package #:streams/channels)
 
@@ -84,28 +90,44 @@
   (:documentation "The default store to use when there are no other available contexts. When no names are specified the hostname is used for the instantiation."))
 
 (defclass mx-world ()
-  ((table :initarg :table
+  ((name :initarg :name
+         :initform ""
+         :reader name
+         :documentation "The name to designate the mx-world instance.")
+   (table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-world context."))
   (:documentation "The structure to designate worlds."))
 
 (defclass mx-stream ()
-  ((table :initarg :table
+  ((name :initarg :name
+         :initform ""
+         :reader name
+         :documentation "The name to designate the mx-stream instance.")
+   (table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-stream context."))
   (:documentation "The structure to designate streams."))
 
 (defclass mx-view ()
-  ((table :initarg :table
+  ((name :initarg :name
+         :initform ""
+         :reader name
+         :documentation "The name to designate the mx-view instance.")
+   (table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-view context."))
   (:documentation "The structure to designate views."))
 
 (defclass mx-canon ()
-  ((table :initarg :table
+  ((name :initarg :name
+         :initform ""
+         :reader name
+         :documentation "The name to designate the mx-canon instance.")
+   (table :initarg :table
           :initform (make-hash-table)
           :accessor table
           :documentation "The mx-atom table for the mx-canon context."))

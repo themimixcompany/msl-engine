@@ -69,7 +69,7 @@
   (streams/channels:data mx-atom))
 
 (defmacro write-context (context)
-  "Build a context symbol."
+  "Return a context symbol from CONTEXT."
   (let* ((symbol (ecase context
                   (m 'machine)
                   (w 'world)
@@ -79,10 +79,24 @@
          (var (mof:cat "STREAMS/ETHERS:*MX-" (string symbol) "*")))
     (read-from-string var)))
 
+(defmacro build-context (context name)
+  "Return a context instance from CONTEXT with NAME."
+  (let* ((ctext (ecase context
+                  (m "mx-machine")
+                  (w "mx-world")
+                  (s "mx-stream")
+                  (v "mx-view")
+                  (c "mx-canon")))
+         (class-name (mof:cat "STREAMS/CHANNELS:" ctext)))
+    (make-instance (read-from-string class-name) :name name)))
+
+;;; The second required argument is going to the NAME slot.
+;;; Should created contexts be ephemeral?
 (defmacro context (context &body body)
   "Set the current context to CONTEXT then evaluate BODY."
   `(let ((streams/ethers:*context* (write-context ,context)))
      ,@body))
+
 (defmacro m (&body body) `(context m ,@body))
 (defmacro w (&body body) `(context w ,@body))
 (defmacro s (&body body) `(context s ,@body))
