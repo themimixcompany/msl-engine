@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "BlueOak-1.0.0"
-  :version "1.2.4"
+  :version "1.3.0"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:mof
