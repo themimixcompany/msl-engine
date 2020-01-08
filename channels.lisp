@@ -4,6 +4,7 @@
     (:use #:cl)
   (:nicknames #:s/channels)
   (:export #:make-mx-universe
+           #:dump-mx-universe
            #:mtable
            #:wtable
            #:stable
@@ -144,15 +145,23 @@
   "See UPDATE-COUNTER."
   (update-counter mx-universe acounter))
 
-(defmethod initialize-instance :after ((a mx-atom) &key mx-universe)
+(defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
   "Initialize MX-ATOM A in MX-UNIVERSE."
   (let ((counter (update-acounter mx-universe)))
     (with-slots (id name)
-        a
+        mx-atom
       (setf id counter)
       (with-slots (atable)
           mx-universe
-        (setf (gethash name atable) a)))))
+        (setf (gethash name atable) mx-atom)))))
+
+(defmethod initialize-instance :after ((m mx-machine) &key mx-universe)
+  "Initialize MX-MACHINE A in MX-UNIVERSE."
+  (with-slots (name)
+      m
+    (with-slots (mtable)
+        mx-universe
+      (setf (gethash name mtable) m))))
 
 (defmethod print-object ((a mx-atom) stream)
   (print-unreadable-object (a stream :type t)
@@ -176,20 +185,22 @@
          (string-slots (mapcar #'streams/common:string-convert slots))
          (table-readers (loop :for item :in string-slots
                               :when (search "TABLE" item)
-                              :collect (read-from-string item))))
+                              :collect item)))
     (loop :for table :in table-readers
           :do (progn
                 (format t "> ~A~%" table)
-                (streams/common:dump-table (funcall table streams/ethers:*mx-universe*))))))
+                (streams/common:dump-table
+                 (funcall (read-from-string (mof:cat "STREAMS/CHANNELS:" table))
+                          streams/ethers:*mx-universe*))))))
 
 (defun make-mx-machine (&optional name)
   "Return an instance of the mx-machine class."
   (if name
-      (make-instance 'mx-machine :name name)
-      (make-instance 'mx-machine)))
+      (make-instance 'mx-machine :name name :mx-universe streams/ethers:*mx-universe*)
+      (make-instance 'mx-machine :mx-universe streams/ethers:*mx-universe*)))
 
-(defun make-mx-atom (category name data metadata &key mx-universe)
+(defun make-mx-atom (category name data metadata)
   "Return a new mx-atom instance from arguments."
   (make-instance 'mx-atom :category category
                           :name name :data data :metadata metadata
-                          :mx-universe (or mx-universe streams/ethers:*mx-universe*)))
+                          :mx-universe streams/ethers:*mx-universe*))

@@ -9,7 +9,7 @@
   (setf streams/ethers:*mx-universe* (streams/channels:make-mx-universe)))
 
 (defun initialize-mx-machine ()
-  "Initialize an mx-machine."
+  "Initialize the default mx-machine."
   (setf streams/ethers:*mx-machine* (streams/channels:make-mx-machine)))
 
 (initialize-mx-universe)
