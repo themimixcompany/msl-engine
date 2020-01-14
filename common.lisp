@@ -6,7 +6,8 @@
   (:export #:hide-debugger-output
            #:defclass*
            #:slots
-           #:read-preserve
+           #:with-preserved-case
+           #:read-string-with-preserved-case
            #:dump-object
            #:dump-table
            #:assoc-key
@@ -53,11 +54,15 @@
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun read-preserve (string)
-  "Read from STRING preserving case."
-  (let ((*readtable* (copy-readtable nil)))
-    (setf (readtable-case *readtable*) :preserve)
-    (read-from-string string)))
+(defmacro with-preserved-case (&body body)
+  "Evaluate BODY while preserving the read case."
+  `(let ((*readtable* (copy-readtable nil)))
+     (setf (readtable-case *readtable*) :preserve)
+     ,@body))
+
+(defun read-string-with-preserved-case (string)
+  "Evaluate STRING with preserved case."
+  (with-preserved-case (read-from-string string)))
 
 (defun dump-object (object)
   "Display the contents of OBJECT."
