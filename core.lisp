@@ -84,7 +84,10 @@
 (defun prefixedp (symbol prefix)
   "Return true if SYMBOL contains the prefix PREFIX."
   (and (symbolp symbol)
-       (equal prefix (elt (streams/common:string-convert symbol) 0))))
+       (let* ((string (streams/common:string-convert symbol))
+              (length (length string)))
+         (and (> length 1)
+              (equal prefix (elt string 0))))))
 
 (defun @-prefixed-p (symbol)
   "Return true if SYMBOL is prefixed with the @ identifier."
@@ -95,7 +98,6 @@
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
                    ((consp (car args)) (fn (cdr args) (cons (fn (car args) nil) acc)))
-                   ;; ((consp (car args)) (fn (cdr args) (append acc (fn (car args) nil))))
                    ((@-prefixed-p (car args))
                     (fn (cdr args) (append acc (nreverse (split-symbol (car args))))))
                    (t (fn (cdr args) (cons (car args) acc))))))
