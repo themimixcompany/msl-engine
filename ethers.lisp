@@ -16,6 +16,7 @@
            #:*mx-view*
            #:*mx-canon*
            #:*context*
+           #:*categories*
            #:*mx-base*))
 
 (in-package #:streams/ethers)
@@ -58,3 +59,6 @@
 
 (defparameter *context* nil
   "The immediate surrounding context for any given operation.")
+
+(defparameter *categories* '(m w s v c @)
+  "The list of contexts in simple form.")

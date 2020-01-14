@@ -29,6 +29,79 @@
                    (t (fn (cdr args) data metadata)))))
     (fn body nil nil)))
 
+(defun valid-category-p (category)
+  "Return true if CATEGORY is a valid category."
+  (member category streams/ethers:*categories*))
+
+(defun valid-expr-p (expr)
+  "Return true if EXPR is valid."
+  (and (>= (length expr) 2)
+       (member category streams/ethers:*categories*)))
+
+;;; Separate data and metadata parts
+;;; Return result as object
+;;; - The first element is the category
+;;; - The second element is the name
+;;; - The rest is the body
+;;; - The body is composed of the primary value and/or the metadata
+;;; - The main data is everything until the next metadata
+;;; - The metadata is everything until the next metadata
+(defun data-marker-p (value)
+  "Return true if VALUE is a valid mx-atom data."
+  (or (and (symbolp value) (not (keywordp value)))
+      (stringp value)
+      (numberp value)
+      (consp value)))
+
+(defun metadata-marker-p (value)
+  "Return true if VALUE is a valid mx-atom metadata."
+  (not (data-marker-p value)))
+
+(defun bounds (raw-expr)
+  "Return the indices for the start and end of immediate valid data of RAW-EXPR."
+  (when (member-if #'data-marker-p raw-expr)
+    (destructuring-bind (head &body body)
+        raw-expr
+      (let* ((start (if (data-marker-p head)
+                        0
+                        (1+ (position-if #'data-marker-p body))))
+             (end (if (numberp start)
+                      (+ start (1- (position-if #'metadata-marker-p (nthcdr start raw-expr))))
+                      nil)))
+        (values start end)))))
+
+;;; Should a flag be used to indicate the last read type?
+;;; Write an expander that will resolve to the final values.
+;;; Use POSITION-IF
+;;; Use ACONS
+(defun read-expr (expr)
+  "Read a EXPR as a string and return an object that contains parsed information."
+  (let ((value (s/common:read-string-with-preserved-case expr)))
+    (when (valid-expr-p value)
+      (destructuring-bind (category name &body body)
+          value
+        (labels ((fn (args data metadata &optional flag)
+                   ;; If flag is true, accrue everything under a value
+                   ;; The flag is a change in mode
+                   ;; The flag is a restart
+                   (cond ((null args)
+                          (values category name data metadata))
+                         ;; This part should no longer reaccrue
+                         ((and (null flag) (data-marker-p (car args)))
+                          (fn (cdr args) (cons (car args) data) metadata nil))
+                         ;; Use ACONS for the metadata part?
+                         ((and flags (metadata-marker-p (car args)))
+                          (fn (cdr args) data (cons (list (car args)) metadata t))))))
+          (fn body nil nil nil))))))
+
+(defun examine-expr (expr)
+  "Print information about EXPR."
+  (loop :for e :in (read-expr expr) :do (format t "~S~20T~S~%" e (type-of e))))
+
+(defun resolve-atom (atom)
+  "Expand the values inside ATOM then assign them to the corresponding stores."
+  nil)
+
 (defun build-pairs (items)
   "Group items into pairs."
   (when (evenp (length items))
@@ -147,6 +220,6 @@
 ;;; Hook (@foo ...) with the condition system
 ;;; Get information from the condition.
 ;;; If the first character is @, dispatch the designated function
-(defun @ (&rest args)
-  "Apply MX-ATOM to ARGS."
-  (apply #'mx-atom args))
+;; (defun @ (&rest args)
+;;   "Apply MX-ATOM to ARGS."
+;;   (apply #'mx-atom args))
