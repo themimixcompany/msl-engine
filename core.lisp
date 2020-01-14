@@ -94,6 +94,8 @@
   "Return a new list with split items that are prefixed."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
+                   ((consp (car args)) (fn (cdr args) (cons (fn (car args) nil) acc)))
+                   ;; ((consp (car args)) (fn (cdr args) (append acc (fn (car args) nil))))
                    ((@-prefixed-p (car args))
                     (fn (cdr args) (append acc (nreverse (split-symbol (car args))))))
                    (t (fn (cdr args) (cons (car args) acc))))))
@@ -103,7 +105,6 @@
   "Return RAW-EXPR as valid lisp expression."
   (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
     (when (valid-expr-p value)
-      ;; value
       (split-prefixed-items value))))
 
 (defun examine-expr (raw-expr)
