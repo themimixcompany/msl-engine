@@ -33,19 +33,18 @@
   "Return true if CATEGORY is a valid category."
   (member category streams/ethers:*categories*))
 
+(defun bracket-reader (stream char)
+  "Use [/tmp/file.ext] as a shorthand for #P\"/tmp/file.ext\""
+  (declare (ignore char))
+  `(pathname ,@(read-delimited-list #\] stream t)))
+
+(set-macro-character #\[ #'bracket-reader)
+(set-macro-character #\] (get-macro-character #\) nil))
+
 (defun valid-expr-p (expr)
   "Return true if EXPR is valid."
-  (and (>= (length expr) 2)
-       (member category streams/ethers:*categories*)))
+  (>= (length expr) 2))
 
-;;; Separate data and metadata parts
-;;; Return result as object
-;;; - The first element is the category
-;;; - The second element is the name
-;;; - The rest is the body
-;;; - The body is composed of the primary value and/or the metadata
-;;; - The main data is everything until the next metadata
-;;; - The metadata is everything until the next metadata
 (defun data-marker-p (value)
   "Return true if VALUE is a valid mx-atom data."
   (or (and (symbolp value) (not (keywordp value)))
@@ -58,46 +57,94 @@
   (not (data-marker-p value)))
 
 (defun bounds (raw-expr)
-  "Return the indices for the start and end of immediate valid data of RAW-EXPR."
-  (when (member-if #'data-marker-p raw-expr)
-    (destructuring-bind (head &body body)
-        raw-expr
-      (let* ((start (if (data-marker-p head)
-                        0
-                        (1+ (position-if #'data-marker-p body))))
-             (end (if (numberp start)
-                      (+ start (1- (position-if #'metadata-marker-p (nthcdr start raw-expr))))
-                      nil)))
-        (values start end)))))
+  "Return the indices for the start and end of immediate valid data of RAW-EXPR. If none are found, return NIL."
+  (let ((length (length raw-expr)))
+    (when (member-if #'data-marker-p raw-expr)
+      (destructuring-bind (head &body body)
+          raw-expr
+        (let* ((start (if (data-marker-p head)
+                          0
+                          (1+ (position-if #'data-marker-p body))))
+               (end (when (numberp start)
+                      (if (member-if #'metadata-marker-p (subseq raw-expr start))
+                          (+ start (1- (position-if #'metadata-marker-p (nthcdr start raw-expr))))
+                          (1- length)))))
+          (values start end))))))
 
-;;; Should a flag be used to indicate the last read type?
-;;; Write an expander that will resolve to the final values.
-;;; Use POSITION-IF
-;;; Use ACONS
-(defun read-expr (expr)
-  "Read a EXPR as a string and return an object that contains parsed information."
-  (let ((value (s/common:read-string-with-preserved-case expr)))
+(defun split-symbol (symbol)
+  "Return a new list containing the prefix and the body of symbol from SYMBOL."
+  (let* ((string (streams/common:string-convert symbol))
+         (length (length string)))
+    (declare (ignorable length))
+    (if (> length 1)
+        (list (intern (streams/common:string-convert (elt string 0)))
+              (read-from-string (subseq string 1)))
+        (list symbol))))
+
+(defun prefixedp (symbol prefix)
+  "Return true if SYMBOL contains the prefix PREFIX."
+  (and (symbolp symbol)
+       (equal prefix (elt (streams/common:string-convert symbol) 0))))
+
+(defun @-prefixed-p (symbol)
+  "Return true if SYMBOL is prefixed with the @ identifier."
+  (prefixedp symbol #\@))
+
+(defun split-prefixed-items (list)
+  "Return a new list with split items that are prefixed."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((@-prefixed-p (car args))
+                    (fn (cdr args) (append acc (nreverse (split-symbol (car args))))))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn list nil)))
+
+(defun read-expr-prime (raw-expr)
+  "Return RAW-EXPR as valid lisp expression."
+  (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
     (when (valid-expr-p value)
-      (destructuring-bind (category name &body body)
-          value
-        (labels ((fn (args data metadata &optional flag)
-                   ;; If flag is true, accrue everything under a value
-                   ;; The flag is a change in mode
-                   ;; The flag is a restart
-                   (cond ((null args)
-                          (values category name data metadata))
-                         ;; This part should no longer reaccrue
-                         ((and (null flag) (data-marker-p (car args)))
-                          (fn (cdr args) (cons (car args) data) metadata nil))
-                         ;; Use ACONS for the metadata part?
-                         ((and flags (metadata-marker-p (car args)))
-                          (fn (cdr args) data (cons (list (car args)) metadata t))))))
-          (fn body nil nil nil))))))
+      ;; value
+      (split-prefixed-items value))))
 
-(defun examine-expr (expr)
-  "Print information about EXPR."
-  (loop :for e :in (read-expr expr) :do (format t "~S~20T~S~%" e (type-of e))))
+(defun examine-expr (raw-expr)
+  "Print information about RAW-EXPR."
+  (loop :for e :in (read-expr-prime raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
 
+(defun primary-values (expr)
+  "Return the primary values from EXPR; return NIL if none are found."
+  (destructuring-bind (category name &body body)
+      expr
+    (declare (ignore category name))
+    (when (data-marker-p (first body))
+      (multiple-value-bind (start end)
+          (bounds body)
+        (subseq body start (1+ end))))))
+
+(defun secondary-values (expr)
+  "Return the secondary values—metadata, etc—from EXPR; return NIL if none are found."
+  (destructuring-bind (category name &body body)
+      expr
+    (declare (ignore category name))
+    (let ((index (position-if #'metadata-marker-p body)))
+      (when index
+        (subseq body index)))))
+
+(defun read-expr (expr)
+  "Read an EXPR as a string and return an object that contains the parsed information."
+  (let ((expr (read-expr-prime expr)))
+    (destructuring-bind (category name &body body)
+        expr
+      (labels ((fn (args data metadata)
+                 (cond ((null args) (streams/channels:make-mx-atom
+                                     category name data (nreverse metadata)))
+                       (t (multiple-value-bind (start end)
+                              (bounds args)
+                            (fn (nthcdr (1+ end) args)
+                                data
+                                (acons (car args) (subseq args start (1+ end)) metadata)))))))
+        (fn (secondary-values body) (primary-values expr) nil)))))
+
+;;; Write an expander that will resolve to the final values.
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."
   nil)

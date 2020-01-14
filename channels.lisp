@@ -223,6 +223,6 @@
 
 (defun make-mx-atom (category name data metadata)
   "Return a new mx-atom instance from arguments."
-  (make-instance 'mx-atom :category category
-                          :name name :data data :metadata metadata
+  (make-instance 'mx-atom :category category :name name
+                          :data data :metadata metadata
                           :mx-universe streams/ethers:*mx-universe*))

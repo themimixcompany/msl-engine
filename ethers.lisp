@@ -16,8 +16,7 @@
            #:*mx-view*
            #:*mx-canon*
            #:*context*
-           #:*categories*
-           #:*mx-base*))
+           #:*categories*))
 
 (in-package #:streams/ethers)
 
