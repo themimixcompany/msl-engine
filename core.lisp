@@ -61,7 +61,7 @@
 (defun bracket-reader (stream char)
   "Use [/tmp/file.ext] as a shorthand for #P\"/tmp/file.ext\""
   (declare (ignore char))
-  `(pathname ,@(read-delimited-list #\] stream t)))
+  (pathname (mof:join-strings (read-delimited-list #\] stream t))))
 
 (set-macro-character #\[ #'bracket-reader)
 (set-macro-character #\] (get-macro-character #\) nil))
@@ -118,21 +118,22 @@
   "Return true if SYMBOL is prefixed with the @ identifier."
   (prefixedp symbol #\@))
 
-(defun split-prefixed-items (list)
-  "Return a new list with split items that are prefixed."
-  (labels ((fn (args acc)
+(defun split-prefixes (list)
+  "Return a new list where the first item is split if prefixed; also apply to sublists that are prefixed."
+  (labels ((fn (args acc &optional flag)
              (cond ((null args) (nreverse acc))
-                   ((consp (car args)) (fn (cdr args) (cons (fn (car args) nil) acc)))
-                   ((@-prefixed-p (car args))
-                    (fn (cdr args) (append acc (nreverse (split-symbol (car args))))))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list nil)))
+                   ((and flag (@-prefixed-p (car args)))
+                    (fn (cdr args) (nconc (nreverse (split-symbol (car args))) acc) nil))
+                   ((consp (car args))
+                    (fn (cdr args) (cons (fn (car args) nil t) acc)))
+                   (t (fn (cdr args) (cons (car args) acc) nil)))))
+    (fn list nil t)))
 
 (defun read-expr-prime (raw-expr)
   "Return RAW-EXPR as valid lisp expression."
   (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
     (when (valid-expr-p value)
-      (split-prefixed-items value))))
+      (split-prefixes value))))
 
 (defun examine-expr (raw-expr)
   "Print information about RAW-EXPR."
@@ -174,5 +175,5 @@
 
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."
+  (declare (ignore atom))
   nil)
-
