@@ -86,8 +86,8 @@
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation "The mx-atom table for the mx-machine context."))
-  (:documentation "The default store to use when there are no other available contexts. When no names are specified the hostname is used for the instantiation."))
+          :documentation "The mx-atom table for the mx-machine namespace."))
+  (:documentation "The default store to use when there are no other available namespaces. When no names are specified the hostname is used for the instantiation."))
 
 (defclass mx-world ()
   ((name :initarg :name
@@ -97,7 +97,7 @@
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation "The mx-atom table for the mx-world context."))
+          :documentation "The mx-atom table for the mx-world namespace."))
   (:documentation "The structure to designate worlds."))
 
 (defclass mx-stream ()
@@ -108,7 +108,7 @@
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation "The mx-atom table for the mx-stream context."))
+          :documentation "The mx-atom table for the mx-stream namespace."))
   (:documentation "The structure to designate streams."))
 
 (defclass mx-view ()
@@ -119,7 +119,7 @@
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation "The mx-atom table for the mx-view context."))
+          :documentation "The mx-atom table for the mx-view namespace."))
   (:documentation "The structure to designate views."))
 
 (defclass mx-canon ()
@@ -130,7 +130,7 @@
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
-          :documentation "The mx-atom table for the mx-canon context."))
+          :documentation "The mx-atom table for the mx-canon namespace."))
   (:documentation "The structure to designate canons."))
 
 (defclass mx-atom ()

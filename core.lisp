@@ -14,9 +14,9 @@
   "Return the first value used to identify MX-ATOM."
   (streams/channels:data mx-atom))
 
-(defmacro write-context (context)
-  "Return a context symbol from CONTEXT."
-  (let* ((symbol (ecase context
+(defmacro write-namespace (namespace)
+  "Return a namespace symbol from NAMESPACE."
+  (let* ((symbol (ecase namespace
                   (m 'machine)
                   (w 'world)
                   (s 'stream)
@@ -25,9 +25,9 @@
          (var (mof:cat "STREAMS/ETHERS:*MX-" (string symbol) "*")))
     (read-from-string var)))
 
-(defmacro build-context (context name)
-  "Return a context instance from CONTEXT with NAME."
-  (let* ((ctext (ecase context
+(defmacro build-namespace (namespace name)
+  "Return a namespace instance from NAMESPACE with NAME."
+  (let* ((ctext (ecase namespace
                   (m "mx-machine")
                   (w "mx-world")
                   (s "mx-stream")
@@ -36,27 +36,29 @@
          (class-name (mof:cat "STREAMS/CHANNELS:" ctext)))
     (make-instance (read-from-string class-name) :name name)))
 
-(defmacro context (context &body body)
-  "Set the current context to CONTEXT then evaluate BODY."
-  `(let ((streams/ethers:*context* (write-context ,context)))
-     ,@body))
+(defmacro namespace (namespace &body body)
+  "Set the current namespace to NAMESPACE then evaluate BODY. Restore the namespace after the evaluation of BODY."
+  `(let ((current-namespace streams/ethers:*namespace*)
+         (streams/ethers:*namespace* (write-namespace ,namespace)))
+     ,@body
+     (setf streams/ethers:*namespace* current-namespace)))
 
-(defmacro m (&body body) `(context m ,@body))
-(defmacro w (&body body) `(context w ,@body))
-(defmacro s (&body body) `(context s ,@body))
-(defmacro v (&body body) `(context v ,@body))
-(defmacro c (&body body) `(context c ,@body))
+(defmacro m (&body body) `(namespace m ,@body))
+(defmacro w (&body body) `(namespace w ,@body))
+(defmacro s (&body body) `(namespace s ,@body))
+(defmacro v (&body body) `(namespace v ,@body))
+(defmacro c (&body body) `(namespace c ,@body))
 
-(defmacro define-context-macros (contexts)
-  "Define the macro shorthands for the context setters."
+(defmacro define-namespace-macros (namespaces)
+  "Define the macro shorthands for the namespace setters."
   `(progn
-     ,@(loop :for c :in contexts
+     ,@(loop :for c :in namespaces
              :collect `(defmacro ,c (&body body)
-                         (context ,c body)))))
+                         (namespace ,c body)))))
 
-(defun yield-context ()
-  "Return the current context or the default context."
-  (or streams/ethers:*context* streams/ethers:*mx-machine*))
+(defun yield-namespace ()
+  "Return the current namespace or the default namespace."
+  (or streams/ethers:*namespace* streams/ethers:*mx-machine*))
 
 (defun bracket-reader (stream char)
   "Use [/tmp/file.ext] as a shorthand for #P\"/tmp/file.ext\""
@@ -172,6 +174,11 @@
                                 data
                                 (acons (car args) (subseq args start (1+ end)) metadata)))))))
         (fn (secondary-values body) (primary-values expr) nil)))))
+
+(defun valid-key-p (key)
+  "Return true if KEY is a valid identifier for atoms."
+  (when (cl-ppcre:scan "(^[a-zA-Z]+-*[a-zA-Z0-9]*-*[a-zA-Z0-9]+$)" key)
+    t))
 
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."

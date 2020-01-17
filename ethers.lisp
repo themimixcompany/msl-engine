@@ -15,7 +15,7 @@
            #:*mx-stream*
            #:*mx-view*
            #:*mx-canon*
-           #:*context*
+           #:*namespace*
            #:*categories*))
 
 (in-package #:streams/ethers)
@@ -42,22 +42,22 @@
   "The top-level structure for the mx-universe.")
 
 (defparameter *mx-machine* nil
-  "The current machine context, also the fallback context for mx-atom operations.")
+  "The current machine namespace, also the fallback namespace for mx-atom operations.")
 
 (defparameter *mx-world* nil
-  "The current world context.")
+  "The current world namespace.")
 
 (defparameter *mx-stream* nil
-  "The current stream context.")
+  "The current stream namespace.")
 
 (defparameter *mx-view* nil
-  "The current view context.")
+  "The current view namespace.")
 
 (defparameter *mx-canon* nil
-  "The current canon context.")
+  "The current canon namespace.")
 
-(defparameter *context* nil
-  "The immediate surrounding context for any given operation.")
+(defparameter *namespace* nil
+  "The immediate surrounding namespace for any given operation.")
 
 (defparameter *categories* '(m w s v c @)
-  "The list of contexts in simple form.")
+  "The list of namespaces in simple form.")
