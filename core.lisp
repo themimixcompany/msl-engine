@@ -70,7 +70,7 @@
 
 (defun valid-expr-p (expr)
   "Return true if EXPR is valid."
-  (>= (length expr) 2))
+  (>= (length expr) 1))
 
 (defun data-marker-p (value)
   "Return true if VALUE is a valid mx-atom data."
@@ -143,44 +143,83 @@
 
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
-  (destructuring-bind (category name &body body)
+  (destructuring-bind (_ __ &optional &body body)
       expr
-    (declare (ignore category name))
-    (when (data-marker-p (first body))
+    (declare (ignore _ __))
+    (when (and body (data-marker-p (first body)))
       (multiple-value-bind (start end)
           (bounds body)
         (subseq body start (1+ end))))))
 
 (defun secondary-values (expr)
   "Return the secondary values—metadata, etc—from EXPR; return NIL if none are found."
-  (destructuring-bind (category name &body body)
+  (destructuring-bind (_ __ &body body)
       expr
-    (declare (ignore category name))
+    (declare (ignore _ __))
     (let ((index (position-if #'metadata-marker-p body)))
       (when index
         (subseq body index)))))
 
+(defun valid-id-p (key)
+  "Return true if KEY is a valid identifier for mx-atoms."
+  (when (cl-ppcre:scan "(^[a-zA-Z]+-*[a-zA-Z0-9]*-*[a-zA-Z0-9]+$)" key)
+    t))
+
+(defun valid-key-p (key)
+  "Return true if NAME is a valid key for an mx-atom."
+  (let ((val (s/common:string-convert key)))
+    (when (valid-id-p val)
+      t)))
+
+(defun key (value)
+  "Extract the key used in VALUE."
+  (destructuring-bind (ns key &optional &body body)
+      value
+    (declare (ignore ns body))
+    key))
+
+(defun valid-keys-p (value)
+  "Return true if the keys in VALUE are valid."
+  (labels ((fn (args)
+             (cond ((null args) t)
+                   ((consp (car args)) (fn (car args)))
+                   ((unless (valid-key-p (car args))) nil)
+                   (t (fn (cdr args))))))
+    (and (valid-key-p (key value))
+         (fn value))))
+
+(defun valid-form-p (value)
+  "Return true if EXPR is a valid mx-atom expression."
+  ;; The first pass goes through all the conses and checks for the keys
+  (and (valid-keys-p value)))
+
 (defun read-expr (expr)
   "Read an EXPR as a string and return an object that contains the parsed information."
   (let ((expr (read-expr-prime expr)))
-    (destructuring-bind (category name &body body)
-        expr
-      (labels ((fn (args data metadata)
-                 (cond ((null args) (streams/channels:make-mx-atom
-                                     category name data (nreverse metadata)))
-                       (t (multiple-value-bind (start end)
-                              (bounds args)
-                            (fn (nthcdr (1+ end) args)
-                                data
-                                (acons (car args) (subseq args start (1+ end)) metadata)))))))
-        (fn (secondary-values body) (primary-values expr) nil)))))
-
-(defun valid-key-p (key)
-  "Return true if KEY is a valid identifier for atoms."
-  (when (cl-ppcre:scan "(^[a-zA-Z]+-*[a-zA-Z0-9]*-*[a-zA-Z0-9]+$)" key)
-    t))
+    (when (valid-form-p expr)
+      (destructuring-bind (ns name &optional &body body)
+          expr
+        (declare (ignorable body))
+        (labels ((fn (args data metadata)
+                   (cond ((null args) (values ns name data (nreverse metadata)))
+                         (t (multiple-value-bind (start end)
+                                (bounds args)
+                              (fn (nthcdr (1+ end) args)
+                                  data
+                                  (acons (car args) (subseq args start (1+ end)) metadata)))))))
+          (fn (secondary-values expr) (primary-values expr) nil))))))
 
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."
   (declare (ignore atom))
   nil)
+
+;;; Whole-expression validation should happen here
+;;; Expansion should happen here
+(defun build-mx-atom (expr)
+  "Return a valid mx-atom instance from EXPR."
+  (multiple-value-bind (ns name data metadata)
+      (read-expr expr)
+    (declare (ignorable ns name data metadata))
+    ;; (streams/channels:make-mx-atom ns name data metadata)
+    nil))
