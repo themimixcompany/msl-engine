@@ -16,7 +16,7 @@
            #:*mx-view*
            #:*mx-canon*
            #:*namespace*
-           #:*categories*))
+           #:*ns*))
 
 (in-package #:streams/ethers)
 
@@ -59,5 +59,5 @@
 (defparameter *namespace* nil
   "The immediate surrounding namespace for any given operation.")
 
-(defparameter *categories* '(m w s v c @)
+(defparameter *ns* '(m w s v c @)
   "The list of namespaces in simple form.")

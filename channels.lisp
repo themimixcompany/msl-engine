@@ -138,10 +138,10 @@
        :initform -1
        :reader id
        :documentation "The unique numeric id of a mx-atom.")
-   (category :initarg :category
-             :initform nil
-             :reader category
-             :documentation "The category of an mx-atom, whether it is m, s, c, v, or a")
+   (ns :initarg :ns
+       :initform nil
+       :reader ns
+       :documentation "The namespace key of an mx-atom, whether it is m, s, c, v, or a")
    (name :initarg :name
          :initform nil
          :reader name
@@ -221,8 +221,8 @@
       (make-instance 'mx-machine :name name :mx-universe streams/ethers:*mx-universe*)
       (make-instance 'mx-machine :mx-universe streams/ethers:*mx-universe*)))
 
-(defun make-mx-atom (category name data metadata)
+(defun make-mx-atom (ns name data metadata)
   "Return a new mx-atom instance from arguments."
-  (make-instance 'mx-atom :category category :name name
+  (make-instance 'mx-atom :ns ns :name name
                           :data data :metadata metadata
                           :mx-universe streams/ethers:*mx-universe*))
