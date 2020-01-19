@@ -48,6 +48,7 @@
 (defmacro s (&body body) `(namespace s ,@body))
 (defmacro v (&body body) `(namespace v ,@body))
 (defmacro c (&body body) `(namespace c ,@body))
+;;(defmacro @ (&body body) `(namespace c ,@body))
 
 (defmacro define-namespace-macros (namespaces)
   "Define the macro shorthands for the namespace setters."
@@ -59,14 +60,6 @@
 (defun yield-namespace ()
   "Return the current namespace or the default namespace."
   (or streams/ethers:*namespace* streams/ethers:*mx-machine*))
-
-(defun bracket-reader (stream char)
-  "Use [/tmp/file.ext] as a shorthand for #P\"/tmp/file.ext\""
-  (declare (ignore char))
-  (pathname (mof:join-strings (read-delimited-list #\] stream t))))
-
-(set-macro-character #\[ #'bracket-reader)
-(set-macro-character #\] (get-macro-character #\) nil))
 
 (defun valid-expr-p (expr)
   "Return true if EXPR is valid."
@@ -131,16 +124,6 @@
                    (t (fn (cdr args) (cons (car args) acc) nil)))))
     (fn list nil t)))
 
-(defun read-expr-prime (raw-expr)
-  "Return RAW-EXPR as valid lisp expression."
-  (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
-    (when (valid-expr-p value)
-      (split-prefixes value))))
-
-(defun examine-expr (raw-expr)
-  "Print information about RAW-EXPR."
-  (loop :for e :in (read-expr-prime raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
-
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
   (destructuring-bind (_ __ &optional &body body)
@@ -162,7 +145,7 @@
 
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
-  (when (cl-ppcre:scan "(^[a-zA-Z]+-*[a-zA-Z0-9]*-*[a-zA-Z0-9]+$)" key)
+  (when (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)
     t))
 
 (defun valid-key-p (key)
@@ -190,36 +173,89 @@
 
 (defun valid-form-p (value)
   "Return true if EXPR is a valid mx-atom expression."
-  ;; The first pass goes through all the conses and checks for the keys
+  ;; The first pass goes through all the items and checks for the keys
   (and (valid-keys-p value)))
 
 (defun read-expr (expr)
-  "Read an EXPR as a string and return an object that contains the parsed information."
-  (let ((expr (read-expr-prime expr)))
-    (when (valid-form-p expr)
-      (destructuring-bind (ns name &optional &body body)
-          expr
-        (declare (ignorable body))
-        (labels ((fn (args data metadata)
-                   (cond ((null args) (values ns name data (nreverse metadata)))
-                         (t (multiple-value-bind (start end)
-                                (bounds args)
-                              (fn (nthcdr (1+ end) args)
-                                  data
-                                  (acons (car args) (subseq args start (1+ end)) metadata)))))))
-          (fn (secondary-values expr) (primary-values expr) nil))))))
+  "Break down EXPR into multiple values."
+  (destructuring-bind (ns name &optional &body body)
+      expr
+    (declare (ignore body))
+    (labels ((fn (args data metadata)
+               (cond ((null args) (values ns name data (nreverse metadata)))
+                     (t (multiple-value-bind (start end)
+                            (bounds args)
+                          (fn (nthcdr (1+ end) args)
+                              data
+                              (acons (car args) (subseq args start (1+ end)) metadata)))))))
+      (fn (secondary-values expr) (primary-values expr) nil))))
+
+(defun read-expr-prime (raw-expr)
+  "Read RAW-EXPR as a string then return a lisp representation."
+  (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
+    (when (valid-expr-p value)
+      (split-prefixes value))))
+
+(defun examine-expr (raw-expr)
+  "Print information about RAW-EXPR."
+  (loop :for e :in (read-expr-prime raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
+
+(defun read-expr-from-string (expr)
+  "Read an EXPR as a string and return values that represent the parsed information."
+  (let ((val (read-expr-prime expr)))
+    (when (valid-form-p val)
+      (read-expr val))))
 
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."
   (declare (ignore atom))
   nil)
 
+(defun build-pairs (items)
+  "Group items into pairs."
+  (when (evenp (length items))
+    (labels ((fn (items acc)
+               (cond ((null items) (nreverse acc))
+                     (t (fn (cddr items)
+                            (cons (list (first items) (second items))
+                                  acc))))))
+      (fn items nil))))
+
+(defun build-map (items &key (test #'keywordp) (constructor #'cons))
+  "Create key-value mappings from ITEMS."
+  (loop :for item :in (build-pairs items)
+        :when (funcall test (car item))
+        :collect (destructuring-bind (k v)
+                     item
+                   (funcall constructor k v))))
+
 ;;; Whole-expression validation should happen here
 ;;; Expansion should happen here
 (defun build-mx-atom (expr)
-  "Return a valid mx-atom instance from EXPR."
+  "Return an mx-atom instance from EXPR."
   (multiple-value-bind (ns name data metadata)
       (read-expr expr)
-    (declare (ignorable ns name data metadata))
-    ;; (streams/channels:make-mx-atom ns name data metadata)
-    nil))
+    (streams/channels:make-mx-atom ns name data metadata)))
+
+(defun eval-expr (expr)
+  "Evaluate EXPR, store the result into the current ctext, then return the mx-atom instance and the ctext as multiple values."
+  (macrolet ((ctext ()
+               ;; Get the namespace from EXPR
+               `(streams/channels:table (yield-namespace)))
+             (hash (k)
+               `(gethash ,k (ctext))))
+    (destructuring-bind (ns name &optional &body body)
+        expr
+      ;; NS should be used to specify the namespace
+      (declare (ignorable ns))
+      (if (null body)
+          (multiple-value-bind (v presentp)
+              (hash name)
+            (when presentp
+              (values v
+                      (ctext))))
+          (let* ((mx-atom (build-mx-atom expr))
+                 (key (mx-atom-name mx-atom)))
+            (setf (hash key) mx-atom)
+            (values mx-atom
+                    (ctext)))))))
