@@ -141,7 +141,7 @@
    (ns :initarg :ns
        :initform nil
        :reader ns
-       :documentation "The namespace key of an mx-atom, whether it is m, s, c, v, or a")
+       :documentation "The namespace key of an mx-atom, whether it is m, s, c, v, or @")
    (name :initarg :name
          :initform nil
          :reader name
