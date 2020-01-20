@@ -248,6 +248,15 @@
       (when presentp
         (values v table namespace)))))
 
+(defun update-colon-selector (items key value)
+  "Update a specific colon selector under KEY with VALUE within ITEMS."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((eql (caar args) key) (fn (cdr args) (acons key value acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn items nil)))
+
+;;; Implement selective updates
 (defun update-value (key value)
   "Store or update a value in NSPACE indicated by HASH with VALUE."
   (with-current-namespace
