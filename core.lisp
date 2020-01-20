@@ -17,11 +17,11 @@
 (defmacro write-namespace (namespace)
   "Return a namespace symbol from NAMESPACE."
   (let* ((symbol (ecase namespace
-                  (m 'machine)
-                  (w 'world)
-                  (s 'stream)
-                  (v 'view)
-                  (c 'canon)))
+                   (m 'machine)
+                   (w 'world)
+                   (s 'stream)
+                   (v 'view)
+                   (c 'canon)))
          (var (mof:cat "STREAMS/ETHERS:*MX-" (string symbol) "*")))
     (read-from-string var)))
 
@@ -70,7 +70,8 @@
   (or (and (symbolp value) (not (keywordp value)))
       (stringp value)
       (numberp value)
-      (consp value)))
+      (consp value)
+      (pathnamep value)))
 
 (defun metadata-marker-p (value)
   "Return true if VALUE is a valid mx-atom metadata."
@@ -177,34 +178,31 @@
   (and (valid-keys-p value)))
 
 (defun read-expr (expr)
-  "Break down EXPR into multiple values."
-  (destructuring-bind (ns name &optional &body body)
-      expr
-    (declare (ignore body))
-    (labels ((fn (args data metadata)
-               (cond ((null args) (values ns name data (nreverse metadata)))
-                     (t (multiple-value-bind (start end)
-                            (bounds args)
-                          (fn (nthcdr (1+ end) args)
-                              data
-                              (acons (car args) (subseq args start (1+ end)) metadata)))))))
-      (fn (secondary-values expr) (primary-values expr) nil))))
+  "Read EXPR and break it down into multiple values."
+  (let ((expr (split-prefixes expr)))
+    (destructuring-bind (ns name &optional &rest _)
+        expr
+      (declare (ignore _))
+      (labels ((fn (args data metadata)
+                 (cond ((null args) (values ns name data (nreverse metadata)))
+                       (t (multiple-value-bind (start end)
+                              (bounds args)
+                            (fn (nthcdr (1+ end) args)
+                                data
+                                (acons (car args) (subseq args start (1+ end)) metadata)))))))
+        (fn (secondary-values expr) (primary-values expr) nil)))))
 
-(defun read-expr-prime (raw-expr)
-  "Read RAW-EXPR as a string then return a lisp representation."
+(defun read-expr-from-string (raw-expr)
+  "Read an EXPR as a string and return values that represent the parsed information."
   (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
     (when (valid-expr-p value)
-      (split-prefixes value))))
+      (let ((value (split-prefixes value)))
+        (when (valid-form-p value)
+          (read-expr value))))))
 
 (defun examine-expr (raw-expr)
   "Print information about RAW-EXPR."
-  (loop :for e :in (read-expr-prime raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
-
-(defun read-expr-from-string (expr)
-  "Read an EXPR as a string and return values that represent the parsed information."
-  (let ((val (read-expr-prime expr)))
-    (when (valid-form-p val)
-      (read-expr val))))
+  (loop :for e :in (read-expr-from-string raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
 
 (defun resolve-atom (atom)
   "Expand the values inside ATOM then assign them to the corresponding stores."
@@ -229,33 +227,43 @@
                      item
                    (funcall constructor k v))))
 
-;;; Whole-expression validation should happen here
-;;; Expansion should happen here
+;;; Should expansion should here, before the values gets stored?
 (defun build-mx-atom (expr)
   "Return an mx-atom instance from EXPR."
   (multiple-value-bind (ns name data metadata)
       (read-expr expr)
     (streams/channels:make-mx-atom ns name data metadata)))
 
+(defmacro with-current-namespace (&body body)
+  "Evaluate BODY in the current namespace."
+  `(let* ((namespace (yield-namespace))
+          (table (streams/channels:table (yield-namespace))))
+     ,@body))
+
+(defun recall-value (key)
+  "Return a value in NSPACE indicated by HASH."
+  (with-current-namespace
+    (multiple-value-bind (v presentp)
+        (gethash key table)
+      (when presentp
+        (values v table namespace)))))
+
+(defun update-value (key value)
+  "Store or update a value in NSPACE indicated by HASH with VALUE."
+  (with-current-namespace
+    (setf (gethash key table) value)
+    (values value table namespace)))
+
 (defun eval-expr (expr)
-  "Evaluate EXPR, store the result into the current ctext, then return the mx-atom instance and the ctext as multiple values."
-  (macrolet ((ctext ()
-               ;; Get the namespace from EXPR
-               `(streams/channels:table (yield-namespace)))
-             (hash (k)
-               `(gethash ,k (ctext))))
+  "Evaluate EXPR, store the result into the current nspace, then return the mx-atom instance and the nspace as multiple values."
+  (let ((expr (split-prefixes expr)))
     (destructuring-bind (ns name &optional &body body)
-        expr
-      ;; NS should be used to specify the namespace
-      (declare (ignorable ns))
-      (if (null body)
-          (multiple-value-bind (v presentp)
-              (hash name)
-            (when presentp
-              (values v
-                      (ctext))))
-          (let* ((mx-atom (build-mx-atom expr))
-                 (key (mx-atom-name mx-atom)))
-            (setf (hash key) mx-atom)
-            (values mx-atom
-                    (ctext)))))))
+          expr
+        ;; What is the role of NS?
+        (declare (ignorable ns))
+        (if (null body)
+            ;; Should NS be used in this call?
+            (recall-value name)
+            (let* ((mx-atom (build-mx-atom expr))
+                   (key (mx-atom-name mx-atom)))
+              (update-value key mx-atom))))))
