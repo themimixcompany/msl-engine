@@ -21,8 +21,8 @@
                #:alexandria
                #:bordeaux-threads
                #:closer-mop
-               "streams/reader"
                "streams/common"
+               "streams/reader"
                "streams/ethers"
                "streams/channels"
                "streams/core"
