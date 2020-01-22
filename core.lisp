@@ -272,7 +272,7 @@
   (let ((p-values (primary-values expr))
         (s-values (secondary-values expr)))
     (with-current-namespace
-      (macrolet ((vtb (v)
+      (macrolet ((vtn (v)
                    `(values ,v table namespace)))
         (multiple-value-bind (val existsp)
             (gethash name table)
@@ -283,10 +283,10 @@
                 (when s-values
                   (setf (streams/channels:metadata val)
                         (update-map (streams/channels:metadata val) s-values)))
-                (vtb val))
+                (vtn val))
               (let ((v (build-mx-atom expr)))
                 (setf (gethash name table) v)
-                (vtb v))))))))
+                (vtn v))))))))
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
