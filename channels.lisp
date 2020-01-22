@@ -148,11 +148,11 @@
          :documentation "The name of an mx-atom.")
    (data :initarg :data
          :initform nil
-         :reader data
+         :accessor data
          :documentation "The main data of an mx-atom.")
    (metadata :initarg :metadata
              :initform nil
-             :reader metadata
+             :accessor metadata
              :documentation "The secondary data of an mx-atom which contains information about the DATA slot."))
   (:documentation "The structure to designate atoms."))
 

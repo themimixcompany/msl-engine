@@ -125,6 +125,10 @@
                    (t (fn (cdr args) (cons (car args) acc) nil)))))
     (fn list nil t)))
 
+(defun normalize-expr (expr)
+  "Pass EXPR through a filter, returning a new expr with correct structure."
+  (split-prefixes expr))
+
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
   (destructuring-bind (_ __ &optional &body body)
@@ -179,7 +183,7 @@
 
 (defun read-expr (expr)
   "Read EXPR and break it down into multiple values."
-  (let ((expr (split-prefixes expr)))
+  (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns name &optional &rest _)
         expr
       (declare (ignore _))
@@ -196,7 +200,7 @@
   "Read an EXPR as a string and return values that represent the parsed information."
   (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
     (when (valid-expr-p value)
-      (let ((value (split-prefixes value)))
+      (let ((value (normalize-expr value)))
         (when (valid-form-p value)
           (read-expr value))))))
 
@@ -227,7 +231,7 @@
                      item
                    (funcall constructor k v))))
 
-;;; Should expansion should here, before the values gets stored?
+;;; Should full value resolution happen here, before the values gets stored?
 (defun build-mx-atom (expr)
   "Return an mx-atom instance from EXPR."
   (multiple-value-bind (ns name data metadata)
@@ -237,18 +241,19 @@
 (defmacro with-current-namespace (&body body)
   "Evaluate BODY in the current namespace."
   `(let* ((namespace (yield-namespace))
-          (table (streams/channels:table (yield-namespace))))
+          (table (streams/channels:table namespace)))
+     (declare (ignorable namespace table))
      ,@body))
 
 (defun recall-value (key)
   "Return a value in NSPACE indicated by HASH."
   (with-current-namespace
-    (multiple-value-bind (v presentp)
+    (multiple-value-bind (val presentp)
         (gethash key table)
       (when presentp
-        (values v table namespace)))))
+        (values val table namespace)))))
 
-(defun update-colon-selector (items key value)
+(defun update-key (items key value)
   "Update a specific colon selector under KEY with VALUE within ITEMS."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -256,23 +261,70 @@
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn items nil)))
 
-;;; Implement selective updates
-(defun update-value (key value)
-  "Store or update a value in NSPACE indicated by HASH with VALUE."
+(defun update-map (items values)
+  "Update all matching colon selectors in ITEMS."
+  (labels ((fn (args acc)
+             (cond ((null args) acc)
+                   (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
+    (fn (build-map values) nil)))
+
+(defun set-value (key value)
+  "Store a value under KEY with VALUE in the active namespace."
   (with-current-namespace
     (setf (gethash key table) value)
     (values value table namespace)))
 
+;;; Implement selective updates
+;;; Take note, that EXPR is already a normalized value
+(defun dispatch-expr (name expr)
+  "Store or update a value under NAME with EXPR."
+  (let ((p-values (primary-values expr))
+        (s-values (secondary-values expr)))
+    (with-current-namespace
+      (mof:dbg namespace table)
+      (multiple-value-bind (val existsp)
+          (gethash name table)
+        ;; Is the value not stored on the hash table?
+        (if existsp
+            (progn
+              (format t "~&X~%")
+              ;; Use SYMBOL-MACROLET?
+              (when p-values
+                (setf (streams/channels:data val) p-values))
+              (when s-values
+                (setf (streams/channels:metadata val)
+                      (update-map (streams/channels:metadata val) s-values)))
+              (values val table namespace))
+            (progn
+              (format t "~&Y~%")
+              ;; The new mx-atom instance is not properly stored on the table?!
+              (set-value name (build-mx-atom expr))))))))
+
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the current nspace, then return the mx-atom instance and the nspace as multiple values."
-  (let ((expr (split-prefixes expr)))
+  (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns name &optional &body body)
           expr
-        ;; What is the role of NS?
+        ;; What is the role of NS here?
         (declare (ignorable ns))
         (if (null body)
             ;; Should NS be used in this call?
+
+            ;; We want a value recall here
+            ;; What’s needed to recall a value?
+            ;; name of the atom, current namespace
+            ;; the name of the atom will be the one used to search in the current namespace
             (recall-value name)
-            (let* ((mx-atom (build-mx-atom expr))
-                   (key (mx-atom-name mx-atom)))
-              (update-value key mx-atom))))))
+
+            ;; (let* ((mx-atom (build-mx-atom expr))
+            ;;        (key (mx-atom-name mx-atom)))
+            ;;   ;; Should a new atom instance be even used?
+            ;;   ;; Maybe no, because we don’t need that.
+
+            ;;   ;; Pass the original expression?
+            ;;   (update-value key expr))
+
+            ;; Discern between updating an mx-atom, or creating a new one
+            ;; Should it check if the mx-atom already exists in the active namespace?
+            ;; If it exists, update it. Otherwise, create a new one.
+            (dispatch-expr name expr)))))
