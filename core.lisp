@@ -231,7 +231,6 @@
                      item
                    (funcall constructor k v))))
 
-;;; Should full value resolution happen here, before the values gets stored?
 (defun build-mx-atom (expr)
   "Return an mx-atom instance from EXPR."
   (multiple-value-bind (ns name data metadata)
@@ -245,7 +244,7 @@
      (declare (ignorable namespace table))
      ,@body))
 
-(defun recall-value (key)
+(defun recall (key)
   "Return a value in NSPACE indicated by HASH."
   (with-current-namespace
     (multiple-value-bind (val presentp)
@@ -268,63 +267,33 @@
                    (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
     (fn (build-map values) nil)))
 
-(defun set-value (key value)
-  "Store a value under KEY with VALUE in the active namespace."
-  (with-current-namespace
-    (setf (gethash key table) value)
-    (values value table namespace)))
-
-;;; Implement selective updates
-;;; Take note, that EXPR is already a normalized value
-(defun dispatch-expr (name expr)
-  "Store or update a value under NAME with EXPR."
+(defun dispatch (name expr)
+  "Store or update a value under NAME with EXPR in the active namespace."
   (let ((p-values (primary-values expr))
         (s-values (secondary-values expr)))
     (with-current-namespace
-      (mof:dbg namespace table)
-      (multiple-value-bind (val existsp)
-          (gethash name table)
-        ;; Is the value not stored on the hash table?
-        (if existsp
-            (progn
-              (format t "~&X~%")
-              ;; Use SYMBOL-MACROLET?
-              (when p-values
-                (setf (streams/channels:data val) p-values))
-              (when s-values
-                (setf (streams/channels:metadata val)
-                      (update-map (streams/channels:metadata val) s-values)))
-              (values val table namespace))
-            (progn
-              (format t "~&Y~%")
-              ;; The new mx-atom instance is not properly stored on the table?!
-              (set-value name (build-mx-atom expr))))))))
+      (macrolet ((vtb (v)
+                   `(values ,v table namespace)))
+        (multiple-value-bind (val existsp)
+            (gethash name table)
+          (if existsp
+              (progn
+                (when p-values
+                  (setf (streams/channels:data val) p-values))
+                (when s-values
+                  (setf (streams/channels:metadata val)
+                        (update-map (streams/channels:metadata val) s-values)))
+                (vtb val))
+              (let ((v (build-mx-atom expr)))
+                (setf (gethash name table) v)
+                (vtb v))))))))
 
 (defun eval-expr (expr)
-  "Evaluate EXPR, store the result into the current nspace, then return the mx-atom instance and the nspace as multiple values."
+  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
   (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns name &optional &body body)
-          expr
-        ;; What is the role of NS here?
-        (declare (ignorable ns))
-        (if (null body)
-            ;; Should NS be used in this call?
-
-            ;; We want a value recall here
-            ;; What’s needed to recall a value?
-            ;; name of the atom, current namespace
-            ;; the name of the atom will be the one used to search in the current namespace
-            (recall-value name)
-
-            ;; (let* ((mx-atom (build-mx-atom expr))
-            ;;        (key (mx-atom-name mx-atom)))
-            ;;   ;; Should a new atom instance be even used?
-            ;;   ;; Maybe no, because we don’t need that.
-
-            ;;   ;; Pass the original expression?
-            ;;   (update-value key expr))
-
-            ;; Discern between updating an mx-atom, or creating a new one
-            ;; Should it check if the mx-atom already exists in the active namespace?
-            ;; If it exists, update it. Otherwise, create a new one.
-            (dispatch-expr name expr)))))
+        expr
+      (declare (ignorable ns))
+      (if (null body)
+          (recall name)
+          (dispatch name expr)))))
