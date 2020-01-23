@@ -215,12 +215,30 @@
 
 (defun build-pairs (items)
   "Group items into pairs."
-  (when (evenp (length items))
+  (labels ((fn (items acc)
+             (cond ((null items) (nreverse acc))
+                   ((keywordp (cadr items))
+                    (fn (cdr items)
+                        (cons (list (first items) nil)
+                              acc)))
+                   (t (fn (cddr items)
+                          (cons (list (first items) (second items))
+                                acc))))))
+    (fn items nil)))
+
+(defun build-groups (items)
+  "Return item groupings from ITEMS according to KEY."
+  (when (keywordp (first items))
     (labels ((fn (items acc)
-               (cond ((null items) (nreverse acc))
-                     (t (fn (cddr items)
-                            (cons (list (first items) (second items))
-                                  acc))))))
+               (cond ((null items) (reverse acc))
+                     (t (multiple-value-bind (start end)
+                            (bounds items)
+                          (declare (ignorable start))
+                          (if start
+                              (fn (nthcdr (1+ end) items)
+                                  (cons (subseq items 0 (1+ end)) acc))
+                              (fn (cdr items)
+                                  (cons (list (car items) nil) acc))))))))
       (fn items nil))))
 
 (defun build-map (items &key (test #'keywordp) (constructor #'cons))
@@ -265,7 +283,7 @@
   (labels ((fn (args acc)
              (cond ((null args) acc)
                    (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
-    (fn (build-map values) nil)))
+    (fn (build-groups values) nil)))
 
 (defun dispatch (name expr)
   "Store or update a value under NAME with EXPR in the active namespace."
@@ -290,10 +308,51 @@
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
-  (let ((expr (normalize-expr expr)))
+  (let* ((expr (normalize-expr expr)))
     (destructuring-bind (ns name &optional &body body)
         expr
       (declare (ignorable ns))
-      (if (null body)
-          (recall name)
-          (dispatch name expr)))))
+      (cond ((null body) (recall name))
+            (t (dispatch name expr))))))
+
+(defun eval-expr-1 (expr)
+  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
+  (let* ((expr (normalize-expr expr))
+         (p-values (primary-values expr))
+         (s-values (secondary-values expr)))
+    (declare (ignorable p-values s-values))
+    (destructuring-bind (ns name &optional &body body)
+        expr
+      (declare (ignorable ns name body))
+      ;; If NS is specified, lock the operations to that namespace
+
+      ;; Add ability to recall if a colon metadata is used
+      ;; If a colon recall is used return the value that that colon metadata refers to
+      ;; If multiple colons are used return all those values, maybe as lists
+      ;; Return the metadata value as list of strings, maybe.
+
+      ;; Implement operation compounding, that is, value recall and setting can be done
+      ;; in one operation
+
+      ;; BODY can be seen as a list of operations
+
+      ;; Find a way to combine recalling and setting
+
+      ;; Dispatch metadata based on the intent
+      (cond ((null s-values) (recall name))
+            (t (dispatch name expr))))))
+
+(defun recall-metadata (key mx-atom)
+  "Return the the value specified by KEY in MX-ATOM."
+  (let* ((metadata (streams/channels:metadata mx-atom))
+         (item (streams/common:assoc-value key metadata)))
+    (when item
+      (format nil "~{~A~^ ~}" item))))
+
+(defun yield (expr)
+  "Return the values as expressed in expr."
+  (multiple-value-bind (mx-atom table namespace)
+      (eval-expr expr)
+    (declare (ignorable mx-atom table namespace))
+    nil))
+
