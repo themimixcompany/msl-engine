@@ -244,9 +244,12 @@
 
 (defun build-groups (items)
   "Return item groupings from ITEMS according to KEY."
-  (when (keywordp (first items))
+  (when (and (listp items)
+             (keywordp (first items)))
     (labels ((fn (items acc)
                (cond ((null items) (reverse acc))
+                     ((keywordp (cadr items)) (fn (cdr items)
+                                                  (cons (list (car items) nil) acc)))
                      (t (multiple-value-bind (start end)
                             (bounds items)
                           (declare (ignorable start))
@@ -278,8 +281,9 @@
      (declare (ignorable namespace table))
      ,@body))
 
-(defun recall (key)
+(defun recall (key &optional subkey)
   "Return a value in the current namespace by KEY."
+  (declare (ignorable subkey))
   (with-current-namespace
     (multiple-value-bind (v presentp)
         (gethash key table)
@@ -301,13 +305,22 @@
                    (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
     (fn (build-groups values) nil)))
 
-;;; Add the ability to recall
+(defmacro with-expr-values (&body body)
+  "Evaluate BODY in the context of primary and secondary values."
+  `(let* ((p-values (primary-values expr))
+          (s-values (secondary-values expr))
+          (groups (build-groups expr)))
+     (declare (ignorable p-values s-values groups))
+     (progn ,@body)))
+
+;;; Already perform recall operations, by default
+;;; This should skip metadata requests
 (defun dispatch (key expr)
   "Store or update a value under KEY with EXPR in the active namespace."
   (let* ((p-values (primary-values expr))
          (s-values (secondary-values expr))
-         (groups (build-groups s-values)))
-    (declare (ignorable groups))
+         (groups (build-groups expr)))
+    (declare (ignorable p-values s-values groups))
     (with-current-namespace
       (macrolet ((vtn (v) `(values ,v table namespace)))
         (multiple-value-bind (v existsp)
@@ -326,16 +339,31 @@
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
-  (let* ((expr (normalize-expr expr)))
+  (let* ((expr (normalize-expr expr))
+         (p-values (primary-values expr))
+         (s-values (secondary-values expr)))
+    (declare (ignorable p-values s-values))
     (destructuring-bind (ns key &optional &body body)
         expr
-      (declare (ignorable ns))
-      (cond ((null body) (recall key))
+      (declare (ignorable ns key body))
+      (cond ((and (null p-values) (null s-values))
+             (recall key))
             (t (dispatch key expr))))))
 
+(defun merge-metadata (key mx-atom)
+  "Return the the value specified by KEY in MX-ATOM."
+  (let* ((metadata (streams/channels:metadata mx-atom))
+         (item (streams/common:assoc-value key metadata)))
+    (when item
+      (format nil "~{~A~^ ~}" item))))
+
 (defun plural-requests-p (s-values)
-  "Return true if more than metadata request is present in S-VALUES."
-  (> (metadata-marker-count s-values) 1))
+  "Return true if there are more than one metadata requests in S-VALUES."
+  (count-if #'null (build-groups s-values) :key #'second))
+
+(defun single-request-p (s-values)
+  "Return true if there’s only one metadata request in S-VALUES."
+  (not (plural-requests-p s-values)))
 
 (defun empty-requests-p (s-values)
   "Return true if all the items in S-VALUES "
@@ -346,53 +374,21 @@
                (null v)))
          s-values))
 
-(defun eval-expr-1 (expr)
-  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
-  (let* ((expr (normalize-expr expr))
-         (p-values (primary-values expr))
-         (s-values (secondary-values expr))
-         (groups (build-groups expr)))
-    (declare (ignorable p-values s-values groups))
-    (destructuring-bind (ns key &optional &body body)
-        expr
-      (declare (ignorable ns key body))
-      ;; If NS is specified, lock the operations to that namespace
-
-      ;; Add ability to recall if a colon metadata is used
-      ;; If a colon recall is used return the value that that colon metadata refers to
-      ;; If multiple colons are used return all those values, maybe as lists
-      ;; Return the metadata value as list of strings, maybe.
-
-      ;; Implement operation compounding, that is, value recall and setting can be done
-      ;; in one operation
-
-      ;; BODY can be seen as a list of operations
-
-      ;; Find a way to combine recalling and setting
-
-      ;; Dispatch metadata based on the intent
-
-      ;; Should BUILD-GROUPS be applied to S-VALUES regardless of the content?
-      ;; Is RECALL dumb?
-      (cond ((and (null p-values)
-                  (plural-requests-p s-values)
-                  (empty-requests-p s-values))
-             nil)
-            ;; Implement recalling for single metadata requests
-            ((null s-values) (recall key))
-            (t (dispatch key expr))))))
-
-(defun recall-metadata (key mx-atom)
-  "Return the the value specified by KEY in MX-ATOM."
-  (let* ((metadata (streams/channels:metadata mx-atom))
-         (item (streams/common:assoc-value key metadata)))
-    (when item
-      (format nil "~{~A~^ ~}" item))))
-
-(defun yield (expr)
-  "Return the values as expressed in expr."
-  (multiple-value-bind (mx-atom table namespace)
-      (eval-expr expr)
-    (declare (ignorable mx-atom table namespace))
-    nil))
+;;; This function handles the intent
+;;; This may also use BUILD-GROUPS to check the intent of the secondary values
+(defun show (expr)
+  "Return the printed representation of values as expressed in EXPR."
+  (with-expr-values
+    (multiple-value-bind (mx-atom table namespace)
+        (eval-expr expr)
+      (declare (ignorable mx-atom table namespace))
+      ;; (cond
+      ;;   ;; (@walt :foo :bar)
+      ;;   ((and (null p-values) (plural-requests-p s-values))
+      ;;    nil)
+      ;;   ((and (null p-values) (single-request-p s-values))
+      ;;    )
+      ;;   ;; (@walt)
+      ;;   )
+      nil)))
 
