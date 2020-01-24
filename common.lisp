@@ -7,7 +7,7 @@
            #:defclass*
            #:slots
            #:with-preserved-case
-           #:read-string-with-preserved-case
+           #:read-from-string*
            #:dump-object
            #:dump-table
            #:assoc-key
@@ -60,7 +60,7 @@
      (setf (readtable-case *readtable*) :preserve)
      ,@body))
 
-(defun read-string-with-preserved-case (string)
+(defun read-from-string* (string)
   "Evaluate STRING with preserved case."
   (with-preserved-case (read-from-string string)))
 
