@@ -296,7 +296,9 @@
              (cond ((null args) (nreverse acc))
                    ((eql (caar args) key) (fn (cdr args) (acons key value acc)))
                    (t (fn (cdr args) (cons (car args) acc))))))
-    (fn items nil)))
+    (if (assoc key items :test #'equal)
+        (fn items nil)
+        (acons key value items))))
 
 (defun update-map (items values)
   "Update all matching colon selectors in ITEMS."
@@ -316,7 +318,6 @@
      (progn ,@body)))
 
 ;;; Already perform recall operations, by default
-;;; This should skip metadata requests
 (defun dispatch (key expr)
   "Store or update a value under KEY with EXPR in the active namespace."
   (let* ((p-values (primary-values expr))
