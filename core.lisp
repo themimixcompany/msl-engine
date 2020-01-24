@@ -303,7 +303,9 @@
   (labels ((fn (args acc)
              (cond ((null args) acc)
                    (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
-    (fn (build-groups values) nil)))
+    (fn (remove-if #'(lambda (group)
+                       (null (cadr group)))
+                   (build-groups values)) nil)))
 
 (defmacro with-expr-values (&body body)
   "Evaluate BODY in the context of primary and secondary values."
