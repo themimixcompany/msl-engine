@@ -317,7 +317,32 @@
      (declare (ignorable p-values s-values groups))
      (progn ,@body)))
 
-;;; Already perform recall operations, by default
+(defun plural-recalls-p (s-values)
+  "Return true if there are more than one metadata requests in S-VALUES."
+  (when (not (zerop (count-if #'null (build-groups s-values)
+                              :key #'second)))
+    t))
+
+(defun single-recalls-p (s-values)
+  "Return true if there’s only one metadata request in S-VALUES."
+  (not (plural-recalls-p s-values)))
+
+(defun install-present-p (s-values)
+  "Return true if there are non-null values in S-VALUES."
+  (when (not (zerop (count-if #'(lambda (x) (not (null x))) (build-groups s-values)
+                              :key #'second)))
+    t))
+
+(defun empty-requests-p (s-values)
+  "Return true if all the items in S-VALUES "
+  (every #'(lambda (arg)
+             (destructuring-bind (k v)
+                 arg
+               (declare (ignore k))
+               (null v)))
+         s-values))
+
+;;; Already performs recall operations, by default.
 (defun dispatch (key expr)
   "Store or update a value under KEY with EXPR in the active namespace."
   (let* ((p-values (primary-values expr))
@@ -328,17 +353,20 @@
       (macrolet ((vtn (v) `(values ,v table namespace)))
         (multiple-value-bind (v existsp)
             (gethash key table)
-          (if existsp
-              (progn
-                (when p-values
-                  (setf (streams/channels:value v) p-values))
-                (when s-values
-                  (setf (streams/channels:metadata v)
-                        (update-map (streams/channels:metadata v) s-values)))
-                (vtn v))
-              (let ((v (build-mx-atom expr)))
-                (setf (gethash key table) v)
-                (vtn v))))))))
+          (cond (existsp
+                 (progn (when p-values
+                          (setf (streams/channels:value v) p-values))
+                        (when s-values
+                          (setf (streams/channels:metadata v)
+                                (update-map (streams/channels:metadata v) s-values)))
+                        (vtn v)))
+                ((and (null existsp)
+                      (null p-values)
+                      (install-present-p s-values))
+                 nil)
+                (t (let ((v (build-mx-atom expr)))
+                     (setf (gethash key table) v)
+                     (vtn v)))))))))
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
@@ -360,23 +388,6 @@
     (when item
       (format nil "~{~A~^ ~}" item))))
 
-(defun plural-requests-p (s-values)
-  "Return true if there are more than one metadata requests in S-VALUES."
-  (count-if #'null (build-groups s-values) :key #'second))
-
-(defun single-request-p (s-values)
-  "Return true if there’s only one metadata request in S-VALUES."
-  (not (plural-requests-p s-values)))
-
-(defun empty-requests-p (s-values)
-  "Return true if all the items in S-VALUES "
-  (every #'(lambda (arg)
-             (destructuring-bind (k v)
-                 arg
-               (declare (ignore k))
-               (null v)))
-         s-values))
-
 ;;; This function handles the intent
 ;;; This may also use BUILD-GROUPS to check the intent of the secondary values
 (defun show (expr)
@@ -385,13 +396,5 @@
     (multiple-value-bind (mx-atom table namespace)
         (eval-expr expr)
       (declare (ignorable mx-atom table namespace))
-      ;; (cond
-      ;;   ;; (@walt :foo :bar)
-      ;;   ((and (null p-values) (plural-requests-p s-values))
-      ;;    nil)
-      ;;   ((and (null p-values) (single-request-p s-values))
-      ;;    )
-      ;;   ;; (@walt)
-      ;;   )
       nil)))
 
