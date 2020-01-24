@@ -323,9 +323,11 @@
                               :key #'second)))
     t))
 
-(defun single-recalls-p (s-values)
+(defun single-recall-p (s-values)
   "Return true if there’s only one metadata request in S-VALUES."
-  (not (plural-recalls-p s-values)))
+  (let ((length (length s-values)))
+    (and (= length 1)
+         (keywordp (car s-values)))))
 
 (defun install-present-p (s-values)
   "Return true if there are non-null values in S-VALUES."
@@ -342,44 +344,42 @@
                (null v)))
          s-values))
 
-;;; Already performs recall operations, by default.
 (defun dispatch (key expr)
-  "Store or update a value under KEY with EXPR in the active namespace."
+  "Store or update a value under KEY with EXPR in the current namespace."
   (let* ((p-values (primary-values expr))
-         (s-values (secondary-values expr))
-         (groups (build-groups expr)))
-    (declare (ignorable p-values s-values groups))
+         (s-values (secondary-values expr)))
     (with-current-namespace
       (macrolet ((vtn (v) `(values ,v table namespace)))
         (multiple-value-bind (v existsp)
             (gethash key table)
-          (cond (existsp
-                 (progn (when p-values
-                          (setf (streams/channels:value v) p-values))
-                        (when s-values
-                          (setf (streams/channels:metadata v)
-                                (update-map (streams/channels:metadata v) s-values)))
-                        (vtn v)))
-                ((and (null existsp)
-                      (null p-values)
-                      (install-present-p s-values))
-                 nil)
-                (t (let ((v (build-mx-atom expr)))
-                     (setf (gethash key table) v)
-                     (vtn v)))))))))
+          (cond
+            ((and (null existsp) (null p-values))
+             nil)
+            ((and existsp (null p-values) (null s-values))
+             (vtn v))
+            ((and existsp (single-recall-p s-values))
+             (let ((item (assoc (first s-values) (streams/channels:metadata v))))
+               (when item
+                 (vtn v))))
+            ((and existsp (or p-values s-values))
+             (when p-values
+               (setf (streams/channels:value v)
+                     p-values))
+             (when s-values
+               (setf (streams/channels:metadata v)
+                     (update-map (streams/channels:metadata v) s-values)))
+             (vtn v))
+            (t (let ((v (build-mx-atom expr)))
+                 (setf (gethash key table) v)
+                 (vtn v)))))))))
 
 (defun eval-expr (expr)
-  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
-  (let* ((expr (normalize-expr expr))
-         (p-values (primary-values expr))
-         (s-values (secondary-values expr)))
-    (declare (ignorable p-values s-values))
+  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
+  (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns key &optional &body body)
         expr
-      (declare (ignorable ns key body))
-      (cond ((and (null p-values) (null s-values))
-             (recall key))
-            (t (dispatch key expr))))))
+      (declare (ignorable ns body))
+      (dispatch key expr))))
 
 (defun merge-metadata (key mx-atom)
   "Return the the value specified by KEY in MX-ATOM."
@@ -388,7 +388,7 @@
     (when item
       (format nil "~{~A~^ ~}" item))))
 
-;;; This function handles the intent
+;;; This function handles the ‘intent’
 ;;; This may also use BUILD-GROUPS to check the intent of the secondary values
 (defun show (expr)
   "Return the printed representation of values as expressed in EXPR."
@@ -397,4 +397,3 @@
         (eval-expr expr)
       (declare (ignorable mx-atom table namespace))
       nil)))
-
