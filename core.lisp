@@ -6,13 +6,13 @@
 
 (in-package #:streams/core)
 
-(defun mx-atom-name (mx-atom)
+(defun mx-atom-key (mx-atom)
   "Return the name used to identify MX-ATOM."
-  (streams/channels:name mx-atom))
+  (streams/channels:key mx-atom))
 
-(defun mx-atom-data (mx-atom)
+(defun mx-atom-value (mx-atom)
   "Return the first value used to identify MX-ATOM."
-  (streams/channels:data mx-atom))
+  (streams/channels:value mx-atom))
 
 (defmacro write-namespace (namespace)
   "Return a namespace symbol from NAMESPACE."
@@ -65,17 +65,21 @@
   "Return true if EXPR is valid."
   (>= (length expr) 1))
 
-(defun data-marker-p (value)
-  "Return true if VALUE is a valid mx-atom data."
-  (or (and (symbolp value) (not (keywordp value)))
-      (stringp value)
-      (numberp value)
-      (consp value)
-      (pathnamep value)))
+(defun data-marker-p (v)
+  "Return true if V is a valid mx-atom data."
+  (or (and (symbolp v) (not (keywordp v)))
+      (stringp v)
+      (numberp v)
+      (consp v)
+      (pathnamep v)))
 
-(defun metadata-marker-p (value)
-  "Return true if VALUE is a valid mx-atom metadata."
-  (not (data-marker-p value)))
+(defun metadata-marker-p (v)
+  "Return true if V is a valid mx-atom metadata."
+  (not (data-marker-p v)))
+
+(defun metadata-marker-count (expr)
+  "Return the number of metadata markers in LIST."
+  (count-if #'metadata-marker-p expr))
 
 (defun bounds (raw-expr)
   "Return the indices for the start and end of immediate valid data of RAW-EXPR. If none are found, return NIL."
@@ -154,10 +158,9 @@
     t))
 
 (defun valid-key-p (key)
-  "Return true if NAME is a valid key for an mx-atom."
-  (let ((val (s/common:string-convert key)))
-    (when (valid-id-p val)
-      t)))
+  "Return true if KEY is a valid key for an mx-atom."
+  (let ((v (streams/common:string-convert key)))
+    (valid-id-p v)))
 
 (defun key (value)
   "Extract the key used in VALUE."
@@ -166,43 +169,43 @@
     (declare (ignore ns body))
     key))
 
-(defun valid-keys-p (value)
-  "Return true if the keys in VALUE are valid."
+(defun valid-keys-p (expr)
+  "Return true if the keys in EXPR are valid."
   (labels ((fn (args)
              (cond ((null args) t)
                    ((consp (car args)) (fn (car args)))
                    ((unless (valid-key-p (car args))) nil)
                    (t (fn (cdr args))))))
-    (and (valid-key-p (key value))
-         (fn value))))
+    (and (valid-key-p (key expr))
+         (fn expr))))
 
-(defun valid-form-p (value)
+(defun valid-form-p (expr)
   "Return true if EXPR is a valid mx-atom expression."
   ;; The first pass goes through all the items and checks for the keys
-  (and (valid-keys-p value)))
+  (and (valid-keys-p expr)))
 
 (defun read-expr (expr)
   "Read EXPR and break it down into multiple values."
   (let ((expr (normalize-expr expr)))
-    (destructuring-bind (ns name &optional &rest _)
+    (destructuring-bind (ns key &optional &rest _)
         expr
       (declare (ignore _))
-      (labels ((fn (args data metadata)
-                 (cond ((null args) (values ns name data (nreverse metadata)))
+      (labels ((fn (args value metadata)
+                 (cond ((null args) (values ns key value (nreverse metadata)))
                        (t (multiple-value-bind (start end)
                               (bounds args)
                             (fn (nthcdr (1+ end) args)
-                                data
+                                value
                                 (acons (car args) (subseq args start (1+ end)) metadata)))))))
         (fn (secondary-values expr) (primary-values expr) nil)))))
 
 (defun read-expr-from-string (raw-expr)
   "Read an EXPR as a string and return values that represent the parsed information."
-  (let ((value (streams/common:read-string-with-preserved-case raw-expr)))
-    (when (valid-expr-p value)
-      (let ((value (normalize-expr value)))
-        (when (valid-form-p value)
-          (read-expr value))))))
+  (let ((v (streams/common:read-from-string* raw-expr)))
+    (when (valid-expr-p v)
+      (let ((v (normalize-expr v)))
+        (when (valid-form-p v)
+          (read-expr v))))))
 
 (defun examine-expr (raw-expr)
   "Print information about RAW-EXPR."
@@ -251,9 +254,9 @@
 
 (defun build-mx-atom (expr)
   "Return an mx-atom instance from EXPR."
-  (multiple-value-bind (ns name data metadata)
+  (multiple-value-bind (ns key value metadata)
       (read-expr expr)
-    (streams/channels:make-mx-atom ns name data metadata)))
+    (streams/channels:make-mx-atom ns key value metadata)))
 
 (defmacro with-current-namespace (&body body)
   "Evaluate BODY in the current namespace."
@@ -263,12 +266,12 @@
      ,@body))
 
 (defun recall (key)
-  "Return a value in NSPACE indicated by HASH."
+  "Return a value in the current namespace by KEY."
   (with-current-namespace
-    (multiple-value-bind (val presentp)
+    (multiple-value-bind (v presentp)
         (gethash key table)
       (when presentp
-        (values val table namespace)))))
+        (values v table namespace)))))
 
 (defun update-key (items key value)
   "Update a specific colon selector under KEY with VALUE within ITEMS."
@@ -285,45 +288,61 @@
                    (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
     (fn (build-groups values) nil)))
 
-(defun dispatch (name expr)
-  "Store or update a value under NAME with EXPR in the active namespace."
-  (let ((p-values (primary-values expr))
-        (s-values (secondary-values expr)))
+;;; Add the ability to recall
+(defun dispatch (key expr)
+  "Store or update a value under KEY with EXPR in the active namespace."
+  (let* ((p-values (primary-values expr))
+         (s-values (secondary-values expr))
+         (groups (build-groups s-values)))
+    (declare (ignorable groups))
     (with-current-namespace
-      (macrolet ((vtn (v)
-                   `(values ,v table namespace)))
-        (multiple-value-bind (val existsp)
-            (gethash name table)
+      (macrolet ((vtn (v) `(values ,v table namespace)))
+        (multiple-value-bind (v existsp)
+            (gethash key table)
           (if existsp
               (progn
                 (when p-values
-                  (setf (streams/channels:data val) p-values))
+                  (setf (streams/channels:key v) p-values))
                 (when s-values
-                  (setf (streams/channels:metadata val)
-                        (update-map (streams/channels:metadata val) s-values)))
-                (vtn val))
+                  (setf (streams/channels:metadata v)
+                        (update-map (streams/channels:metadata v) s-values)))
+                (vtn v))
               (let ((v (build-mx-atom expr)))
-                (setf (gethash name table) v)
+                (setf (gethash key table) v)
                 (vtn v))))))))
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
   (let* ((expr (normalize-expr expr)))
-    (destructuring-bind (ns name &optional &body body)
+    (destructuring-bind (ns key &optional &body body)
         expr
       (declare (ignorable ns))
-      (cond ((null body) (recall name))
-            (t (dispatch name expr))))))
+      (cond ((null body) (recall key))
+            (t (dispatch key expr))))))
+
+(defun plural-requests-p (s-values)
+  "Return true if more than metadata request is present in S-VALUES."
+  (> (metadata-marker-count s-values) 1))
+
+(defun empty-requests-p (s-values)
+  "Return true if all the items in S-VALUES "
+  (every #'(lambda (arg)
+             (destructuring-bind (k v)
+                 arg
+               (declare (ignore k))
+               (null v)))
+         s-values))
 
 (defun eval-expr-1 (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and active namespace as multiple values."
   (let* ((expr (normalize-expr expr))
          (p-values (primary-values expr))
-         (s-values (secondary-values expr)))
+         (s-values (secondary-values expr))
+         (groups (build-groups expr)))
     (declare (ignorable p-values s-values))
-    (destructuring-bind (ns name &optional &body body)
+    (destructuring-bind (ns key &optional &body body)
         expr
-      (declare (ignorable ns name body))
+      (declare (ignorable ns key body))
       ;; If NS is specified, lock the operations to that namespace
 
       ;; Add ability to recall if a colon metadata is used
@@ -339,8 +358,15 @@
       ;; Find a way to combine recalling and setting
 
       ;; Dispatch metadata based on the intent
-      (cond ((null s-values) (recall name))
-            (t (dispatch name expr))))))
+
+      ;; Should BUILD-GROUPS be applied to S-VALUES regardless of the content?
+      ;; Is RECALL dumb?
+      (cond ((and (null p-values)
+                  (plural-requests-p s-values)
+                  (empty-requests-p s-values))
+             nil)
+            ((null s-values) (recall key))
+            (t (dispatch key expr))))))
 
 (defun recall-metadata (key mx-atom)
   "Return the the value specified by KEY in MX-ATOM."

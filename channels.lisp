@@ -13,10 +13,10 @@
            #:atable
            #:make-mx-machine
            #:make-mx-atom
-           #:name
+           #:key
            #:table
            #:id
-           #:data
+           #:value
            #:metadata
 
            #:mx-machine
@@ -79,10 +79,10 @@
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-machine ()
-  ((name :initarg :name
+  ((key :initarg :key
          :initform (uiop:hostname)
-         :reader name
-         :documentation "The name to designate the mx-machine instance. Defaults to the the hostname.")
+         :reader key
+         :documentation "The key to designate the mx-machine instance. Defaults to the the hostname.")
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
@@ -90,9 +90,9 @@
   (:documentation "The default store to use when there are no other available namespaces. When no names are specified the hostname is used for the instantiation."))
 
 (defclass mx-world ()
-  ((name :initarg :name
+  ((key :initarg :key
          :initform ""
-         :reader name
+         :reader key
          :documentation "The name to designate the mx-world instance.")
    (table :initarg :table
           :initform (make-hash-table)
@@ -101,9 +101,9 @@
   (:documentation "The structure to designate worlds."))
 
 (defclass mx-stream ()
-  ((name :initarg :name
+  ((key :initarg :key
          :initform ""
-         :reader name
+         :reader key
          :documentation "The name to designate the mx-stream instance.")
    (table :initarg :table
           :initform (make-hash-table)
@@ -112,9 +112,9 @@
   (:documentation "The structure to designate streams."))
 
 (defclass mx-view ()
-  ((name :initarg :name
+  ((key :initarg :key
          :initform ""
-         :reader name
+         :reader key
          :documentation "The name to designate the mx-view instance.")
    (table :initarg :table
           :initform (make-hash-table)
@@ -123,9 +123,9 @@
   (:documentation "The structure to designate views."))
 
 (defclass mx-canon ()
-  ((name :initarg :name
+  ((key :initarg :key
          :initform ""
-         :reader name
+         :reader key
          :documentation "The name to designate the mx-canon instance.")
    (table :initarg :table
           :initform (make-hash-table)
@@ -142,14 +142,14 @@
        :initform nil
        :reader ns
        :documentation "The namespace key of an mx-atom, whether it is m, s, c, v, or @")
-   (name :initarg :name
-         :initform nil
-         :reader name
-         :documentation "The name of an mx-atom.")
-   (data :initarg :data
-         :initform nil
-         :accessor data
-         :documentation "The main data of an mx-atom.")
+   (key :initarg :key
+        :initform nil
+        :accessor key
+        :documentation "The name of an mx-atom.")
+   (value :initarg :value
+          :initform nil
+          :accessor value
+          :documentation "The main value of an mx-atom.")
    (metadata :initarg :metadata
              :initform nil
              :accessor metadata
@@ -170,12 +170,12 @@
 (defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
   "Initialize MX-ATOM A in MX-UNIVERSE."
   (let ((counter (update-acounter mx-universe)))
-    (with-slots (id name)
+    (with-slots (id key)
         mx-atom
       (setf id counter)
       (with-slots (atable)
           mx-universe
-        (setf (gethash name atable) mx-atom)))))
+        (setf (gethash key atable) mx-atom)))))
 
 (defmethod print-object ((mx-atom mx-atom) stream)
   (print-unreadable-object (mx-atom stream :type t)
@@ -185,11 +185,11 @@
 
 (defmethod initialize-instance :after ((mx-machine mx-machine) &key mx-universe)
   "Initialize MX-MACHINE A in MX-UNIVERSE."
-  (with-slots (name)
+  (with-slots (key)
       mx-machine
     (with-slots (mtable)
         mx-universe
-      (setf (gethash name mtable) mx-machine))))
+      (setf (gethash key mtable) mx-machine))))
 
 (defmethod print-object ((h hash-table) stream)
   (print-unreadable-object (h stream :type t)
@@ -215,14 +215,14 @@
                  (funcall (read-from-string (mof:cat "STREAMS/CHANNELS:" table))
                           streams/ethers:*mx-universe*))))))
 
-(defun make-mx-machine (&optional name)
+(defun make-mx-machine (&optional key)
   "Return an instance of the mx-machine class."
-  (if name
-      (make-instance 'mx-machine :name name :mx-universe streams/ethers:*mx-universe*)
+  (if key
+      (make-instance 'mx-machine :key key :mx-universe streams/ethers:*mx-universe*)
       (make-instance 'mx-machine :mx-universe streams/ethers:*mx-universe*)))
 
-(defun make-mx-atom (ns name data metadata)
+(defun make-mx-atom (ns key value metadata)
   "Return a new mx-atom instance from arguments."
-  (make-instance 'mx-atom :ns ns :name name
-                          :data data :metadata metadata
+  (make-instance 'mx-atom :ns ns :key key
+                          :value value :metadata metadata
                           :mx-universe streams/ethers:*mx-universe*))
