@@ -58,7 +58,7 @@
   "Evaluate BODY while preserving the read case."
   `(let ((*readtable* (copy-readtable nil)))
      (setf (readtable-case *readtable*) :preserve)
-     ,@body))
+     (progn ,@body)))
 
 (defun read-from-string* (string)
   "Evaluate STRING with preserved case."

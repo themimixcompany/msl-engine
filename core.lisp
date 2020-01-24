@@ -100,7 +100,6 @@
   "Return a new list containing the prefix and the body of symbol from SYMBOL."
   (let* ((string (streams/common:string-convert symbol))
          (length (length string)))
-    (declare (ignorable length))
     (if (> length 1)
         (list (intern (streams/common:string-convert (elt string 0)))
               (read-from-string (subseq string 1)))
@@ -112,11 +111,25 @@
        (let* ((string (streams/common:string-convert symbol))
               (length (length string)))
          (and (> length 1)
-              (char= prefix (elt string 0))))))
+              (char= (elt string 0) prefix)))))
+
+(defun infixedp (symbol infix)
+  "Return true if SYMBOL contains the infix INFIX."
+  (and (symbolp symbol)
+       (let* ((string (streams/common:string-convert symbol))
+              (length (length string)))
+         (and (>= length 3)
+              (not (char= (elt string 0) infix))
+              (not (char= (elt string (1- length)) infix))
+              (find infix string)))))
 
 (defun @-prefixed-p (symbol)
-  "Return true if SYMBOL is prefixed with the @ identifier."
+  "Return true if SYMBOL is prefixed with the @ character."
   (prefixedp symbol #\@))
+
+(defun :-infixed-p (symbol)
+  "Return true if SYMBOL is infixed with the : character."
+  (infixedp symbol #\:))
 
 (defun split-prefixes (list)
   "Return a new list where the first item is split if prefixed; also apply to sublists that are prefixed."
@@ -302,7 +315,7 @@
           (if existsp
               (progn
                 (when p-values
-                  (setf (streams/channels:key v) p-values))
+                  (setf (streams/channels:value v) p-values))
                 (when s-values
                   (setf (streams/channels:metadata v)
                         (update-map (streams/channels:metadata v) s-values)))
@@ -339,7 +352,7 @@
          (p-values (primary-values expr))
          (s-values (secondary-values expr))
          (groups (build-groups expr)))
-    (declare (ignorable p-values s-values))
+    (declare (ignorable p-values s-values groups))
     (destructuring-bind (ns key &optional &body body)
         expr
       (declare (ignorable ns key body))
@@ -365,6 +378,7 @@
                   (plural-requests-p s-values)
                   (empty-requests-p s-values))
              nil)
+            ;; Implement recalling for single metadata requests
             ((null s-values) (recall key))
             (t (dispatch key expr))))))
 
