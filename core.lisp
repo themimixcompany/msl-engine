@@ -309,6 +309,13 @@
                        (null (cadr group)))
                    (build-groups values)) nil)))
 
+(defun merge-metadata (key mx-atom)
+  "Return the the value specified by KEY in MX-ATOM."
+  (let* ((metadata (streams/channels:metadata mx-atom))
+         (item (streams/common:assoc-value key metadata)))
+    (when item
+      (format nil "~{~A~^ ~}" item))))
+
 (defmacro with-expr-values (&body body)
   "Evaluate BODY in the context of primary and secondary values."
   `(let* ((p-values (primary-values expr))
@@ -329,6 +336,10 @@
     (and (= length 1)
          (keywordp (car s-values)))))
 
+(defun all-recall-p (s-values)
+  "Return true if all the items in S-VALUES are recalls."
+  (every #'keywordp s-values))
+
 (defun install-present-p (s-values)
   "Return true if there are non-null values in S-VALUES."
   (when (not (zerop (count-if #'(lambda (x) (not (null x))) (build-groups s-values)
@@ -344,8 +355,9 @@
                (null v)))
          s-values))
 
-(defun dispatch (key expr)
+(defun dispatch (ns key expr)
   "Store or update a value under KEY with EXPR in the current namespace."
+  (declare (ignorable ns))
   (let* ((p-values (primary-values expr))
          (s-values (secondary-values expr)))
     (with-current-namespace
@@ -357,10 +369,14 @@
              nil)
             ((and existsp (null p-values) (null s-values))
              (vtn v))
-            ((and existsp (single-recall-p s-values))
+            ((and existsp (null p-values) (single-recall-p s-values))
              (let ((item (assoc (first s-values) (streams/channels:metadata v))))
                (when item
                  (vtn v))))
+            ((and existsp p-values (all-recall-p s-values))
+             (setf (streams/channels:value v)
+                   p-values)
+             (vtn v))
             ((and existsp (or p-values s-values))
              (when p-values
                (setf (streams/channels:value v)
@@ -369,31 +385,35 @@
                (setf (streams/channels:metadata v)
                      (update-map (streams/channels:metadata v) s-values)))
              (vtn v))
-            (t (let ((v (build-mx-atom expr)))
-                 (setf (gethash key table) v)
-                 (vtn v)))))))))
+            (t
+             (let ((v (build-mx-atom expr)))
+               (setf (gethash key table) v)
+               (vtn v)))))))))
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
   (let ((expr (normalize-expr expr)))
-    (destructuring-bind (ns key &optional &body body)
+    (destructuring-bind (ns key &optional &body _)
         expr
-      (declare (ignorable ns body))
-      (dispatch key expr))))
+      (declare (ignore _))
+      (dispatch ns key expr))))
 
-(defun merge-metadata (key mx-atom)
-  "Return the the value specified by KEY in MX-ATOM."
-  (let* ((metadata (streams/channels:metadata mx-atom))
-         (item (streams/common:assoc-value key metadata)))
-    (when item
-      (format nil "~{~A~^ ~}" item))))
-
-;;; This function handles the ‘intent’
-;;; This may also use BUILD-GROUPS to check the intent of the secondary values
-(defun show (expr)
-  "Return the printed representation of values as expressed in EXPR."
-  (with-expr-values
-    (multiple-value-bind (mx-atom table namespace)
+(defun show (expr &optional (stream t))
+  "Return the printed intended representation of EXPR."
+  (let* ((expr (normalize-expr expr))
+         (p-values (primary-values expr))
+         (s-values (secondary-values expr)))
+    (multiple-value-bind (v table namespace)
         (eval-expr expr)
-      (declare (ignorable mx-atom table namespace))
-      nil)))
+      (declare (ignorable table namespace))
+      (when v
+        (cond ((and (null p-values)
+                    (single-recall-p s-values))
+               (format stream (mof:join (streams/common:assoc-value
+                                         (first s-values)
+                                         (streams/channels:metadata v)))))
+              (t (format stream (mof:join (streams/channels:value v)))))))))
+
+(defun dump (expr)
+  "Display the object information of EXPR."
+  (streams/common:dump-object (eval-expr expr)))
