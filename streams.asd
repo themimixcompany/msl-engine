@@ -21,6 +21,7 @@
                #:alexandria
                #:bordeaux-threads
                #:closer-mop
+               #:named-readtables
                "streams/common"
                "streams/reader"
                "streams/ethers"
