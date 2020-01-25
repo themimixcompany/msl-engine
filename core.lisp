@@ -1,10 +1,12 @@
 ;;;; core.lisp
 
 (uiop:define-package #:streams/core
-    (:use #:cl)
+    (:use #:cl #:named-readtables)
   (:nicknames #:s/core))
 
 (in-package #:streams/core)
+
+(in-readtable streams/reader:syntax)
 
 (defun mx-atom-key (mx-atom)
   "Return the name used to identify MX-ATOM."
@@ -374,7 +376,7 @@
             ((and existsp (null p-values) (null s-values))
              (vtn v))
             ;; (@walt :age)
-            ;; ‘walt’ exists, and there’s one recall
+            ;; ‘walt’ exists, and there’s only one recall
             ((and existsp (null p-values) (single-recall-p s-values))
              (let ((item (assoc (first s-values) (streams/channels:metadata v))))
                (when item
@@ -385,7 +387,7 @@
              (setf (streams/channels:value v)
                    p-values)
              (vtn v))
-            ;; (@walt "Walt Disney") | (@walt :age 0) | (@walt "Walt Disney" :age 0)
+            ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
             ;; ‘walt’ exists, and either p-values or s-values exists
             ((and existsp (or p-values s-values))
              (when p-values
@@ -395,7 +397,7 @@
                (setf (streams/channels:metadata v)
                      (update-map (streams/channels:metadata v) s-values)))
              (vtn v))
-            ;; (@walt "Walt Disney" :age 0)
+            ;; (@walt "Walt Disney" :age 65)
             ;; ‘walt’ does not exist and we’re creating a instance
             (t
              (let ((v (build-mx-atom expr)))
@@ -419,12 +421,16 @@
         (eval-expr expr)
       (declare (ignorable table namespace))
       (when v
-        (cond ((and (null p-values)
-                    (single-recall-p s-values))
-               (format stream (mof:join (streams/common:assoc-value
-                                         (first s-values)
-                                         (streams/channels:metadata v)))))
-              (t (format stream (mof:join (streams/channels:value v)))))))))
+        (cond
+          ;; (@walt :age)
+          ;; ‘walt’ exists, and there’s only one recall
+          ((and (null p-values)
+                (single-recall-p s-values))
+           (format stream (mof:join (streams/common:assoc-value
+                                     (first s-values)
+                                     (streams/channels:metadata v)))))
+          ;; other expressions
+          (t (format stream (mof:join (streams/channels:value v)))))))))
 
 (defun dump (expr)
   "Display the object information of EXPR."
