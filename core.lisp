@@ -365,18 +365,28 @@
         (multiple-value-bind (v existsp)
             (gethash key table)
           (cond
+            ;; (@walt)
+            ;; ‘walt’ still does not exist
             ((and (null existsp) (null p-values))
              nil)
+            ;; (@walt)
+            ;; ‘walt’ already exists
             ((and existsp (null p-values) (null s-values))
              (vtn v))
+            ;; (@walt :age)
+            ;; ‘walt’ exists, and there’s one recall
             ((and existsp (null p-values) (single-recall-p s-values))
              (let ((item (assoc (first s-values) (streams/channels:metadata v))))
                (when item
                  (vtn v))))
+            ;; (@walt "Walt Disney" :age :gender)
+            ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
             ((and existsp p-values (all-recall-p s-values))
              (setf (streams/channels:value v)
                    p-values)
              (vtn v))
+            ;; (@walt "Walt Disney") | (@walt :age 0) | (@walt "Walt Disney" :age 0)
+            ;; ‘walt’ exists, and either p-values or s-values exists
             ((and existsp (or p-values s-values))
              (when p-values
                (setf (streams/channels:value v)
@@ -385,6 +395,8 @@
                (setf (streams/channels:metadata v)
                      (update-map (streams/channels:metadata v) s-values)))
              (vtn v))
+            ;; (@walt "Walt Disney" :age 0)
+            ;; ‘walt’ does not exist and we’re creating a instance
             (t
              (let ((v (build-mx-atom expr)))
                (setf (gethash key table) v)
@@ -399,7 +411,7 @@
       (dispatch ns key expr))))
 
 (defun show (expr &optional (stream t))
-  "Return the printed intended representation of EXPR."
+  "Return the intended string representation of EXPR."
   (let* ((expr (normalize-expr expr))
          (p-values (primary-values expr))
          (s-values (secondary-values expr)))
