@@ -6,7 +6,7 @@
 
 (in-package #:streams/core)
 
-(in-readtable streams/reader:syntax)
+;;(in-readtable streams/reader:streams-readtable)
 
 (defun mx-atom-key (mx-atom)
   "Return the name used to identify MX-ATOM."
