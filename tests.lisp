@@ -9,30 +9,37 @@
 (in-package #:streams/tests)
 
 (def-suite all-tests)
-
 (in-suite all-tests)
 
 (defun run-tests ()
+  "Run all the tests defined in the suite."
   (run! 'all-tests))
 
+(defun s (expr)
+  "Return the string represantion of EXPR."
+  (show expr nil))
+
 (test show-tests
-  "Test the output of the SHOW function."
-  (is (string= (show '(@walt "Walt" "Disney"
-                       :number 100 200 300 :species (@person Human) :state "IL") nil)
+  "Test the output of SHOW."
+  (is (string= (s '(@walt "Walt" "Disney" :number 100 200 300 :species (@person Human) :state "IL"))
                "Walt Disney"))
-  (is (string= (show '(@walt) nil)
+  (is (string= (s '(@walt))
                "Walt Disney"))
-  (is (string= (show '(@walt "WD" :number 0) nil)
+  (is (string= (s '(@walt "WD" :number 0))
                "WD"))
-  (is (string= (show '(@walt "XD" :number) nil)
+  (is (string= (s '(@walt "XD" :number))
                "XD"))
-  (is (string= (show '(@walt :number 1 :age 20 :gender m) nil)
+  (is (string= (s '(@walt :number 1 :age 20 :gender m))
                "XD"))
-  (is (null (show '(@david) nil)))
-  (is (null (show '(@david :number 0 :age 21 :gender m) nil)))
-  (is (string= (show '(@walt :number) nil)
+  (is (null (s '(@david))))
+  (is (null (s '(@david :number 0 :age 21 :gender m))))
+  (is (string= (s '(@walt :number))
                "1"))
-  (is (string= (show '(@walt :number :state) nil)
+  (is (string= (s '(@walt :number :state))
                "XD"))
-  (is (string= (show '(@walt :number :state "NY") nil)
+  (is (string= (s '(@walt :number :state "NY"))
                "XD")))
+
+(test eval-expr-tests
+  "Test the values returned by EVAL-EXPR."
+  (is (null nil)))
