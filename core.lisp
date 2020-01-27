@@ -2,7 +2,10 @@
 
 (uiop:define-package #:streams/core
     (:use #:cl #:named-readtables)
-  (:nicknames #:s/core))
+  (:nicknames #:s/core)
+  (:export #:eval-expr
+           #:show
+           #:dump))
 
 (in-package #:streams/core)
 
