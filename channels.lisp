@@ -24,7 +24,9 @@
            #:mx-stream
            #:mx-view
            #:mx-canon
-           #:mx-atom))
+           #:mx-atom
+
+           #:value*))
 
 (in-package #:streams/channels)
 
@@ -180,9 +182,9 @@
 
 (defmethod print-object ((mx-atom mx-atom) stream)
   (print-unreadable-object (mx-atom stream :type t)
-    (with-slots (id)
+    (with-slots (ns id key)
         mx-atom
-      (format stream "~A" id))))
+      (format stream "~A ~A ~A" id ns key))))
 
 (defmethod initialize-instance :after ((mx-machine mx-machine) &key mx-universe)
   "Initialize MX-MACHINE A in MX-UNIVERSE."
@@ -227,3 +229,7 @@
   (make-instance 'mx-atom :ns ns :key key
                           :value value :metadata metadata
                           :mx-universe streams/ethers:*mx-universe*))
+
+(defun value* (obj)
+  "Return the first value in obj."
+  (first (value obj)))
