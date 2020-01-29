@@ -23,7 +23,8 @@
            #:mx-world
            #:mx-stream
            #:mx-view
-           #:mx-canon))
+           #:mx-canon
+           #:mx-atom))
 
 (in-package #:streams/channels)
 

@@ -76,7 +76,8 @@
       (stringp v)
       (numberp v)
       (consp v)
-      (pathnamep v)))
+      (pathnamep v)
+      (typep v 'streams/channels:mx-atom)))
 
 (defun metadata-marker-p (v)
   "Return true if V is a valid mx-atom metadata."
@@ -363,6 +364,7 @@
 (defun dispatch (ns key expr)
   "Store or update a value under KEY with EXPR in the current namespace."
   (declare (ignorable ns))
+  (mof:dbg "DISPATCH")
   (let* ((p-values (primary-values expr))
          (s-values (secondary-values expr)))
     (with-current-namespace
@@ -409,6 +411,7 @@
 
 (defun eval-expr (expr)
   "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
+  (mof:dbg "EVAL-EXPR")
   (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns key &optional &body _)
         expr
@@ -438,3 +441,50 @@
 (defun dump (expr)
   "Display the object information of EXPR."
   (streams/common:dump-object (eval-expr expr)))
+
+(defun mx-atom-form-p (data)
+  "Return true if data has the form of an mx-atom."
+  (when (listp data)
+    (let ((data (normalize-expr data)))
+      (and (>= (length data) 2)
+           (destructuring-bind (ns key &optional &body _)
+               data
+             (declare (ignore _))
+             (and (eql '@ ns)
+                  (or (symbolp key)
+                      (stringp key))))))))
+
+(defun mx-atom-body (expr)
+  "Return the body of EXPR."
+  (when (mx-atom-form-p expr)
+    (destructuring-bind (ns key &optional &body body)
+        (normalize-expr expr)
+      (declare (ignore ns key))
+      (when body body))))
+
+(defun reduce-tree (fn tree &key (key #'identity))
+  "Apply FN to each branch in TREE while extracting values with KEY."
+  (if (atom tree)
+      (funcall key tree)
+      (funcall fn
+               (reduce-tree fn (car tree) :key key)
+               (reduce-tree fn (cdr tree) :key key))))
+
+(defun raw-expr-present-p (expr)
+  "Return true if there is an unresolved mx-atom value in EXPR."
+  (when (member-if #'mx-atom-form-p (mx-atom-body expr))
+    t))
+
+(defun resolve (expr)
+  "Convert the mx-atom subexpressions in EXPR to their equivalent object representations, then return a new value with those resolved values."
+  (mof:dbg "RESOLVE")
+  (let ((expr (normalize-expr expr)))
+    (labels ((fn (args acc)
+               (cond
+                 ((null args) (eval-expr (reverse acc)))
+                 ((mx-atom-form-p (car args))
+                  (if (raw-expr-present-p (car args))
+                      (fn (cdr args) (cons (fn (car args) nil) acc))
+                      (fn (cdr args) (cons (eval-expr (car args)) acc))))
+                 (t (fn (cdr args) (cons (car args) acc))))))
+      (fn expr nil))))
