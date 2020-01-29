@@ -23,25 +23,12 @@
                #:closer-mop
                #:named-readtables
                "streams/common"
-               "streams/reader"
                "streams/ethers"
                "streams/channels"
                "streams/core"
+               "streams/reader"
                "streams/serve"
                "streams/build"
                "streams/initialize")
   ;; :in-order-to ((test-op (test-op "streams/tests")))
   )
-
-;; (defsystem #:streams-tests
-;;   :description "streams-tests"
-;;   :author "The Mimix Company <code@mimix.io>"
-;;   :license "BlueOak-1.0.0"
-;;   :version "1.0.0"
-;;   :class :package-inferred-system
-;;   :depends-on (#:streams
-;;                #:fiveam
-;;                ;; "streams/tests"
-;;                )
-;;   ;; :perform (test-op (o s) (uiop:symbol-call :fiveam :run! 'streams/tests:all-tests))
-;;   )
