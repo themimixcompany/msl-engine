@@ -12,6 +12,7 @@
 (mof:defcon +left-bracket+ #\[)
 (mof:defcon +right-bracket+ #\])
 (mof:defcon +percent+ #\%)
+(mof:defcon +caret+ #\^)
 (mof:defcon +bang+ #\!)
 (mof:defcon +tilde+ #\~)
 (mof:defcon +dollar+ #\$)
@@ -26,12 +27,12 @@
 (set-macro-character +left-bracket+ #'|[-reader|)
 (set-macro-character +right-bracket+ (get-macro-character #\) nil))
 
-(defun |%-reader| (stream char)
-  "Use %OBJECT as shorthand for EVAL-EXPR."
+(defun |^-reader| (stream char)
+  "Use ^OBJECT as shorthand for EVAL-EXPR."
   (declare (ignore char))
   (list 'streams/core:eval-expr (list 'quote (read stream t nil t))))
 
-(set-macro-character +percent+ #'|%-reader|)
+(set-macro-character +caret+ #'|^-reader|)
 
 (defun |$-reader| (stream char)
   "Use $OBJECT as shorthand for SHOW."

@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/tests
     (:use #:cl #:fiveam #:streams/core)
+  (:nicknames #:s/tests)
   (:export #:run!
            #:all-tests
            #:run-tests))
@@ -18,12 +19,8 @@
 (test show-tests
   "Test the output of SHOW."
   (is (string= $(@walt "Walt" "Disney" :number 1 2 :species "Human" :state "IL") "Walt Disney"))
-
-  ;; This should not evaluate because there’s no ‘person’ atom, yet.
-  ;; (is (string= $(@walt "Walt" "Disney" :number 100 200 300 :species (@person Human) :state "IL")
-  ;;              "Walt Disney"))
-
-  (is (string= $(@person "Human") "Human"))
+  (is (null $(@walt "Walt" "Disney" :number 1 2 :species (@person) :state "IL")))
+  (is (null $(@walt (@nothing))))
   (is (string= $(@walt) "Walt Disney"))
   (is (string= $(@walt "WD" :number 0) "WD"))
   (is (string= $(@walt "XD" :number) "XD"))

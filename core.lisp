@@ -3,9 +3,10 @@
 (uiop:define-package #:streams/core
     (:use #:cl #:named-readtables)
   (:nicknames #:s/core)
-  (:export #:eval-expr
+  (:export #:%eval-expr
            #:show
-           #:dump))
+           #:dump
+           #:eval-expr))
 
 (in-package #:streams/core)
 
@@ -364,7 +365,6 @@
 (defun dispatch (ns key expr)
   "Store or update a value under KEY with EXPR in the current namespace."
   (declare (ignorable ns))
-  (mof:dbg "DISPATCH")
   (let* ((p-values (primary-values expr))
          (s-values (secondary-values expr)))
     (with-current-namespace
@@ -409,38 +409,13 @@
                (setf (gethash key table) v)
                (vtn v)))))))))
 
-(defun eval-expr (expr)
-  "Evaluate EXPR, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
-  (mof:dbg "EVAL-EXPR")
+(defun %eval-expr (expr)
+  "Evaluate EXPR as a free expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
   (let ((expr (normalize-expr expr)))
     (destructuring-bind (ns key &optional &body _)
         expr
       (declare (ignore _))
       (dispatch ns key expr))))
-
-(defun show (expr &optional (stream t))
-  "Return the intended string representation of EXPR."
-  (let* ((expr (normalize-expr expr))
-         (p-values (primary-values expr))
-         (s-values (secondary-values expr)))
-    (multiple-value-bind (v table namespace)
-        (eval-expr expr)
-      (declare (ignorable table namespace))
-      (when v
-        (cond
-          ;; (@walt :age)
-          ;; ‘walt’ exists, and there’s only one recall
-          ((and (null p-values)
-                (single-recall-p s-values))
-           (format stream (mof:join (streams/common:assoc-value
-                                     (first s-values)
-                                     (streams/channels:metadata v)))))
-          ;; other expressions
-          (t (format stream (mof:join (streams/channels:value v)))))))))
-
-(defun dump (expr)
-  "Display the object information of EXPR."
-  (streams/common:dump-object (eval-expr expr)))
 
 (defun mx-atom-form-p (data)
   "Return true if data has the form of an mx-atom."
@@ -450,7 +425,7 @@
            (destructuring-bind (ns key &optional &body _)
                data
              (declare (ignore _))
-             (and (eql '@ ns)
+             (and (string= "@" (streams/common:string-convert ns))
                   (or (symbolp key)
                       (stringp key))))))))
 
@@ -462,29 +437,54 @@
       (declare (ignore ns key))
       (when body body))))
 
-(defun reduce-tree (fn tree &key (key #'identity))
-  "Apply FN to each branch in TREE while extracting values with KEY."
-  (if (atom tree)
-      (funcall key tree)
-      (funcall fn
-               (reduce-tree fn (car tree) :key key)
-               (reduce-tree fn (cdr tree) :key key))))
-
-(defun raw-expr-present-p (expr)
+(defun free-expr-present-p (expr)
   "Return true if there is an unresolved mx-atom value in EXPR."
   (when (member-if #'mx-atom-form-p (mx-atom-body expr))
     t))
 
-(defun resolve (expr)
-  "Convert the mx-atom subexpressions in EXPR to their equivalent object representations, then return a new value with those resolved values."
-  (mof:dbg "RESOLVE")
-  (let ((expr (normalize-expr expr)))
-    (labels ((fn (args acc)
-               (cond
-                 ((null args) (eval-expr (reverse acc)))
-                 ((mx-atom-form-p (car args))
-                  (if (raw-expr-present-p (car args))
-                      (fn (cdr args) (cons (fn (car args) nil) acc))
-                      (fn (cdr args) (cons (eval-expr (car args)) acc))))
-                 (t (fn (cdr args) (cons (car args) acc))))))
-      (fn expr nil))))
+(defun eval-expr (expr)
+  "Evaluate EXPR as a complete expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
+  (block nil
+    (let ((expr (normalize-expr expr)))
+      (labels ((fn (args acc)
+                 (cond
+                   ((null args)
+                    (let ((v (%eval-expr (reverse acc))))
+                      (if (null v)
+                          (return nil)
+                          v)))
+                   ((mx-atom-form-p (car args))
+                    (if (free-expr-present-p (car args))
+                        (fn (cdr args) (cons (fn (car args) nil) acc))
+                        (let ((v (%eval-expr (car args))))
+                          (if (null v)
+                              (return nil)
+                              (fn (cdr args) (cons v acc))))))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+        (fn expr nil)))))
+
+(defun show (expr &optional (stream t))
+  "Return the intended string representation of EXPR."
+  (block nil
+    (let* ((expr (normalize-expr expr))
+           (p-values (primary-values expr))
+           (s-values (secondary-values expr)))
+      (multiple-value-bind (v table namespace)
+          (eval-expr expr)
+        (declare (ignorable table namespace))
+        (if (null v)
+            (return nil)
+            (cond
+              ;; (@walt :age)
+              ;; ‘walt’ exists, and there’s only one recall
+              ((and (null p-values)
+                    (single-recall-p s-values))
+               (format stream (mof:join (streams/common:assoc-value
+                                         (first s-values)
+                                         (streams/channels:metadata v)))))
+              ;; other expressions
+              (t (format stream (mof:join (streams/channels:value v))))))))))
+
+(defun dump (expr)
+  "Display inforamiot about the result of evaluating EXPR."
+  (streams/common:dump-object (eval-expr expr)))
