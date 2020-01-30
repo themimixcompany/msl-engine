@@ -4,9 +4,9 @@
     (:use #:cl #:named-readtables)
   (:nicknames #:s/core)
   (:export #:%eval-expr
+           #:eval-expr
            #:show
-           #:dump
-           #:eval-expr))
+           #:dump))
 
 (in-package #:streams/core)
 
@@ -71,6 +71,10 @@
   "Return true if EXPR is valid."
   (>= (length expr) 1))
 
+(defun mx-atom-p (data)
+  "Return true if DATA is an mx-atom instance."
+  (typep data 'streams/channels:mx-atom))
+
 (defun data-marker-p (v)
   "Return true if V is a valid mx-atom data."
   (or (and (symbolp v) (not (keywordp v)))
@@ -78,7 +82,7 @@
       (numberp v)
       (consp v)
       (pathnamep v)
-      (typep v 'streams/channels:mx-atom)))
+      (mx-atom-p v)))
 
 (defun metadata-marker-p (v)
   "Return true if V is a valid mx-atom metadata."
@@ -149,9 +153,15 @@
                    (t (fn (cdr args) (cons (car args) acc) nil)))))
     (fn list nil t)))
 
+(defun ensure-expr (data)
+  "Return an expr representation from DATA."
+  (if (stringp data)
+      (streams/common:read-from-string* data)
+      data))
+
 (defun normalize-expr (expr)
   "Pass EXPR through a filter, returning a new expr with correct structure."
-  (split-prefixes expr))
+  (split-prefixes (ensure-expr expr)))
 
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
@@ -442,6 +452,29 @@
   (when (member-if #'mx-atom-form-p (mx-atom-body expr))
     t))
 
+(defun resolve (expr mx-atom &optional (stream nil))
+  "Return the intended string representation of EXPR."
+  (block nil
+    (let* ((expr (normalize-expr expr))
+           (p-values (primary-values expr))
+           (s-values (secondary-values expr)))
+      (multiple-value-bind (v table namespace)
+          mx-atom
+        (declare (ignorable table namespace))
+        (flet ((v-value (v)
+                 (streams/channels:value v))
+               (m-value (s-values v)
+                 (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
+          (if (null v)
+              (return nil)
+              (cond
+                ;; (@walt :age)
+                ;; ‘walt’ exists, and there’s only one recall
+                ((and (null p-values) (single-recall-p s-values))
+                 (format stream (mof:join (m-value s-values v))))
+                ;; other expressions
+                (t (format stream (mof:join (v-value v)))))))))))
+
 (defun eval-expr (expr)
   "Evaluate EXPR as a complete expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
   (block nil
@@ -455,35 +488,36 @@
                           v)))
                    ((mx-atom-form-p (car args))
                     (if (free-expr-present-p (car args))
-                        (fn (cdr args) (cons (fn (car args) nil) acc))
+                        (fn (cdr args) (cons (resolve (car args) (fn (car args) nil)) acc))
                         (let ((v (%eval-expr (car args))))
                           (if (null v)
                               (return nil)
-                              (fn (cdr args) (cons v acc))))))
+                              (fn (cdr args) (cons (resolve (car args) v) acc))))))
                    (t (fn (cdr args) (cons (car args) acc))))))
         (fn expr nil)))))
 
-(defun show (expr &optional (stream t))
+(defun show (expr &optional (stream nil))
   "Return the intended string representation of EXPR."
   (block nil
     (let* ((expr (normalize-expr expr))
            (p-values (primary-values expr))
            (s-values (secondary-values expr)))
-      (multiple-value-bind (v table namespace)
-          (eval-expr expr)
-        (declare (ignorable table namespace))
-        (if (null v)
-            (return nil)
-            (cond
-              ;; (@walt :age)
-              ;; ‘walt’ exists, and there’s only one recall
-              ((and (null p-values)
-                    (single-recall-p s-values))
-               (format stream (mof:join (streams/common:assoc-value
-                                         (first s-values)
-                                         (streams/channels:metadata v)))))
-              ;; other expressions
-              (t (format stream (mof:join (streams/channels:value v))))))))))
+      (flet ((v-value (v)
+               (streams/channels:value v))
+             (m-value (s-values v)
+               (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
+        (multiple-value-bind (v table namespace)
+            (eval-expr expr)
+          (declare (ignorable table namespace))
+          (if (null v)
+              (return nil)
+              (cond
+                ;; (@walt :age)
+                ;; ‘walt’ exists, and there’s only one recall
+                ((and (null p-values) (single-recall-p s-values))
+                 (format stream (mof:join (m-value s-values v))))
+                ;; other expressions
+                (t (format stream (mof:join (v-value v)))))))))))
 
 (defun dump (expr)
   "Display inforamiot about the result of evaluating EXPR."
