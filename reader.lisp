@@ -37,7 +37,7 @@
 (defun |$-reader| (stream char)
   "Use $OBJECT as shorthand for SHOW."
   (declare (ignore char))
-  (list 'streams/core:show (list 'quote (read stream t nil t)) nil))
+  (list 'streams/core:show (list 'quote (read stream t nil t))))
 
 (set-macro-character +dollar+ #'|$-reader|)
 

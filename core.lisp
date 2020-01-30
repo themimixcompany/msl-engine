@@ -452,29 +452,6 @@
   (when (member-if #'mx-atom-form-p (mx-atom-body expr))
     t))
 
-(defun resolve (expr mx-atom &optional (stream nil))
-  "Return the intended string representation of EXPR."
-  (block nil
-    (let* ((expr (normalize-expr expr))
-           (p-values (primary-values expr))
-           (s-values (secondary-values expr)))
-      (multiple-value-bind (v table namespace)
-          mx-atom
-        (declare (ignorable table namespace))
-        (flet ((v-value (v)
-                 (streams/channels:value v))
-               (m-value (s-values v)
-                 (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
-          (if (null v)
-              (return nil)
-              (cond
-                ;; (@walt :age)
-                ;; ‘walt’ exists, and there’s only one recall
-                ((and (null p-values) (single-recall-p s-values))
-                 (format stream (mof:join (m-value s-values v))))
-                ;; other expressions
-                (t (format stream (mof:join (v-value v)))))))))))
-
 (defun eval-expr (expr)
   "Evaluate EXPR as a complete expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
   (block nil
@@ -488,15 +465,15 @@
                           v)))
                    ((mx-atom-form-p (car args))
                     (if (free-expr-present-p (car args))
-                        (fn (cdr args) (cons (resolve (car args) (fn (car args) nil)) acc))
+                        (fn (cdr args) (cons (show (car args) (fn (car args) nil)) acc))
                         (let ((v (%eval-expr (car args))))
                           (if (null v)
                               (return nil)
-                              (fn (cdr args) (cons (resolve (car args) v) acc))))))
+                              (fn (cdr args) (cons (show (car args) v) acc))))))
                    (t (fn (cdr args) (cons (car args) acc))))))
         (fn expr nil)))))
 
-(defun show (expr &optional (stream nil))
+(defun show (expr &optional mx-atom stream)
   "Return the intended string representation of EXPR."
   (block nil
     (let* ((expr (normalize-expr expr))
@@ -507,7 +484,7 @@
              (m-value (s-values v)
                (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
         (multiple-value-bind (v table namespace)
-            (eval-expr expr)
+            (or mx-atom (eval-expr expr))
           (declare (ignorable table namespace))
           (if (null v)
               (return nil)
