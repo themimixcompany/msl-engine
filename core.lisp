@@ -237,15 +237,6 @@
         (when (valid-form-p v)
           (read-expr v))))))
 
-(defun examine-expr (raw-expr)
-  "Print information about RAW-EXPR."
-  (loop :for e :in (read-expr-from-string raw-expr) :do (format t "~S~20T~S~%" e (type-of e))))
-
-(defun resolve-atom (atom)
-  "Expand the values inside ATOM then assign them to the corresponding stores."
-  (declare (ignore atom))
-  nil)
-
 (defun build-pairs (items)
   "Group items into pairs."
   (labels ((fn (items acc)
@@ -489,10 +480,16 @@
           (if (null v)
               (return nil)
               (cond
+                ;; (@walt :age 0)
+                ;; ‘walt’ exists, and there’s only one install
+                ((and (null p-values) (install-present-p s-values))
+                 (format stream (mof:join (m-value s-values v))))
+
                 ;; (@walt :age)
                 ;; ‘walt’ exists, and there’s only one recall
                 ((and (null p-values) (single-recall-p s-values))
                  (format stream (mof:join (m-value s-values v))))
+
                 ;; other expressions
                 (t (format stream (mof:join (v-value v)))))))))))
 
