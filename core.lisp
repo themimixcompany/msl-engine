@@ -173,6 +173,16 @@
           (bounds body)
         (subseq body start (1+ end))))))
 
+(defun upcase-keyword (keyword)
+  "Return an upcased version of KEYWORD."
+  (if (keywordp keyword)
+      (read-from-string (mof:cat "KEYWORD:" (string-upcase (streams/common:string-convert keyword))))
+      keyword))
+
+(defun upcase-keywords (list)
+  "Return a list wherein all keyword elements are upcased."
+  (mapcar #'upcase-keyword list))
+
 (defun secondary-values (expr)
   "Return the secondary values—metadata, etc—from EXPR; return NIL if none are found."
   (destructuring-bind (_ __ &body body)
@@ -180,7 +190,7 @@
     (declare (ignore _ __))
     (let ((index (position-if #'metadata-marker-p body)))
       (when index
-        (subseq body index)))))
+        (upcase-keywords (subseq body index))))))
 
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
@@ -332,27 +342,31 @@
      (declare (ignorable p-values s-values groups))
      (progn ,@body)))
 
-(defun plural-recalls-p (s-values)
-  "Return true if there are more than one metadata requests in S-VALUES."
-  (when (not (zerop (count-if #'null (build-groups s-values)
-                              :key #'second)))
-    t))
+(defun recall-count (s-values)
+  "Return the number of recalls in S-VALUES."
+  (count-if #'null (build-groups s-values) :key #'second))
 
 (defun single-recall-p (s-values)
   "Return true if there’s only one metadata request in S-VALUES."
-  (let ((length (length s-values)))
-    (and (= length 1)
-         (keywordp (car s-values)))))
+  (and (= (recall-count s-values) 1)
+       (zerop (install-count s-values))))
 
 (defun all-recall-p (s-values)
   "Return true if all the items in S-VALUES are recalls."
   (every #'keywordp s-values))
 
-(defun install-present-p (s-values)
-  "Return true if there are non-null values in S-VALUES."
-  (when (not (zerop (count-if #'(lambda (x) (not (null x))) (build-groups s-values)
-                              :key #'second)))
-    t))
+(defun install-count (s-values)
+  "Return the number of installs in S-VALUES."
+  (count-if #'(lambda (x) (not (null x))) (build-groups s-values) :key #'second))
+
+(defun single-install-p (s-values)
+  "Return true if there is only one install in S-VALUES."
+  (and (zerop (recall-count s-values))
+       (= (install-count s-values) 1)))
+
+(defun multi-install-p (s-values)
+  "Return true if there are one installs in S-VALUES."
+  (> (install-count s-values) 1))
 
 (defun empty-requests-p (s-values)
   "Return true if all the items in S-VALUES "
@@ -363,6 +377,7 @@
                (null v)))
          s-values))
 
+;;; Should the keys of secondary values be converted to uppercase
 (defun dispatch (ns key expr)
   "Store or update a value under KEY with EXPR in the current namespace."
   (declare (ignorable ns))
@@ -387,6 +402,10 @@
              (let ((item (assoc (first s-values) (streams/channels:metadata v))))
                (when item
                  (vtn v))))
+            ;; (@walt :age :gender)
+            ;; ‘walt’ exists, there are no p-values, all the s-values are recalls
+            ((and existsp (null p-values) (all-recall-p s-values))
+             (vtn v))
             ;; (@walt "Walt Disney" :age :gender)
             ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
             ((and existsp p-values (all-recall-p s-values))
@@ -482,7 +501,7 @@
               (cond
                 ;; (@walt :age 0)
                 ;; ‘walt’ exists, and there’s only one install
-                ((and (null p-values) (install-present-p s-values))
+                ((and (null p-values) (single-install-p s-values))
                  (format stream (mof:join (m-value s-values v))))
 
                 ;; (@walt :age)
@@ -494,5 +513,5 @@
                 (t (format stream (mof:join (v-value v)))))))))))
 
 (defun dump (expr)
-  "Display inforamiot about the result of evaluating EXPR."
+  "Display information about the result of evaluating EXPR."
   (streams/common:dump-object (eval-expr expr)))
