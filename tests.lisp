@@ -29,9 +29,7 @@
   (is (null $(@david)))
   (is (null $(@david :number 0 :age 21 :gender m)))
   (is (string= $(@walt :number) "1"))
-
   (is (string= $(@walt :number :state) "XD"))
-
   (is (string= $(@walt :number :state "NY") "XD"))
   (is (string= $"(@Houston Houston :state TX :nickname H-town)" "Houston"))
   (is (string= $"(@energy-corridor An area in (@Houston) (@Houston :state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling.)"
