@@ -3,7 +3,7 @@
 (uiop:define-package #:streams/expr
     (:use #:cl #:maxpc)
   (:nicknames #:s/expr)
-  (:export #:parse-expr))
+  (:export #:=sexp))
 
 (in-package #:streams/expr)
 
@@ -63,7 +63,3 @@
 
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
-
-(defun parse-expr (expr)
-  "Parse expr according the rules listed above."
-  (parse expr (=sexp)))
