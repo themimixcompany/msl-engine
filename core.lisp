@@ -515,14 +515,3 @@
 (defun dump (expr)
   "Display information about the result of evaluating EXPR."
   (streams/common:dump-object (eval-expr expr)))
-
-(defun z (string)
-  (handler-bind ((sb-int:standard-readtable-modified-error
-                   #'(lambda (c)
-                       (let ((r (find-restart 'continue c)))
-                         (when r
-                           (invoke-restart r))))))
-    (with-standard-io-syntax
-      (let ((*read-eval* t))
-        (set-macro-character #\, (constantly '|,|))
-        (streams/common:read-from-string* string)))))

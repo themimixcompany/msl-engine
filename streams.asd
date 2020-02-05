@@ -23,6 +23,7 @@
                #:closer-mop
                #:named-readtables
                #:esrap
+               #:maxpc
                "streams/common"
                "streams/ethers"
                "streams/channels"
