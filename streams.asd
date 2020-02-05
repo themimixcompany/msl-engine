@@ -32,6 +32,7 @@
                "streams/serve"
                "streams/build"
                "streams/initialize"
-               "streams/expr")
+               "streams/expr"
+               "streams/tokenizer")
   ;; :in-order-to ((test-op (test-op "streams/tests")))
   )

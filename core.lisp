@@ -6,7 +6,9 @@
   (:export #:%eval-expr
            #:eval-expr
            #:show
-           #:dump))
+           #:dump
+
+           #:split-prefixes))
 
 (in-package #:streams/core)
 
