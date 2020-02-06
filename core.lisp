@@ -3,14 +3,11 @@
 (uiop:define-package #:streams/core
     (:use #:cl #:named-readtables)
   (:nicknames #:s/core)
-  (:export #:%eval-expr
-           #:eval-expr
+  (:export #:eval-expr
            #:show
            #:dump))
 
 (in-package #:streams/core)
-
-;;(in-readtable streams/reader:streams-readtable)
 
 (defun mx-atom-key (mx-atom)
   "Return the name used to identify MX-ATOM."
@@ -255,27 +252,17 @@ found."
 
 (defun read-expr (expr)
   "Read EXPR and break it down into multiple values."
-  (let ((expr (tokenize-expr expr)))
-    (destructuring-bind (ns key &optional &rest _)
-        expr
-      (declare (ignore _))
-      (labels ((fn (args value metadata)
-                 (cond ((null args) (values ns key value (nreverse metadata)))
-                       (t (multiple-value-bind (start end)
-                              (bounds args)
-                            (fn (nthcdr (1+ end) args)
-                                value
-                                (acons (car args) (subseq args start (1+ end)) metadata)))))))
-        (fn (secondary-values expr) (primary-values expr) nil)))))
-
-(defun read-expr-from-string (raw-expr)
-  "Read an EXPR as a string and return values that represent the parsed
-information."
-  (let ((v (streams/common:read-from-string* raw-expr)))
-    (when (valid-expr-p v)
-      (let ((v (tokenize-expr v)))
-        (when (valid-form-p v)
-          (read-expr v))))))
+  (destructuring-bind (ns key &optional &rest _)
+      expr
+    (declare (ignore _))
+    (labels ((fn (args value metadata)
+               (cond ((null args) (values ns key value (nreverse metadata)))
+                     (t (multiple-value-bind (start end)
+                            (bounds args)
+                          (fn (nthcdr (1+ end) args)
+                              value
+                              (acons (car args) (subseq args start (1+ end)) metadata)))))))
+      (fn (secondary-values expr) (primary-values expr) nil))))
 
 (defun build-pairs (items)
   "Group items into pairs."
@@ -407,7 +394,11 @@ information."
                (null v)))
          s-values))
 
-;;; Should the keys of secondary values be converted to uppercase
+;; (declaim (ftype (function (symbol symbol list)
+;;                           (values streams/channels:mx-atom
+;;                                   hash-table
+;;                                   streams/channels:mx-machine))
+;;                 dispatch))
 (defun dispatch (ns key expr)
   "Store or update a value under KEY with EXPR in the current namespace."
   (declare (ignorable ns))
@@ -459,11 +450,11 @@ information."
                (setf (gethash key table) v)
                (vtn v)))))))))
 
-(defun %eval-expr (expr)
+(defun %eval-expr (expr &key (tokenize t))
   "Evaluate EXPR as a free expression, store the result into the active
 namespace, then return the mx-atom instance, table, and current namespace as
 multiple values."
-  (let ((expr (tokenize-expr expr)))
+  (let ((expr (if tokenize (tokenize-expr expr) expr)))
     (destructuring-bind (ns key &optional &body _)
         expr
       (declare (ignore _))
@@ -472,20 +463,20 @@ multiple values."
 (defun mx-atom-form-p (data)
   "Return true if data has the form of an mx-atom."
   (when (listp data)
-    (let ((data (tokenize-expr data)))
-      (and (>= (length data) 2)
-           (destructuring-bind (ns key &optional &body _)
-               data
-             (declare (ignore _))
-             (and (string= "@" (streams/common:string-convert ns))
-                  (or (symbolp key)
-                      (stringp key))))))))
+    (and (>= (length data) 2)
+         (destructuring-bind (ns key &optional &body _)
+             data
+           (declare (ignore _))
+           ;; Handle the other namespacese here.
+           (and (string= "@" (streams/common:string-convert ns))
+                (or (symbolp key)
+                    (stringp key)))))))
 
 (defun mx-atom-body (expr)
   "Return the body of EXPR."
   (when (mx-atom-form-p expr)
     (destructuring-bind (ns key &optional &body body)
-        (tokenize-expr expr)
+        expr
       (declare (ignore ns key))
       (when body body))))
 
@@ -494,33 +485,39 @@ multiple values."
   (when (member-if #'mx-atom-form-p (mx-atom-body expr))
     t))
 
-(defun eval-expr (expr)
+(defun eval-expr (expr &key (tokenize t))
   "Evaluate EXPR as a complete expression, store the result into the active
 namespace, then return the mx-atom instance, table, and current namespace as
 multiple values."
   (block nil
-    (let ((expr (tokenize-expr expr)))
+    (let ((expr (if tokenize (tokenize-expr expr) expr)))
       (labels ((fn (args acc)
                  (cond
                    ((null args)
-                    (let ((v (%eval-expr (reverse acc))))
+                    (let ((v (%eval-expr (reverse acc) :tokenize tokenize)))
                       (if (null v)
                           (return nil)
                           v)))
                    ((mx-atom-form-p (car args))
                     (if (free-expr-present-p (car args))
-                        (fn (cdr args) (cons (show (car args) (fn (car args) nil)) acc))
-                        (let ((v (%eval-expr (car args))))
+                        (fn (cdr args) (cons (show (car args)
+                                                   :obj (fn (car args) nil)
+                                                   :tokenize tokenize)
+                                             acc))
+                        (let ((v (%eval-expr (car args) :tokenize tokenize)))
                           (if (null v)
                               (return nil)
-                              (fn (cdr args) (cons (show (car args) v) acc))))))
+                              (fn (cdr args) (cons (show (car args)
+                                                         :obj v
+                                                         :tokenize tokenize)
+                                                   acc))))))
                    (t (fn (cdr args) (cons (car args) acc))))))
         (fn expr nil)))))
 
-(defun show (expr &optional mx-atom stream)
+(defun show (expr &key obj stream (tokenize t))
   "Return the intended string representation of EXPR."
   (block nil
-    (let* ((expr (tokenize-expr expr))
+    (let* ((expr (if tokenize (tokenize-expr expr) expr))
            (p-values (primary-values expr))
            (s-values (secondary-values expr)))
       (flet ((v-value (v)
@@ -528,7 +525,7 @@ multiple values."
              (m-value (s-values v)
                (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
         (multiple-value-bind (v table namespace)
-            (or mx-atom (eval-expr expr))
+            (or obj (eval-expr expr :tokenize nil))
           (declare (ignorable table namespace))
           (if (null v)
               (return nil)
