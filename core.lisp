@@ -43,7 +43,8 @@
     (make-instance (read-from-string class-name) :name name)))
 
 (defmacro namespace (namespace &body body)
-  "Set the current namespace to NAMESPACE then evaluate BODY. Restore the namespace after the evaluation of BODY."
+  "Set the current namespace to NAMESPACE then evaluate BODY. Restore the
+namespace after the evaluation of BODY."
   `(let ((current-namespace streams/ethers:*namespace*)
          (streams/ethers:*namespace* (write-namespace ,namespace)))
      ,@body
@@ -75,13 +76,11 @@
   "Return true if DATA is an mx-atom instance."
   (typep data 'streams/channels:mx-atom))
 
-(defun pseudo-key-p (v)
-  "Return true if V is a symbol in the form |:V|."
-  (keywordp (read-from-string (string-upcase (streams/common:string-convert v)))))
-
 (defun data-marker-p (v)
   "Return true if V is a valid mx-atom data."
-  (or (and (symbolp v) (not (keywordp v)) (not (pseudo-key-p v)))
+  (or (and (symbolp v)
+           (not (keywordp v))
+           (not (pseudo-key-p v)))
       (stringp v)
       (numberp v)
       (consp v)
@@ -97,7 +96,8 @@
   (count-if #'metadata-marker-p expr))
 
 (defun bounds (raw-expr)
-  "Return the indices for the start and end of immediate valid data of RAW-EXPR. If none are found, return NIL."
+  "Return the indices for the start and end of immediate valid data of
+RAW-EXPR. If none are found, return NIL."
   (let ((length (length raw-expr)))
     (when (member-if #'data-marker-p raw-expr)
       (destructuring-bind (head &body body)
@@ -147,7 +147,8 @@
   (infixedp symbol #\:))
 
 (defun split-prefixes (list)
-  "Return a new list where the first item is split if prefixed; also apply to sublists that are prefixed."
+  "Return a new list where the first item is split if prefixed; also apply to
+sublists that are prefixed."
   (labels ((fn (args acc &optional flag)
              (cond ((null args) (nreverse acc))
                    ((and flag (@-prefixed-p (car args)))
@@ -157,19 +158,38 @@
                    (t (fn (cdr args) (cons (car args) acc) nil)))))
     (fn list nil t)))
 
-(defun ensure-expr (data)
-  "Return an expr representation from DATA."
-  (if (stringp data)
-      (streams/common:read-from-string* data)
-      data))
+(defun pseudo-key-p (v)
+  "Return true if V is a symbol in the form |:V|."
+  (when (symbolp v)
+    (let ((string (streams/common:string-convert v)))
+      (and (eql #\: (elt string 0))
+           (null (find #\: (subseq string 1)))))))
 
-(defun normalize-expr (expr)
-  "Pass EXPR through a filter, returning a new expr with correct structure."
-  (split-prefixes (ensure-expr expr)))
+(defun convert-pseudo-key (v)
+  "Return a proper keyword from pseudo key V."
+  (let ((string (streams/common:string-convert v)))
+    (if (pseudo-key-p v)
+        (intern (subseq string 1) (find-package :keyword))
+        v)))
+
+(defun convert-pseudo-keys (list)
+  "Return a new list where all the pseudo keys are converted to real keywords."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((pseudo-key-p (car args))
+                    (fn (cdr args) (cons (convert-pseudo-key (car args)) acc)))
+                   ((consp (car args))
+                    (fn (cdr args) (cons (fn (car args) nil) acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn list nil)))
 
 (defun tokenize-expr (data)
   "Tokenize DATA using MaxPC."
-  (split-prefixes (maxpc:parse data (streams/expr:=sexp))))
+  (flet ((fn (v)
+           (convert-pseudo-keys (split-prefixes v))))
+    (if (stringp data)
+        (fn (maxpc:parse data (streams/expr:=sexp)))
+        (fn data))))
 
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
@@ -192,7 +212,8 @@
   (mapcar #'upcase-keyword list))
 
 (defun secondary-values (expr)
-  "Return the secondary values—metadata, etc—from EXPR; return NIL if none are found."
+  "Return the secondary values—metadata, etc—from EXPR; return NIL if none are
+found."
   (destructuring-bind (_ __ &body body)
       expr
     (declare (ignore _ __))
@@ -234,7 +255,7 @@
 
 (defun read-expr (expr)
   "Read EXPR and break it down into multiple values."
-  (let ((expr (normalize-expr expr)))
+  (let ((expr (tokenize-expr expr)))
     (destructuring-bind (ns key &optional &rest _)
         expr
       (declare (ignore _))
@@ -248,10 +269,11 @@
         (fn (secondary-values expr) (primary-values expr) nil)))))
 
 (defun read-expr-from-string (raw-expr)
-  "Read an EXPR as a string and return values that represent the parsed information."
+  "Read an EXPR as a string and return values that represent the parsed
+information."
   (let ((v (streams/common:read-from-string* raw-expr)))
     (when (valid-expr-p v)
-      (let ((v (normalize-expr v)))
+      (let ((v (tokenize-expr v)))
         (when (valid-form-p v)
           (read-expr v))))))
 
@@ -438,8 +460,10 @@
                (vtn v)))))))))
 
 (defun %eval-expr (expr)
-  "Evaluate EXPR as a free expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
-  (let ((expr (normalize-expr expr)))
+  "Evaluate EXPR as a free expression, store the result into the active
+namespace, then return the mx-atom instance, table, and current namespace as
+multiple values."
+  (let ((expr (tokenize-expr expr)))
     (destructuring-bind (ns key &optional &body _)
         expr
       (declare (ignore _))
@@ -448,7 +472,7 @@
 (defun mx-atom-form-p (data)
   "Return true if data has the form of an mx-atom."
   (when (listp data)
-    (let ((data (normalize-expr data)))
+    (let ((data (tokenize-expr data)))
       (and (>= (length data) 2)
            (destructuring-bind (ns key &optional &body _)
                data
@@ -461,7 +485,7 @@
   "Return the body of EXPR."
   (when (mx-atom-form-p expr)
     (destructuring-bind (ns key &optional &body body)
-        (normalize-expr expr)
+        (tokenize-expr expr)
       (declare (ignore ns key))
       (when body body))))
 
@@ -471,9 +495,11 @@
     t))
 
 (defun eval-expr (expr)
-  "Evaluate EXPR as a complete expression, store the result into the active namespace, then return the mx-atom instance, table, and current namespace as multiple values."
+  "Evaluate EXPR as a complete expression, store the result into the active
+namespace, then return the mx-atom instance, table, and current namespace as
+multiple values."
   (block nil
-    (let ((expr (normalize-expr expr)))
+    (let ((expr (tokenize-expr expr)))
       (labels ((fn (args acc)
                  (cond
                    ((null args)
@@ -494,7 +520,7 @@
 (defun show (expr &optional mx-atom stream)
   "Return the intended string representation of EXPR."
   (block nil
-    (let* ((expr (normalize-expr expr))
+    (let* ((expr (tokenize-expr expr))
            (p-values (primary-values expr))
            (s-values (secondary-values expr)))
       (flet ((v-value (v)
