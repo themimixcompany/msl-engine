@@ -6,9 +6,7 @@
   (:export #:%eval-expr
            #:eval-expr
            #:show
-           #:dump
-
-           #:split-prefixes))
+           #:dump))
 
 (in-package #:streams/core)
 
@@ -77,9 +75,13 @@
   "Return true if DATA is an mx-atom instance."
   (typep data 'streams/channels:mx-atom))
 
+(defun pseudo-key-p (v)
+  "Return true if V is a symbol in the form |:V|."
+  (keywordp (read-from-string (string-upcase (streams/common:string-convert v)))))
+
 (defun data-marker-p (v)
   "Return true if V is a valid mx-atom data."
-  (or (and (symbolp v) (not (keywordp v)))
+  (or (and (symbolp v) (not (keywordp v)) (not (pseudo-key-p v)))
       (stringp v)
       (numberp v)
       (consp v)
@@ -164,6 +166,10 @@
 (defun normalize-expr (expr)
   "Pass EXPR through a filter, returning a new expr with correct structure."
   (split-prefixes (ensure-expr expr)))
+
+(defun tokenize-expr (data)
+  "Tokenize DATA using MaxPC."
+  (split-prefixes (maxpc:parse data (streams/expr:=sexp))))
 
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
