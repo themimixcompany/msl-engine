@@ -75,14 +75,12 @@ namespace after the evaluation of BODY."
 
 (defun data-marker-p (v)
   "Return true if V is a valid mx-atom data."
-  (or (and (symbolp v)
-           (not (keywordp v))
-           (not (pseudo-key-p v)))
-      (stringp v)
-      (numberp v)
-      (consp v)
-      (pathnamep v)
-      (mx-atom-p v)))
+  (mof:f-or v
+            #'(lambda (v)
+                (and (symbolp v)
+                     (not (keywordp v))
+                     (not (pseudo-key-p v))))
+            #'stringp #'numberp #'consp #'pathnamep #'mx-atom-p))
 
 (defun metadata-marker-p (v)
   "Return true if V is a valid mx-atom metadata."
@@ -469,8 +467,7 @@ multiple values."
            (declare (ignore _))
            ;; Handle the other namespacese here.
            (and (string= "@" (streams/common:string-convert ns))
-                (or (symbolp key)
-                    (stringp key)))))))
+                (mof:f-or key #'symbolp #'string))))))
 
 (defun mx-atom-body (expr)
   "Return the body of EXPR."
