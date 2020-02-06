@@ -26,13 +26,13 @@
 (defun extra-char-p (char)
   "Return true if CHAR is one of supplementary characters."
   (let ((code (char-code char)))
-    (or (inp code #x21)
-        (inp code #x23 #x27)
-        (inp code #x2A #x2F)
-        (inp code #x3A #x40)
-        (inp code #x5B #x60)
-        (inp code #x7B #x7E)
-        (>= code #x7F))))
+    (or (inp code #x21)                 ; #\!
+        (inp code #x23 #x27)            ; #\# #\$ #\% #\& #\'
+        (inp code #x2A #x2F)            ; #\* #\+ #\, #\- #\. #\/
+        (inp code #x3A #x40)            ; #\: #\; #\< #\= #\> #\? #\@
+        (inp code #x5B #x60)            ; #\[ #\\ #\] #\^ #\_ #\`
+        (inp code #x7B #x7E)            ; #\{ #\| #\} #\~
+        (>= code #x7F))))               ; other characters
 
 (defun ?msl-char-p ()
   "Return a parser that checks if an argument are letters, numbers, or extra characters."
