@@ -18,7 +18,6 @@
                #:clack
                #:clack-handler-hunchentoot
                #:websocket-driver
-               #:alexandria
                #:bordeaux-threads
                #:closer-mop
                #:named-readtables

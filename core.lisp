@@ -112,7 +112,7 @@ RAW-EXPR. If none are found, return NIL."
          (length (length string)))
     (if (> length 1)
         (list (intern (streams/common:string-convert (elt string 0)))
-              (read-from-string (subseq string 1)))
+              (intern (subseq string 1)))
         (list symbol))))
 
 (defun prefixedp (symbol prefix)
@@ -137,10 +137,6 @@ RAW-EXPR. If none are found, return NIL."
   "Return true if SYMBOL is prefixed with the @ character."
   (prefixedp symbol #\@))
 
-(defun :-infixed-p (symbol)
-  "Return true if SYMBOL is infixed with the : character."
-  (infixedp symbol #\:))
-
 (defun split-prefixes (list)
   "Return a new list where the first item is split if prefixed; also apply to
 sublists that are prefixed."
@@ -153,6 +149,27 @@ sublists that are prefixed."
                    (t (fn (cdr args) (cons (car args) acc) nil)))))
     (fn list nil t)))
 
+(defun :-infixed-p (symbol)
+  "Return true if SYMBOL is infixed with the : character."
+  (infixedp symbol #\:))
+
+(defun split-colons (symbol)
+  "Return a new list where SYMBOL is split by colons."
+  (destructuring-bind (key &optional &body body)
+      (cl-ppcre:split ":" (streams/common:string-convert symbol))
+    (cons (intern key) (mapcar #'keyword-intern body))))
+
+(defun split-infixes (list)
+  "Return a new list where symbols that are infixed are split."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((:-infixed-p (car args))
+                    (fn (cdr args) (nconc (nreverse (split-colons (car args))) acc)))
+                   ((consp (car args))
+                    (fn (cdr args) (cons (fn (car args) nil) acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn list nil)))
+
 (defun pseudo-key-p (v)
   "Return true if V is a symbol in the form |:V|."
   (when (symbolp v)
@@ -160,11 +177,15 @@ sublists that are prefixed."
       (and (eql #\: (elt string 0))
            (null (find #\: (subseq string 1)))))))
 
+(defun keyword-intern (symbol)
+  "Intern the symbol SYMBOL in the keyword package."
+  (intern symbol (find-package :keyword)))
+
 (defun convert-pseudo-key (v)
   "Return a proper keyword from pseudo key V."
   (let ((string (streams/common:string-convert v)))
     (if (pseudo-key-p v)
-        (intern (subseq string 1) (find-package :keyword))
+        (keyword-intern (subseq string 1))
         v)))
 
 (defun convert-pseudo-keys (list)
@@ -181,7 +202,7 @@ sublists that are prefixed."
 (defun tokenize-expr (data)
   "Tokenize DATA using MaxPC."
   (flet ((fn (v)
-           (convert-pseudo-keys (split-prefixes v))))
+           (convert-pseudo-keys (split-infixes (split-prefixes v)))))
     (if (stringp data)
         (fn (maxpc:parse data (streams/expr:=sexp)))
         (fn data))))
@@ -199,7 +220,7 @@ sublists that are prefixed."
 (defun upcase-keyword (keyword)
   "Return an upcased version of KEYWORD."
   (if (keywordp keyword)
-      (read-from-string (mof:cat "KEYWORD:" (string-upcase (streams/common:string-convert keyword))))
+      (keyword-intern (string-upcase (streams/common:string-convert keyword)))
       keyword))
 
 (defun upcase-keywords (list)
