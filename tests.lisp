@@ -3,9 +3,7 @@
 (uiop:define-package #:streams/tests
     (:use #:cl #:fiveam #:streams/core)
   (:nicknames #:s/tests)
-  (:export #:run!
-           #:all-tests
-           #:run-tests))
+  (:export #:run-tests))
 
 (in-package #:streams/tests)
 
@@ -17,11 +15,11 @@
   (run! 'all-tests))
 
 (test eval-expr-tests
-  "Test the values returned by EVAL-EXPR."
+  "Test the values returned by STREAMS/CORE:EVAL-EXPR."
   (is (null nil)))
 
 (test show-tests
-  "Test the output of SHOW."
+  "Test the values returned by STREAMS/CORE:SHOW."
   (is (string= $"(@walt Walt Disney :number 1 2 :species Human :state IL)" "Walt Disney"))
   (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))
   (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))
