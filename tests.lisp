@@ -32,8 +32,9 @@
   (is (string= $(@walt :number :state) "XD"))
   (is (string= $(@walt :number :state "NY") "XD"))
   (is (string= $"(@Houston Houston :state TX :nickname H-town)" "Houston"))
-  (is (string= $"(@energy-corridor An area in (@Houston) (@Houston :state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling.)"
-               "An area in Houston TX known as The Energy Capital concerned with petroleum exploration and drilling.")))
+  (is (string= $"(@Houston:state)" "TX"))
+  (is (string= $"(@energy-corridor An area in (@Houston), (@Houston :state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling!)"
+               "An area in Houston , TX known as The Energy Capital concerned with petroleum exploration and drilling!")))
 
 (test eval-expr-tests
   "Test the values returned by EVAL-EXPR."
