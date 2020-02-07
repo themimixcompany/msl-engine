@@ -1,7 +1,7 @@
 ;;;; core.lisp
 
 (uiop:define-package #:streams/core
-    (:use #:cl #:named-readtables)
+    (:use #:cl)
   (:nicknames #:s/core)
   (:export #:eval-expr
            #:show
