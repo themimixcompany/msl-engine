@@ -10,8 +10,8 @@
 (defsystem #:streams
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
-  :license "BlueOak-1.0.0"
-  :version "1.5.0"
+  :license "Blue Oak Model License 1.0.0"
+  :version "1.5.1"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:mof
@@ -32,6 +32,4 @@
                "streams/serve"
                "streams/build"
                "streams/initialize")
-  ;; :in-order-to ((test-op (test-op "foobar/tests")))
-  :in-order-to ((test-op (test-op "streams-tests")))
-  )
+  :in-order-to ((test-op (test-op "streams-tests"))))

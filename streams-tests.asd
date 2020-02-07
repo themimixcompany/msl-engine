@@ -10,12 +10,10 @@
 (defsystem #:streams-tests
   :description "streams-tests"
   :author "The Mimix Company <code@mimix.io>"
-  :license "BlueOak-1.0.0"
-  :version "1.5.0"
+  :license "Blue Oak Model License 1.0.0"
+  :version "1.0.2"
   :class :package-inferred-system
   :depends-on (#:streams
                #:fiveam
                "streams/tests")
-  ;; :perform (test-op (o s) (uiop:symbol-call :fiveam :run! 'streams/tests:all-tests))
-  :perform (test-op (o c) (uiop:symbol-call :fiveam '#:run! :run-tests))
-  )
+  :perform (test-op (o c) (uiop:symbol-call :streams/tests :run-tests)))
