@@ -514,7 +514,7 @@ multiple values."
                    ((null args)
                     (let ((v (%eval-expr (reverse acc) :tokenize tokenize)))
                       (if (null v)
-                          (return nil)
+                          (return (values))
                           v)))
                    ((mx-atom-form-p (car args))
                     (if (free-expr-present-p (car args))
@@ -524,7 +524,7 @@ multiple values."
                                              acc))
                         (let ((v (%eval-expr (car args) :tokenize tokenize)))
                           (if (null v)
-                              (return nil)
+                              (return (values))
                               (fn (cdr args) (cons (show (car args)
                                                          :obj v
                                                          :tokenize tokenize)
@@ -546,7 +546,7 @@ multiple values."
             (or obj (eval-expr expr :tokenize nil))
           (declare (ignorable table namespace))
           (if (null v)
-              (return nil)
+              (return (values))
               (cond
                 ;; (@walt :age 0)
                 ;; ‘walt’ exists, and there’s only one install
