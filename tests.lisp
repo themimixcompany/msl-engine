@@ -22,7 +22,7 @@
   "Test the values returned by STREAMS/CORE:SHOW."
   (is (string= $"(@walt Walt Disney :number 1 2 :species Human :state IL)" "Walt Disney"))
   (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))
-  (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))
+  (is (string= $"(@walt :species)" "Human"))
   (is (null $"(@walt (@nothing))"))
   (is (string= $"(@walt)" "Walt Disney"))
   (is (string= $"(@walt WD :number 0)" "WD"))
