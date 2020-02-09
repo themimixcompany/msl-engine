@@ -26,7 +26,7 @@
 (defun extra-char-p (char)
   "Return true if CHAR is one of supplementary characters."
   (let ((code (char-code char)))
-    (or (inp code #x21)                 ; #\!
+    (or (inp code #x21 #x22)            ; #\! #\"
         (inp code #x23 #x27)            ; #\# #\$ #\% #\& #\'
         (inp code #x2A #x2F)            ; #\* #\+ #\, #\- #\. #\/
         (inp code #x3A #x40)            ; #\: #\; #\< #\= #\> #\? #\@
@@ -44,12 +44,8 @@
   (%or (?seq (?eq #\\) (?eq #\"))
        (?satisfies 'not-doublequote)))
 
-(defun =atom ()
-  "Return a parser that checks if an argument is an atom."
-  (%or (=string) (maxpc.digit:=integer-number) (=symbol)))
-
 (defun =string ()
-  "Return a parser that checks if an argument is a srting."
+  "Return a parser that checks if an argument is a string."
   (=destructure (_ s _)
       (=list (?eq #\")
              (=subseq (%any (?string-char)))
@@ -60,6 +56,12 @@
   (=transform (=subseq (?satisfies 'not-integer
                                    (=subseq (%some (?msl-char-p)))))
               'intern))
+
+(defun =atom ()
+  "Return a parser that checks if an argument is an atom."
+  (%or ;; (=string)
+       (maxpc.digit:=integer-number)
+       (=symbol)))
 
 (defun =sexp ()
   "Return a parser for handling s-expressions."

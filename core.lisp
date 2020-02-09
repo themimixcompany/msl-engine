@@ -548,19 +548,17 @@ multiple values."
           (if (null v)
               (return (values))
               (cond
-                ;; (@walt :age 0)
-                ;; ‘walt’ exists, and there’s only one install
-                ((and (null p-values) (single-install-p s-values))
-                 (format stream (mof:join (m-value s-values v))))
-
-                ;; (@walt :age)
+                ;; (@walt :age 0) | (@walt :age)
+                ;; ‘walt’ exists, and there’s only one install,
                 ;; ‘walt’ exists, and there’s only one recall
-                ((and (null p-values) (single-recall-p s-values))
+                ((and (null p-values)
+                      (or (single-install-p s-values)
+                          (single-recall-p s-values)))
                  (format stream (mof:join (m-value s-values v))))
 
                 ;; other expressions
                 (t (format stream (mof:join (v-value v)))))))))))
 
 (defun dump (expr)
-  "Display information about the result of evaluating EXPR."
+  "Display information about the results of evaluating EXPR."
   (streams/common:dump-object (eval-expr expr)))

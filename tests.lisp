@@ -36,7 +36,11 @@
   (is (string= $"(@walt :number :state NY)" "XD"))
   (is (string= $"(@Houston Houston :state TX :nickname H-town)" "Houston"))
   (is (string= $"(@Houston:state)" "TX"))
-  (is (string= $"(@energy-corridor An area in (@Houston), (@Houston :state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling!)"
+  (is (string= $"(@energy-corridor An area in (@Houston), (@Houston:state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling!)"
                "An area in Houston , TX known as The Energy Capital concerned with petroleum exploration and drilling!"))
   (is (string= $"(@energy-corridor :meta 0)" "0"))
-  (is (string= $"(@energy-corridor:meta)" "0")))
+  (is (string= $"(@energy-corridor:meta)" "0"))
+  (is (null $"(@my-book)"))
+  (is (null $"(@my-book:title)"))
+  (is (string= $"(@my-book Vinyl Leaves)" "Vinyl Leaves"))
+  (is (string= $"(@my-book:title Institutional Structures of Feelings)" "Institutional Structures of Feelings")))
