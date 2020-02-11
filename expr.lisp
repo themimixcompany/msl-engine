@@ -59,8 +59,7 @@
 
 (defun =atom ()
   "Return a parser that checks if an argument is an atom."
-  (%or ;; (=string)
-       (maxpc.digit:=integer-number)
+  (%or (maxpc.digit:=integer-number)
        (=symbol)))
 
 (defun =sexp ()

@@ -532,6 +532,27 @@ multiple values."
                    (t (fn (cdr args) (cons (car args) acc))))))
         (fn expr nil)))))
 
+(defun punctuationp (symbol)
+  "Return true if SYMBOL is one of the items in the naughty list."
+  (let ((char (streams/common:string-convert symbol)))
+    (when (member (elt char 0) '(#\. #\, #\; #\! #\?))
+      t)))
+
+(defun conc (item-1 item-2)
+  "Concatenate ITEM-1 and ITEM-2 as strings."
+  (concatenate 'string
+               (streams/common:string-convert item-1)
+               (streams/common:string-convert item-2)))
+
+(defun join-smartly (list)
+  "Join items in list, smartly."
+  (labels ((fn (args acc)
+               (cond ((null args) acc)
+                     ((not (punctuationp (car args)))
+                      (fn (cdr args) (conc acc (conc " " (car args)))))
+                     (t (fn (cdr args) (conc acc (car args)))))))
+    (fn (cdr list) (streams/common:string-convert (car list)))))
+
 (defun show (expr &key obj stream (tokenize t))
   "Return the intended string representation of EXPR."
   (block nil
@@ -554,10 +575,10 @@ multiple values."
                 ((and (null p-values)
                       (or (single-install-p s-values)
                           (single-recall-p s-values)))
-                 (format stream (mof:join (m-value s-values v))))
+                 (format stream (join-smartly (m-value s-values v))))
 
                 ;; other expressions
-                (t (format stream (mof:join (v-value v)))))))))))
+                (t (format stream (join-smartly (v-value v)))))))))))
 
 (defun dump (expr)
   "Display information about the results of evaluating EXPR."
