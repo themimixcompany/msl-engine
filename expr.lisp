@@ -66,14 +66,42 @@
   "Return a parser for handling s-expressions."
   (%or '=slist/parser (=atom)))
 
+;; (defun =slist ()
+;;   "Return a parser for handling s-expressions in parens."
+;;   (=destructure (_ expressions _ _)
+;;       (=list (?eq #\()
+;;              (%any (=destructure (_ expression)
+;;                        (=list (%any (maxpc.char:?whitespace))
+;;                               '=sexp/parser)))
+;;              (%any (maxpc.char:?whitespace))
+;;              (?eq #\)))))
+
 (defun =slist ()
   "Return a parser for handling s-expressions in parens."
-  (=destructure (_ expressions _ _)
+  (=destructure (_ expressions _)
       (=list (?eq #\()
-             (%any (=destructure (_ expression)
-                       (=list (%any (maxpc.char:?whitespace)) '=sexp/parser)))
-             (%any (maxpc.char:?whitespace))
+             (%any (%or (=destructure (expression)
+                            (=list '=sexp/parser))
+                        (maxpc.char:?whitespace)))
              (?eq #\)))))
+
+;; (defun =slist ()
+;;   "Return a parser for handling s-expressions in parens."
+;;   (=destructure (lp e rp)
+;;       (=list (?eq #\()
+;;              (=subseq (%any (=element)))
+;;              (?eq #\)))
+;;     (list lp e rp)))
 
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
+
+;;; Embedded parens
+(defun ?parens ()
+  (?seq (?eq #\() (%maybe '?parens/parser) (?eq #\))))
+
+(setf (fdefinition '?parens/parser) (?parens))
+
+(defun emptyp (input)
+  "Return true if raw input is empty."
+  (maxpc.input:input-empty-p (maxpc.input:make-input input)))
