@@ -66,42 +66,35 @@
   "Return a parser for handling s-expressions."
   (%or '=slist/parser (=atom)))
 
-;; (defun =slist ()
-;;   "Return a parser for handling s-expressions in parens."
-;;   (=destructure (_ expressions _ _)
-;;       (=list (?eq #\()
-;;              (%any (=destructure (_ expression)
-;;                        (=list (%any (maxpc.char:?whitespace))
-;;                               '=sexp/parser)))
-;;              (%any (maxpc.char:?whitespace))
-;;              (?eq #\)))))
-
 (defun =slist ()
   "Return a parser for handling s-expressions in parens."
-  (=destructure (_ expressions _)
+  (=destructure (_ expressions _ _)
       (=list (?eq #\()
-             (%any (%or (=destructure (expression)
-                            (=list '=sexp/parser))
-                        (maxpc.char:?whitespace)))
+             (%any (=destructure (_ expression)
+                       (=list (%any (maxpc.char:?whitespace))
+                              '=sexp/parser)))
+             (%any (maxpc.char:?whitespace))
              (?eq #\)))))
-
-;; (defun =slist ()
-;;   "Return a parser for handling s-expressions in parens."
-;;   (=destructure (lp e rp)
-;;       (=list (?eq #\()
-;;              (=subseq (%any (=element)))
-;;              (?eq #\)))
-;;     (list lp e rp)))
 
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
 
-;;; Embedded parens
-(defun ?parens ()
-  (?seq (?eq #\() (%maybe '?parens/parser) (?eq #\))))
+(defun =msl-list ()
+  "Return a parser for handling msl expressions."
+  (=destructure (_ namespace _ key _ value _)
+      (=list (?eq #\()
+             (=subseq (?eq #\@))
+             (%any (maxpc.char:?whitespace))
+             (=subseq (%any (?satisfies 'alphanumericp)))
+             (%any (maxpc.char:?whitespace))
+             (=subseq (%any (?not (?eq #\)))))
+             (?eq #\)))
+    (list namespace key value)))
 
-(setf (fdefinition '?parens/parser) (?parens))
+(defun =msl-value ()
+  "Return a parser for handling msl values."
+  (%or '=msl-list/parser
+       (=subseq (%any (?satisfies 'alphanumericp)))))
 
-(defun emptyp (input)
-  "Return true if raw input is empty."
-  (maxpc.input:input-empty-p (maxpc.input:make-input input)))
+(setf (fdefinition '=msl-value/parser) (=msl-value)
+      (fdefinition '=msl-list/parser) (=msl-list))
