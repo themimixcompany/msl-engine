@@ -79,15 +79,45 @@
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
 
+(defun namespacep (ns)
+  "Return true if NS is a namespace character."
+  (when (member ns '(#\m #\w #\s #\v #\c #\@))
+    t))
+
+(defun =namespace ()
+  "Return a parser that maches a namespace character."
+  (=subseq (?satisfies 'namespacep)))
+
+(defvar *whitespace*
+  '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
+  "A list of characters considered as whitespace.")
+
+(defun whitespacep (char)
+  "Return true if CHAR is a whitespace character."
+  (when (member char *whitespace*)
+    t))
+
+(defun =whitespace ()
+  "Return a parser that matches whitespaces."
+  (=subseq (?satisfies 'whitespacep)))
+
+(defun =key ()
+  "Return a parser that matches a key."
+  (=subseq (%any (?satisfies 'alphanumericp))))
+
+(defun =value ()
+  "Return a parser that matches a value."
+  (=subseq (%any (?not (?eq #\))))))
+
 (defun =msl-list ()
   "Return a parser for handling msl expressions."
   (=destructure (_ namespace _ key _ value _)
       (=list (?eq #\()
-             (=subseq (?eq #\@))
-             (%any (maxpc.char:?whitespace))
-             (=subseq (%any (?satisfies 'alphanumericp)))
-             (%any (maxpc.char:?whitespace))
-             (=subseq (%any (?not (?eq #\)))))
+             (=namespace)
+             (=whitespace)
+             (=key)
+             (=whitespace)
+             (=value)
              (?eq #\)))
     (list namespace key value)))
 
