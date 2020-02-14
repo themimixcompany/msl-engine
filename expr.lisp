@@ -7,6 +7,11 @@
 
 (in-package #:streams/expr)
 
+
+;;;-----------------------------------------------------------------------------
+;;; Old tokenizer
+;;;-----------------------------------------------------------------------------
+
 (defun not-doublequote (char)
   "Return true if CHAR is not a double quote (U+0022)"
   (not (eql #\" char)))
@@ -66,18 +71,13 @@
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
 
-(defvar *whitespace*
-  '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
-  "A list of characters considered as whitespace.")
 
-(defun whitespacep (char)
-  "Return true if CHAR is a whitespace character."
-  (when (member char *whitespace*)
-    t))
+;;;-----------------------------------------------------------------------------
+;;; New tokenizer
+;;;-----------------------------------------------------------------------------
 
 (defun =whitespace ()
   "Return a parser that matches whitespaces."
-  ;; (=subseq (?satisfies 'whitespacep))
   (%any (maxpc.char:?whitespace)))
 
 (defun namespacep (ns)
@@ -110,4 +110,7 @@
              (?eq #\)))
     (list namespace key value)))
 
+;;; This hack is necessary to allow for recursive parsing. It essentially
+;;; creates an alias for =MSL-EXPR. When updating =MSL-EXPR, this expression has
+;;; to be re-evaluated, too.
 (setf (fdefinition '=msl-expr/parser) (=msl-expr))
