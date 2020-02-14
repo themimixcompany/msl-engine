@@ -66,11 +66,6 @@
 (setf (fdefinition '=sexp/parser) (=sexp)
       (fdefinition '=slist/parser) (=slist))
 
-(defun namespacep (ns)
-  "Return true if NS is a namespace character."
-  (when (member ns '(#\m #\w #\s #\v #\c #\@ #\v #\f #\d))
-    t))
-
 (defvar *whitespace*
   '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
   "A list of characters considered as whitespace.")
@@ -82,7 +77,13 @@
 
 (defun =whitespace ()
   "Return a parser that matches whitespaces."
-  (=subseq (?satisfies 'whitespacep)))
+  ;; (=subseq (?satisfies 'whitespacep))
+  (%any (maxpc.char:?whitespace)))
+
+(defun namespacep (ns)
+  "Return true if NS is a namespace character."
+  (when (member ns '(#\m #\w #\s #\v #\c #\@ #\v #\f #\d))
+    t))
 
 (defun =namespace ()
   "Return a parser that maches a namespace character."
@@ -104,8 +105,8 @@
              (=whitespace)
              (=key)
              (=whitespace)
-             (%or (=value)
-                  '=msl-expr/parser)
+             (%or '=msl-expr/parser
+                  (=value))
              (?eq #\)))
     (list namespace key value)))
 
