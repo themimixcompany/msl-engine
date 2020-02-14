@@ -68,7 +68,7 @@
 
 (defun namespacep (ns)
   "Return true if NS is a namespace character."
-  (when (member ns '(#\m #\w #\s #\v #\c #\@))
+  (when (member ns '(#\m #\w #\s #\v #\c #\@ #\v #\f #\d))
     t))
 
 (defvar *whitespace*
