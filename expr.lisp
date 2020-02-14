@@ -39,22 +39,9 @@
   (%or (?satisfies 'alphanumericp)
        (?satisfies 'extra-char-p)))
 
-(defun ?string-char ()
-  "Return a parser that checks if an argument is the string marker."
-  (%or (?seq (?eq #\\) (?eq #\"))
-       (?satisfies 'not-doublequote)))
-
-(defun =string ()
-  "Return a parser that checks if an argument is a string."
-  (=destructure (_ s _)
-      (=list (?eq #\")
-             (=subseq (%any (?string-char)))
-             (?eq #\"))))
-
 (defun =symbol ()
   "Return a parser that checks if an argument is a symbol."
-  (=transform (=subseq (?satisfies 'not-integer
-                                   (=subseq (%some (?msl-char-p)))))
+  (=transform (=subseq (?satisfies 'not-integer (=subseq (%some (?msl-char-p)))))
               'intern))
 
 (defun =atom ()
@@ -84,10 +71,6 @@
   (when (member ns '(#\m #\w #\s #\v #\c #\@))
     t))
 
-(defun =namespace ()
-  "Return a parser that maches a namespace character."
-  (=subseq (?satisfies 'namespacep)))
-
 (defvar *whitespace*
   '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
   "A list of characters considered as whitespace.")
@@ -101,6 +84,10 @@
   "Return a parser that matches whitespaces."
   (=subseq (?satisfies 'whitespacep)))
 
+(defun =namespace ()
+  "Return a parser that maches a namespace character."
+  (=subseq (?satisfies 'namespacep)))
+
 (defun =key ()
   "Return a parser that matches a key."
   (=subseq (%any (?satisfies 'alphanumericp))))
@@ -109,7 +96,7 @@
   "Return a parser that matches a value."
   (=subseq (%any (?not (?eq #\))))))
 
-(defun =msl-list ()
+(defun =msl-expr ()
   "Return a parser for handling msl expressions."
   (=destructure (_ namespace _ key _ value _)
       (=list (?eq #\()
@@ -117,14 +104,9 @@
              (=whitespace)
              (=key)
              (=whitespace)
-             (=value)
+             (%or (=value)
+                  '=msl-expr/parser)
              (?eq #\)))
     (list namespace key value)))
 
-(defun =msl-value ()
-  "Return a parser for handling msl values."
-  (%or '=msl-list/parser
-       (=subseq (%any (?satisfies 'alphanumericp)))))
-
-(setf (fdefinition '=msl-value/parser) (=msl-value)
-      (fdefinition '=msl-list/parser) (=msl-list))
+(setf (fdefinition '=msl-expr/parser) (=msl-expr))
