@@ -82,8 +82,7 @@
 
 (defun namespacep (ns)
   "Return true if NS is a namespace character."
-  (when (member ns '(#\m #\w #\s #\v #\c #\@ #\v #\f #\d))
-    t))
+  (member ns '(#\m #\w #\s #\v #\c #\@ #\f #\d)))
 
 (defun =namespace ()
   "Return a parser that maches a namespace character."
@@ -105,12 +104,10 @@
              (=whitespace)
              (=key)
              (=whitespace)
-             (%or '=msl-expr/parser
-                  (=value))
+             (%or '=msl-expr/parser (=value))
              (?eq #\)))
     (list namespace key value)))
 
-;;; This hack is necessary to allow for recursive parsing. It essentially
-;;; creates an alias for =MSL-EXPR. When updating =MSL-EXPR, this expression has
-;;; to be re-evaluated, too.
+;;; This hack is necessary to allow recursive parsing. When updating =MSL-EXPR,
+;;; this expression has to be re-evaluated, too.
 (setf (fdefinition '=msl-expr/parser) (=msl-expr))
