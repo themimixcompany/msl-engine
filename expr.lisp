@@ -78,35 +78,59 @@
 
 (defun =whitespace ()
   "Return a parser that matches whitespaces."
-  (%any (maxpc.char:?whitespace)))
+  (?seq (%some (maxpc.char:?whitespace))))
 
 (defun namespacep (ns)
   "Return true if NS is a namespace character."
   (member ns '(#\m #\w #\s #\v #\c #\@ #\f #\d)))
 
 (defun =namespace ()
-  "Return a parser that maches a namespace character."
+  "Return a parser that matches a namespace character."
   (=subseq (?satisfies 'namespacep)))
 
 (defun =key ()
   "Return a parser that matches a key."
-  (=subseq (%any (?satisfies 'alphanumericp))))
+  (=subseq (?seq (%some (?satisfies 'alphanumericp))
+                 (%any (?seq (%maybe (?eq #\-))
+                             (%some (?satisfies 'alphanumericp)))))))
 
 (defun =value ()
   "Return a parser that matches a value."
   (=subseq (%any (?not (?eq #\))))))
 
+(defun =ns-and-key ()
+  "Return a parser that matches a namespace and key."
+  (%or (=destructure (namespace _ key)
+           (=list (=namespace)
+                  (=whitespace)
+                  (=key))
+         (list namespace key))
+       (=destructure (namespace key)
+           (=list (=subseq (?eq #\@))
+                  (=key))
+         (list namespace key))))
+
+(defun =uri ()
+  "Return a parser for handling URIs."
+  (=subseq (%some (?satisfies 'alphanumericp))))
+
+(defun =bracketed-transform ()
+  "Return a parser for handling bracketed [] transforms."
+  (=destructure (_ value _)
+      (=list (?eq #\[)
+             (=uri)
+             (?eq #\]))
+    value))
+
 (defun =msl-expr ()
   "Return a parser for handling msl expressions."
-  (=destructure (_ namespace _ key _ value _)
+  (=destructure (_ ns-and-key _ value _)
       (=list (?eq #\()
-             (=namespace)
+             (=ns-and-key)
              (=whitespace)
-             (=key)
-             (=whitespace)
-             (%or '=msl-expr/parser (=value))
+             (%or '=msl-expr/parser (=bracketed-transform) (=value))
              (?eq #\)))
-    (list namespace key value)))
+    (append ns-and-key (list value))))
 
 ;;; This hack is necessary to allow recursive parsing. When updating =MSL-EXPR,
 ;;; this expression has to be re-evaluated, too.
