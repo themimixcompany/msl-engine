@@ -103,3 +103,7 @@
   "Return a string from the concatenation of items."
   (let ((strings (loop :for item :in items :collect (string-convert item))))
     (format nil "~{~A~^ ~}" strings)))
+
+(defun string-chars (string)
+  "Return STRING as individual characters."
+  (loop :for c :across string :collect c))
