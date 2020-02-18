@@ -116,17 +116,17 @@
       (=list (?eq #\()
              (=ns-and-key)
              (=whitespace)
-             (%or '=msl-expr/parser (=bracketed-transform) (=msl-value))
+             (%or '=msl-expr/parser (=msl-value))
              (?eq #\)))
     (append ns-and-key (list value))))
 
-;;; This hack is necessary to allow recursive parsing. When updating =MSL-EXPR,
-;;; this expression has to be re-evaluated, too.
+;; This hack is necessary to allow recursive parsing. When updating =MSL-EXPR,
+;; this expression has to be re-evaluated, too.
 (setf (fdefinition '=msl-expr/parser) (=msl-expr))
 
 
 ;;;-----------------------------------------------------------------------------
-;;; New stuff
+;;; New parsers
 ;;;-----------------------------------------------------------------------------
 
 (defun =whitespace* ()
@@ -136,26 +136,47 @@
 (defun hex-letter-p (char)
   "Return true if CHAR is a valid hexadecimal letter (A-F)."
   (let ((c (char-code char)))
-    (or (inp c #x41 #x46)
-        (inp c #x61 #x66))))
+    (or (inp c #x41 #x46)               ; a-f
+        (inp c #x61 #x66))))            ; A-F
+
+(defun hex-char-p (char)
+  "Return true if CHAR is valid hexadecimal character."
+  (or (hex-letter-p char)
+      (digit-char-p char)))
 
 (defun ?hexp ()
   "Return a parser to test if input is a hexidecimal character."
-  (%or (?satisfies 'numberp)
-       ;; (?satisfies 'hex-letter-p)
-       (?satisfies 'alphanumericp)))
+  (?satisfies 'hex-char-p))
+
+(defun length-64-p (value)
+  "Return true if VALUE is 64 characters long."
+  (= (length value) 64))
 
 (defun =sha256 ()
-  "Return true if STRING looks like a SHA-256 string."
+  "Return a parser to test extract a SHA-256 string."
+  ;; (%and (?satisfies 'length-64-p)
+  ;;       (%some (?hexp)))
   (=subseq (%some (?hexp))))
+
+(defun ?length-64 ()
+  "Return a parser that checks if input is 64 characters long."
+  (=destructure (value)
+      (=list (?satisfies (lambda (v) (= (length v) 64))))))
+
+(defun =split-hash ()
+  "Return a parser for the hash value."
+  (=list (?eq #\#) (=sha256)))
 
 (defun =msl-hash ()
   "Return a parser for hashes."
-  (=destructure (_ hash)
+  ;; (=destructure (_ hash)
+  ;;     (=list (?eq #\#)
+  ;;            (=sha256)))
+  ;; (parse (=split-hash) (?length-64))
+  (=destructure (_ v)
       (=list (?eq #\#)
              (=sha256))
-    (when (= (length hash) 64)
-      hash)))
+    (parse (list v) (?length-64))))
 
 (defvar *whitespace*
   '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
@@ -169,7 +190,8 @@
 (defun msl-char-p (char)
   "Return true if CHAR can be used as value data."
   (or (alphanumericp char)
-      (whitespacep char)))
+      (whitespacep char)
+      (extra-char-p char)))
 
 (defun =msl-comment ()
   "Return a parser for comments."
@@ -249,23 +271,9 @@
              (?eq #\)))
     (list key value)))
 
-;;; Refactor between =MSL-PRELUDE and =MSL-MACHINE
 (defun =msl-machine ()
   "Return a parser for machines."
-  (=destructure (_ _ _ _ key _ value _ hash _ comment _ _)
-      (=list (?eq #\()
-             (=whitespace*)
-             (?eq #\m)
-             (=whitespace*)
-             (=msl-key)
-             (=whitespace*)
-             (=msl-value)
-             (=whitespace*)
-             (=msl-hash)
-             (=whitespace*)
-             (=msl-comment)
-             (=whitespace*)
-             (?eq #\)))))
+  nil)
 
 (defun =msl-world ()
   "Return a parser for worlds."

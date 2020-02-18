@@ -607,10 +607,6 @@ multiple values."
 ;;; Track the last and current items.
 ;;; Maybe, track the flag.
 
-(defun string-chars (string)
-  "Return STRING as individual characters."
-  (loop :for c :across string :collect c))
-
 ;; (defun pad-list (list &optional (pad '| |))
 ;;   "Return a list where PAD is inserted elements in LIST."
 ;;   (labels ((fn (args acc)
