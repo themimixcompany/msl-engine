@@ -157,7 +157,8 @@
 
 (defun =sha256 ()
   "Return a parser to extract a SHA-256 string."
-  (=subseq (?satisfies 'length-64-p (=subseq (%some (?hexp))))))
+  (=subseq (?satisfies 'length-64-p
+                       (=subseq (%some (?hexp))))))
 
 (defun =msl-hash ()
   "Return a parser for hashes."
