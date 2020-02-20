@@ -94,10 +94,6 @@
                  (%any (?seq (%maybe (?eq #\-))
                              (%some (?satisfies 'alphanumericp)))))))
 
-;; (defun =msl-value ()
-;;   "Return a parser that matches a value."
-;;   (=subseq (%any (?not (?eq #\))))))
-
 (defun =msl-selector ()
   "Return a parser for selectors."
   ;; (%or (=msl-metadata-selector)
@@ -172,31 +168,17 @@
   "Return a parser to extract a SHA-256 string."
   (=subseq (%some (?hexp))))
 
-;; (defun =sha256 ()
-;;   "Return a parser to extract a SHA-256 string."
-;;   (=list (=subseq (%some (?hexp)))))
-
 (defun =split-hash ()
   "Return a parser for the hash value."
   (=list (?eq #\#) (=sha256)))
 
 (defun =msl-hash ()
   "Return a parser for hashes."
-  (=destructure (_ v)
+  (=destructure (_ v _)
       (=list (?eq #\#)
-             (=sha256))))
-
-
-(defun =bones ()
-  (lambda (input)
-    (when (= (length input) 64)
-      input)))
-
-(defun =x ()
-  (=destructure (_ v)
-      (=list (?eq #\#)
-             (=bones))
-    v))
+             (=subseq (?satisfies 'length-64-p
+                                  (=subseq (%some (?hexp)))))
+             (?end))))
 
 (defvar *whitespace*
   '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
@@ -253,9 +235,11 @@
        ))
 
 (defun =atom-namespace ()
+  "Return a parser that matches a namespace token."
   (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@)))))
 
 (defun =atom-form ()
+  "Return a parser for handling mx-atom forms."
   (=destructure (_ namespace _ key value _)
       (=list (?eq #\()
              (=atom-namespace)
@@ -302,22 +286,6 @@
               (=msl-value)
               (=msl-transform)
               (=msl-comment))))
-
-;; (defun =msl-prelude ()
-;;   "Return a parser for prelude."
-;;   (=destructure (_ _ _ key _ value _ hash _ comment _)
-;;       (=list (?eq #\()
-;;              (maxpc.char:?string "msl" nil)
-;;              (=whitespace)
-;;              (=msl-key)
-;;              (=whitespace)
-;;              (=msl-value)
-;;              (=whitespace)
-;;              (%maybe (=msl-hash))
-;;              (=whitespace)
-;;              (%maybe (=msl-comment))
-;;              (?eq #\)))
-;;     (list key value hash comment)))
 
 (defun =msl-prelude ()
   "Return a parser for prelude."
@@ -370,16 +338,39 @@
 
 ;;; Misc
 
+(defun extra-character-p (char)
+  (let ((code (char-code char)))
+    (or (inp code #x21 #x22)            ; #\! #\"
+        (inp code #x23 #x27)            ; #\# #\$ #\% #\& #\'
+        (inp code #x2A #x2F)            ; #\* #\+ #\, #\- #\. #\/
+        (inp code #x3A #x40)            ; #\: #\; #\< #\= #\> #\? #\@
+        (inp code #x5B #x60)            ; #\[ #\\ #\] #\^ #\_ #\`
+        (inp code #x7B #x7E)            ; #\{ #\| #\} #\~
+        (>= code #x7F))))               ; other characters
+
+(defun ?msl-character-p ()
+  (%or (?satisfies 'alphanumericp)
+       (?satisfies 'extra-character-p)))
+
+(defun =xsymbol ()
+  (=transform (=subseq (?satisfies 'not-integer (=subseq (%some (?msl-character-p)))))
+              'intern))
+
 (defun =xatom ()
   (%or (maxpc.digit:=integer-number)
-       (=symbol)))
+       (=xsymbol)))
 
 (defun =xexpr ()
-  (=destructure (_ e _)
+  (%or '=xlist/parser (=xatom)))
+
+(defun xlist ()
+  (=destructure (_ expressions _ _)
       (=list (?eq #\()
-             (%any (=destructure (_ e)
-                       (=list (%or (=xatom)
-                                   '=xexpr/parser))))
+             (%any (=destructure (_ expression)
+                       (=list (%any (maxpc.char:?whitespace))
+                              '=xexpr/parser)))
+             (%any (maxpc.char:?whitespace))
              (?eq #\)))))
 
-(setf (fdefinition '=xexpr/parser) (=xexpr))
+(setf (fdefinition '=xexpr/parser) (=xexpr)
+      (fdefinition '=xlist/parser) (=xlist))
