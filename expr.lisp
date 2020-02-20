@@ -157,15 +157,14 @@
 
 (defun =sha256 ()
   "Return a parser to extract a SHA-256 string."
-  (=subseq (?satisfies 'length-64-p
-                       (=subseq (%some (?hexp))))))
+  (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some (?hexp))))
+                 (?end))))
 
 (defun =msl-hash ()
   "Return a parser for hashes."
-  (=destructure (_ v _)
+  (=destructure (_ v)
       (=list (?eq #\#)
-             (=sha256)
-             (?end))))
+             (=sha256))))
 
 (defvar *whitespace*
   '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
