@@ -1,0 +1,621 @@
+; compiling (LET (#) ...)
+CL-USER> (ql:quickload :streams)
+To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+........
+(:STREAMS)
+; compiling (IN-PACKAGE :STREAMS/EXPR)
+CL-USER>
+
+; No value
+CL-USER> (in-package :streams/expr)
+#<PACKAGE "STREAMS/EXPR">
+
+STREAMS/EXPR> (parse " " (?whitespace))
+NIL
+T
+T
+
+STREAMS/EXPR> (parse "x" (?whitespace))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "  " (?whitespace))
+NIL
+T
+T
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR>
+
+; No value
+STREAMS/EXPR> (parse "walt" (=msl-key))
+"walt"
+T
+T
+
+STREAMS/EXPR> (parse "walt jd" (=msl-key))
+"walt"
+T
+NIL
+;
+; caught ERROR:
+;   READ error during COMPILE-FILE:
+;
+;     end of file on #<SB-INT:FORM-TRACKING-STREAM for "file C:\\Users\\David\\AppData\\Local\\Temp\\slime5" {1005138AA3}>
+;
+;     (in form starting at line: 1, column: 0, position: 0)
+;
+; compilation unit finished
+;   caught 1 fatal ERROR condition
+;   caught 1 ERROR condition
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR>
+
+; No value; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "walt jd" (=msl-key))
+
+"walt"
+T
+NIL
+
+STREAMS/EXPR> (parse "walt jd" (=msl-key))
+"walt"
+T
+NIL
+
+STREAMS/EXPR> (parse "walt" (=msl-key))
+"walt"
+T
+T
+; compiling (DEFUN =MSL-KEY ...)
+;
+; caught ERROR:
+;   READ error during COMPILE-FILE:
+;
+;     end of file on #<SB-INT:FORM-TRACKING-STREAM for "file C:\\Users\\David\\AppData\\Local\\Temp\\slime9" {1005409983}>
+;
+;     (in form starting at line: 1, column: 0, position: 0)
+;
+; compilation unit finished
+;   caught 1 fatal ERROR condition
+;   caught 1 ERROR condition
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "walt jd" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt" (=msl-key))
+"walt"
+T
+T
+
+STREAMS/EXPR> (parse "walt-" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt-d" (=msl-key))
+"walt-d"
+T
+T
+
+STREAMS/EXPR> (parse "walt--d" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "-walt" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt2" (=msl-key))
+"walt2"
+T
+T
+
+STREAMS/EXPR> (parse "2walt" (=msl-key))
+"2walt"
+T
+T
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "2walt" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt2" (=msl-key))
+"walt2"
+T
+T
+
+STREAMS/EXPR> (parse "walt2." (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walter-elias-disney" (=msl-key))
+"walter-elias-disney"
+T
+T
+
+STREAMS/EXPR> (parse "walt" (=msl-key))
+"walt"
+T
+T
+; compiling (DEFUN =MSL-KEY ...)
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "walt " (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse " walt" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt!" (=msl-key))
+NIL
+NIL
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime14
+; in: DEFUN =MSL-KEY
+;     (STREAMS/EXPR::%?END)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%?END
+;
+; compilation unit finished
+;   Undefined function:
+;     %?END
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "walt!" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt " (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "@walt" (=msl-key))
+NIL
+NIL
+NIL
+; compiling (DEFUN NOT-INTEGER ...)
+WARNING: redefining STREAMS/EXPR::NOT-INTEGER in DEFUN
+; compiling (DEFUN NOT-DOUBLEQUOTE ...)
+WARNING: redefining STREAMS/EXPR::NOT-DOUBLEQUOTE in DEFUN
+; compiling (DEFUN ?WHITESPACE ...)
+WARNING: redefining STREAMS/EXPR::?WHITESPACE in DEFUN
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "@walt" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "walt" (=msl-key))
+"walt"
+T
+T
+; compiling (DEFUN ?WHITESPACE ...)
+; compiling (DEFUN =MSL-KEY ...)
+; compiling (DEFUN =SLIST ...)
+WARNING: redefining STREAMS/EXPR::=SLIST in DEFUN
+; compiling (DEFUN ?WHITESPACE ...)
+; compiling (DEFUN ?WHITESPACE ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime25
+; in: DEFUN ?WHITESPACE
+;     (STREAMS/EXPR::%NOT (MAXPC.CHAR:?WHITESPACE))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%NOT
+;
+; compilation unit finished
+;   Undefined function:
+;     %NOT
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "b" (?whitespace))
+STREAMS/EXPR> (parse "b" (?whitespace))
+STREAMS/EXPR> (parse "walt" (=msl-key))
+
+"walt"
+T
+T
+
+STREAMS/EXPR> (parse "b" (?whitespace))
+NIL
+T
+T
+
+STREAMS/EXPR> (parse " " (?whitespace))
+NIL
+NIL
+NIL
+; compiling (DEFUN ?WHITESPACE ...)
+STREAMS/EXPR> (parse " " (?whitespace))
+
+NIL
+T
+T
+
+STREAMS/EXPR> (parse "name-char" (?whitespace))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (ql:quickload :streams)
+To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+
+(:STREAMS)
+
+STREAMS/EXPR> (parse "2a" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "wa2" (=msl-key))
+"wa2"
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime28
+; in: DEFUN =METADATA-SELECTOR
+;     (STREAMS/EXPR::=MSL-VALUE)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=MSL-VALUE
+;
+; compilation unit finished
+;   Undefined function:
+;     =MSL-VALUE
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =MSL-VALUE ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime29
+; in: DEFUN =MSL-VALUE
+;     (STREAMS/EXPR::=SEQ (MAXPC:%ANY (MAXPC:=ELEMENT)) (MAXPC:?END))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=SEQ
+;
+; compilation unit finished
+;   Undefined function:
+;     =SEQ
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "haba" (=msl-value))
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "haba" (=msl-value))
+
+"haba"
+T
+T
+
+STREAMS/EXPR> (parse "haba huba" (=msl-value))
+"haba huba"
+T
+T
+
+STREAMS/EXPR> (parse "(haba huba)" (=msl-value))
+"(haba huba)"
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+
+("nugget" "")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
+NIL
+NIL
+NIL
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
+
+NIL
+NIL
+NIL
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+NIL
+NIL
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+WARNING: redefining STREAMS/EXPR::=MSL-KEY in DEFUN
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
+("nugget" NIL)
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
+
+("nugget" NIL)
+T
+T
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+NIL
+NIL
+NIL
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+
+("nugget" NIL)
+T
+T
+
+STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
+("nugget" NIL)
+T
+T
+
+STREAMS/EXPR> (parse "" (=msl-value))
+""
+T
+T
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "" (=msl-value))
+
+NIL
+NIL
+T
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "" (=msl-value))
+
+NIL
+NIL
+T
+
+STREAMS/EXPR> (parse "" (=msl-value))
+NIL
+NIL
+T
+
+STREAMS/EXPR> (parse " " (=msl-value))
+" "
+T
+T
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+("nugget" NIL)
+T
+T
+
+STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
+("nugget" NIL)
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
+
+("nugget" " ascuaga")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget-ascuaga" (=metadata-selector))
+("nugget-ascuaga" "")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget 2ascuaga" (=metadata-selector))
+("nugget" " 2ascuaga")
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget 2ascuaga" (=metadata-selector))
+
+("nugget" "2ascuaga")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget2ascuaga" (=metadata-selector))
+("nugget2ascuaga" NIL)
+T
+T
+
+STREAMS/EXPR> (parse ":nuggetJohn Ascgua's Nugget" (=metadata-selector))
+("nuggetJohn" "Ascgua's Nugget")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget John Ascgua's Nugget" (=metadata-selector))
+("nugget" "John Ascgua's Nugget")
+T
+T
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+("nugget" NIL)
+T
+T
+
+STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
+("nugget" "- value")
+T
+T
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
+
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
+
+("nugget" NIL)
+T
+NIL
+
+STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
+("nugget" NIL)
+T
+NIL
+
+STREAMS/EXPR> (parse "nugget-" (=msl-key))
+"nugget"
+T
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "nugget-" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget value" (=metadata-selector))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+NIL
+NIL
+NIL
+; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "nugget" (=msl-key))
+NIL
+NIL
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "nugget" (=msl-key))
+
+"nugget"
+T
+T
+
+STREAMS/EXPR> (parse "nugget-" (=msl-key))
+"nugget"
+T
+NIL
+
+STREAMS/EXPR> (alpha-char-p "-")
+
+STREAMS/EXPR> (alpha-char-p #\-)
+NIL
+
+STREAMS/EXPR> (alpha-char-p #\b)
+T
+
+STREAMS/EXPR> (alphanumericp #\b)
+T
+
+STREAMS/EXPR> (alphanumericp #\-)
+NIL
+
+STREAMS/EXPR> (parse "nugget-" (=msl-key))
+"nugget"
+T
+NIL
+
+STREAMS/EXPR> (parse "nugget-b" (=msl-key))
+"nugget-b"
+T
+T
+
+STREAMS/EXPR> (parse "nugget " (=msl-key))
+"nugget"
+T
+NIL
+
+STREAMS/EXPR> (alphanumericp #\space)
+NIL
+
+STREAMS/EXPR> (parse "nugget--" (=msl-key))
+"nugget"
+T
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "nugget-b" (=msl-key))
+
+"nugget-b"
+T
+T
+
+STREAMS/EXPR> (parse "nugget--" (=msl-key))
+"nugget"
+T
+NIL
+
+STREAMS/EXPR> (parse "nugget--" (=msl-key))
+"nugget"
+T
+NIL
+; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse "nugget--" (=msl-key))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "nugget-" (=msl-key))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "nugget" (=msl-key))
+"nugget"
+T
+T
+
+STREAMS/EXPR> (parse "nugget-casino" (=msl-key))
+"nugget-casino"
+T
+T
+
+STREAMS/EXPR> (parse ":nugget-casino" (=metadata-selector))
+STREAMS/EXPR> ; compiling (DEFUN =MSL-KEY ...)
+STREAMS/EXPR> (parse ":nugget-casino" (=metadata-selector))
+
+; compiling (DEFUN =METADATA-SELECTOR ...)
