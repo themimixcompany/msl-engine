@@ -205,6 +205,7 @@ sublists that are prefixed."
            (convert-pseudo-keys (split-infixes (split-prefixes v)))))
     (if (stringp data)
         (fn (maxpc:parse data (streams/expr:=sexp)))
+        ;;(fn (maxpc:parse data (streams/expr:=xexpr)))
         (fn data))))
 
 (defun primary-values (expr)
