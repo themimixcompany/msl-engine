@@ -75,6 +75,28 @@
 ;;;-----------------------------------------------------------------------------
 
 ;;
+;; Function-namespace definitions for recursive functions
+;;
+
+(setf (fdefinition '=msl-value/parser) (=msl-value)
+      (fdefinition '=msl-atom/parser) (=msl-atom))
+;;
+;; Utility (Non-Parser) Functions
+;;
+
+(defun hex-char-p (char)
+  "Return true if CHAR is valid hexadecimal character."
+  (or (digit-char-p char)
+      (char<= #\a char #\f)
+      (char<= #\A char #\F)))
+;;
+
+(defun length-64-p (value)
+  "Return true if VALUE is 64 characters long."
+  (= (length value) 64))
+;;
+
+;;
 ;; STREAM (Character) Parsers
 ;;
 
@@ -84,23 +106,28 @@
   "Match one or more whitespace characters."
   (?seq (%some (maxpc.char:?whitespace))))
 
+(defun ?hexp ()
+  "Match a single hex character."
+  (?satisfies 'hex-char-p))
+
 ;; STREAM Single-Value Getters
+
+(defun =sha256 ()
+  "Return a SHA-256 string."
+  (=subseq (?seq (?satisfies 'length-64-p
+                   (=subseq (%some (?hexp)))))))
+;;
 
 (defun =msl-key ()
   "Match and return a valid MSL key."
   (=subseq (?seq (%some (?satisfies 'alpha-char-p))
-                 (%any (?seq (%maybe (?eq #\-)))
-                       (%some (?satisfies 'alphanumericp))))))
+                 (%any (?seq (%maybe (?eq #\-))
+                         (%some (?satisfies 'alphanumericp)))))))
 
 ;; Dummy Filespec
 (defun =msl-filespec ()
  "Match a return a uri filespec or url."
  (=subseq (%some (?satisfies 'alphanumericp))))
-
-;; Dummy SHA256
-(defun =sha256 ()
-  "Match and return a SHA256 value."
-  (=subseq (%some (?satisfies 'alphanumericp))))
 
 (defun =bracketed-transform ()
  "Match and return a bracketed tranform."
@@ -109,25 +136,30 @@
            (=msl-filespec)
            (?eq #\]))
     url))
+;;
 
 (defun =msl-hash ()
- "Match and return a hash."
- (=destructure (_ hash)
-  (=list (?eq #\#)
-         (=sha256))
-  hash))
+  "Match and return a hash value."
+  (=destructure (_ v)
+      (=list (?eq #\#)
+             (=sha256))))
+;;
 
 
 (defun =msl-value ()
   "Match and return a raw value."
-  (%some (?not (?seq (?eq #\right_parenthesis) (?end)))))
+  (=subseq (%some (?not (%or (?seq (?whitespace) (=msl-selector))
+                             (?seq (?whitespace) (=msl-hash))
+                             (?seq (?whitespace) (=msl-comment))
+                             (?seq (?eq #\right_parenthesis) (?end)))))))
+;;
 
 (defun =msl-comment ()
  "Match a comment."
   (=destructure (_ comment)
     (=list (maxpc.char:?string "//")
-           (=msl-value)
-      comment)))
+           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))
+    comment))
 
 ;; STREAM List-of-Values Getters
 
@@ -142,19 +174,12 @@
            (=msl-key)
            (%maybe (=destructure (_ value)
                      (=list (?whitespace)
-                            (=msl-value)))))
+                            '=msl-value/parser))))
     (list key value)))
 
 (defun =msl-transform ()
  "Match a transform."
  (%or (=bracketed-transform)))
-
-(defun =msl-comment ()
- "Match a comment."
- (=destructure (_ comment)
-   (=list (maxpc.char:?string "//")
-          (=msl-value))
-   comment))
 
 (defun =msl-prelude ()
     "Match and return a prelude."
@@ -164,7 +189,6 @@
                (?whitespace)
                (=msl-key)
                (=subseq (%maybe (?seq (?whitespace) (=msl-value))))
-               ; (%some (=element))
                ; ; (%any (?seq (?whitespace) (%or (=msl-selector))
                ; ;                           (=msl-transform)
                ; ;                           (=msl-value)))
@@ -172,3 +196,39 @@
                ; ; (%maybe (=subseq (?seq (?whitespace) (=msl-comment))))
                (?eq #\right_parenthesis))
       (list key value)))
+;;
+
+(defun =atom-namespace ()
+  "Match and return an atom namespace."
+  (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
+
+(defun =@-namespace ()
+    "Match and return the @ namespace."
+    (=subseq (?eq #\@)))
+
+(defun =msl-atom ()
+  "Match and return an atom."
+  (=destructure (_ ns-and-key value selector hash comment _)
+    (=list (?eq #\left_parenthesis)
+           (%or (=list (=@-namespace)
+                       (=msl-key))
+                (=destructure (ns _ key)
+                  (=list (=atom-namespace)
+                         (?whitespace)
+                         (=msl-key))
+                  (list ns key)))
+           (%maybe (=destructure (_ value)
+                     (=list (?whitespace)
+                            (%or '=msl-atom/parser
+                                 (=msl-value)))))
+           (%any (=destructure (_ value)
+                     (=list (?whitespace)
+                            (=msl-selector))))
+           (%maybe (=destructure (_ hash)
+                     (=list (?whitespace)
+                            (=msl-hash))))
+           (%maybe (=destructure (_ comment)
+                     (=list (?whitespace)
+                            (=msl-comment))))
+           (?eq #\right_parenthesis))
+    (list ns-and-key value selector hash comment)))
