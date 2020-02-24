@@ -24,9 +24,7 @@
            #:mx-stream
            #:mx-view
            #:mx-canon
-           #:mx-atom
-
-           #:value*))
+           #:mx-atom))
 
 (in-package #:streams/channels)
 
@@ -87,7 +85,7 @@
          :reader key
          :documentation "The key to designate the mx-machine instance. Defaults to the the hostname.")
    (table :initarg :table
-          :initform (make-hash-table)
+          :initform (make-hash-table :test #'equal)
           :accessor table
           :documentation "The mx-atom table for the mx-machine namespace."))
   (:documentation "The default store to use when there are no other available namespaces. When no names are specified the hostname is used for the instantiation."))
@@ -98,7 +96,7 @@
          :reader key
          :documentation "The name to designate the mx-world instance.")
    (table :initarg :table
-          :initform (make-hash-table)
+          :initform (make-hash-table :test #'equal)
           :accessor table
           :documentation "The mx-atom table for the mx-world namespace."))
   (:documentation "The structure to designate worlds."))
@@ -156,7 +154,15 @@
    (metadata :initarg :metadata
              :initform nil
              :accessor metadata
-             :documentation "The secondary data of an mx-atom which contains information about the DATA slot."))
+             :documentation "The secondary data of an mx-atom which contains information about the DATA slot.")
+   (hash :initarg :hash
+             :initform nil
+             :accessor hash
+             :documentation "The SHA-256 hash of an atom.")
+   (comment :initarg :comment
+             :initform nil
+             :accessor comment
+             :documentation "Free form text about an atom."))
   (:documentation "The structure to designate atoms."))
 
 (defmacro update-counter (mx-universe accessor)
@@ -224,12 +230,9 @@
       (make-instance 'mx-machine :key key :mx-universe streams/ethers:*mx-universe*)
       (make-instance 'mx-machine :mx-universe streams/ethers:*mx-universe*)))
 
-(defun make-mx-atom (ns key value metadata)
+(defun make-mx-atom (ns key value metadata &optional hash comment)
   "Return a new mx-atom instance from arguments."
   (make-instance 'mx-atom :ns ns :key key
                           :value value :metadata metadata
+                          :hash hash :comment comment
                           :mx-universe streams/ethers:*mx-universe*))
-
-(defun value* (obj)
-  "Return the first value in obj."
-  (first (value obj)))

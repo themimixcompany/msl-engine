@@ -533,17 +533,17 @@ multiple values."
                    (t (fn (cdr args) (cons (car args) acc))))))
         (fn expr nil)))))
 
-;; (defun punctuationp (symbol)
-;;   "Return true if SYMBOL is one of the items in the naughty list."
-;;   (let ((char (streams/common:string-convert symbol)))
-;;     (when (member (elt char 0) '(#\. #\, #\; #\! #\?))
-;;       t)))
-
 (defun conc (item-1 item-2)
   "Concatenate ITEM-1 and ITEM-2 as strings."
   (concatenate 'string
                (streams/common:string-convert item-1)
                (streams/common:string-convert item-2)))
+
+(defun punctuationp (symbol)
+  "Return true if SYMBOL is one of the items in the naughty list."
+  (let ((char (streams/common:string-convert symbol)))
+    (when (member (elt char 0) '(#\. #\, #\; #\! #\?))
+      t)))
 
 (defun join-smartly (list)
   "Join items in list, smartly."
@@ -553,26 +553,6 @@ multiple values."
                       (fn (cdr args) (conc acc (conc " " (car args)))))
                      (t (fn (cdr args) (conc acc (car args)))))))
     (fn (cdr list) (streams/common:string-convert (car list)))))
-
-;;; If it’s not punctuation, add space. Otherwise, no space.
-;;; If it’s a value, and the previous item, is not punctuation, then add space. Otherwise, no space.
-
-;; (defun join-smartly (list)
-;;   "Join items in list, smartly."
-;;   (labels ((fn (args acc &optional prev-arg)
-;;                (let ((this-arg (car args)))
-;;                  ;; (when (stringp this-arg)
-;;                  ;;   (setf this-arg (concatenate 'string this-arg "!")))
-;;                  (cond ((null args) acc)
-;;                        ((or (and (not (punctuationp this-arg))
-;;                                  (not (stringp this-arg)))
-;;                             (and (stringp this-arg)
-;;                                  (not (punctuationp prev-arg))))
-;;                         (fn (cdr args) (conc acc (conc " " this-arg)) this-arg))
-;;                        ;; ((not (punctuationp this-arg))
-;;                        ;;  (fn (cdr args) (conc acc (conc " " this-arg))))
-;;                        (t (fn (cdr args) (conc acc this-arg) this-arg))))))
-;;     (fn (cdr list) (streams/common:string-convert (car list)))))
 
 (defun show (expr &key obj stream (tokenize t))
   "Return the intended string representation of EXPR."
@@ -601,133 +581,127 @@ multiple values."
                 ;; other expressions
                 (t (format stream (join-smartly (v-value v)))))))))))
 
-;;;-----------------------------------------------------------------------------
-
-;;; Should a flag be used to indicate that a string merge was previously mad?
-;;; Then the flag will be turned off, otherwise.
-;;; Track the last and current items.
-;;; Maybe, track the flag.
-
-;; (defun pad-list (list &optional (pad '| |))
-;;   "Return a list where PAD is inserted elements in LIST."
-;;   (labels ((fn (args acc)
-;;                (cond ((null args) (nreverse acc))
-;;                      ((= (length args) 1)
-;;                       (fn (cdr args) (cons (list (car args)) acc)))
-;;                      (t (fn (cdr args) (cons (list (car args) pad) acc))))))
-;;     (reduce #'append (fn list nil))))
-
-;;; Use this conditionally
-(defun merge-list (list)
-  "Return a new list that are bound together as specified by PAD-LIST."
-  (reduce #'conc (pad-list list)))
-
-(defvar *punctuations* '(#\. #\, #\: #\; #\! #\? #\' #\" #\“ #\” #\* #\…)
-  "A sample minimum set of English punctuation marks.")
-
-(defun punctuationp (symbol)
-  "Return true if all items in SYMBOL are considered punctuation marks."
-  (let ((string (streams/common:string-convert symbol)))
-    (flet ((fn (char)
-               (member char *punctuations*)))
-      (every #'fn string))))
-
-;;; Since the items are tokenized by whitespace, we can use whitespace as a joining character
-;;; between list items.
-;;; The problem with this approach is, that it doesn’t discern punctuations.
-;;; For that we need to use PUNCTUATIONP
-(defun pad-list (list &optional (pad '| |))
-  "Return a list where PAD is inserted elements in LIST."
-  (labels ((fn (args acc)
-               (cond ((null args) (nreverse acc))
-                     ;; ;; only one item left
-                     ;; ((= (length args) 1)
-                     ;;  (fn (cdr args) (cons (car args) acc)))
-
-                     ;; ;; "Houston" |!|
-                     ;; ((and (stringp (first args))
-                     ;;       (punctuationp (second args)))
-                     ;;  (fn (cdr args) (cons (car args) acc)))
-                     ;; ;; |!| "Houston"
-                     ;; ((and (punctuationp (first args))
-                     ;;       (stringp (second args)))
-                     ;;  (fn (cdr args) (cons (car args) acc)))
-
-                     ;; no punctuations
-                     ((and (not (punctuationp (first args)))
-                           (not (punctuationp (second args))))
-                      (fn (cdr args) (cons pad (cons (car args) acc))))
-
-                     ;; ;; |in| "Houston"
-                     ;; ((and (symbolp (first args))
-                     ;;       (stringp (second args)))
-                     ;;  (fn (cdr args) (cons pad (cons (car args) acc))))
-                     ;; ;; "TX" |known|
-                     ;; ((and (stringp (first args))
-                     ;;       (symbolp (second args)))
-                     ;;  (fn (cdr args) (cons pad (cons (car args) acc))))
-
-                     ;; ;; |An| |area|
-                     ;; ;; "Houston" "TX"
-                     ;; ((equalp (type-of (first args))
-                     ;;          (type-of (second args)))
-                     ;;  (fn (cdr args) (cons pad (cons (car args) acc))))
-
-                     ;; ;; |An| |area|
-                     ;; ((and (symbolp (first args))
-                     ;;       (symbolp (second args)))
-                     ;;  (fn (cdr args) (cons pad (cons (car args) acc))))
-                     ;; ;; "Houston" "TX"
-                     ;; ((and (stringp (first args))
-                     ;;       (stringp (second args)))
-                     ;;  (fn (cdr args) (cons pad (cons (car args) acc))))
-
-                     ;; fallback
-                     (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list nil)))
-
-(defun concat (item-1 item-2)
-  "Concatenate ITEM-1 and ITEM-2 as strings."
-  (flet ((fn (obj)
-             (if (stringp obj)
-                 obj
-                 (streams/common:string-convert obj))))
-    (let ((string-1 (fn item-1))
-          (string-2 (fn item-2)))
-      (concatenate 'string string-1 string-2))))
-
-(defun join (list)
-  "Join items in list as individual strings."
-  (reduce #'concat (pad-list list)))
-
-;;; Use a separate EVAL-EXPR-1?
-(defun show-1 (expr &key obj stream (tokenize t))
-  "Return the intended string representation of EXPR."
-  (block nil
-    (let* ((expr (if tokenize (tokenize-expr expr) expr))
-           (p-values (primary-values expr))
-           (s-values (secondary-values expr)))
-      (flet ((v-value (v)
-               (streams/channels:value v))
-             (m-value (s-values v)
-               (streams/common:assoc-value (first s-values) (streams/channels:metadata v))))
-        (multiple-value-bind (v table namespace)
-            (or obj (eval-expr expr :tokenize nil))
-          (declare (ignorable table namespace))
-          (if (null v)
-              (return (values))
-              (cond
-                ;; (@walt :age 0) | (@walt :age)
-                ;; ‘walt’ exists, and there’s only one install,
-                ;; ‘walt’ exists, and there’s only one recall
-                ((and (null p-values)
-                      (or (single-install-p s-values)
-                          (single-recall-p s-values)))
-                 (format stream (join (m-value s-values v))))
-
-                ;; other expressions
-                (t (format stream (join (v-value v)))))))))))
-
 (defun dump (expr)
   "Display information about the results of evaluating EXPR."
   (streams/common:dump-object (eval-expr expr)))
+
+
+;;;-----------------------------------------------------------------------------
+;;; eval
+;;;-----------------------------------------------------------------------------
+
+(defmacro bind-slots (v &rest slots)
+  "Set the value of SLOTS in V, to the respective values in the surrounding
+scope, with the same names."
+  (mof:with-gensyms (obj)
+    `(let ((,obj ,v))
+       (progn
+         ,@(loop :for slot :in slots :collect
+                    `(setf (,(intern (streams/common:string-convert slot)
+                                     (find-package :streams/channels))
+                            ,obj)
+                           ,slot))))))
+
+(defun msl-single-recall-p (metadata)
+  "Return true if there is only a single recall in METADATA. That is,
+((\"birthday\")) is a single recall, while ((\"birthday\") (\"state\")) is
+not. "
+  (destructuring-bind (m &body body)
+      metadata
+    (and (null body)
+         (mof:solop m))))
+
+(defun msl-all-recall-p (metadata)
+  "Return true if all the items in METADATA are for recalling values. That
+is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
+not. "
+  (every #'mof:solop metadata))
+
+(defun msl-eval-expr (expr)
+  "Evaluate EXPR as a complete MSL expression, store the result into the active
+namespace, then return the mx-atom instance and the corresponding table as multiple
+values."
+  (block nil
+    (let ((expr expr))                  ;(parse ...)
+      (if expr
+          (with-current-namespace
+            (macrolet ((vt (v) `(values ,v table)))
+              (destructuring-bind ((ns key) &optional value metadata hash comment)
+                  expr
+                (multiple-value-bind (v existsp)
+                    (gethash key table)
+                  (cond
+                    ;; (@walt)
+                    ;; ‘walt’ still does not exist
+                    ((and (null existsp) (null value))
+                     nil)
+                    ;; (@walt)
+                    ;; ‘walt’ already exists
+                    ((and existsp (null value) (null metadata))
+                     (vt v))
+                    ;; (@walt :age)
+                    ;; ‘walt’ exists, and there’s only one metadata recall
+                    ((and existsp (null value) (msl-single-recall-p metadata))
+                     (let ((item (assoc (caar metadata) (streams/channels:metadata v))))
+                       (when item
+                         (vt v))))
+                    ;; (@walt :age :gender)
+                    ;; ‘walt’ exists, there is no value, all metadata are recalls
+                    ((and existsp (null value) (msl-all-recall-p metadata))
+                     (vt v))
+                    ;; (@walt "Walt Disney" :age :gender)
+                    ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
+                    ((and existsp value (msl-all-recall-p metadata))
+                     (setf (streams/channels:value v) value)
+                     (vt v))
+                    ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
+                    ;; ‘walt’ exists, and either p-values or s-values exists
+                    ((and existsp (or value metadata))
+                     (when value
+                       (setf (streams/channels:value v)
+                             value))
+                     (when value
+                       (setf (streams/channels:metadata v)
+                             (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
+                     (vt v))
+                    ;; (@walt "Walt Disney" :age 65)
+                    ;; ‘walt’ does not exist and we’re creating a new instance
+                    (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
+                             (setf (gethash key table) o)
+                             (vt o))))))))
+          (return nil)))))
+
+
+;;;-----------------------------------------------------------------------------
+;;; namespaces
+;;;-----------------------------------------------------------------------------
+
+(defun namespace-pairs (chain)
+  "Return a list of namespace-key pairs from CHAIN, where the first element of
+the pair is the namespace marker and the second element of the pair is the key"
+  (labels ((fn (args acc)
+               (cond ((null args) (nreverse acc))
+                     (t (fn (cddr args) (cons (list (car args) (cadr args)) acc))))))
+    (and (evenp (length chain))
+         (fn chain nil))))
+
+(defun namespace-symbol-p (symbol)
+  "Return true if SYMBOL is a valid namespace character."
+  (let ((sym (intern (string symbol) (find-package :streams/ethers))))
+    (when (member sym streams/ethers:*ns*)
+      t)))
+
+;;; Add path validation
+;;; Ensure path hierarchy and sequencing
+(defun namespace-pairs-p (pairs)
+  "Return true if PAIRS is a valid namespace pairs."
+  (every #'(lambda (pair) (namespace-symbol-p (first pair)))
+         pairs))
+
+(defun compose-namespaces (path)
+  "Return a namespace chain object by linearly composing the namespace path from
+NAMESPACES. The object returned contains complete namespace traversal information."
+  (when (evenp (length path))
+    (let ((pairs (mof:partition path 2)))
+      (when (namespace-pairs-p pairs)
+        pairs))))

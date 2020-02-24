@@ -78,8 +78,9 @@
 ;;;-----------------------------------------------------------------------------
 
 (defun ?whitespace ()
-  "Return a parser that matches one or more whitespaces."
+  "Match one or more whitespace characters."
   (?seq (%some (maxpc.char:?whitespace))))
+
 
 (defun namespacep (ns)
   "Return true if NS is a namespace character."
@@ -321,54 +322,3 @@
 (defun =msl-regex-selector ()
   "Return a parse for regexes."
   nil)
-
-
-;;; xexpr
-
-(defun =whitespace+ ()
-  (%some (maxpc.char:?whitespace)))
-
-(defun =whitespace* ()
-  (%any (maxpc.char:?whitespace)))
-
-(defun extra-character-p (char)
-  (let ((code (char-code char)))
-    (or (inp code #x21 #x27)            ; #\! #\" #\# #\$ #\% #\& #\'
-        (inp code #x2A #x2F)            ; #\* #\+ #\, #\- #\. #\/
-        (inp code #x3A #x40)            ; #\: #\; #\< #\= #\> #\? #\@
-        (inp code #x5B #x60)            ; #\[ #\\ #\] #\^ #\_ #\`
-        (inp code #x7B #x7E)            ; #\{ #\| #\} #\~
-        (>= code #x7F))))               ; other characters
-
-(defun ?msl-character-p ()
-  (%or (?satisfies 'alphanumericp)
-       (?satisfies 'extra-character-p)))
-
-(defun =xnumber ()
-  (maxpc.digit:=integer-number))
-
-(defun =xword ()
-  (=subseq (?satisfies 'not-integer
-                       (=subseq (%some (?msl-character-p))))))
-
-(defun =xword/intern ()
-  (=transform (=xword) 'intern))
-
-(defun =xspace ()
-  (=subseq (=whitespace+)))
-
-(defun =xspace/intern ()
-  (=transform (=xspace) 'intern))
-
-(Defun =xlist ()
-  (=destructure (_ v _)
-      (=list (?eq #\()
-             (%any (=destructure (v)
-                       (=list '=xexpr/parser)))
-             (?eq #\)))))
-
-(defun =xexpr ()
-  (%or '=xlist/parser (=xnumber) (=xword/intern) (=xspace/intern)))
-
-(setf (fdefinition '=xexpr/parser) (=xexpr)
-      (fdefinition '=xlist/parser) (=xlist))

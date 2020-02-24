@@ -59,5 +59,5 @@
 (defparameter *namespace* nil
   "The immediate surrounding namespace for any given operation.")
 
-(defparameter *ns* '(m w s v c @)
+(defparameter *ns* '(m w s v c @ f d)
   "The list of namespaces in simple form.")
