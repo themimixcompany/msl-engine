@@ -140,14 +140,14 @@ RAW-EXPR. If none are found, return NIL."
 (defun split-prefixes (list)
   "Return a new list where the first item is split if prefixed; also apply to
 sublists that are prefixed."
-  (labels ((fn (args acc &optional flag)
+  (labels ((fun (args acc &optional flag)
              (cond ((null args) (nreverse acc))
                    ((and flag (@-prefixed-p (car args)))
-                    (fn (cdr args) (nconc (nreverse (split-symbol (car args))) acc) nil))
+                    (fun (cdr args) (nconc (nreverse (split-symbol (car args))) acc) nil))
                    ((consp (car args))
-                    (fn (cdr args) (cons (fn (car args) nil t) acc)))
-                   (t (fn (cdr args) (cons (car args) acc) nil)))))
-    (fn list nil t)))
+                    (fun (cdr args) (cons (fun (car args) nil t) acc)))
+                   (t (fun (cdr args) (cons (car args) acc) nil)))))
+    (fun list nil t)))
 
 (defun :-infixed-p (symbol)
   "Return true if SYMBOL is infixed with the : character."
@@ -161,14 +161,14 @@ sublists that are prefixed."
 
 (defun split-infixes (list)
   "Return a new list where symbols that are infixed are split."
-  (labels ((fn (args acc)
+  (labels ((fun (args acc)
              (cond ((null args) (nreverse acc))
                    ((:-infixed-p (car args))
-                    (fn (cdr args) (nconc (nreverse (split-colons (car args))) acc)))
+                    (fun (cdr args) (nconc (nreverse (split-colons (car args))) acc)))
                    ((consp (car args))
-                    (fn (cdr args) (cons (fn (car args) nil) acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list nil)))
+                    (fun (cdr args) (cons (fun (car args) nil) acc)))
+                   (t (fun (cdr args) (cons (car args) acc))))))
+    (fun list nil)))
 
 (defun pseudo-key-p (v)
   "Return true if V is a symbol in the form |:V|."
@@ -190,23 +190,23 @@ sublists that are prefixed."
 
 (defun convert-pseudo-keys (list)
   "Return a new list where all the pseudo keys are converted to real keywords."
-  (labels ((fn (args acc)
+  (labels ((fun (args acc)
              (cond ((null args) (nreverse acc))
                    ((pseudo-key-p (car args))
-                    (fn (cdr args) (cons (convert-pseudo-key (car args)) acc)))
+                    (fun (cdr args) (cons (convert-pseudo-key (car args)) acc)))
                    ((consp (car args))
-                    (fn (cdr args) (cons (fn (car args) nil) acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list nil)))
+                    (fun (cdr args) (cons (fun (car args) nil) acc)))
+                   (t (fun (cdr args) (cons (car args) acc))))))
+    (fun list nil)))
 
 (defun tokenize-expr (data)
   "Tokenize DATA using MaxPC."
-  (flet ((fn (v)
+  (flet ((fun (v)
            (convert-pseudo-keys (split-infixes (split-prefixes v)))))
     (if (stringp data)
-        (fn (maxpc:parse data (streams/expr:=sexp)))
-        ;;(fn (maxpc:parse data (streams/expr:=xexpr)))
-        (fn data))))
+        (fun (maxpc:parse data (streams/expr:=sexp)))
+        ;;(fun (maxpc:parse data (streams/expr:=xexpr)))
+        (fun data))))
 
 (defun primary-values (expr)
   "Return the primary values from EXPR; return NIL if none are found."
@@ -257,13 +257,13 @@ found."
 
 (defun valid-keys-p (expr)
   "Return true if the keys in EXPR are valid."
-  (labels ((fn (args)
+  (labels ((fun (args)
              (cond ((null args) t)
-                   ((consp (car args)) (fn (car args)))
+                   ((consp (car args)) (fun (car args)))
                    ((unless (valid-key-p (car args))) nil)
-                   (t (fn (cdr args))))))
+                   (t (fun (cdr args))))))
     (and (valid-key-p (key expr))
-         (fn expr))))
+         (fun expr))))
 
 (defun valid-form-p (expr)
   "Return true if EXPR is a valid mx-atom expression."
@@ -275,45 +275,45 @@ found."
   (destructuring-bind (ns key &optional &rest _)
       expr
     (declare (ignore _))
-    (labels ((fn (args value metadata)
+    (labels ((fun (args value metadata)
                (cond ((null args) (values ns key value (nreverse metadata)))
                      (t (multiple-value-bind (start end)
                             (bounds args)
-                          (fn (nthcdr (1+ end) args)
-                              value
-                              (acons (car args) (subseq args start (1+ end)) metadata)))))))
-      (fn (secondary-values expr) (primary-values expr) nil))))
+                          (fun (nthcdr (1+ end) args)
+                               value
+                               (acons (car args) (subseq args start (1+ end)) metadata)))))))
+      (fun (secondary-values expr) (primary-values expr) nil))))
 
 (defun build-pairs (items)
   "Group items into pairs."
-  (labels ((fn (items acc)
+  (labels ((fun (items acc)
              (cond ((null items) (nreverse acc))
                    ((keywordp (cadr items))
-                    (fn (cdr items)
-                        (cons (list (first items) nil)
-                              acc)))
-                   (t (fn (cddr items)
-                          (cons (list (first items) (second items))
-                                acc))))))
-    (fn items nil)))
+                    (fun (cdr items)
+                         (cons (list (first items) nil)
+                               acc)))
+                   (t (fun (cddr items)
+                           (cons (list (first items) (second items))
+                                 acc))))))
+    (fun items nil)))
 
 (defun build-groups (items)
   "Return item groupings from ITEMS according to KEY."
   (when (and (listp items)
              (keywordp (first items)))
-    (labels ((fn (items acc)
+    (labels ((fun (items acc)
                (cond ((null items) (reverse acc))
-                     ((keywordp (cadr items)) (fn (cdr items)
-                                                  (cons (list (car items) nil) acc)))
+                     ((keywordp (cadr items)) (fun (cdr items)
+                                                   (cons (list (car items) nil) acc)))
                      (t (multiple-value-bind (start end)
                             (bounds items)
                           (declare (ignorable start))
                           (if start
-                              (fn (nthcdr (1+ end) items)
-                                  (cons (subseq items 0 (1+ end)) acc))
-                              (fn (cdr items)
-                                  (cons (list (car items) nil) acc))))))))
-      (fn items nil))))
+                              (fun (nthcdr (1+ end) items)
+                                   (cons (subseq items 0 (1+ end)) acc))
+                              (fun (cdr items)
+                                   (cons (list (car items) nil) acc))))))))
+      (fun items nil))))
 
 (defun build-map (items &key (test #'keywordp) (constructor #'cons))
   "Create key-value mappings from ITEMS."
@@ -347,22 +347,22 @@ found."
 
 (defun update-key (items key value)
   "Update a specific colon selector under KEY with VALUE within ITEMS."
-  (labels ((fn (args acc)
+  (labels ((fun (args acc)
              (cond ((null args) (nreverse acc))
-                   ((eql (caar args) key) (fn (cdr args) (acons key value acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
+                   ((eql (caar args) key) (fun (cdr args) (acons key value acc)))
+                   (t (fun (cdr args) (cons (car args) acc))))))
     (if (assoc key items :test #'equal)
-        (fn items nil)
+        (fun items nil)
         (acons key value items))))
 
 (defun update-map (items values)
   "Update all matching colon selectors in ITEMS."
-  (labels ((fn (args acc)
+  (labels ((fun (args acc)
              (cond ((null args) acc)
-                   (t (fn (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
-    (fn (remove-if #'(lambda (group)
-                       (null (cadr group)))
-                   (build-groups values)) nil)))
+                   (t (fun (cdr args) (update-key (or acc items) (caar args) (cdar args)))))))
+    (fun (remove-if #'(lambda (group)
+                        (null (cadr group)))
+                    (build-groups values)) nil)))
 
 (defun merge-metadata (key mx-atom)
   "Return the the value specified by KEY in MX-ATOM."
@@ -510,7 +510,7 @@ namespace, then return the mx-atom instance, table, and current namespace as
 multiple values."
   (block nil
     (let ((expr (if tokenize (tokenize-expr expr) expr)))
-      (labels ((fn (args acc)
+      (labels ((fun (args acc)
                  (cond
                    ((null args)
                     (let ((v (%eval-expr (reverse acc) :tokenize tokenize)))
@@ -519,19 +519,19 @@ multiple values."
                           v)))
                    ((mx-atom-form-p (car args))
                     (if (free-expr-present-p (car args))
-                        (fn (cdr args) (cons (show (car args)
-                                                   :obj (fn (car args) nil)
-                                                   :tokenize tokenize)
-                                             acc))
+                        (fun (cdr args) (cons (show (car args)
+                                                    :obj (fun (car args) nil)
+                                                    :tokenize tokenize)
+                                              acc))
                         (let ((v (%eval-expr (car args) :tokenize tokenize)))
                           (if (null v)
                               (return (values))
-                              (fn (cdr args) (cons (show (car args)
-                                                         :obj v
-                                                         :tokenize tokenize)
-                                                   acc))))))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-        (fn expr nil)))))
+                              (fun (cdr args) (cons (show (car args)
+                                                          :obj v
+                                                          :tokenize tokenize)
+                                                    acc))))))
+                   (t (fun (cdr args) (cons (car args) acc))))))
+        (fun expr nil)))))
 
 (defun conc (item-1 item-2)
   "Concatenate ITEM-1 and ITEM-2 as strings."
@@ -547,12 +547,12 @@ multiple values."
 
 (defun join-smartly (list)
   "Join items in list, smartly."
-  (labels ((fn (args acc)
-               (cond ((null args) acc)
-                     ((not (punctuationp (car args)))
-                      (fn (cdr args) (conc acc (conc " " (car args)))))
-                     (t (fn (cdr args) (conc acc (car args)))))))
-    (fn (cdr list) (streams/common:string-convert (car list)))))
+  (labels ((fun (args acc)
+             (cond ((null args) acc)
+                   ((not (punctuationp (car args)))
+                    (fun (cdr args) (conc acc (conc " " (car args)))))
+                   (t (fun (cdr args) (conc acc (car args)))))))
+    (fun (cdr list) (streams/common:string-convert (car list)))))
 
 (defun show (expr &key obj stream (tokenize t))
   "Return the intended string representation of EXPR."
@@ -598,8 +598,8 @@ scope, with the same names."
        (progn
          ,@(loop :for slot :in slots :collect
                     `(when ,slot (setf (,(intern (streams/common:string-convert slot)
-                                                (find-package :streams/channels)) ,obj)
-                                      ,slot)))))))
+                                                 (find-package :streams/channels)) ,obj)
+                                       ,slot)))))))
 
 (defun msl-single-recall-p (metadata)
   "Return true if there is only a single recall in METADATA. That is,
@@ -666,8 +666,8 @@ values."
                     ;; (@walt "Walt Disney" :age 65)
                     ;; ‘walt’ does not exist and we’re creating a new instance
                     (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
-                             (setf (gethash key table) o)
-                             (vt o))))))))
+                         (setf (gethash key table) o)
+                         (vt o))))))))
           (return nil)))))
 
 
@@ -678,11 +678,11 @@ values."
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
 the pair is the namespace marker and the second element of the pair is the key"
-  (labels ((fn (args acc)
-               (cond ((null args) (nreverse acc))
-                     (t (fn (cddr args) (cons (list (car args) (cadr args)) acc))))))
+  (labels ((fun (args acc)
+             (cond ((null args) (nreverse acc))
+                   (t (fun (cddr args) (cons (list (car args) (cadr args)) acc))))))
     (and (evenp (length chain))
-         (fn chain nil))))
+         (fun chain nil))))
 
 (defun namespace-symbol-p (symbol)
   "Return true if SYMBOL is a valid namespace character."
@@ -690,17 +690,54 @@ the pair is the namespace marker and the second element of the pair is the key"
     (when (member sym streams/ethers:*ns*)
       t)))
 
-;;; Add path validation
-;;; Ensure path hierarchy and sequencing
 (defun namespace-pairs-p (pairs)
   "Return true if PAIRS is a valid namespace pairs."
   (every #'(lambda (pair) (namespace-symbol-p (first pair)))
          pairs))
 
+(defun namespace-rank (ns)
+  "Return the rank of NS as an integer. The lower the value the higher the rank."
+  (let* ((string (streams/common:string-convert ns))
+         (sym (intern string (find-package :streams/ethers))))
+    (position sym streams/ethers:*namespaces*)))
+
+(defun either-zero-p (x y)
+  "Return true if either X or Y is a zero."
+  (or (zerop x) (zerop y)))
+
+(defun either-null-p (x y)
+  "Return true if either X or Y is null."
+  (or (null x) (null y)))
+
+(defun rank-greater-p (ns1 ns2)
+  "Return true if NS1 has a higher rank than NS2, that is, the integer value of
+NS1 is less than the integer value of NS2."
+  (cond ((either-zero-p ns1 ns2) t)
+        (t (< ns1 ns2))))
+
+(defun valid-ranks-p (ranks)
+  "Return true if RANKS is a valid sequencing of namespace ranks."
+  (labels ((fun (r)
+             (cond ((and (first r) (null (second r)))
+                    t)
+                   ((null r) t)
+                   ((not (rank-greater-p (first r) (second r)))
+                    nil)
+                   (t (fun (cdr r))))))
+    (cond ((null ranks) nil)
+          ((mof:solop ranks) t)
+          (t (fun ranks)))))
+
+(defun namespace-chain-p (chain)
+  "Return true if CHAIN is a valid chaining of namespaces, wherein the namespace
+ranks are in the correct order."
+  (when (evenp (length chain))
+    (let ((pairs (mof:partition chain 2)))
+      (when (namespace-pairs-p pairs)
+        (let ((ranks (loop :for pair :in pairs :collect (namespace-rank (first pair)))))
+          (valid-ranks-p ranks))))))
+
 (defun compose-namespaces (path)
   "Return a namespace chain object by linearly composing the namespace path from
 NAMESPACES. The object returned contains complete namespace traversal information."
-  (when (evenp (length path))
-    (let ((pairs (mof:partition path 2)))
-      (when (namespace-pairs-p pairs)
-        pairs))))
+  nil)
