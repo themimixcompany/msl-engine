@@ -5,19 +5,25 @@
   (:nicknames #:s/channels)
   (:export #:make-mx-universe
            #:dump-mx-universe
-           #:mtable
-           #:wtable
-           #:stable
-           #:vtable
-           #:ctable
-           #:atable
+
+           ;; #:mtable
+           ;; #:wtable
+           ;; #:stable
+           ;; #:vtable
+           ;; #:ctable
+           ;; #:atable
+
            #:make-mx-machine
            #:make-mx-atom
+
            #:key
            #:table
+
            #:id
            #:value
            #:metadata
+           #:hash
+           #:comment
 
            #:mx-machine
            #:mx-world

@@ -597,10 +597,9 @@ scope, with the same names."
     `(let ((,obj ,v))
        (progn
          ,@(loop :for slot :in slots :collect
-                    `(setf (,(intern (streams/common:string-convert slot)
-                                     (find-package :streams/channels))
-                            ,obj)
-                           ,slot))))))
+                    `(when ,slot (setf (,(intern (streams/common:string-convert slot)
+                                                (find-package :streams/channels)) ,obj)
+                                      ,slot)))))))
 
 (defun msl-single-recall-p (metadata)
   "Return true if there is only a single recall in METADATA. That is,
@@ -630,6 +629,7 @@ values."
                   expr
                 (multiple-value-bind (v existsp)
                     (gethash key table)
+                  (bind-slots v hash comment)
                   (cond
                     ;; (@walt)
                     ;; ‘walt’ still does not exist
@@ -658,9 +658,8 @@ values."
                     ;; ‘walt’ exists, and either p-values or s-values exists
                     ((and existsp (or value metadata))
                      (when value
-                       (setf (streams/channels:value v)
-                             value))
-                     (when value
+                       (setf (streams/channels:value v) value))
+                     (when metadata
                        (setf (streams/channels:metadata v)
                              (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
                      (vt v))

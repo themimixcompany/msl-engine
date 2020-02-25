@@ -81,115 +81,29 @@
   "Match one or more whitespace characters."
   (?seq (%some (maxpc.char:?whitespace))))
 
-
-(defun namespacep (ns)
-  "Return true if NS is a namespace character."
-  (member ns '(#\m #\w #\s #\v #\c #\@ #\f #\d)))
-
-(defun =namespace ()
-  "Return a parser that matches a namespace character."
-  (=subseq (?satisfies 'namespacep)))
-
-(defun =msl-key ()
-  "Return a parser that matches a key."
-  (=subseq (?seq (%some (?satisfies 'alphanumericp))
-                 (%any (?seq (%maybe (?eq #\-))
-                             (%some (?satisfies 'alphanumericp)))))))
-
-(defun =msl-selector ()
-  "Return a parser for selectors."
-  ;; (%or (=msl-metadata-selector)
-  ;;      (=msl-regex-selector))
-  (=subseq (?seq (?eq #\:) (=msl-key))))
-
-(defun =msl-value ()
-  "Return a parser that matches a value."
-  ;(=subseq (%any (?not (=msl-selector))))
-  (=subseq (%some (%and (?not (=msl-selector))
-                        (?not (?eq #\)))))))
-
-(defun =ns-and-key ()
-  "Return a parser that matches a namespace and key."
-  (%or (=destructure (namespace _ key)
-           (=list (=namespace)
-                  (?whitespace)
-                  (=msl-key))
-         (list namespace key))
-       (=destructure (namespace key)
-           (=list (=subseq (?eq #\@))
-                  (=msl-key))
-         (list namespace key))))
-
-(defun =msl-expr ()
-  "Return a parser for handling msl expressions."
-  (=destructure (_ ns-and-key _ value _)
-      (=list (?eq #\()
-             (=ns-and-key)
-             (?whitespace)
-             (%or '=msl-expr/parser (=msl-value))
-             (?eq #\)))
-    (append ns-and-key (list value))))
-
-;; This hack is necessary to allow recursive parsing. When updating =MSL-EXPR,
-;; this expression has to be re-evaluated, too.
-(setf (fdefinition '=msl-expr/parser) (=msl-expr))
-
-
-;;;-----------------------------------------------------------------------------
-;;; New parsers
-;;;-----------------------------------------------------------------------------
-
-(defun ?whitespace* ()
-  "Return a parser that matches zero or more whitespaces."
-  (?seq (%any (maxpc.char:?whitespace))))
-
 (defun hex-char-p (char)
   "Return true if CHAR is valid hexadecimal character."
   (or (digit-char-p char)
       (char<= #\a char #\f)
       (char<= #\A char #\F)))
 
-(defun ?hexp ()
-  "Return a parser to test if input is a hexidecimal character."
-  (?satisfies 'hex-char-p))
-
 (defun length-64-p (value)
   "Return true if VALUE is 64 characters long."
   (= (length value) 64))
 
+(defun ?hexp ()
+  "Match a single hex character."
+  (?satisfies 'hex-char-p))
+
 (defun =sha256 ()
-  "Return a parser to extract a SHA-256 string."
-  (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some (?hexp))))
-                 (?end))))
+  "Return a SHA-256 string."
+  (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some (?hexp)))))))
 
-(defun =msl-hash ()
-  "Return a parser for hashes."
-  (=destructure (_ v)
-      (=list (?eq #\#)
-             (=sha256))))
-
-(defvar *whitespace*
-  '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
-  "A list of characters considered as whitespace.")
-
-(defun whitespacep (char)
-  "Return true if CHAR is a whitespace character."
-  (when (member char *whitespace*)
-    t))
-
-(defun msl-char-p (char)
-  "Return true if CHAR can be used as value data."
-  (or (alphanumericp char)
-      (whitespacep char)
-      (extra-char-p char)))
-
-(defun =msl-comment ()
-  "Return a parser for comments."
-  (=destructure (_ _ comment)
-      (=list (maxpc.char:?string "//" nil)
-             (?whitespace*)
-             (=subseq (%some (?satisfies 'msl-char-p))))
-    comment))
+(defun =msl-key ()
+  "Match and return a valid MSL key."
+  (=subseq (?seq (%some (?satisfies 'alpha-char-p))
+                 (%any (?seq (%maybe (?eq #\-))
+                         (%some (?satisfies 'alphanumericp)))))))
 
 (defun =msl-uri ()
   "Return a parser for handling URIs."
@@ -208,88 +122,106 @@
                   (=subseq (%some (?satisfies 'alphanumericp))))
          value)))
 
-(defun =msl-bracketed-transform ()
-  "Return a parser for handling bracketed [] transforms."
-  (=destructure (_ value _)
-      (=list (?eq #\[)
-             (%or (=msl-uri) (=msl-filespec))
-             (?eq #\]))
-    value))
+(defun =bracketed-transform ()
+ "Match and return a bracketed tranform."
+  (=destructure (_ url _)
+    (=list (?eq #\[)
+           (=msl-filespec)
+           (?eq #\]))
+    url))
 
 (defun =msl-transform ()
-  "Return a parser for transforms."
-  (%or (=msl-bracketed-transform)
-       ;; (=msl-format)
-       ))
+ "Match a transform."
+ (%or (=bracketed-transform)))
 
-(defun =atom-namespace ()
-  "Return a parser that matches a namespace token."
-  (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@)))))
-
-(defun =atom-form ()
-  "Return a parser for handling mx-atom forms."
-  (=destructure (_ namespace _ key value _)
-      (=list (?eq #\()
-             (=atom-namespace)
-             (?whitespace)
-             (=msl-key)
-             (%any (?seq (?whitespace)
-                         (%or (=msl-selector)
-                              (=msl-transform)
-                              '=atom-form/parser
-                              (=msl-value))))
-             (?eq #\)))
-    (list namespace key value)))
-
-(setf (fdefinition '=atom-form/parser) (=atom-form))
-
-(defun =msl-format ()
-  "Return a parser for format expressions."
-  (=destructure (_ _ _ key value _)
-      (=list (?eq #\()
-             (?eq #\f)
-             (?whitespace)
-             (=msl-key)
-             (%or (%some (=subseq (?seq (?whitespace)
-                                        (=msl-selector)
-                                        (%maybe (=msl-value)))))
-                  (=subseq (?seq (?whitespace)
-                                 (=msl-value))))
-             ;; (?whitespace)
-             ;; (=msl-value)
-             (?eq #\)))
+(defun =metadata-selector ()
+  "Match and return a metadata selector."
+  (=destructure (_ key value)
+    (=list (?eq #\:)
+           (=msl-key)
+           (%maybe (=destructure (_ value)
+                     (=list (?whitespace)
+                            '=msl-value/parser))))
     (list key value)))
 
-(setf (fdefinition '=msl-format/parser) (=msl-format))
+(defun =msl-selector ()
+ "Match and return a selector."
+ (%or (=metadata-selector)))
 
-(defun =msl-expression ()
-  "Return a parser for handling expressions."
-  (%some (%or (=msl-prelude)
-              (=msl-machine)
-              (=msl-world)
-              (=msl-stream)
-              (=msl-view)
-              (=msl-atom)
-              (=msl-selector)
-              (=msl-value)
-              (=msl-transform)
-              (=msl-comment))))
+(defun =msl-hash ()
+  "Match and return a hash value."
+  (=destructure (_ v)
+      (=list (?eq #\#)
+             (=sha256))))
+
+(defun =msl-comment ()
+ "Match a comment."
+  (=destructure (_ comment)
+    (=list (maxpc.char:?string "//")
+           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))
+    comment))
+
+(defun =msl-value ()
+  "Match and return a raw value."
+  (=subseq (%some (?not (%or (?seq (?whitespace) (=msl-selector))
+                             (?seq (?whitespace) (=msl-hash))
+                             (?seq (?whitespace) (=msl-comment))
+                             (?seq (?eq #\right_parenthesis) (?end)))))))
 
 (defun =msl-prelude ()
-  "Return a parser for prelude."
-  (=destructure (_ _ _ key _ value _ hash _)
-      (=list (?eq #\()
-             (maxpc.char:?string "msl" nil)
-             (?whitespace)
-             (=msl-key)
-             (?whitespace)
-             (=msl-value)
-             (?whitespace)
-             (%maybe (=msl-hash))
-             ;; (?whitespace)
-             ;; (%maybe (=msl-comment))
-             (?eq #\)))
-    (list key value hash)))
+    "Match and return a prelude."
+    (=destructure (_ _ _ key value _)
+        (=list (?eq #\left_parenthesis)
+               (maxpc.char:?string "msl" nil)
+               (?whitespace)
+               (=msl-key)
+               (=subseq (%maybe (?seq (?whitespace) (=msl-value))))
+               ; ; (%any (?seq (?whitespace) (%or (=msl-selector))
+               ; ;                           (=msl-transform)
+               ; ;                           (=msl-value)))
+               ; ; (%maybe (=subseq (?seq (?whitespace) (=msl-hash))))
+               ; ; (%maybe (=subseq (?seq (?whitespace) (=msl-comment))))
+               (?eq #\right_parenthesis))
+      (list key value)))
+;;
+
+(defun =atom-namespace ()
+  "Match and return an atom namespace."
+  (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
+
+(defun =@-namespace ()
+    "Match and return the @ namespace."
+    (=subseq (?eq #\@)))
+
+(defun =msl-atom ()
+  "Match and return an atom."
+  (=destructure (_ ns-and-key value selector hash comment _)
+    (=list (?eq #\left_parenthesis)
+           (%or (=list (=@-namespace)
+                       (=msl-key))
+                (=destructure (ns _ key)
+                  (=list (=atom-namespace)
+                         (?whitespace)
+                         (=msl-key))
+                  (list ns key)))
+           (%maybe (=destructure (_ value)
+                     (=list (?whitespace)
+                            (%or '=msl-atom/parser
+                                 (=msl-value)))))
+           (%any (=destructure (_ value)
+                     (=list (?whitespace)
+                            (=msl-selector))))
+           (%maybe (=destructure (_ hash)
+                     (=list (?whitespace)
+                            (=msl-hash))))
+           (%maybe (=destructure (_ comment)
+                     (=list (?whitespace)
+                            (=msl-comment))))
+           (?eq #\right_parenthesis))
+    (list ns-and-key value selector hash comment)))
+
+(setf (fdefinition '=msl-value/parser) (=msl-value)
+      (fdefinition '=msl-atom/parser) (=msl-atom))
 
 (defun =msl-machine ()
   "Return a parser for machines."
@@ -311,14 +243,16 @@
   "Return a parser for canons."
   nil)
 
-(defun =msl-atom ()
-  "Return a parser for atoms."
-  nil)
+;; (defun =msl-atom ()
+;;   "Return a parser for atoms."
+;;   nil)
 
-(defun =msl-metadata-selector ()
-  "Return a parser for metadata selectors."
-  nil)
+(defvar *whitespace*
+  '(#\Space #\Tab #\Vt #\Newline #\Page #\Return #\Linefeed)
+  "A list of characters considered as whitespace.")
 
-(defun =msl-regex-selector ()
-  "Return a parse for regexes."
-  nil)
+(defun whitespacep (char)
+  "Return true if CHAR is a whitespace character."
+  (when (member char *whitespace*)
+    t))
+
