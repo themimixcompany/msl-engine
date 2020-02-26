@@ -616,6 +616,21 @@ is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
 not. "
   (every #'mof:solop metadata))
 
+(defun namespace-table (namespace)
+  "Return the table indicated by NAMESPACE."
+  (let* ((table-name (mof:cat namespace "-TABLE"))
+         (function-name (intern table-name (find-package :streams/channels)))
+         (table (funcall function-name streams/ethers:*mx-universe*)))
+    table))
+
+(defun namespace-hash (key namespace)
+  "Return the value stored in the corresponding table of NAMESPACE under KEY."
+  (gethash key (namespace-table namespace)))
+
+(defun namespace-hash-set (key namespace value)
+  "Set the table slot value specified by KEY and NAMESPACE to VALUE."
+  (setf (gethash key (namespace-table namespace)) value))
+
 (defun msl-eval-expr (expr)
   "Evaluate EXPR as a complete MSL expression, store the result into the active
 namespace, then return the mx-atom instance and the corresponding table as multiple
@@ -628,7 +643,8 @@ values."
               (destructuring-bind ((ns key) &optional value metadata hash comment)
                   expr
                 (multiple-value-bind (v existsp)
-                    (gethash key table)
+                    ;; (gethash key table)
+                    (namespace-hash key ns)
                   (bind-slots v hash comment)
                   (cond
                     ;; (@walt)
@@ -666,7 +682,7 @@ values."
                     ;; (@walt "Walt Disney" :age 65)
                     ;; ‘walt’ does not exist and we’re creating a new instance
                     (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
-                         (setf (gethash key table) o)
+                         (namespace-hash-set key ns o)
                          (vt o))))))))
           (return nil)))))
 
@@ -678,11 +694,7 @@ values."
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
 the pair is the namespace marker and the second element of the pair is the key"
-  (labels ((fun (args acc)
-             (cond ((null args) (nreverse acc))
-                   (t (fun (cddr args) (cons (list (car args) (cadr args)) acc))))))
-    (and (evenp (length chain))
-         (fun chain nil))))
+  (mof:partition chain 2))
 
 (defun namespace-symbol-p (symbol)
   "Return true if SYMBOL is a valid namespace character."
@@ -704,10 +716,6 @@ the pair is the namespace marker and the second element of the pair is the key"
 (defun either-zero-p (x y)
   "Return true if either X or Y is a zero."
   (or (zerop x) (zerop y)))
-
-(defun either-null-p (x y)
-  "Return true if either X or Y is null."
-  (or (null x) (null y)))
 
 (defun rank-greater-p (ns1 ns2)
   "Return true if NS1 has a higher rank than NS2, that is, the integer value of
@@ -732,12 +740,19 @@ NS1 is less than the integer value of NS2."
   "Return true if CHAIN is a valid chaining of namespaces, wherein the namespace
 ranks are in the correct order."
   (when (evenp (length chain))
-    (let ((pairs (mof:partition chain 2)))
+    (let ((pairs (namespace-pairs chain)))
       (when (namespace-pairs-p pairs)
         (let ((ranks (loop :for pair :in pairs :collect (namespace-rank (first pair)))))
           (valid-ranks-p ranks))))))
 
+;;; Create a new hash table entry under the path specified
+;;; Decide how to handle canons
+;;; Implement namespace walker
+;;; The first element is the class indicator
+;;; The second element is the table name
 (defun compose-namespaces (path)
   "Return a namespace chain object by linearly composing the namespace path from
 NAMESPACES. The object returned contains complete namespace traversal information."
-  nil)
+  (when (namespace-chain-p path)
+    (let ((pairs (namespace-pairs path)))
+      pairs)))

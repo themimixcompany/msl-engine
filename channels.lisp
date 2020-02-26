@@ -6,12 +6,12 @@
   (:export #:make-mx-universe
            #:dump-mx-universe
 
-           ;; #:mtable
-           ;; #:wtable
-           ;; #:stable
-           ;; #:vtable
-           ;; #:ctable
-           ;; #:atable
+           #:m-table
+           #:w-table
+           #:s-table
+           #:v-table
+           #:c-table
+           #:@-table
 
            #:make-mx-machine
            #:make-mx-atom
@@ -39,57 +39,57 @@
              :initform streams/ethers:*initial-mcounter*
              :accessor mcounter
              :documentation "The top-level mx-machine counter.")
-   (mtable :initarg :mtable
+   (m-table :initarg :m-table
            :initform (make-hash-table :test #'equal)
-           :accessor mtable
+           :accessor m-table
            :documentation "The top-level colletion of mx-machine, where the key is the name of mx-machine and the value is the instance of that mx-machine.")
    (wcounter :initarg :wcounter
              :initform streams/ethers:*initial-wcounter*
              :accessor wcounter
              :documentation "The top-level mx-world counter.")
-   (wtable :initarg :wtable
+   (w-table :initarg :w-table
            :initform (make-hash-table :test #'equal)
-           :accessor wtable
+           :accessor w-table
            :documentation "The top-level colletion of mx-world, where the key is the name of mx-world and the value is the instance of that mx-world.")
    (scounter :initarg :scounter
              :initform streams/ethers:*initial-scounter*
              :accessor scounter
              :documentation "The top-level mx-stream counter.")
-   (stable :initarg :stable
+   (s-table :initarg :s-table
            :initform (make-hash-table :test #'equal)
-           :accessor stable
+           :accessor s-table
            :documentation "The top-level colletion of mx-stream, where the key is the name of mx-stream and the value is the instance of that mx-stream.")
    (vcounter :initarg :vcounter
              :initform streams/ethers:*initial-vcounter*
              :accessor vcounter
              :documentation "The top-level mx-view counter.")
-   (vtable :initarg :vtable
+   (v-table :initarg :v-table
            :initform (make-hash-table :test #'equal)
-           :accessor vtable
+           :accessor v-table
            :documentation "The top-level colletion of mx-view, where the key is the name of mx-view and the value is the instance of that mx-view.")
    (ccounter :initarg :ccounter
              :initform streams/ethers:*initial-ccounter*
              :accessor ccounter
              :documentation "The top-level mx-canon counter.")
-   (ctable :initarg :ctable
+   (c-table :initarg :c-table
            :initform (make-hash-table :test #'equal)
-           :accessor ctable
+           :accessor c-table
            :documentation "The top-level colletion of mx-canon, where the key is the name of mx-canon and the value is the instance of that mx-canon.")
-   (acounter :initarg :acounter
-             :initform streams/ethers:*initial-acounter*
-             :accessor acounter
+   (@counter :initarg :@counter
+             :initform streams/ethers:*initial-@counter*
+             :accessor @counter
              :documentation "The top-level mx-atom counter.")
-   (atable :initarg :atable
+   (@-table :initarg :@-table
            :initform (make-hash-table :test #'equal)
-           :accessor atable
+           :accessor @-table
            :documentation "The top-level colletion of mx-atoms, where the key is the name of the mx-atom an dthe value is the instance of that mx-atom."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-machine ()
   ((key :initarg :key
-         :initform (uiop:hostname)
-         :reader key
-         :documentation "The key to designate the mx-machine instance. Defaults to the the hostname.")
+        :initform (uiop:hostname)
+        :reader key
+        :documentation "The key to designate the mx-machine instance. Defaults to the the hostname.")
    (table :initarg :table
           :initform (make-hash-table :test #'equal)
           :accessor table
@@ -98,9 +98,9 @@
 
 (defclass mx-world ()
   ((key :initarg :key
-         :initform ""
-         :reader key
-         :documentation "The name to designate the mx-world instance.")
+        :initform ""
+        :reader key
+        :documentation "The name to designate the mx-world instance.")
    (table :initarg :table
           :initform (make-hash-table :test #'equal)
           :accessor table
@@ -109,9 +109,9 @@
 
 (defclass mx-stream ()
   ((key :initarg :key
-         :initform ""
-         :reader key
-         :documentation "The name to designate the mx-stream instance.")
+        :initform ""
+        :reader key
+        :documentation "The name to designate the mx-stream instance.")
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
@@ -120,9 +120,9 @@
 
 (defclass mx-view ()
   ((key :initarg :key
-         :initform ""
-         :reader key
-         :documentation "The name to designate the mx-view instance.")
+        :initform ""
+        :reader key
+        :documentation "The name to designate the mx-view instance.")
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
@@ -131,9 +131,9 @@
 
 (defclass mx-canon ()
   ((key :initarg :key
-         :initform ""
-         :reader key
-         :documentation "The name to designate the mx-canon instance.")
+        :initform ""
+        :reader key
+        :documentation "The name to designate the mx-canon instance.")
    (table :initarg :table
           :initform (make-hash-table)
           :accessor table
@@ -162,35 +162,34 @@
              :accessor metadata
              :documentation "The secondary data of an mx-atom which contains information about the DATA slot.")
    (hash :initarg :hash
-             :initform nil
-             :accessor hash
-             :documentation "The SHA-256 hash of an atom.")
+         :initform nil
+         :accessor hash
+         :documentation "The SHA-256 hash of an atom.")
    (comment :initarg :comment
-             :initform nil
-             :accessor comment
-             :documentation "Free form text about an atom."))
+            :initform nil
+            :accessor comment
+            :documentation "Free form text about an atom."))
   (:documentation "The structure to designate atoms."))
 
 (defmacro update-counter (mx-universe accessor)
   "Update the counter in MX-UNIVERSE with ACCESSOR."
   `(progn (incf (,accessor ,mx-universe))
           (,accessor ,mx-universe)))
-(defun update-mcounter (mx-universe)
-  "See UPDATE-COUNTER."
-  (update-counter mx-universe mcounter))
-(defun update-acounter (mx-universe)
-  "See UPDATE-COUNTER."
-  (update-counter mx-universe acounter))
+(defun update-m-counter (mx-universe) (update-counter mx-universe m-counter))
+(defun update-w-counter (mx-universe) (update-counter mx-universe w-counter))
+(defun update-s-counter (mx-universe) (update-counter mx-universe s-counter))
+(defun update-v-counter (mx-universe) (update-counter mx-universe v-counter))
+(defun update-@-counter (mx-universe) (update-counter mx-universe @-counter))
 
 (defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
   "Initialize MX-ATOM A in MX-UNIVERSE."
-  (let ((counter (update-acounter mx-universe)))
+  (let ((counter (update-@-counter mx-universe)))
     (with-slots (id key)
         mx-atom
       (setf id counter)
-      (with-slots (atable)
+      (with-slots (@-table)
           mx-universe
-        (setf (gethash key atable) mx-atom)))))
+        (setf (gethash key @-table) mx-atom)))))
 
 (defmethod print-object ((mx-atom mx-atom) stream)
   (print-unreadable-object (mx-atom stream :type t)
@@ -202,9 +201,9 @@
   "Initialize MX-MACHINE A in MX-UNIVERSE."
   (with-slots (key)
       mx-machine
-    (with-slots (mtable)
+    (with-slots (m-table)
         mx-universe
-      (setf (gethash key mtable) mx-machine))))
+      (setf (gethash key m-table) mx-machine))))
 
 (defmethod print-object ((h hash-table) stream)
   (print-unreadable-object (h stream :type t)
@@ -227,7 +226,8 @@
           :do (progn
                 (format t "> ~A~%" table)
                 (streams/common:dump-table
-                 (funcall (read-from-string (mof:cat "STREAMS/CHANNELS:" table))
+                 (funcall (intern (streams/common:string-convert table)
+                                  (find-package :streams/channels))
                           streams/ethers:*mx-universe*))))))
 
 (defun make-mx-machine (&optional key)
