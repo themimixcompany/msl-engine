@@ -8,7 +8,7 @@
            #:*initial-scounter*
            #:*initial-vcounter*
            #:*initial-ccounter*
-           #:*initial-acounter*
+           #:*initial-@counter*
            #:*mx-universe*
            #:*mx-machine*
            #:*mx-world*
@@ -35,7 +35,7 @@
 (defvar *initial-ccounter* 1000
   "The initial mx-canon counter value.")
 
-(defvar *initial-acounter* 100
+(defvar *initial-@counter* 100
   "The initial mx-atom counter value.")
 
 (defvar *mx-universe* nil
