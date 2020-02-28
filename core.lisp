@@ -17,27 +17,9 @@
   "Intern the symbol SYMBOL in the keyword package."
   (intern symbol (find-package :keyword)))
 
-(defun convert-pseudo-key (v)
-  "Return a proper keyword from pseudo key V."
-  (let ((string (streams/common:string-convert v)))
-    (if (pseudo-key-p v)
-        (keyword-intern (subseq string 1))
-        v)))
-
-(defun convert-pseudo-keys (list)
-  "Return a new list where all the pseudo keys are converted to real keywords."
-  (labels ((fun (args acc)
-             (cond ((null args) (nreverse acc))
-                   ((pseudo-key-p (car args))
-                    (fun (cdr args) (cons (convert-pseudo-key (car args)) acc)))
-                   ((consp (car args))
-                    (fun (cdr args) (cons (fun (car args) nil) acc)))
-                   (t (fun (cdr args) (cons (car args) acc))))))
-    (fun list nil)))
-
 (defun tokenize-expr (data)
   "Tokenize DATA."
-  nil)
+  data)
 
 (defun upcase-keyword (keyword)
   "Return an upcased version of KEYWORD."
@@ -119,51 +101,50 @@ values."
   (block nil
     (let ((expr expr))                  ;(parse ...)
       (if expr
-          (with-current-namespace
-            (macrolet ((vt (v) `(values ,v table)))
-              (destructuring-bind ((ns key) &optional value metadata hash comment)
-                  expr
-                (multiple-value-bind (v existsp)
-                    (namespace-hash key ns)
-                  (bind-slots v hash comment)
-                  (cond
-                    ;; (@walt)
-                    ;; ‘walt’ still does not exist
-                    ((and (null existsp) (null value))
-                     nil)
-                    ;; (@walt)
-                    ;; ‘walt’ already exists
-                    ((and existsp (null value) (null metadata))
-                     (vt v))
-                    ;; (@walt :age)
-                    ;; ‘walt’ exists, and there’s only one metadata recall
-                    ((and existsp (null value) (msl-single-recall-p metadata))
-                     (let ((item (assoc (caar metadata) (streams/channels:metadata v))))
-                       (when item
-                         (vt v))))
-                    ;; (@walt :age :gender)
-                    ;; ‘walt’ exists, there is no value, all metadata are recalls
-                    ((and existsp (null value) (msl-all-recall-p metadata))
-                     (vt v))
-                    ;; (@walt "Walt Disney" :age :gender)
-                    ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
-                    ((and existsp value (msl-all-recall-p metadata))
-                     (setf (streams/channels:value v) value)
-                     (vt v))
-                    ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
-                    ;; ‘walt’ exists, and either p-values or s-values exists
-                    ((and existsp (or value metadata))
-                     (when value
-                       (setf (streams/channels:value v) value))
-                     (when metadata
-                       (setf (streams/channels:metadata v)
-                             (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
-                     (vt v))
-                    ;; (@walt "Walt Disney" :age 65)
-                    ;; ‘walt’ does not exist and we’re creating a new instance
-                    (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
-                         (setf (namespace-hash key ns) o)
-                         (vt o))))))))
+          (macrolet ((vt (v) `(values ,v)))
+            (destructuring-bind ((ns key) &optional value metadata hash comment)
+                expr
+              (multiple-value-bind (v existsp)
+                  (namespace-hash key ns)
+                (bind-slots v hash comment)
+                (cond
+                  ;; (@walt)
+                  ;; ‘walt’ still does not exist
+                  ((and (null existsp) (null value))
+                   nil)
+                  ;; (@walt)
+                  ;; ‘walt’ already exists
+                  ((and existsp (null value) (null metadata))
+                   (vt v))
+                  ;; (@walt :age)
+                  ;; ‘walt’ exists, and there’s only one metadata recall
+                  ((and existsp (null value) (msl-single-recall-p metadata))
+                   (let ((item (assoc (caar metadata) (streams/channels:metadata v))))
+                     (when item
+                       (vt v))))
+                  ;; (@walt :age :gender)
+                  ;; ‘walt’ exists, there is no value, all metadata are recalls
+                  ((and existsp (null value) (msl-all-recall-p metadata))
+                   (vt v))
+                  ;; (@walt "Walt Disney" :age :gender)
+                  ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
+                  ((and existsp value (msl-all-recall-p metadata))
+                   (setf (streams/channels:value v) value)
+                   (vt v))
+                  ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
+                  ;; ‘walt’ exists, and either p-values or s-values exists
+                  ((and existsp (or value metadata))
+                   (when value
+                     (setf (streams/channels:value v) value))
+                   (when metadata
+                     (setf (streams/channels:metadata v)
+                           (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
+                   (vt v))
+                  ;; (@walt "Walt Disney" :age 65)
+                  ;; ‘walt’ does not exist and we’re creating a new instance
+                  (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
+                       (setf (namespace-hash key ns) o)
+                       (vt o)))))))
           (return nil)))))
 
 
@@ -179,7 +160,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 (defun namespace-symbol-p (symbol)
   "Return true if SYMBOL is a valid namespace character."
   (let ((sym (intern (string symbol) (find-package :streams/ethers))))
-    (when (member sym streams/ethers:*ns*)
+    (when (member sym streams/ethers:*namespaces*)
       t)))
 
 (defun namespace-pairs-p (pairs)
@@ -236,3 +217,43 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   (when (namespace-chain-p path)
     (let ((pairs (namespace-pairs path)))
       pairs)))
+
+(defmacro define-soft-constant-0 (name value &optional doc)
+  `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
+     ,@(when doc (list doc))))
+
+(defun define-soft-constant-1 (name value)
+  (if (and (boundp name) (constantp name))
+      (progn
+        (mof:dbg "then")
+        (handler-bind ((simple-error #'(lambda (c)
+                                       (let ((r (find-restart 'continue c)))
+                                         (when r
+                                           (invoke-restart r))))))
+        (setf (symbol-value name) value)))
+      (progn
+        (mof:dbg "else")
+        (defconstant name value))))
+
+(defmacro define-soft-constant-2 (name value)
+  "Bind NAME to VALUE and only change the binding after subsequent calls to the macro."
+  `(if (and (boundp ',name) (constantp ',name))
+       (handler-bind ((simple-error #'(lambda (c)
+                                       (let ((r (find-restart 'continue c)))
+                                         (when r
+                                           (invoke-restart r))))))
+         (makunbound ',name)
+         (setf (symbol-value ',name) ,value))
+       (defconstant ,name ,value)))
+
+(defmacro define-soft-constant-3 (name value)
+  "Bind NAME to VALUE and only change the binding after subsequent calls to the macro."
+  `(handler-bind ((simple-error #'(lambda (c)
+                                    (let ((r (find-restart 'continue c)))
+                                      (when r
+                                        (invoke-restart r)))))
+                  (sb-ext:defconstant-uneql #'(lambda (c)
+                                                (let ((r (find-restart 'continue c)))
+                                                  (when r
+                                                    (invoke-restart r))))))
+     (defconstant ,name ,value)))

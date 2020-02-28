@@ -108,7 +108,11 @@
    (comment :initarg :comment
             :initform nil
             :accessor comment
-            :documentation "Free form text about an atom."))
+            :documentation "Free form text about an atom.")
+   (table :initarg :table
+          :initform nil
+          :accessor table
+          :documentation "The corresponding table assignment of this atom in the universe."))
   (:documentation "The structure to designate atoms."))
 
 (defmacro update-counter (mx-universe accessor)
@@ -126,15 +130,21 @@
                          (update-counter mx-universe ,cname)))))
 (define-updaters machine world stream view canon atom)
 
-(defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
-  "Initialize MX-ATOM A in MX-UNIVERSE."
-  (let ((counter (update-atom-counter mx-universe)))
-    (with-slots (id key)
-        mx-atom
-      (setf id counter)
-      (with-slots (atom-table)
-          mx-universe
-        (setf (gethash key atom-table) mx-atom)))))
+(defun entity-string (id)
+  "Return the corresponding universe name from ID, where ID is either a single character or a string to designate an entity."
+  (let ((thing (mof:symbol-convert id)))
+    (ecase thing
+      (m "machine")
+      (w "world")
+      (s "stream")
+      (v "view")
+      (c "canon")
+      ((a @) "atom"))))
+
+(defun namespace-table (ns)
+  "Return the corresponding table of NS from the universe."
+  (let ((name (entity-string ns)))
+    (mof:hyphenate-intern nil name "table")))
 
 (defun make-mx-atom (ns key value metadata &optional hash comment)
   "Return a new mx-atom instance from arguments."
@@ -142,6 +152,17 @@
                           :value value :metadata metadata
                           :hash hash :comment comment
                           :mx-universe streams/ethers:*mx-universe*))
+
+(defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
+  "Initialize MX-ATOM A in MX-UNIVERSE."
+  (let ((counter (update-atom-counter mx-universe)))
+    (with-slots (id ns key table)
+        mx-atom
+      (setf id counter)
+      (setf table (namespace-table ns))
+      (with-slots (atom-table)
+          mx-universe
+        (setf (gethash key atom-table) mx-atom)))))
 
 (defmethod print-object ((mx-atom mx-atom) stream)
   (print-unreadable-object (mx-atom stream :type t)
