@@ -9,16 +9,16 @@
 
 (in-package #:streams/reader)
 
-(mof:defcon +left-bracket+ #\[)
-(mof:defcon +right-bracket+ #\])
-(mof:defcon +percent+ #\%)
-(mof:defcon +caret+ #\^)
-(mof:defcon +bang+ #\!)
-(mof:defcon +tilde+ #\~)
-(mof:defcon +dollar+ #\$)
-(mof:defcon +space+ #\Space)
-(mof:defcon +left-paren+ #\()
-(mof:defcon +right-paren+ #\))
+(mof:defconst +left-bracket+ #\[)
+(mof:defconst +right-bracket+ #\])
+(mof:defconst +percent+ #\%)
+(mof:defconst +caret+ #\^)
+(mof:defconst +bang+ #\!)
+(mof:defconst +tilde+ #\~)
+(mof:defconst +dollar+ #\$)
+(mof:defconst +space+ #\Space)
+(mof:defconst +left-paren+ #\()
+(mof:defconst +right-paren+ #\))
 
 (defun |[-reader| (stream char)
   "Use [\"/tmp/file.ext\"] as a shorthand for #P\"/tmp/file.ext\""
