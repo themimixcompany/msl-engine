@@ -1,300 +1,155 @@
-; compiling (LET (#) ...)
-CL-USER> (ql:quickload :streams)
-To load "streams":
+; compiling (LET (#) ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
   Load 1 ASDF system:
     streams
 ; Loading "streams"
 ........
-(:STREAMS)
-; compiling (IN-PACKAGE :STREAMS/EXPR)
-CL-USER>
 
-; No value
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
-STREAMS/EXPR> (parse " " (?whitespace))
-NIL
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+; compiling (DEFUN =TINY-ATOM ...)
+WARNING: redefining STREAMS/EXPR::=TINY-ATOM in DEFUN
+
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+(("@" "WALT") (":" "birthday"))
+T
+T
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse "x" (?whitespace))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "  " (?whitespace))
-NIL
+STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
+("@" "WALT")
 T
 T
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR>
-
-; No value
-STREAMS/EXPR> (parse "walt" (=msl-key))
-"walt"
-T
-T
-
-STREAMS/EXPR> (parse "walt jd" (=msl-key))
-"walt"
-T
-NIL
-;
-; caught ERROR:
-;   READ error during COMPILE-FILE:
-;
-;     end of file on #<SB-INT:FORM-TRACKING-STREAM for "file C:\\Users\\David\\AppData\\Local\\Temp\\slime5" {1005138AA3}>
-;
-;     (in form starting at line: 1, column: 0, position: 0)
-;
-; compilation unit finished
-;   caught 1 fatal ERROR condition
-;   caught 1 ERROR condition
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR>
-
-; No value; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "walt jd" (=msl-key))
-
-"walt"
-T
-NIL
-
-STREAMS/EXPR> (parse "walt jd" (=msl-key))
-"walt"
-T
-NIL
-
-STREAMS/EXPR> (parse "walt" (=msl-key))
-"walt"
-T
-T
-; compiling (DEFUN =MSL-KEY ...)
-;
-; caught ERROR:
-;   READ error during COMPILE-FILE:
-;
-;     end of file on #<SB-INT:FORM-TRACKING-STREAM for "file C:\\Users\\David\\AppData\\Local\\Temp\\slime9" {1005409983}>
-;
-;     (in form starting at line: 1, column: 0, position: 0)
-;
-; compilation unit finished
-;   caught 1 fatal ERROR condition
-;   caught 1 ERROR condition
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "walt jd" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt" (=msl-key))
-"walt"
-T
-T
-
-STREAMS/EXPR> (parse "walt-" (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt-d" (=msl-key))
-"walt-d"
-T
-T
-
-STREAMS/EXPR> (parse "walt--d" (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "-walt" (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt2" (=msl-key))
-"walt2"
-T
-T
-
-STREAMS/EXPR> (parse "2walt" (=msl-key))
-"2walt"
-T
-T
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "2walt" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt2" (=msl-key))
-"walt2"
-T
-T
-
-STREAMS/EXPR> (parse "walt2." (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walter-elias-disney" (=msl-key))
-"walter-elias-disney"
-T
-T
-
-STREAMS/EXPR> (parse "walt" (=msl-key))
-"walt"
-T
-T
-; compiling (DEFUN =MSL-KEY ...)
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "walt " (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse " walt" (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt!" (=msl-key))
-NIL
-NIL
-NIL
-; compiling (DEFUN =MSL-KEY ...)
+; compiling (DEFUN =@-GETTER ...)
 
-; file: C:/Users/David/AppData/Local/Temp/slime14
-; in: DEFUN =MSL-KEY
-;     (STREAMS/EXPR::%?END)
+; file: C:/Users/David/AppData/Local/Temp/slime6
+; in: DEFUN =@-GETTER
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::NS STREAMS/EXPR::_)
+;         (MAXPC:=LIST (STREAMS/EXPR::=@-NAMESPACE)
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::?WHITESPACE)))
+;       (STREAMS/EXPR::=MSL-KEY))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G2
+;           (SB-C::CHECK-DS-LIST #:|result0| 2 2 '(STREAMS/EXPR::NS #:|_1|)))
+;          (STREAMS/EXPR::NS (POP #:G2))
+;          (#:|_1| (POP #:G2)))
+;     (DECLARE (IGNORE #:|_1|))
+;     (STREAMS/EXPR::=MSL-KEY))
 ;
 ; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::%?END
+;   The variable NS is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =TINY-ATOM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime7
+; in: DEFUN =TINY-ATOM
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
+;
+; caught WARNING:
+;   The function ATOM is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime7
+; in: DEFUN =TINY-ATOM
+;     (STREAMS/EXPR::=DECOMPOSE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
+;      (MAXPC:=LIST (STREAMS/EXPR::=SINGLE-GETTER) (STREAMS/EXPR::?WHITESPACE)
+;                   (STREAMS/EXPR::=SUBATOMIC-GETTER)))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=DECOMPOSE
+
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::SUB
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::_
 ;
 ; compilation unit finished
 ;   Undefined function:
-;     %?END
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "walt!" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt " (=msl-key))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "@walt" (=msl-key))
-NIL
-NIL
-NIL
-; compiling (DEFUN NOT-INTEGER ...)
-WARNING: redefining STREAMS/EXPR::NOT-INTEGER in DEFUN
-; compiling (DEFUN NOT-DOUBLEQUOTE ...)
-WARNING: redefining STREAMS/EXPR::NOT-DOUBLEQUOTE in DEFUN
-; compiling (DEFUN ?WHITESPACE ...)
-WARNING: redefining STREAMS/EXPR::?WHITESPACE in DEFUN
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "@walt" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "walt" (=msl-key))
-"walt"
-T
-T
-; compiling (DEFUN ?WHITESPACE ...)
-; compiling (DEFUN =MSL-KEY ...)
-; compiling (DEFUN =SLIST ...)
-WARNING: redefining STREAMS/EXPR::=SLIST in DEFUN
-; compiling (DEFUN ?WHITESPACE ...)
-; compiling (DEFUN ?WHITESPACE ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime25
-; in: DEFUN ?WHITESPACE
-;     (STREAMS/EXPR::%NOT (MAXPC.CHAR:?WHITESPACE))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::%NOT
-;
-; compilation unit finished
-;   Undefined function:
-;     %NOT
+;     =DECOMPOSE
+;   Undefined variables:
+;     SUB _
+;   caught 3 WARNING conditions
 ;   caught 1 STYLE-WARNING condition
 
-STREAMS/EXPR> (parse "b" (?whitespace))
-STREAMS/EXPR> (parse "b" (?whitespace))
-STREAMS/EXPR> (parse "walt" (=msl-key))
+STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
 
-"walt"
+("@" "WALT")
 T
 T
 
-STREAMS/EXPR> (parse "b" (?whitespace))
-NIL
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
+(":" "birthday")
+T
+T
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
+
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse " " (?whitespace))
-NIL
-NIL
-NIL
-; compiling (DEFUN ?WHITESPACE ...)
-STREAMS/EXPR> (parse " " (?whitespace))
+STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
+("@" "WALT")
+T
+T
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
 
-NIL
+("@" "WALT")
 T
 T
 
-STREAMS/EXPR> (parse "name-char" (?whitespace))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (ql:quickload :streams)
-To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-
-(:STREAMS)
-
-STREAMS/EXPR> (parse "2a" (=msl-key))
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 NIL
 NIL
 NIL
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 
-STREAMS/EXPR> (parse "wa2" (=msl-key))
-"wa2"
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
+(("@" "WALT") (":" "birthday"))
 T
 T
-; compiling (DEFUN =METADATA-SELECTOR ...)
+
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
+(("v" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
+(("@" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+NIL
+NIL
+NIL
+; compiling (DEFUN =TINY-ATOM ...)
 
-; file: C:/Users/David/AppData/Local/Temp/slime28
-; in: DEFUN =METADATA-SELECTOR
-;     (STREAMS/EXPR::=MSL-VALUE)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=MSL-VALUE
-;
-; compilation unit finished
-;   Undefined function:
-;     =MSL-VALUE
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =MSL-VALUE ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime29
-; in: DEFUN =MSL-VALUE
-;     (STREAMS/EXPR::=SEQ (MAXPC:%ANY (MAXPC:=ELEMENT)) (MAXPC:?END))
+; file: C:/Users/David/AppData/Local/Temp/slime12
+; in: DEFUN =TINY-ATOM
+;     (STREAMS/EXPR::=SEQ (STREAMS/EXPR::=@-GETTER)
+;      (STREAMS/EXPR::=METADATA-GETTER))
 ;
 ; caught STYLE-WARNING:
 ;   undefined function: STREAMS/EXPR::=SEQ
@@ -304,318 +159,475 @@ STREAMS/EXPR> (parse "wa2" (=msl-key))
 ;     =SEQ
 ;   caught 1 STYLE-WARNING condition
 
-STREAMS/EXPR> (parse "haba" (=msl-value))
-; compiling (DEFUN =MSL-VALUE ...)
-STREAMS/EXPR> (parse "haba" (=msl-value))
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 
-"haba"
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse "haba huba" (=msl-value))
-"haba huba"
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
+(("v" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse "(haba huba)" (=msl-value))
-"(haba huba)"
-T
-T
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-
-("nugget" "")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
-NIL
-NIL
-NIL
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-NIL
-NIL
-NIL
-; compiling (DEFUN =MSL-KEY ...)
-WARNING: redefining STREAMS/EXPR::=MSL-KEY in DEFUN
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 NIL
 NIL
 NIL
 
-STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
-("nugget" NIL)
-T
-T
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
-
-("nugget" NIL)
-T
-T
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-NIL
-NIL
-NIL
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-
-("nugget" NIL)
-T
-T
-
-STREAMS/EXPR> (parse ":nugget " (=metadata-selector))
-("nugget" NIL)
-T
-T
-
-STREAMS/EXPR> (parse "" (=msl-value))
-""
-T
-T
-; compiling (DEFUN =MSL-VALUE ...)
-STREAMS/EXPR> (parse "" (=msl-value))
-
-NIL
-NIL
-T
-; compiling (DEFUN =MSL-VALUE ...)
-STREAMS/EXPR> (parse "" (=msl-value))
-
-NIL
-NIL
-T
-
-STREAMS/EXPR> (parse "" (=msl-value))
-NIL
-NIL
-T
-
-STREAMS/EXPR> (parse " " (=msl-value))
-" "
-T
-T
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-("nugget" NIL)
-T
-T
-
-STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
-("nugget" NIL)
-T
-T
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget ascuaga" (=metadata-selector))
-
-("nugget" " ascuaga")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget-ascuaga" (=metadata-selector))
-("nugget-ascuaga" "")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget 2ascuaga" (=metadata-selector))
-("nugget" " 2ascuaga")
-T
-T
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget 2ascuaga" (=metadata-selector))
-
-("nugget" "2ascuaga")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget2ascuaga" (=metadata-selector))
-("nugget2ascuaga" NIL)
-T
-T
-
-STREAMS/EXPR> (parse ":nuggetJohn Ascgua's Nugget" (=metadata-selector))
-("nuggetJohn" "Ascgua's Nugget")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget John Ascgua's Nugget" (=metadata-selector))
-("nugget" "John Ascgua's Nugget")
-T
-T
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-("nugget" NIL)
-T
-T
-
-STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
-("nugget" "- value")
-T
-T
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
-
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
-
-("nugget" NIL)
-T
-NIL
-
-STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
-("nugget" NIL)
-T
-NIL
-
-STREAMS/EXPR> (parse "nugget-" (=msl-key))
-"nugget"
-T
-NIL
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "nugget-" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 NIL
 NIL
 NIL
 
-STREAMS/EXPR> (parse ":nugget- value" (=metadata-selector))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse ":nugget-" (=metadata-selector))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse ":nugget value" (=metadata-selector))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-NIL
-NIL
-NIL
-; compiling (DEFUN =METADATA-SELECTOR ...)
-STREAMS/EXPR> (parse ":nugget" (=metadata-selector))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "nugget" (=msl-key))
-NIL
-NIL
-NIL
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "nugget" (=msl-key))
-
-"nugget"
-T
-T
-
-STREAMS/EXPR> (parse "nugget-" (=msl-key))
-"nugget"
+STREAMS/EXPR> (parse "@WALT" (=@-getter))
+(#<CLOSURE (LAMBDA (MAXPC::INPUT) :IN =SUBSEQ) {1002E85A4B}>)
 T
 NIL
-
-STREAMS/EXPR> (alpha-char-p "-")
+; compiling (DEFUN =@-GETTER ...)
 
-STREAMS/EXPR> (alpha-char-p #\-)
+; file: C:/Users/David/AppData/Local/Temp/slime14
+; in: DEFUN =@-GETTER
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::NS STREAMS/EXPR::_)
+;         (MAXPC:=LIST (STREAMS/EXPR::=@-NAMESPACE)
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::?WHITESPACE)))
+;       (STREAMS/EXPR::=MSL-KEY))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G2
+;           (SB-C::CHECK-DS-LIST #:|result0| 2 2 '(STREAMS/EXPR::NS #:|_1|)))
+;          (STREAMS/EXPR::NS (POP #:G2))
+;          (#:|_1| (POP #:G2)))
+;     (DECLARE (IGNORE #:|_1|))
+;     (STREAMS/EXPR::=MSL-KEY))
+;
+; caught STYLE-WARNING:
+;   The variable NS is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-GETTER ...)
+STREAMS/EXPR> (parse "@WALT" (=@-getter))
+
+("@" "WALT")
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 NIL
-
-STREAMS/EXPR> (alpha-char-p #\b)
-T
-
-STREAMS/EXPR> (alphanumericp #\b)
-T
-
-STREAMS/EXPR> (alphanumericp #\-)
-NIL
-
-STREAMS/EXPR> (parse "nugget-" (=msl-key))
-"nugget"
 T
-NIL
+T
+; compiling (DEFUN =TINY-ATOM ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
 
-STREAMS/EXPR> (parse "nugget-b" (=msl-key))
-"nugget-b"
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse "nugget " (=msl-key))
-"nugget"
-T
-NIL
-
-STREAMS/EXPR> (alphanumericp #\space)
-NIL
-
-STREAMS/EXPR> (parse "nugget--" (=msl-key))
-"nugget"
-T
-NIL
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "nugget-b" (=msl-key))
-
-"nugget-b"
-T
-T
-
-STREAMS/EXPR> (parse "nugget--" (=msl-key))
-"nugget"
-T
-NIL
-
-STREAMS/EXPR> (parse "nugget--" (=msl-key))
-"nugget"
-T
-NIL
-; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse "nugget--" (=msl-key))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "nugget-" (=msl-key))
+STREAMS/EXPR> (parse "(vWALT:birthday)" (=tiny-atom))
 NIL
 NIL
 NIL
 
-STREAMS/EXPR> (parse "nugget" (=msl-key))
-"nugget"
+STREAMS/EXPR> (parse "(v WALT:birthday)" (=tiny-atom))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
+(("v" "WALT") (":" "birthday"))
+T
+T
+; compiling (DEFUN =REGEX-NAMESPACE ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-format))
+; in: PARSE "(@WALT:birthday)"
+;     (STREAMS/EXPR::=@-FORMAT)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=@-FORMAT
+;
+; compilation unit finished
+;   Undefined function:
+;     =@-FORMAT
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
+; in: PARSE "(@WALT:birthday)"
+;     (STREAMS/EXPR::=@-FORM)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=@-FORM
+;
+; compilation unit finished
+;   Undefined function:
+;     =@-FORM
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
+
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse "nugget-casino" (=msl-key))
-"nugget-casino"
+STREAMS/EXPR> (parse "(@ WALT:birthday)" (=@-form))
+(("@" "WALT") (":" "birthday"))
 T
 T
 
-STREAMS/EXPR> (parse ":nugget-casino" (=metadata-selector))
-STREAMS/EXPR> ; compiling (DEFUN =MSL-KEY ...)
-STREAMS/EXPR> (parse ":nugget-casino" (=metadata-selector))
+STREAMS/EXPR> (parse "(@ WALT :birthday)" (=@-form))
+(("@" "WALT") (":" "birthday"))
+T
+T
 
-; compiling (DEFUN =METADATA-SELECTOR ...)
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=@-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =GROUPING-NAMESPACE ...)
+; compiling (DEFUN =ATOM-GETTER ...)
+WARNING: redefining STREAMS/EXPR::=ATOM-GETTER in DEFUN
+
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=@-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=atom-form))
+; in: PARSE "(v WALT :birthday)"
+;     (STREAMS/EXPR::=ATOM-FORM)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=ATOM-FORM
+;
+; compilation unit finished
+;   Undefined function:
+;     =ATOM-FORM
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =ATOM-FORM ...)
+STREAMS/EXPR> (parse "(v WALT :birthday)" (=atom-form))
+
+(("v" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(w WALT :birthday)" (=atom-form))
+(("w" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(s WALT :birthday)" (=atom-form))
+(("s" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(c) WALT :birthday)" (=atom-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(c WALT :birthday)" (=atom-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =CANON-NAMESPACE ...)
+STREAMS/EXPR> (parse "(@ WALT :birthday)" (=atom-form))
+
+(("@" "WALT") (":" "birthday"))
+T
+T
+; compiling (DEFUN =GROUPING-FORM ...)
+; compiling (DEFUN =GROUPING-GETTER ...)
+; compiling (DEFUN =GROUPING-FORM ...)
+STREAMS/EXPR> (parse "(s WALT :birthday)" (=atom-form))
+
+(("s" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(s WALT :birthday)" (=grouping-form))
+(("s" "WALT") (":" "birthday"))
+T
+T
+
+STREAMS/EXPR> (parse "(@ WALT :birthday)" (=grouping-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =CANON-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime26
+; in: DEFUN =CANON-FORM
+;     (STREAMS/EXPR::=CANON-GETTER)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=CANON-GETTER
+;
+; compilation unit finished
+;   Undefined function:
+;     =CANON-GETTER
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =CANON-GETTER ...)
+STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(c WALT :birthday)" (=canon-form))
+(("c" "WALT") (":" "birthday"))
+T
+T
+; compiling (DEFUN =DATATYPE-GETTER ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime28
+; in: DEFUN =DATATYPE-GETTER
+;     (STREAMS/EXPR::=DATATYPE-NAMESPACE)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=DATATYPE-NAMESPACE
+;
+; compilation unit finished
+;   Undefined function:
+;     =DATATYPE-NAMESPACE
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+; in: PARSE "(d bold)"
+;     (STREAMS/EXPR::=DATATYPE-FORM)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=DATATYPE-FORM
+;
+; compilation unit finished
+;   Undefined function:
+;     =DATATYPE-FORM
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =DATATYPE-FORM ...)
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+
+; compiling (DEFUN =DATATYPE-NAMESPACE ...)
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+
+NIL
+NIL
+NIL
+; compiling (DEFUN =DATATYPE-FORM ...)
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+
+NIL
+NIL
+NIL
+; compiling (DEFUN =DATATYPE-GETTER ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime32
+; in: DEFUN =DATATYPE-GETTER
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;
+; caught WARNING:
+;   The function ATOM is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime32
+; in: DEFUN =DATATYPE-GETTER
+;     (STREAMS/EXPR::DESTRUCTURE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;      (MAXPC:=LIST (STREAMS/EXPR::=DATATYPE-NAMESPACE) (STREAMS/EXPR::?WHITESPACE)
+;                   (STREAMS/EXPR::=MSL-KEY)))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::DESTRUCTURE
+
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::KEY
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::_
+;
+; compilation unit finished
+;   Undefined function:
+;     DESTRUCTURE
+;   Undefined variables:
+;     KEY _
+;   caught 3 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+; compiling (DEFUN =DATATYPE-FORM ...)
+; compiling (DEFUN =DATATYPE-GETTER ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime34
+; in: DEFUN =DATATYPE-GETTER
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;
+; caught WARNING:
+;   The function ATOM is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime34
+; in: DEFUN =DATATYPE-GETTER
+;     (STREAMS/EXPR::DESTRUCTURE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;      (MAXPC:=LIST (STREAMS/EXPR::=DATATYPE-NAMESPACE) (STREAMS/EXPR::?WHITESPACE)
+;                   (STREAMS/EXPR::=MSL-KEY)))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::DESTRUCTURE
+
+;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::KEY
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::_
+;
+; compilation unit finished
+;   Undefined function:
+;     DESTRUCTURE
+;   Undefined variables:
+;     KEY _
+;   caught 3 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =DATATYPE-GETTER ...)
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+
+"bold"
+T
+T
+; compiling (DEFUN =DATATYPE-GETTER ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime36
+; in: DEFUN =DATATYPE-GETTER
+;     (LIST ATOM STREAMS/EXPR::KEY)
+;
+; caught WARNING:
+;   undefined variable: COMMON-LISP:ATOM
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::KEY
+;
+; compilation unit finished
+;   Undefined variables:
+;     ATOM KEY
+;   caught 2 WARNING conditions
+
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+; compiling (DEFUN =DATATYPE-GETTER ...)
+STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
+
+("d" "bold")
+T
+T
+
+STREAMS/EXPR> (parse "(d bold :font)" (=datatype-form))
+(("d" "bold") (":" "font"))
+T
+T
+
+STREAMS/EXPR> (parse "(c my-stuff :blanket)" (=canon-form))
+(("c" "my-stuff") (":" "blanket"))
+T
+T
+
+STREAMS/EXPR> (parse "(c my-stuff (d books))" (=canon-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =CANON-FORM ...)
+; compiling (DEFUN =DATATYPE-FORM ...)
+; compiling (DEFUN =@-FORM ...)
+; compiling (DEFUN =@-FORM ...)
+; compiling (DEFUN =@-FORM ...)
+; compiling (DEFUN =MSL-VALUE ...)
+WARNING: redefining STREAMS/EXPR::=MSL-VALUE in DEFUN
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime44
+; in: DEFUN =@-FORM
+;     (LIST STREAMS/EXPR::KEY-SEQUENCE STREAMS/EXPR::VALUE)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::KEY-SEQUENCE
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::VALUE
+;
+; compilation unit finished
+;   Undefined variables:
+;     KEY-SEQUENCE VALUE
+;   caught 2 WARNING conditions
+
+STREAMS/EXPR> (parse "(v WALT:birthday)" (=tiny-atom))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=atom-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
+
+(("@" "WALT") NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
+(("@" "WALT") " Walt Disney")
+T
+T
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime46
+; in: DEFUN =@-FORM
+;     (STREAMS/EXPR::=SEQ (STREAMS/EXPR::?WHITESPACE) (STREAMS/EXPR::=MSL-VALUE))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=SEQ
+;
+; compilation unit finished
+;   Undefined function:
+;     =SEQ
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
+
+(("@" "WALT") NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
+
+(("@" "WALT") "Walt Disney")
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday Walt Disney)" (=@-form))
+((("@" "WALT") (":" "birthday")) "Walt Disney")
+T
+T
+
+STREAMS/EXPR> 
