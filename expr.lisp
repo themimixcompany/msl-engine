@@ -183,6 +183,23 @@
          (=msl-key)))
 ;
 
+(defun =@-getter ()
+  "Match and return the key sequence for an @."
+  (=list (=destructure (ns _)
+           (=list (=@-namespace)
+                  (%maybe (?whitespace))))
+         (=msl-key)))
+;
+
+(defun =subatomic-getter ()
+ "Match and return : / [] d f # namespace."
+  (%or (=metadata-getter)))
+
+(defun =metadata-getter ()
+ "Match and return key sequence for :."
+  (=list (=metadata-namespace)
+         (=msl-key)))
+
 (defun =metadata-namespace ()
   "Match and return the : namespace."
   (=subseq (?eq #\:)))
@@ -192,7 +209,14 @@
   "Match and return an atom."
   (=destructure (_ getter-setter _ _)
     (=list (?eq #\left_parenthesis)
-           (=single-getter)
+           (%or (=list (=@-getter)
+                       (=metadata-getter))
+                (=destructure (atom _ sub)
+                  (=list (=single-getter)
+                         (?whitespace)
+                         (=subatomic-getter))
+                  (list atom sub))
+                (=single-getter))
            (?eq #\right_parenthesis)
            (?end))))
 
