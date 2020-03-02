@@ -74,13 +74,20 @@
 ;;
 
 
+; (defun =msl-value ()
+;   "Match and return a raw value."
+;   (=subseq (%some (?not (%or (?seq (?whitespace) (=msl-selector))
+;                              (?seq (?whitespace) (=msl-hash))
+;                              (?seq (?whitespace) (=msl-comment))
+;                              (?seq (?eq #\right_parenthesis) (?end)))))))
+; ;;
+
+
 (defun =msl-value ()
   "Match and return a raw value."
-  (=subseq (%some (?not (%or (?seq (?whitespace) (=msl-selector))
-                             (?seq (?whitespace) (=msl-hash))
-                             (?seq (?whitespace) (=msl-comment))
-                             (?seq (?eq #\right_parenthesis) (?end)))))))
+  (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))
 ;;
+
 
 (defun =msl-comment ()
  "Match a comment."
@@ -130,6 +137,10 @@
   "Match and return an atom namespace."
   (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
 
+(defun =grouping-namespace ()
+    "Match and return m w s v namespace."
+    (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
+
 (defun =@-namespace ()
     "Match and return the @ namespace."
     (=subseq (?eq #\@)))
@@ -173,13 +184,19 @@
   ())
 
 
-(defun =atom-getter ()
+(defun =grouping-getter ()
   "Match and return the key sequence for an atom."
   (=list (=destructure (ns _)
-           (%or (=list (=@-namespace)
-                  (%maybe (?whitespace)))
-                (=list (=atom-namespace)
-                  (?whitespace))))
+           (=list (=grouping-namespace)
+                  (?whitespace)))
+         (=msl-key)))
+;
+
+(defun =canon-getter ()
+  "Match and return the key sequence for canon."
+  (=list (=destructure (ns _)
+           (=list (=canon-namespace)
+                  (?whitespace)))
          (=msl-key)))
 ;
 
@@ -191,9 +208,10 @@
          (=msl-key)))
 ;
 
-(defun =subatomic-getter ()
- "Match and return : / [] d f # namespace."
-  (%or (=metadata-getter)))
+
+(defun =regex-getter ()
+  "Match and return the key sequence for /."
+  (=list (=regex-namespace)))
 
 (defun =metadata-getter ()
  "Match and return key sequence for :."
@@ -204,15 +222,34 @@
   "Match and return the : namespace."
   (=subseq (?eq #\:)))
 
-;
-(defun =tiny-atom ()
-  "Match and return an atom."
+(defun =canon-namespace ()
+    "Match and return the c namespace."
+    (=subseq (?eq #\c)))
+
+(defun =datatype-namespace ()
+        "Match and return the d namespace."
+        (=subseq (?eq #\d)))
+
+(defun =datatype-getter ()
+  "Match and return key sequence for d."
+  (=destructure (atom _ key)
+    (=list (=datatype-namespace)
+           (?whitespace)
+           (=msl-key))
+    (list atom key)))
+
+(defun =regex-namespace ()
+    "Match and return the / namespace."
+    (=subseq (?eq #\/)))
+
+;;
+
+(defun =grouping-form ()
+  "Match and return an atom in m w s v namespace."
   (=destructure (_ getter-setter _ _)
     (=list (?eq #\left_parenthesis)
-           (%or (=list (=@-getter)
-                       (=metadata-getter))
-                (=destructure (atom _ sub)
-                  (=list (=single-getter)
+           (%or (=destructure (atom _ sub)
+                  (=list (=grouping-getter)
                          (?whitespace)
                          (=subatomic-getter))
                   (list atom sub))
@@ -221,6 +258,54 @@
            (?end))))
 
 ;;
+
+(defun =canon-form ()
+  "Match and return an atom in c namespace."
+  (=destructure (_ getter-setter _ _)
+    (=list (?eq #\left_parenthesis)
+           (=destructure (atom _ sub)
+                  (=list (=canon-getter)
+                         (?whitespace)
+                         (=metadata-getter))
+                  (list atom sub))
+           (?eq #\right_parenthesis)
+           (?end))))
+
+;;
+
+(defun =datatype-form ()
+  "Match and return an atom in d namespace."
+  (=destructure (_ getter-setter _ _)
+    (=list (?eq #\left_parenthesis)
+           (%or (=destructure (atom _ sub)
+                  (=list (=datatype-getter)
+                         (?whitespace)
+                         (=metadata-getter))
+                  (list atom sub))
+                (=datatype-getter))
+           (?eq #\right_parenthesis)
+           (?end))))
+
+;;
+
+(defun =@-form ()
+ "Match and return an atom in the @ namespace."
+ (=destructure (_ key-sequence value _ _)
+   (=list (?eq #\left_parenthesis)
+          (%or (=list (=@-getter)
+                      (=metadata-getter))
+               (=destructure (atom _ sub)
+                 (=list (=@-getter)
+                        (?whitespace)
+                        (=metadata-getter))
+                 (list atom sub))
+               (=@-getter))
+          (%maybe (=destructure (_ value)
+                    (=list (?whitespace)
+                           (=msl-value))))
+          (?eq #\right_parenthesis)
+          (?end))
+  (list key-sequence value)))
 
 ;;
 ;; Function-namespace definitions for recursive functions
