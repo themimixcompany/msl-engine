@@ -14,7 +14,8 @@
            #:assoc-value
            #:dotted-pair-p
            #:string-convert
-           #:build-string))
+           #:build-string
+           #:string-chars))
 
 (in-package #:streams/common)
 

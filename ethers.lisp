@@ -10,7 +10,8 @@
            #:*initial-canon-counter*
            #:*initial-atom-counter*
            #:*mx-universe*
-           #:*namespaces*))
+           #:*namespaces*
+           #:*namespaces-names*))
 
 (in-package #:streams/ethers)
 
@@ -35,5 +36,20 @@
 (defvar *mx-universe* nil
   "The top-level structure for the mx-universe.")
 
-(defparameter *namespaces* '(c m w s v @ d f)
+(defparameter *namespaces-names*
+  '(("c" . "canon")
+    ("m" . "machine")
+    ("w" . "world")
+    ("s" . "stream")
+    ("v" . "view")
+    ("@" . "atom")
+    ("d" . "data-type")
+    ("f" . "format"))
+  "The assocation list of namespaces, where the CAR is the alias and the CDR is
+the full name.")
+
+(defparameter *namespaces*
+  (mapcar #'(lambda (name)
+              (read-from-string (string (car name))))
+          *namespaces-names*)
   "The list of namespaces in simple form.")
