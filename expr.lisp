@@ -85,7 +85,11 @@
 
 (defun =msl-value ()
   "Match and return a raw value."
-  (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))
+  (=destructure (_ value)
+    (=list
+      (?whitespace)
+      (=subseq (%some (?not (%or (=metadata-getter)
+                                 (?seq (?eq #\right_parenthesis) (?end)))))))))
 ;;
 
 
@@ -215,8 +219,11 @@
 
 (defun =metadata-getter ()
  "Match and return key sequence for :."
-  (=list (=metadata-namespace)
-         (=msl-key)))
+  (=destructure (_ ns key)
+    (=list (?whitespace)
+           (=metadata-namespace)
+           (=msl-key))
+    (list ns key)))
 
 (defun =metadata-namespace ()
   "Match and return the : namespace."
@@ -288,28 +295,53 @@
 
 ;;
 
-(defun =@-form ()
- "Match and return an atom in the @ namespace."
- (=destructure (_ key-sequence value _ _)
-   (=list (?eq #\left_parenthesis)
-          (%or (=list (=@-getter)
-                      (=metadata-getter))
-               (=destructure (atom _ sub)
-                 (=list (=@-getter)
-                        (?whitespace)
-                        (=metadata-getter))
-                 (list atom sub))
-               (=@-getter))
-          (%maybe (=destructure (_ value)
-                    (=list (?whitespace)
-                           (=msl-value))))
-          (?eq #\right_parenthesis)
-          (?end))
-  (list key-sequence value)))
 
-;;
-;; Function-namespace definitions for recursive functions
-;;
+
+; (defun =@-form ()
+;    "Match and return an atom in the @ namespace."
+;    (=destructure (_ key-sequence value _ _)
+;      (=list (?eq #\left_parenthesis)
+;             (%or (=destructure (atom _ sub)
+;                    (=list (=@-getter)
+;                           (%maybe (?whitespace))
+;                           (=metadata-getter))
+;                    (list atom sub))
+;                  (=@-getter))
+;             (%maybe (=destructure (_ value)
+;                       (=list (?whitespace)
+;                              (=msl-value))))
+;             (?eq #\right_parenthesis)
+;             (?end))
+;     (list key-sequence value)))
+
+
+(defun =@-form ()
+   "Match and return an atom in the @ namespace."
+   (=destructure (_ atom-seq atom-value sub-list _ _)
+     (=list (?eq #\left_parenthesis)
+            (=@-getter)
+            (%maybe (=msl-value))
+            (%some (?seq
+                     (=metadata-getter)
+                     (=msl-value)))
+            (?eq #\right_parenthesis)
+            (?end))
+    (list atom-seq atom-value sub-list)))
+
+
+;; EVENTUAL DESIRED OUTPUT:
+
+;;(@WALT Walt Disney :birthday 1901 :wife Lillian) -->
+  ;;((@ WALT) Walt Disney)
+  ;;((@ WALT : birthday) 1901)
+  ;;((@ WALT : wife) Lillian)
+
+  ;;((c my-formats f bold) NIL)
+
+  ;;
+  ;; Function-namespace definitions for recursive functions
+  ;;
 
 (setf (fdefinition '=msl-value/parser) (=msl-value)
-      (fdefinition '=msl-atom/parser) (=msl-atom))
+      (fdefinition '=msl-atom/parser) (=msl-atom)
+      (fdefinition '=@-form/parser) (=@-form))
