@@ -27,7 +27,6 @@
                "streams/channels"
                "streams/expr"
                "streams/core"
-               "streams/reader"
                "streams/serve"
                "streams/build"
                "streams/initialize")

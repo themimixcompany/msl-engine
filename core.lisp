@@ -48,10 +48,10 @@
     (declare (ignore ns body))
     key))
 
-
-;;;-----------------------------------------------------------------------------
-;;; eval
-;;;-----------------------------------------------------------------------------
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun intern-symbol (symbol package)
+    "Set the home package of SYMBOL to PACKAGE, ensuring that SYMBOL is indeed a symbol."
+    (intern (streams/common:string-convert symbol) package)))
 
 (defmacro bind-slots (v &rest slots)
   "Set the value of SLOTS in V, to the respective values in the surrounding
@@ -60,11 +60,10 @@ scope, with the same names."
     `(let ((,obj ,v))
        (progn
          ,@(loop :for slot :in slots :collect
-                    `(when ,slot (setf (,(intern (streams/common:string-convert slot)
-                                                 (find-package :streams/channels)) ,obj)
+                    `(when ,slot (setf (,(intern-symbol slot :streams/channels) ,obj)
                                        ,slot)))))))
 
-(defun msl-single-recall-p (metadata)
+(defun single-recall-p (metadata)
   "Return true if there is only a single recall in METADATA. That is,
 ((\"birthday\")) is a single recall, while ((\"birthday\") (\"state\")) is
 not. "
@@ -73,7 +72,7 @@ not. "
     (and (null body)
          (mof:solop m))))
 
-(defun msl-all-recall-p (metadata)
+(defun all-recall-p (metadata)
   "Return true if all the items in METADATA are for recalling values. That
 is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
 not. "
@@ -81,7 +80,7 @@ not. "
 
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
-  (let* ((function (mof:hyphenate-intern :streams/channels namespace "table"))
+  (let* ((function (streams/channels:table-name namespace :streams/channels))
          (table (funcall function streams/ethers:*mx-universe*)))
     table))
 
@@ -94,7 +93,7 @@ not. "
   (let ((table (namespace-table namespace)))
     (setf (gethash key table) value)))
 
-(defun msl-eval-expr (expr)
+(defun eval-expr (expr)
   "Evaluate EXPR as a complete MSL expression, store the result into the active
 namespace, then return the mx-atom instance and the corresponding table as multiple
 values."
@@ -106,7 +105,8 @@ values."
                 expr
               (multiple-value-bind (v existsp)
                   (namespace-hash key ns)
-                (bind-slots v hash comment)
+                (when existsp
+                  (bind-slots v hash comment))
                 (cond
                   ;; (@walt)
                   ;; ‘walt’ still does not exist
@@ -118,24 +118,23 @@ values."
                    (vt v))
                   ;; (@walt :age)
                   ;; ‘walt’ exists, and there’s only one metadata recall
-                  ((and existsp (null value) (msl-single-recall-p metadata))
+                  ((and existsp (null value) (single-recall-p metadata))
                    (let ((item (assoc (caar metadata) (streams/channels:metadata v))))
                      (when item
                        (vt v))))
                   ;; (@walt :age :gender)
                   ;; ‘walt’ exists, there is no value, all metadata are recalls
-                  ((and existsp (null value) (msl-all-recall-p metadata))
+                  ((and existsp (null value) (all-recall-p metadata))
                    (vt v))
                   ;; (@walt "Walt Disney" :age :gender)
                   ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
-                  ((and existsp value (msl-all-recall-p metadata))
-                   (setf (streams/channels:value v) value)
+                  ((and existsp value (all-recall-p metadata))
+                   (bind-slots v value)
                    (vt v))
                   ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
                   ;; ‘walt’ exists, and either p-values or s-values exists
                   ((and existsp (or value metadata))
-                   (when value
-                     (setf (streams/channels:value v) value))
+                   (bind-slots v value)
                    (when metadata
                      (setf (streams/channels:metadata v)
                            (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
@@ -146,11 +145,6 @@ values."
                        (setf (namespace-hash key ns) o)
                        (vt o)))))))
           (return nil)))))
-
-
-;;;-----------------------------------------------------------------------------
-;;; namespaces
-;;;-----------------------------------------------------------------------------
 
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
@@ -206,11 +200,6 @@ ranks are in the correct order."
         (let ((ranks (loop :for pair :in pairs :collect (namespace-rank (first pair)))))
           (valid-ranks-p ranks))))))
 
-;;; Create a new hash table entry under the path specified
-;;; Decide how to handle canons
-;;; Implement namespace walker
-;;; The first element is the class indicator
-;;; The second element is the table name
 (defun compose-namespaces (path)
   "Return a namespace chain object by linearly composing the namespace path from
 NAMESPACES. The object returned contains complete namespace traversal information."
@@ -218,42 +207,15 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (let ((pairs (namespace-pairs path)))
       pairs)))
 
-(defmacro define-soft-constant-0 (name value &optional doc)
-  `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
-     ,@(when doc (list doc))))
-
-(defun define-soft-constant-1 (name value)
-  (if (and (boundp name) (constantp name))
-      (progn
-        (mof:dbg "then")
-        (handler-bind ((simple-error #'(lambda (c)
-                                       (let ((r (find-restart 'continue c)))
-                                         (when r
-                                           (invoke-restart r))))))
-        (setf (symbol-value name) value)))
-      (progn
-        (mof:dbg "else")
-        (defconstant name value))))
-
-(defmacro define-soft-constant-2 (name value)
+(defmacro define-dynamic-constant (name value)
   "Bind NAME to VALUE and only change the binding after subsequent calls to the macro."
-  `(if (and (boundp ',name) (constantp ',name))
-       (handler-bind ((simple-error #'(lambda (c)
-                                       (let ((r (find-restart 'continue c)))
-                                         (when r
-                                           (invoke-restart r))))))
-         (makunbound ',name)
-         (setf (symbol-value ',name) ,value))
-       (defconstant ,name ,value)))
-
-(defmacro define-soft-constant-3 (name value)
-  "Bind NAME to VALUE and only change the binding after subsequent calls to the macro."
-  `(handler-bind ((simple-error #'(lambda (c)
-                                    (let ((r (find-restart 'continue c)))
-                                      (when r
-                                        (invoke-restart r)))))
-                  (sb-ext:defconstant-uneql #'(lambda (c)
+  `(handler-bind ((sb-ext:defconstant-uneql #'(lambda (c)
                                                 (let ((r (find-restart 'continue c)))
                                                   (when r
                                                     (invoke-restart r))))))
      (defconstant ,name ,value)))
+
+;; (defun canonize (mx-atom)
+;;   "Mark an mx-atom instance as canonized."
+;;   (let ((flag (canonizedp mx-atom)))
+;;     (or flag (setf (canonizedp mx-atom) t))))

@@ -25,6 +25,10 @@
 
    #:make-mx-universe
    #:dump-mx-universe
+
+   #:entity-string
+   #:table-name
+
    #:make-mx-atom))
 
 (in-package #:streams/channels)
@@ -71,13 +75,13 @@
                 :accessor canon-table
                 :documentation "The top-level colletion of mx-canons, where the key is the name of mx-canon and the value is the instance of that mx-canon.")
    (atom-counter :initarg :atom-counter
-              :initform streams/ethers:*initial-atom-counter*
-              :accessor atom-counter
-              :documentation "The top-level mx-atom counter.")
+                 :initform streams/ethers:*initial-atom-counter*
+                 :accessor atom-counter
+                 :documentation "The top-level mx-atom counter.")
    (atom-table :initarg :atom-table
-            :initform (make-hash-table :test #'equal)
-            :accessor atom-table
-            :documentation "The top-level colletion of mx-atoms, where the key is the name of the mx-atom and the value is the instance of that mx-atom."))
+               :initform (make-hash-table :test #'equal)
+               :accessor atom-table
+               :documentation "The top-level colletion of mx-atoms, where the key is the name of the mx-atom and the value is the instance of that mx-atom."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-atom ()
@@ -112,7 +116,11 @@
    (table :initarg :table
           :initform nil
           :accessor table
-          :documentation "The corresponding table assignment of this atom in the universe."))
+          :documentation "The corresponding table assignment of this atom in the universe.")
+   (canonizedp :initarg :canonizedp
+               :initform nil
+               :accessor canonizedp
+               :documentation "A flag to indicate whether an mx-atom’s contents has been canonized."))
   (:documentation "The structure to designate atoms."))
 
 (defmacro update-counter (mx-universe accessor)
@@ -131,20 +139,14 @@
 (define-updaters machine world stream view canon atom)
 
 (defun entity-string (id)
-  "Return the corresponding universe name from ID, where ID is either a single character or a string to designate an entity."
-  (let ((thing (mof:symbol-convert id)))
-    (ecase thing
-      (m "machine")
-      (w "world")
-      (s "stream")
-      (v "view")
-      (c "canon")
-      ((a @) "atom"))))
+  "Return the corresponding universe name from ID, where ID is either a single
+character or a string to designate an entity."
+  (cdr (assoc id streams/ethers:*namespaces-names* :test #'equal)))
 
-(defun namespace-table (ns)
+(defun table-name (ns &optional package)
   "Return the corresponding table of NS from the universe."
   (let ((name (entity-string ns)))
-    (mof:hyphenate-intern nil name "table")))
+    (mof:hyphenate-intern package name "table")))
 
 (defun make-mx-atom (ns key value metadata &optional hash comment)
   "Return a new mx-atom instance from arguments."
@@ -154,12 +156,12 @@
                           :mx-universe streams/ethers:*mx-universe*))
 
 (defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
-  "Initialize MX-ATOM A in MX-UNIVERSE."
+  "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
     (with-slots (id ns key table)
         mx-atom
       (setf id counter)
-      (setf table (namespace-table ns))
+      (setf table (table-name ns))
       (with-slots (atom-table)
           mx-universe
         (setf (gethash key atom-table) mx-atom)))))
