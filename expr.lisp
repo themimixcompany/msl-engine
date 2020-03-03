@@ -317,13 +317,14 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value sub-list _ _)
+   (=destructure (_ atom-seq atom-value sub-list comment _ _)
      (=list (?eq #\left_parenthesis)
             (=@-getter)
             (%maybe (=msl-value))
-            (%some (?seq
+            (%some (=list
                      (=metadata-getter)
                      (=msl-value)))
+            (%maybe (=msl-comment))
             (?eq #\right_parenthesis)
             (?end))
     (list atom-seq atom-value sub-list)))
