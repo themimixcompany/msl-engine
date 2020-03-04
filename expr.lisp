@@ -78,12 +78,14 @@
   "Match and return a raw value."
   (%and
     (?not (%or (=metadata-getter)
+               'regex-getter/parser
                (=msl-hash)
                (=msl-comment)))
     (=destructure (_ value)
       (=list
         (?whitespace)
         (=subseq (%some (?not (%or (=metadata-getter)
+                                   'regex-getter/parser
                                    (=msl-hash)
                                    (=msl-comment)
                                    (?seq (?eq #\right_parenthesis) (?end))))))))))
@@ -267,20 +269,22 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value sub-list hash comment _ _)
+   (=destructure (_ atom-seq atom-value atom-regex sub-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
+                        (%maybe (=regex-getter))
                         (%maybe (%or
                                   (%some (=list (=metadata-getter)
                                                 (=msl-value)))
                                   (=list (=metadata-getter)
-                                         (%maybe (=msl-value)))))
+                                         (%maybe (=msl-value))
+                                         (%maybe (=regex-getter)))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value sub-list hash comment)))
+                 (list atom-seq atom-value atom-regex sub-list hash comment)))
 ;;
 
 ;; DESIRED OUTPUT:
