@@ -68,25 +68,19 @@
 
 (defun =msl-hash ()
   "Match and return a hash value."
-  (=destructure (_ v)
-      (=list (?eq #\#)
+  (=destructure (_ _ hash)
+      (=list (?whitespace)
+             (?eq #\#)
              (=sha256))))
 ;;
 
-
-; (defun =msl-value ()
-;   "Match and return a raw value."
-;   (=subseq (%some (?not (%or (?seq (?whitespace) (=msl-selector))
-;                              (?seq (?whitespace) (=msl-hash))
-;                              (?seq (?whitespace) (=msl-comment))
-;                              (?seq (?eq #\right_parenthesis) (?end)))))))
-; ;;
 
 
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (=msl-comment))
+    (?not (%or (=msl-hash)
+               (=msl-comment)))
     (=destructure (_ value)
       (=list
         (?whitespace)
