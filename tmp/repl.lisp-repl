@@ -7,248 +7,306 @@
 
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
+; compiling (DEFUN =MSL-VALUE ...)
+WARNING: redefining STREAMS/EXPR::=MSL-VALUE in DEFUN
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
 
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-; compiling (DEFUN =TINY-ATOM ...)
-WARNING: redefining STREAMS/EXPR::=TINY-ATOM in DEFUN
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-(("@" "WALT") (":" "birthday"))
-T
-T
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
-("@" "WALT")
-T
-T
-; compiling (DEFUN =@-GETTER ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime6
-; in: DEFUN =@-GETTER
-;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::NS STREAMS/EXPR::_)
-;         (MAXPC:=LIST (STREAMS/EXPR::=@-NAMESPACE)
-;                      (MAXPC:%MAYBE (STREAMS/EXPR::?WHITESPACE)))
-;       (STREAMS/EXPR::=MSL-KEY))
-; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
-; --> SB-INT:BINDING*
-; ==>
-;   (LET* ((#:G2
-;           (SB-C::CHECK-DS-LIST #:|result0| 2 2 '(STREAMS/EXPR::NS #:|_1|)))
-;          (STREAMS/EXPR::NS (POP #:G2))
-;          (#:|_1| (POP #:G2)))
-;     (DECLARE (IGNORE #:|_1|))
-;     (STREAMS/EXPR::=MSL-KEY))
-;
-; caught STYLE-WARNING:
-;   The variable NS is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =TINY-ATOM ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime7
-; in: DEFUN =TINY-ATOM
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
-;
-; caught WARNING:
-;   The function ATOM is called with two arguments, but wants exactly one.
-
-; file: C:/Users/David/AppData/Local/Temp/slime7
-; in: DEFUN =TINY-ATOM
-;     (STREAMS/EXPR::=DECOMPOSE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
-;      (MAXPC:=LIST (STREAMS/EXPR::=SINGLE-GETTER) (STREAMS/EXPR::?WHITESPACE)
-;                   (STREAMS/EXPR::=SUBATOMIC-GETTER)))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=DECOMPOSE
-
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::SUB)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::SUB
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::_
-;
-; compilation unit finished
-;   Undefined function:
-;     =DECOMPOSE
-;   Undefined variables:
-;     SUB _
-;   caught 3 WARNING conditions
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
-
-("@" "WALT")
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
-(":" "birthday")
-T
-T
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
-
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
-("@" "WALT")
-T
-T
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT)" (=tiny-atom))
-
-("@" "WALT")
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
 NIL
 NIL
 NIL
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
 
 NIL
 NIL
 NIL
 
-STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
-(("v" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
 NIL
 NIL
 NIL
-; compiling (DEFUN =TINY-ATOM ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime12
-; in: DEFUN =TINY-ATOM
-;     (STREAMS/EXPR::=SEQ (STREAMS/EXPR::=@-GETTER)
-;      (STREAMS/EXPR::=METADATA-GETTER))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=SEQ
-;
-; compilation unit finished
-;   Undefined function:
-;     =SEQ
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
 
 NIL
 NIL
 NIL
+; compiling (DEFUN =REGEX-GETTER ...)
+WARNING: redefining STREAMS/EXPR::=REGEX-GETTER in DEFUN
+; compiling (DEFUN =METADATA-GETTER ...)
+WARNING: redefining STREAMS/EXPR::=METADATA-GETTER in DEFUN
 
-STREAMS/EXPR> (parse "(@WALT :birthday)" (=tiny-atom))
-(("@" "WALT") (":" "birthday"))
+STREAMS/EXPR> (parse "(@WALT Walt Disney :birthday 1901 :wife Lillian #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)" (=@-form))
+(("@" "WALT") "Walt Disney"
+ (((":" "birthday") "1901") ((":" "wife") "Lillian"))
+ "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment")
 T
 T
 
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
-(("v" "WALT") (":" "birthday"))
+STREAMS/EXPR> (parse "(@WALT Walt Disney :birthday 1901 :wife Lillian #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)" (=@-form))
+(("@" "WALT") "Walt Disney"
+ (((":" "birthday") "1901") ((":" "wife") "Lillian"))
+ "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment")
 T
 T
 
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
+STREAMS/EXPR> (parse "(@WALT Walt Disney #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)" (=@-form))
 NIL
 NIL
 NIL
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "@WALT" (=@-getter))
-(#<CLOSURE (LAMBDA (MAXPC::INPUT) :IN =SUBSEQ) {1002E85A4B}>)
-T
-NIL
-; compiling (DEFUN =@-GETTER ...)
+; compiling (DEFUN =@-FORM ...)
 
 ; file: C:/Users/David/AppData/Local/Temp/slime14
-; in: DEFUN =@-GETTER
-;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::NS STREAMS/EXPR::_)
-;         (MAXPC:=LIST (STREAMS/EXPR::=@-NAMESPACE)
-;                      (MAXPC:%MAYBE (STREAMS/EXPR::?WHITESPACE)))
-;       (STREAMS/EXPR::=MSL-KEY))
-; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
-; --> SB-INT:BINDING*
-; ==>
-;   (LET* ((#:G2
-;           (SB-C::CHECK-DS-LIST #:|result0| 2 2 '(STREAMS/EXPR::NS #:|_1|)))
-;          (STREAMS/EXPR::NS (POP #:G2))
-;          (#:|_1| (POP #:G2)))
-;     (DECLARE (IGNORE #:|_1|))
-;     (STREAMS/EXPR::=MSL-KEY))
+; in: DEFUN =@-FORM
+;     (STREAMS/EXPR::=METADATA-GETTER (STREAMS/EXPR::=MSL-VALUE))
 ;
 ; caught STYLE-WARNING:
-;   The variable NS is defined but never used.
+;   The function =METADATA-GETTER is called with one argument, but wants exactly zero.
 ;
 ; compilation unit finished
 ;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =@-GETTER ...)
-STREAMS/EXPR> (parse "@WALT" (=@-getter))
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)" (=@-form))
 
-("@" "WALT")
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-NIL
-T
-T
-; compiling (DEFUN =TINY-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=tiny-atom))
-
-(("@" "WALT") (":" "birthday"))
+(("@" "WALT") "Walt Disney" NIL
+ "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment")
 T
 T
 
-STREAMS/EXPR> (parse "(vWALT:birthday)" (=tiny-atom))
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
+(("@" "WALT") NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=@-form))
 NIL
 NIL
 NIL
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=@-form))
 
-STREAMS/EXPR> (parse "(v WALT:birthday)" (=tiny-atom))
+(("@" "WALT") NIL ((":" "birthday") NIL) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901)" (=@-form))
+(("@" "WALT") NIL (((":" "birthday") "1901")) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
+(("@" "WALT") NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 :wife Lillian)" (=@-form))
+(("@" "WALT") NIL (((":" "birthday") "1901") ((":" "wife") "Lillian")) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 :wife Lillian //comment)" (=@-form))
+(("@" "WALT") NIL (((":" "birthday") "1901") ((":" "wife") "Lillian")) NIL
+ "comment")
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT //comment)" (=@-form))
+(("@" "WALT") NIL NIL NIL "comment")
+T
+T
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "(@WALT //comment)" (=@-form))
+
+(("@" "WALT") NIL NIL NIL "comment")
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 :wife Lillian)" (=@-form))
+(("@" "WALT") NIL (((":" "birthday") "1901") ((":" "wife") "Lillian")) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 /regex/ :wife Lillian)" (=@-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =MSL-VALUE ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime19
+; in: DEFUN =MSL-VALUE
+;     (MAXPC:%ANY STREAMS/EXPR::REGEX-GETTER/PARSER)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::REGEX-GETTER/PARSER
+;
+; compilation unit finished
+;   Undefined variable:
+;     REGEX-GETTER/PARSER
+;   caught 1 WARNING condition
+; compiling (DEFUN =MSL-VALUE ...)
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 /regex/ :wife Lillian)" (=@-form))
+
+(("@" "WALT") NIL (((":" "birthday") (("regex" "" NIL))) ((":" "wife") NIL))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 /regex/env :wife Lillian)" (=@-form))
+(("@" "WALT") NIL (((":" "birthday") (("regex" "env" NIL))) ((":" "wife") NIL))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday 1901 /regex/env consume :wife Lillian)" (=@-form))
+(("@" "WALT") NIL
+ (((":" "birthday") (("regex" "env" "consume"))) ((":" "wife") NIL)) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /regex/env consume :wife Lillian)" (=@-form))
 NIL
 NIL
 NIL
 
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=tiny-atom))
-(("v" "WALT") (":" "birthday"))
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian)" (=@-form))
+(("@" "WALT") (("regex" "env" "consume")) (((":" "wife") NIL)) NIL NIL)
 T
 T
-; compiling (DEFUN =REGEX-NAMESPACE ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-format))
-; in: PARSE "(@WALT:birthday)"
+; compiling (DEFUN =MSL-VALUE ...)
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime22
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::_ STREAMS/EXPR::ATOM-SEQ
+;                          STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-REGEX
+;                          STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH
+;                          STREAMS/EXPR::COMMENT STREAMS/EXPR::_ STREAMS/EXPR::_)
+;         (MAXPC:=LIST (MAXPC:?EQ #\() (STREAMS/EXPR::=@-GETTER)
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-VALUE))
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=REGEX-GETTER))
+;                      (MAXPC:%MAYBE (MAXPC:%OR (MAXPC:%SOME #) (MAXPC:=LIST # #)))
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-HASH))
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-COMMENT)) (MAXPC:?EQ #\))
+;                      (MAXPC:?END))
+;       (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;             STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G4
+;           (SB-C::CHECK-DS-LIST #:|result0| 9 9
+;                                '(#:|_1| STREAMS/EXPR::ATOM-SEQ
+;                                  STREAMS/EXPR::ATOM-VALUE
+;                                  STREAMS/EXPR::ATOM-REGEX
+;                                  STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH
+;                                  STREAMS/EXPR::COMMENT #:|_2| #:|_3|)))
+;          (#:|_1| (POP #:G4))
+;          (STREAMS/EXPR::ATOM-SEQ (POP #:G4))
+;          (STREAMS/EXPR::ATOM-VALUE (POP #:G4))
+;          (STREAMS/EXPR::ATOM-REGEX (POP #:G4))
+;          (STREAMS/EXPR::SUB-LIST (POP #:G4))
+;          (STREAMS/EXPR::HASH (POP #:G4))
+;          (STREAMS/EXPR::COMMENT (POP #:G4))
+;          (#:|_2| (POP #:G4))
+;          (#:|_3| (POP #:G4)))
+;     (DECLARE (IGNORE #:|_3| #:|_2| #:|_1|))
+;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;           STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT))
+;
+; caught STYLE-WARNING:
+;   The variable ATOM-REGEX is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian)" (=@-form))
+
+(("@" "WALT") "Walt Disney" ("regex" "env" "consume")
+ (((":" "wife") "Lillian")) NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2)" (=@-form))
+
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime25
+; in: DEFUN =@-FORM
+;     (MAXPC:%MAYBE
+;      (MAXPC:%OR
+;       (MAXPC:%SOME
+;        (MAXPC:=LIST (STREAMS/EXPR::=METADATA-GETTER) (STREAMS/EXPR::=MSL-VALUE)
+;                     (MAXPC:%MAYBE #))))
+;      (MAXPC:=LIST (STREAMS/EXPR::=METADATA-GETTER)
+;                   (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-VALUE))))
+;
+; caught STYLE-WARNING:
+;   The function %MAYBE is called with two arguments, but wants exactly one.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2)" (=@-form))
+
+(("@" "WALT") "Walt Disney" ("regex" "env" "consume")
+ (((":" "wife") "Lillian" ("regex2" "env2" "consume2"))) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2 /regex3/env3 consume3)" (=@-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2 /regex3/env3 consume3)" (=@-form))
+
+(("@" "WALT") "Walt Disney" (("regex" "env" "consume"))
+ (((":" "wife") "Lillian"
+   (("regex2" "env2" "consume2") ("regex3" "env3" "consume3"))))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2 /regex3/env3 consume3 :species human /regex4/)" (=@-form))
+(("@" "WALT") "Walt Disney" (("regex" "env" "consume"))
+ (((":" "wife") "Lillian"
+   (("regex2" "env2" "consume2") ("regex3" "env3" "consume3")))
+  ((":" "species") "human" (("regex4" "" NIL))))
+ NIL NIL)
+T
+T
+; compiling (DEFUN =REGEX-GETTER ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime29
+; in: DEFUN =REGEX-GETTER
+;     (STREAMS/EXPR::?SUBSEQ (MAXPC:%SOME (MAXPC:?SATISFIES 'ALPHANUMERICP)))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::?SUBSEQ
+;
+; compilation unit finished
+;   Undefined function:
+;     ?SUBSEQ
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =REGEX-GETTER ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regex/env consume :wife Lillian /regex2/env2 consume2 /regex3/env3 consume3 :species human /regex4/)" (=@-form))
+
+(("@" "WALT") "Walt Disney" (("regex" "env" "consume"))
+ (((":" "wife") "Lillian"
+   (("regex2" "env2" "consume2") ("regex3" "env3" "consume3")))
+  ((":" "species") "human" (("regex4" NIL NIL))))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-format))
+; in: PARSE "(@WALT /regex/)"
 ;     (STREAMS/EXPR::=@-FORMAT)
 ;
 ; caught STYLE-WARNING:
@@ -259,374 +317,293 @@ STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-format))
 ;     =@-FORMAT
 ;   caught 1 STYLE-WARNING condition
 
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
-; in: PARSE "(@WALT:birthday)"
-;     (STREAMS/EXPR::=@-FORM)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=@-FORM
-;
-; compilation unit finished
-;   Undefined function:
-;     =@-FORM
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
-; compiling (DEFUN =@-FORM ...)
-STREAMS/EXPR> (parse "(@WALT:birthday)" (=@-form))
-
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@ WALT:birthday)" (=@-form))
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@ WALT :birthday)" (=@-form))
-(("@" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =GROUPING-NAMESPACE ...)
-; compiling (DEFUN =ATOM-GETTER ...)
-WARNING: redefining STREAMS/EXPR::=ATOM-GETTER in DEFUN
-
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=@-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=atom-form))
-; in: PARSE "(v WALT :birthday)"
-;     (STREAMS/EXPR::=ATOM-FORM)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=ATOM-FORM
-;
-; compilation unit finished
-;   Undefined function:
-;     =ATOM-FORM
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =ATOM-FORM ...)
-STREAMS/EXPR> (parse "(v WALT :birthday)" (=atom-form))
-
-(("v" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(w WALT :birthday)" (=atom-form))
-(("w" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(s WALT :birthday)" (=atom-form))
-(("s" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(c) WALT :birthday)" (=atom-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(c WALT :birthday)" (=atom-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =CANON-NAMESPACE ...)
-STREAMS/EXPR> (parse "(@ WALT :birthday)" (=atom-form))
-
-(("@" "WALT") (":" "birthday"))
-T
-T
-; compiling (DEFUN =GROUPING-FORM ...)
-; compiling (DEFUN =GROUPING-GETTER ...)
-; compiling (DEFUN =GROUPING-FORM ...)
-STREAMS/EXPR> (parse "(s WALT :birthday)" (=atom-form))
-
-(("s" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(s WALT :birthday)" (=grouping-form))
-(("s" "WALT") (":" "birthday"))
-T
-T
-
-STREAMS/EXPR> (parse "(@ WALT :birthday)" (=grouping-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =CANON-FORM ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime26
-; in: DEFUN =CANON-FORM
-;     (STREAMS/EXPR::=CANON-GETTER)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=CANON-GETTER
-;
-; compilation unit finished
-;   Undefined function:
-;     =CANON-GETTER
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =CANON-GETTER ...)
-STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(c WALT :birthday)" (=canon-form))
-(("c" "WALT") (":" "birthday"))
-T
-T
-; compiling (DEFUN =DATATYPE-GETTER ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime28
-; in: DEFUN =DATATYPE-GETTER
-;     (STREAMS/EXPR::=DATATYPE-NAMESPACE)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=DATATYPE-NAMESPACE
-;
-; compilation unit finished
-;   Undefined function:
-;     =DATATYPE-NAMESPACE
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-; in: PARSE "(d bold)"
-;     (STREAMS/EXPR::=DATATYPE-FORM)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=DATATYPE-FORM
-;
-; compilation unit finished
-;   Undefined function:
-;     =DATATYPE-FORM
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =DATATYPE-FORM ...)
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-
-; compiling (DEFUN =DATATYPE-NAMESPACE ...)
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN =DATATYPE-FORM ...)
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN =DATATYPE-GETTER ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime32
-; in: DEFUN =DATATYPE-GETTER
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;
-; caught WARNING:
-;   The function ATOM is called with two arguments, but wants exactly one.
-
-; file: C:/Users/David/AppData/Local/Temp/slime32
-; in: DEFUN =DATATYPE-GETTER
-;     (STREAMS/EXPR::DESTRUCTURE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;      (MAXPC:=LIST (STREAMS/EXPR::=DATATYPE-NAMESPACE) (STREAMS/EXPR::?WHITESPACE)
-;                   (STREAMS/EXPR::=MSL-KEY)))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::DESTRUCTURE
-
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::KEY
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::_
-;
-; compilation unit finished
-;   Undefined function:
-;     DESTRUCTURE
-;   Undefined variables:
-;     KEY _
-;   caught 3 WARNING conditions
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-; compiling (DEFUN =DATATYPE-FORM ...)
-; compiling (DEFUN =DATATYPE-GETTER ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime34
-; in: DEFUN =DATATYPE-GETTER
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;
-; caught WARNING:
-;   The function ATOM is called with two arguments, but wants exactly one.
-
-; file: C:/Users/David/AppData/Local/Temp/slime34
-; in: DEFUN =DATATYPE-GETTER
-;     (STREAMS/EXPR::DESTRUCTURE (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;      (MAXPC:=LIST (STREAMS/EXPR::=DATATYPE-NAMESPACE) (STREAMS/EXPR::?WHITESPACE)
-;                   (STREAMS/EXPR::=MSL-KEY)))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::DESTRUCTURE
-
-;     (ATOM STREAMS/EXPR::_ STREAMS/EXPR::KEY)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::KEY
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::_
-;
-; compilation unit finished
-;   Undefined function:
-;     DESTRUCTURE
-;   Undefined variables:
-;     KEY _
-;   caught 3 WARNING conditions
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN =DATATYPE-GETTER ...)
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-
-"bold"
-T
-T
-; compiling (DEFUN =DATATYPE-GETTER ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime36
-; in: DEFUN =DATATYPE-GETTER
-;     (LIST ATOM STREAMS/EXPR::KEY)
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:ATOM
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::KEY
-;
-; compilation unit finished
-;   Undefined variables:
-;     ATOM KEY
-;   caught 2 WARNING conditions
-
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-; compiling (DEFUN =DATATYPE-GETTER ...)
-STREAMS/EXPR> (parse "(d bold)" (=datatype-form))
-
-("d" "bold")
-T
-T
-
-STREAMS/EXPR> (parse "(d bold :font)" (=datatype-form))
-(("d" "bold") (":" "font"))
-T
-T
-
-STREAMS/EXPR> (parse "(c my-stuff :blanket)" (=canon-form))
-(("c" "my-stuff") (":" "blanket"))
-T
-T
-
-STREAMS/EXPR> (parse "(c my-stuff (d books))" (=canon-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =CANON-FORM ...)
-; compiling (DEFUN =DATATYPE-FORM ...)
-; compiling (DEFUN =@-FORM ...)
-; compiling (DEFUN =@-FORM ...)
-; compiling (DEFUN =@-FORM ...)
-; compiling (DEFUN =MSL-VALUE ...)
-WARNING: redefining STREAMS/EXPR::=MSL-VALUE in DEFUN
-; compiling (DEFUN =@-FORM ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime44
-; in: DEFUN =@-FORM
-;     (LIST STREAMS/EXPR::KEY-SEQUENCE STREAMS/EXPR::VALUE)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::KEY-SEQUENCE
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::VALUE
-;
-; compilation unit finished
-;   Undefined variables:
-;     KEY-SEQUENCE VALUE
-;   caught 2 WARNING conditions
-
-STREAMS/EXPR> (parse "(v WALT:birthday)" (=tiny-atom))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(c WALT :birthday)" (=grouping-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=atom-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT)" (=@-form))
-; compiling (DEFUN =@-FORM ...)
-STREAMS/EXPR> (parse "(@WALT)" (=@-form))
-
-(("@" "WALT") NIL)
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
-(("@" "WALT") " Walt Disney")
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+(("@" "WALT") NIL (("regex" NIL NIL)) NIL NIL NIL)
 T
 T
 ; compiling (DEFUN =@-FORM ...)
 
-; file: C:/Users/David/AppData/Local/Temp/slime46
+; file: C:/Users/David/AppData/Local/Temp/slime31
 ; in: DEFUN =@-FORM
-;     (STREAMS/EXPR::=SEQ (STREAMS/EXPR::?WHITESPACE) (STREAMS/EXPR::=MSL-VALUE))
+;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;           (APPEND "/" STREAMS/EXPR::ATOM-REGEX) STREAMS/EXPR::SUB-LIST
+;           STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
 ;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::=SEQ
+; note: deleting unreachable code
+
+;     (APPEND "/" STREAMS/EXPR::ATOM-REGEX)
+; ==>
+;   (SB-IMPL::APPEND2 "/" STREAMS/EXPR::ATOM-REGEX)
+;
+; caught WARNING:
+;   Constant "/" conflicts with its asserted type LIST.
+;   See also:
+;     The SBCL Manual, Node "Handling of Types"
 ;
 ; compilation unit finished
-;   Undefined function:
-;     =SEQ
-;   caught 1 STYLE-WARNING condition
+;   caught 1 WARNING condition
+;   printed 1 note
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime32
+; in: DEFUN =@-FORM
+;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;           (APPEND '/ STREAMS/EXPR::ATOM-REGEX) STREAMS/EXPR::SUB-LIST
+;           STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
+;
+; note: deleting unreachable code
+
+;     (APPEND '/ STREAMS/EXPR::ATOM-REGEX)
+; ==>
+;   (SB-IMPL::APPEND2 '/ STREAMS/EXPR::ATOM-REGEX)
+;
+; caught WARNING:
+;   Constant / conflicts with its asserted type LIST.
+;   See also:
+;     The SBCL Manual, Node "Handling of Types"
+;
+; compilation unit finished
+;   caught 1 WARNING condition
+;   printed 1 note
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
 
-STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
-; compiling (DEFUN =@-FORM ...)
-STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
-
-(("@" "WALT") NIL)
+(("@" "WALT") NIL ((("regex" NIL NIL))) (("regex" NIL NIL)) NIL NIL NIL)
 T
 T
 ; compiling (DEFUN =@-FORM ...)
-STREAMS/EXPR> (parse "(@WALT Walt Disney)" (=@-form))
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
 
-(("@" "WALT") "Walt Disney")
+(("@" "WALT") NIL (/ ("regex" NIL NIL)) (("regex" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+
+(("@" "WALT") NIL (/ ("regex" NIL NIL)) (/ ("regex" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime36
+; in: DEFUN =@-FORM
+;     (PUSH STREAMS/EXPR::ATOM-REGEX '/)
+; --> LET* FUNCALL
+; ==>
+;   (SB-C::%FUNCALL #'(SETF QUOTE) #:NEW1 #:/5)
+;
+; caught WARNING:
+;   The function (SETF QUOTE) is undefined, and its name is reserved by ANSI CL so
+;   that even if it were defined later, the code doing so would not be portable.
+;
+; compilation unit finished
+;   Undefined function:
+;     (SETF QUOTE)
+;   caught 1 WARNING condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+
+(("@" "WALT") NIL (/ ("regex" NIL NIL)) (/ ("regex" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+
+(("@" "WALT") NIL (/ ("regex" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+
+(("@" "WALT") NIL (("regex" NIL NIL)) NIL NIL NIL)
 T
 T
 
-STREAMS/EXPR> (parse "(@WALT :birthday Walt Disney)" (=@-form))
-((("@" "WALT") (":" "birthday")) "Walt Disney")
+STREAMS/EXPR> (append (list '/) (list 'a 'b))
+(/ A B)
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime40
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::_ STREAMS/EXPR::ATOM-SEQ
+;                          STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-REGEX
+;                          STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH
+;                          STREAMS/EXPR::COMMENT STREAMS/EXPR::_ STREAMS/EXPR::_)
+;         (MAXPC:=LIST (MAXPC:?EQ #\() (STREAMS/EXPR::=@-GETTER)
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-VALUE))
+;                      (MAXPC:%MAYBE (MAXPC:%SOME (STREAMS/EXPR::=REGEX-GETTER)))
+;                      (MAXPC:%MAYBE (MAXPC:%OR (MAXPC:%SOME #) (MAXPC:=LIST # #)))
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-HASH))
+;                      (MAXPC:%MAYBE (STREAMS/EXPR::=MSL-COMMENT)) (MAXPC:?EQ #\))
+;                      (MAXPC:?END))
+;       (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE 'STREAMS/EXPR::ZIP
+;             STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G4
+;           (SB-C::CHECK-DS-LIST #:|result0| 9 9
+;                                '(#:|_1| STREAMS/EXPR::ATOM-SEQ
+;                                  STREAMS/EXPR::ATOM-VALUE
+;                                  STREAMS/EXPR::ATOM-REGEX
+;                                  STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH
+;                                  STREAMS/EXPR::COMMENT #:|_2| #:|_3|)))
+;          (#:|_1| (POP #:G4))
+;          (STREAMS/EXPR::ATOM-SEQ (POP #:G4))
+;          (STREAMS/EXPR::ATOM-VALUE (POP #:G4))
+;          (STREAMS/EXPR::ATOM-REGEX (POP #:G4))
+;          (STREAMS/EXPR::SUB-LIST (POP #:G4))
+;          (STREAMS/EXPR::HASH (POP #:G4))
+;          (STREAMS/EXPR::COMMENT (POP #:G4))
+;          (#:|_2| (POP #:G4))
+;          (#:|_3| (POP #:G4)))
+;     (DECLARE (IGNORE #:|_3| #:|_2| #:|_1|))
+;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE 'STREAMS/EXPR::ZIP
+;           STREAMS/EXPR::SUB-LIST STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT))
+;
+; caught STYLE-WARNING:
+;   The variable ATOM-REGEX is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (append (list '/) (list 'a 'b))
+(/ A B)
+
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+(("@" "WALT") NIL ZIP NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/)" (=@-form))
+
+(("@" "WALT") NIL (ZIP ("regex" NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /regex/ /regex2/)" (=@-form))
+(("@" "WALT") NIL (ZIP ("regex" NIL NIL) ("regex2" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/ /regex2/)" (=@-form))
+
+(("@" "WALT") NIL (/ ("regex" NIL NIL) ("regex2" NIL NIL)) NIL NIL NIL)
+T
+T
+;
+; caught ERROR:
+;   READ error during COMPILE-FILE:
+;
+;     illegal terminating character after a colon: #\"
+;
+;       Line: 22, Column: 36, File-Position: 1039
+;
+;       Stream: #<SB-INT:FORM-TRACKING-STREAM for "file C:\\Users\\David\\AppData\\Local\\Temp\\slime43" {1004359BF3}>
+;
+; compilation unit finished
+;   caught 1 fatal ERROR condition
+;   caught 1 ERROR condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/ /regex2/)" (=@-form))
+
+(("@" "WALT") NIL ("/" ("regex" NIL NIL) ("regex2" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/ /regex2/)" (=@-form))
+
+(("@" "WALT") NIL (("regex" NIL NIL) ("regex2" NIL NIL)) NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT /regex/ /regex2/)" (=@-form))
+
+(("@" "WALT") NIL ("/" (("regex" NIL NIL) ("regex2" NIL NIL))) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/ /regex2/)" (=@-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/ /regex2/)" (=@-form))
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/ consume /regex2/)" (=@-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/expr consume /regex2/)" (=@-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/expr consume)" (=@-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT)" (=@-form))
+(("@" "WALT") NIL ("/" NIL) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=@-form))
+(("@" "WALT") NIL ("/" NIL) ((":" "birthday") NIL) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regexr/)" (=@-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT /regexr/)" (=@-form))
+(("@" "WALT") NIL ("/" (("regexr" NIL NIL))) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /regexr/ /rexer2)" (=@-form))
+(("@" "WALT") NIL ("/" (("regexr" NIL "/rexer2"))) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /regexr/ /rexer2/)" (=@-form))
+(("@" "WALT") NIL ("/" (("regexr" NIL NIL) ("rexer2" NIL NIL))) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney /regexr/ /rexer2/)" (=@-form))
+(("@" "WALT") "Walt Disney" ("/" (("regexr" NIL NIL) ("rexer2" NIL NIL))) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday)" (=@-form))
+(("@" "WALT") NIL ("/" NIL) ((":" "birthday") NIL) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/)" (=@-form))
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse "(@WALT :birthday /regex/)" (=@-form))
+
+(("@" "WALT") NIL ("/" NIL) ((":" "birthday") NIL (("regex" NIL NIL))) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT /waltregex/waltenv waltconsume :birthday /bdayregex/bdayenv bdayconsume)" (=@-form))
+(("@" "WALT") NIL ("/" (("waltregex" "waltenv" "waltconsume")))
+ ((":" "birthday") NIL (("bdayregex" "bdayenv" "bdayconsume"))) NIL NIL)
 T
 T
 

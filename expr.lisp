@@ -179,11 +179,11 @@
   "Match and return the key sequence for /."
   (=destructure (_ _ regex _ env value)
     (=list (?whitespace)
-         (=regex-namespace)
-         (=subseq (%some (?satisfies 'alphanumericp)))
-         (=regex-namespace)
-         (=subseq (%maybe (%some (?satisfies 'alphanumericp))))
-         (%maybe (=msl-value)))
+           (=regex-namespace)
+           (=subseq (%some (?satisfies 'alphanumericp)))
+           (=regex-namespace)
+           (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+           (%maybe (=msl-value)))
     (list regex env value)))
 ;;
 
@@ -273,18 +273,19 @@
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%maybe (=regex-getter))
+                        (%maybe (%some (=regex-getter)))
                         (%maybe (%or
                                   (%some (=list (=metadata-getter)
-                                                (=msl-value)))
+                                                (=msl-value)
+                                                (%maybe (%some (=regex-getter)))))
                                   (=list (=metadata-getter)
                                          (%maybe (=msl-value))
-                                         (%maybe (=regex-getter)))))
+                                         (%maybe (%some (=regex-getter))))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value atom-regex sub-list hash comment)))
+                 (list atom-seq atom-value (list "/" atom-regex) sub-list hash comment)))
 ;;
 
 ;; DESIRED OUTPUT:
