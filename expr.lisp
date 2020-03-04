@@ -79,7 +79,8 @@
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (%or (=msl-hash)
+    (?not (%or (=metadata-getter)
+               (=msl-hash)
                (=msl-comment)))
     (=destructure (_ value)
       (=list
@@ -295,41 +296,27 @@
 ;;
 
 
-
-; (defun =@-form ()
-;    "Match and return an atom in the @ namespace."
-;    (=destructure (_ key-sequence value _ _)
-;      (=list (?eq #\left_parenthesis)
-;             (%or (=destructure (atom _ sub)
-;                    (=list (=@-getter)
-;                           (%maybe (?whitespace))
-;                           (=metadata-getter))
-;                    (list atom sub))
-;                  (=@-getter))
-;             (%maybe (=destructure (_ value)
-;                       (=list (?whitespace)
-;                              (=msl-value))))
-;             (?eq #\right_parenthesis)
-;             (?end))
-;     (list key-sequence value)))
-
-
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
    (=destructure (_ atom-seq atom-value sub-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%any (=list (=metadata-getter)
-                                     (=msl-value)))
+                        (%or
+                          (%some (=list (=metadata-getter)
+                                        (=msl-value)))
+                          (=list (=metadata-getter)
+                                 (%maybe (=msl-value))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
                  (list atom-seq atom-value sub-list hash comment)))
 
+;;
+
 ;; DESIRED OUTPUT:
-;; (("@" "WALT") "Walt Disney" (((":" "birthday") "1901") ((":" "wife") "Lillian ") "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment"
+;; (("@" "WALT") "Walt Disney" (((":" "birthday") "1901") ((":" "wife") "Lillian") "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment"
 
 
   ;;
@@ -337,5 +324,4 @@
   ;;
 
 (setf (fdefinition '=msl-value/parser) (=msl-value)
-      (fdefinition '=msl-atom/parser) (=msl-atom)
       (fdefinition '=@-form/parser) (=@-form))
