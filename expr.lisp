@@ -4,7 +4,7 @@
     (:use #:cl #:maxpc)
   (:nicknames #:s/expr)
   (:export #:=sexp
-           #:=xexpr))
+           #:=msl-atom))
 
 (in-package #:streams/expr)
 

@@ -93,10 +93,34 @@ not. "
   (let ((table (namespace-table namespace)))
     (setf (gethash key table) value)))
 
+(defun metadata-specifier-p (prefix)
+  "Return true if PREFIX is a valid identifier for a subatomic namespace."
+  (when (member prefix streams/ethers:*metadata-prefixes* :test #'equal)
+    t))
+
+(defun update-metadata (obj spec)
+  "Update mx-atom OBJ with the list SPEC. The first value of SPEC is a list of
+two elements where the first element is the type of the table and the second
+element is the key. The second value of SPEC is a either a string, integer, or
+character."
+  (destructuring-bind ((table key) &optional value)
+      spec
+    (when (metadata-specifier-p table)
+      ;; This is already guaranteed to exist because of INITIALIZE-INSTANCE
+      (let* ((metadata (streams/channels:metadata obj))
+             (metatable (gethash table metadata)))
+        (cond ((null value) (gethash key metatable))
+              (value (setf (gethash key metatable) value))
+              (t nil))))))
+
+(defun dump-metadata (obj)
+  "Display information about the metadata stored in OBJ."
+  (streams/common:dump-table (streams/channels:metadata obj)))
+
 (defun eval-expr (expr)
   "Evaluate EXPR as a complete MSL expression, store the result into the active
-namespace, then return the mx-atom instance and the corresponding table as multiple
-values."
+namespace, then return the mx-atom instance and the corresponding table as
+multiple values."
   (block nil
     (let ((expr expr))                  ;(parse ...)
       (if expr
@@ -214,8 +238,3 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
                                                   (when r
                                                     (invoke-restart r))))))
      (defconstant ,name ,value)))
-
-;; (defun canonize (mx-atom)
-;;   "Mark an mx-atom instance as canonized."
-;;   (let ((flag (canonizedp mx-atom)))
-;;     (or flag (setf (canonizedp mx-atom) t))))

@@ -102,9 +102,9 @@
           :accessor value
           :documentation "The primary value of an mx-atom.")
    (metadata :initarg :metadata
-             :initform nil
+             :initform (make-hash-table :test #'equal)
              :accessor metadata
-             :documentation "The secondary value of an mx-atom.")
+             :documentation "The secondary values of an mx-atom as a hash table, where the key is the type of metadata and the value is another table.")
    (hash :initarg :hash
          :initform nil
          :accessor hash
@@ -148,20 +148,28 @@ character or a string to designate an entity."
   (let ((name (entity-string ns)))
     (mof:hyphenate-intern package name "table")))
 
-(defun make-mx-atom (ns key value metadata &optional hash comment)
+(defun make-mx-atom (ns key &optional value (metadata (make-hash-table :test #'equal)) hash comment)
   "Return a new mx-atom instance from arguments."
   (make-instance 'mx-atom :ns ns :key key
                           :value value :metadata metadata
                           :hash hash :comment comment
                           :mx-universe streams/ethers:*mx-universe*))
 
+(defun initialize-metatable (mx-atom)
+  "Initialize the metadata hash tables inside mx-atom to empty values."
+  (loop :for subtable :in streams/ethers:*metadata-prefixes*
+        :with metadata = (streams/channels:metadata mx-atom)
+        :do (setf (gethash subtable metadata)
+                  (make-hash-table :test #'equal))))
+
 (defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
   "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
-    (with-slots (id ns key table)
+    (with-slots (id ns key metadata table)
         mx-atom
       (setf id counter)
       (setf table (table-name ns))
+      (initialize-metatable mx-atom)
       (with-slots (atom-table)
           mx-universe
         (setf (gethash key atom-table) mx-atom)))))
@@ -196,4 +204,3 @@ character or a string to designate an entity."
                  (funcall (intern (streams/common:string-convert table)
                                   (find-package :streams/channels))
                           streams/ethers:*mx-universe*))))))
-

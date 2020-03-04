@@ -30,3 +30,4 @@
 scratch.lisp
 extras.lisp
 notes.lisp
+*.msl
