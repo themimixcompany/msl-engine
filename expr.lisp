@@ -85,13 +85,15 @@
 
 (defun =msl-value ()
   "Match and return a raw value."
-  (=destructure (_ value)
-    (=list
-      (?whitespace)
-      (=subseq (%some (?not (%or (=metadata-getter)
-                                 (=msl-hash)
-                                 (=msl-comment)
-                                 (?seq (?eq #\right_parenthesis) (?end)))))))))
+  (%and
+    (?not (=msl-comment))
+    (=destructure (_ value)
+      (=list
+        (?whitespace)
+        (=subseq (%some (?not (%or (=metadata-getter)
+                                   (=msl-hash)
+                                   (=msl-comment)
+                                   (?seq (?eq #\right_parenthesis) (?end))))))))))
 ;;
 
 
@@ -321,26 +323,20 @@
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
    (=destructure (_ atom-seq atom-value sub-list hash comment _ _)
-     (=list (?eq #\left_parenthesis)
-            (=@-getter)
-            (%maybe (=msl-value))
-            (%any (=list (=metadata-getter)
-                         (=msl-value)))
-            (%maybe (=msl-hash))
-            (%maybe (=msl-comment))
-            (?eq #\right_parenthesis)
-            (?end))
-     (list atom-seq atom-value sub-list hash comment)))
+                 (=list (?eq #\left_parenthesis)
+                        (=@-getter)
+                        (%maybe (=msl-value))
+                        (%any (=list (=metadata-getter)
+                                     (=msl-value)))
+                        (%maybe (=msl-hash))
+                        (%maybe (=msl-comment))
+                        (?eq #\right_parenthesis)
+                        (?end))
+                 (list atom-seq atom-value sub-list hash comment)))
 
+;; DESIRED OUTPUT:
+;; (("@" "WALT") "Walt Disney" (((":" "birthday") "1901") ((":" "wife") "Lillian ") "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment"
 
-;; EVENTUAL DESIRED OUTPUT:
-
-;;(@WALT Walt Disney :birthday 1901 :wife Lillian) -->
-  ;;((@ WALT) Walt Disney)
-  ;;((@ WALT : birthday) 1901)
-  ;;((@ WALT : wife) Lillian)
-
-  ;;((c my-formats f bold) NIL)
 
   ;;
   ;; Function-namespace definitions for recursive functions
