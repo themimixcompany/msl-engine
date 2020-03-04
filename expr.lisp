@@ -74,8 +74,6 @@
              (=sha256))))
 ;;
 
-
-
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
@@ -91,20 +89,20 @@
                                    (?seq (?eq #\right_parenthesis) (?end))))))))))
 ;;
 
-
 (defun =msl-comment ()
  "Match a comment."
   (=destructure (_ _ comment)
     (=list (?whitespace)
            (maxpc.char:?string "//")
            (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))))
-
+;;
 
 ;; STREAM List-of-Values Getters
 
 (defun =msl-selector ()
  "Match and return a selector."
  (%or (=metadata-selector)))
+;;
 
 (defun =metadata-selector ()
   "Match and return a metadata selector."
@@ -115,78 +113,40 @@
                      (=list (?whitespace)
                             '=msl-value/parser))))
     (list key value)))
+;;
 
 (defun =msl-transform ()
  "Match a transform."
  (%or (=bracketed-transform)))
-
-(defun =msl-prelude ()
-    "Match and return a prelude."
-    (=destructure (_ _ _ key value _)
-        (=list (?eq #\left_parenthesis)
-               (maxpc.char:?string "msl" nil)
-               (?whitespace)
-               (=msl-key)
-               (=subseq (%maybe (?seq (?whitespace) (=msl-value))))
-               ; ; (%any (?seq (?whitespace) (%or (=msl-selector))
-               ; ;                           (=msl-transform)
-               ; ;                           (=msl-value)))
-               ; ; (%maybe (=subseq (?seq (?whitespace) (=msl-hash))))
-               ; ; (%maybe (=subseq (?seq (?whitespace) (=msl-comment))))
-               (?eq #\right_parenthesis))
-      (list key value)))
 ;;
+
 
 (defun =atom-namespace ()
   "Match and return an atom namespace."
   (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
+;;
 
 (defun =grouping-namespace ()
     "Match and return m w s v namespace."
     (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
+;;
 
 (defun =@-namespace ()
     "Match and return the @ namespace."
     (=subseq (?eq #\@)))
+;;
 
 
-
-(defun =msl-atom ()
-  "Match and return an atom."
-  (=destructure (_ ns-and-key value selector hash comment _)
-    (=list (?eq #\left_parenthesis)
-           (%or (=list (=@-namespace)
-                       (=msl-key))
-                (=destructure (ns _ key)
-                  (=list (=atom-namespace)
-                         (?whitespace)
-                         (=msl-key))
-                  (list ns key)))
-           (%maybe (=destructure (_ value)
-                     (=list (?whitespace)
-                            (%or (=msl-value)))))
-           (%any (=destructure (_ value)
-                     (=list (?whitespace)
-                            (=msl-selector))))
-           (%maybe (=destructure (_ hash)
-                     (=list (?whitespace)
-                            (=msl-hash))))
-           (%maybe (=destructure (_ comment)
-                     (=list (?whitespace)
-                            (=msl-comment))))
-           (?eq #\right_parenthesis))
-    (list ns-and-key value selector hash comment)))
 
 (defun =single-getter ()
   "Return the components for a single mx-read operation."
   (%or (=atom-getter)))
-
-;
+;;
 
 (defun =metadata-selector ()
   "Match and return the key sequence for a : selector."
   ())
-
+;;
 
 (defun =grouping-getter ()
   "Match and return the key sequence for an atom."
@@ -194,7 +154,7 @@
            (=list (=grouping-namespace)
                   (?whitespace)))
          (=msl-key)))
-;
+;;
 
 (defun =canon-getter ()
   "Match and return the key sequence for canon."
@@ -202,7 +162,7 @@
            (=list (=canon-namespace)
                   (?whitespace)))
          (=msl-key)))
-;
+;;
 
 (defun =@-getter ()
   "Match and return the key sequence for an @."
@@ -210,12 +170,20 @@
            (=list (=@-namespace)
                   (%maybe (?whitespace))))
          (=msl-key)))
-;
+;;
 
 
 (defun =regex-getter ()
   "Match and return the key sequence for /."
-  (=list (=regex-namespace)))
+  (=destructure (_ _ regex _ env value)
+    (=list (?whitespace)
+         (=regex-namespace)
+         (=subseq (%some (?satisfies 'alphanumericp)))
+         (=regex-namespace)
+         (=subseq (%maybe (%some (?satisfies 'alphanumericp))))
+         (%maybe (=msl-value)))
+    (list regex env value)))
+;;
 
 (defun =metadata-getter ()
  "Match and return key sequence for :."
@@ -224,18 +192,22 @@
            (=metadata-namespace)
            (=msl-key))
     (list ns key)))
+;;
 
 (defun =metadata-namespace ()
   "Match and return the : namespace."
   (=subseq (?eq #\:)))
+;;
 
 (defun =canon-namespace ()
     "Match and return the c namespace."
     (=subseq (?eq #\c)))
+;;
 
 (defun =datatype-namespace ()
         "Match and return the d namespace."
         (=subseq (?eq #\d)))
+;;
 
 (defun =datatype-getter ()
   "Match and return key sequence for d."
@@ -244,11 +216,11 @@
            (?whitespace)
            (=msl-key))
     (list atom key)))
+;;
 
 (defun =regex-namespace ()
     "Match and return the / namespace."
     (=subseq (?eq #\/)))
-
 ;;
 
 (defun =grouping-form ()
@@ -263,7 +235,6 @@
                 (=single-getter))
            (?eq #\right_parenthesis)
            (?end))))
-
 ;;
 
 (defun =canon-form ()
@@ -277,7 +248,6 @@
                   (list atom sub))
            (?eq #\right_parenthesis)
            (?end))))
-
 ;;
 
 (defun =datatype-form ()
@@ -292,7 +262,6 @@
                 (=datatype-getter))
            (?eq #\right_parenthesis)
            (?end))))
-
 ;;
 
 
@@ -302,17 +271,16 @@
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%or
-                          (%some (=list (=metadata-getter)
-                                        (=msl-value)))
-                          (=list (=metadata-getter)
-                                 (%maybe (=msl-value))))
+                        (%maybe (%or
+                                  (%some (=list (=metadata-getter)
+                                                (=msl-value)))
+                                  (=list (=metadata-getter)
+                                         (%maybe (=msl-value)))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
                  (list atom-seq atom-value sub-list hash comment)))
-
 ;;
 
 ;; DESIRED OUTPUT:
@@ -324,4 +292,5 @@
   ;;
 
 (setf (fdefinition '=msl-value/parser) (=msl-value)
-      (fdefinition '=@-form/parser) (=@-form))
+      (fdefinition '=@-form/parser) (=@-form)
+      (fdefinition 'regex-getter/parser) (=regex-getter))
