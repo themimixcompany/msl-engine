@@ -89,16 +89,19 @@
     (=list
       (?whitespace)
       (=subseq (%some (?not (%or (=metadata-getter)
+                                 (=msl-hash)
+                                 (=msl-comment)
                                  (?seq (?eq #\right_parenthesis) (?end)))))))))
 ;;
 
 
 (defun =msl-comment ()
  "Match a comment."
-  (=destructure (_ comment)
-    (=list (maxpc.char:?string "//")
-           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))
-    comment))
+  (=destructure (_ _ comment)
+    (=list (?whitespace)
+           (maxpc.char:?string "//")
+           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))))
+
 
 ;; STREAM List-of-Values Getters
 
@@ -317,17 +320,17 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value sub-list comment _ _)
+   (=destructure (_ atom-seq atom-value sub-list hash comment _ _)
      (=list (?eq #\left_parenthesis)
             (=@-getter)
             (%maybe (=msl-value))
-            (%some (=list
-                     (=metadata-getter)
-                     (=msl-value)))
+            (%any (=list (=metadata-getter)
+                         (=msl-value)))
+            (%maybe (=msl-hash))
             (%maybe (=msl-comment))
             (?eq #\right_parenthesis)
             (?end))
-    (list atom-seq atom-value sub-list)))
+     (list atom-seq atom-value sub-list hash comment)))
 
 
 ;; EVENTUAL DESIRED OUTPUT:
