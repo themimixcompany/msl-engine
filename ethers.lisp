@@ -10,8 +10,9 @@
            #:*initial-canon-counter*
            #:*initial-atom-counter*
            #:*mx-universe*
+           #:*namespaces-names*
            #:*namespaces*
-           #:*namespaces-names*))
+           #:*metadata-prefixes*))
 
 (in-package #:streams/ethers)
 
@@ -53,3 +54,7 @@ the full name.")
               (read-from-string (string (car name))))
           *namespaces-names*)
   "The list of namespaces in simple form.")
+
+(defparameter *metadata-prefixes*
+  '(":" "d" "f" "/")
+  "The list of valid prefixes inside an mx-atom.")
