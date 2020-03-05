@@ -58,15 +58,7 @@
  (=subseq (%some (?satisfies 'alphanumericp))))
 
 
-(defun =bracketed-transform-getter ()
- "Match and return a bracketed tranform."
-  (=destructure (_ _ url _)
-    (=list (?whitespace)
-           (?eq #\[)
-           (=msl-filespec)
-           (?eq #\]))
-    url))
-;;
+
 
 (defun =msl-hash ()
   "Match and return a hash value."
@@ -177,15 +169,35 @@
 
 (defun =regex-getter ()
   "Match and return the key sequence for /."
-  (=destructure (_ _ regex _ env value)
-    (=list (?whitespace)
-           (=regex-namespace)
-           (=subseq (%some (?satisfies 'alphanumericp)))
-           (=regex-namespace)
-           (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
-           (%maybe (=msl-value)))
-    (list regex env value)))
+  (=destructure (regex-list)
+                (=list
+                  (%some
+                    (=destructure (_ _ regex _ env value)
+                      (=list (?whitespace)
+                             (=regex-namespace)
+                             (=subseq (%some (?satisfies 'alphanumericp)))
+                             (=regex-namespace)
+                             (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                             (%maybe (=msl-value)))
+                      (list regex env value))))
+                (cond (regex-list (list "/" regex-list)))))
+
 ;;
+
+(defun =bracketed-transform-getter ()
+ "Match and return a bracketed tranform."
+  (=destructure (transform-list)
+    (=list
+      (%some
+        (=destructure (_ _ url _)
+          (=list (?whitespace)
+                 (?eq #\[)
+                 (=msl-filespec)
+                 (?eq #\]))
+          url)))
+    (cond (transform-list (list "[]" transform-list)))))
+;;
+
 
 (defun =metadata-getter ()
  "Match and return key sequence for :."
@@ -273,26 +285,26 @@
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%maybe (%some (=regex-getter)))
-                        (%maybe (%some (=bracketed-transform-getter)))
+                        (%maybe (=regex-getter))
+                        (%maybe (=bracketed-transform-getter))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value meta-regex meta-transform)
                                              (=list (=metadata-getter)
                                                     (=msl-value)
-                                                    (%maybe (%some (=regex-getter)))
-                                                    (%maybe (%some (=bracketed-transform-getter))))
-                                            (list meta-keys meta-value (cond (meta-regex (list "/" meta-regex))) (cond (meta-transform (list "[]" meta-transform))))))
+                                                    (%maybe (=regex-getter))
+                                                    (%maybe (=bracketed-transform-getter)))
+                                            (list meta-keys meta-value meta-regex meta-transform)))
                                     (=destructure (meta-keys meta-value meta-regex meta-transform)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
-                                             (%maybe (%some (=regex-getter)))
-                                             (%maybe (%some (=bracketed-transform-getter))))
-                                      (list meta-keys meta-value (cond (meta-regex (list "/" meta-regex))) (cond (meta-transform (list "[]" meta-transform)))))))
+                                             (%maybe (=regex-getter))
+                                             (%maybe (=bracketed-transform-getter)))
+                                      (list meta-keys meta-value meta-regex meta-transform))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value (cond (atom-regex (list "/" atom-regex))) (cond (atom-transform (list "[]" atom-transform))) sub-list hash comment)))
+                 (list atom-seq atom-value atom-regex atom-transform sub-list hash comment)))
 ;;
 
 ;; DESIRED OUTPUT:
