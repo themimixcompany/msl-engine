@@ -71,21 +71,22 @@
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (%or (=metadata-getter)
-               'regex-getter/parser
-               'bracketed-transform-getter/parser
-               (=msl-hash)
-               (=msl-comment)))
+    (?not (?value-terminator))
     (=destructure (_ value)
       (=list
         (?whitespace)
-        (=subseq (%some (?not (%or (=metadata-getter)
-                                   'regex-getter/parser
-                                   'bracketed-transform-getter/parser
-                                   (=msl-hash)
-                                   (=msl-comment)
-                                   (?seq (?eq #\right_parenthesis) (?end))))))))))
+        (=subseq (%some (?not (?value-terminator))))))))
 ;;
+
+(defun ?value-terminator ()
+  "Match the end of a value."
+  (%or (=metadata-getter)
+       'regex-getter/parser
+       'bracketed-transform-getter/parser
+       (=msl-hash)
+       (=msl-comment)
+       (?seq (?eq #\right_parenthesis) (?end))))
+
 
 (defun =msl-comment ()
  "Match a comment."
@@ -288,18 +289,23 @@
                         (%maybe (=regex-getter))
                         (%maybe (=bracketed-transform-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value meta-regex meta-transform)
-                                             (=list (=metadata-getter)
-                                                    (=msl-value)
-                                                    (%maybe (=regex-getter))
-                                                    (%maybe (=bracketed-transform-getter)))
-                                            (list meta-keys meta-value meta-regex meta-transform)))
-                                    (=destructure (meta-keys meta-value meta-regex meta-transform)
+                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                            (%or
+                                              (=list (=metadata-getter)
+                                                     (=msl-value)
+                                                     (%any (%or (=regex-getter)
+                                                                (=bracketed-transform-getter))))
+                                              (=list (=metadata-getter)
+                                                     (%maybe (=msl-value))
+                                                     (%some (%or (=regex-getter)
+                                                                 (=bracketed-transform-getter)))))
+                                            (list meta-keys meta-value sub-list)))
+                                    (=destructure (meta-keys meta-value sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
-                                             (%maybe (=regex-getter))
-                                             (%maybe (=bracketed-transform-getter)))
-                                      (list meta-keys meta-value meta-regex meta-transform))))
+                                             (%any (%or (=regex-getter)
+                                                        (=bracketed-transform-getter))))
+                                      (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
@@ -310,7 +316,8 @@
 ;; DESIRED OUTPUT:
 ;; (parse "(@WALT Walt Disney /waltregex/waltenv waltconsume :birthday 1901 /bdayregex/bdayenv bdayconsume)" (=@-form))
 ;; (("@" "WALT") "Walt Disney" ("/" (("waltregex" "waltenv" "waltconsume")))) (((":" "birthday") "1901" (("bdayregex" "bdayenv" "bdayconsume")))) NIL NIL NIL)
-
+;;
+;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
 
   ;;
   ;; Function-namespace definitions for recursive functions
