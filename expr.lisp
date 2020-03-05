@@ -57,10 +57,12 @@
  "Match and return a URI filespec or URL."
  (=subseq (%some (?satisfies 'alphanumericp))))
 
-(defun =bracketed-transform ()
+
+(defun =bracketed-transform-getter ()
  "Match and return a bracketed tranform."
-  (=destructure (_ url _)
-    (=list (?eq #\[)
+  (=destructure (_ _ url _)
+    (=list (?whitespace)
+           (?eq #\[)
            (=msl-filespec)
            (?eq #\]))
     url))
@@ -79,6 +81,7 @@
   (%and
     (?not (%or (=metadata-getter)
                'regex-getter/parser
+               'bracketed-transform-getter/parser
                (=msl-hash)
                (=msl-comment)))
     (=destructure (_ value)
@@ -86,6 +89,7 @@
         (?whitespace)
         (=subseq (%some (?not (%or (=metadata-getter)
                                    'regex-getter/parser
+                                   'bracketed-transform-getter/parser
                                    (=msl-hash)
                                    (=msl-comment)
                                    (?seq (?eq #\right_parenthesis) (?end))))))))))
@@ -117,10 +121,6 @@
     (list key value)))
 ;;
 
-(defun =msl-transform ()
- "Match a transform."
- (%or (=bracketed-transform)))
-;;
 
 
 (defun =atom-namespace ()
@@ -269,27 +269,35 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-regex sub-list hash comment _ _)
+   (=destructure (_ atom-seq atom-value atom-regex atom-transform sub-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
                         (%maybe (%some (=regex-getter)))
+                        (%maybe (%some (=bracketed-transform-getter)))
                         (%maybe (%or
-                                  (%some (=list (=metadata-getter)
-                                                (=msl-value)
-                                                (%maybe (%some (=regex-getter)))))
-                                  (=list (=metadata-getter)
-                                         (%maybe (=msl-value))
-                                         (%maybe (%some (=regex-getter))))))
+                                    (%some (=destructure (meta-keys meta-value meta-regex meta-transform)
+                                             (=list (=metadata-getter)
+                                                    (=msl-value)
+                                                    (%maybe (%some (=regex-getter)))
+                                                    (%maybe (%some (=bracketed-transform-getter))))
+                                            (list meta-keys meta-value (cond (meta-regex (list "/" meta-regex))) (cond (meta-transform (list "[]" meta-transform))))))
+                                    (=destructure (meta-keys meta-value meta-regex meta-transform)
+                                      (=list (=metadata-getter)
+                                             (%maybe (=msl-value))
+                                             (%maybe (%some (=regex-getter)))
+                                             (%maybe (%some (=bracketed-transform-getter))))
+                                      (list meta-keys meta-value (cond (meta-regex (list "/" meta-regex))) (cond (meta-transform (list "[]" meta-transform)))))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value (list "/" atom-regex) sub-list hash comment)))
+                 (list atom-seq atom-value (cond (atom-regex (list "/" atom-regex))) (cond (atom-transform (list "[]" atom-transform))) sub-list hash comment)))
 ;;
 
 ;; DESIRED OUTPUT:
-;; (("@" "WALT") "Walt Disney" (((":" "birthday") "1901") ((":" "wife") "Lillian") "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c" "comment"
+;; (parse "(@WALT Walt Disney /waltregex/waltenv waltconsume :birthday 1901 /bdayregex/bdayenv bdayconsume)" (=@-form))
+;; (("@" "WALT") "Walt Disney" ("/" (("waltregex" "waltenv" "waltconsume")))) (((":" "birthday") "1901" (("bdayregex" "bdayenv" "bdayconsume")))) NIL NIL NIL)
 
 
   ;;
@@ -298,4 +306,5 @@
 
 (setf (fdefinition '=msl-value/parser) (=msl-value)
       (fdefinition '=@-form/parser) (=@-form)
-      (fdefinition 'regex-getter/parser) (=regex-getter))
+      (fdefinition 'regex-getter/parser) (=regex-getter)
+      (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter))
