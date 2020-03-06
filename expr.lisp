@@ -83,6 +83,7 @@
   (%or (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
+       'datatype-form/parser
        (=msl-hash)
        (=msl-comment)
        (?seq (?eq #\right_parenthesis) (?end))))
@@ -186,7 +187,7 @@
 ;;
 
 (defun =bracketed-transform-getter ()
- "Match and return a bracketed tranform."
+ "Match and return a bracketed transform."
   (=destructure (transform-list)
     (=list
       (%some
@@ -194,8 +195,8 @@
           (=list (?whitespace)
                  (?eq #\[)
                  (=msl-filespec)
-                 (?eq #\]))
-          url)))
+                 (?eq #\])))))
+
     (cond (transform-list (list "[]" transform-list)))))
 ;;
 
@@ -270,12 +271,12 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-regex atom-transform sub-list hash comment _ _)
+   (=destructure (_ atom-seq atom-value atom-sub-list sub-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%maybe (=regex-getter))
-                        (%maybe (=bracketed-transform-getter))
+                        (%any (%or (=regex-getter)
+                                   (=bracketed-transform-getter)))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value sub-list)
                                             (%or
@@ -298,40 +299,37 @@
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value atom-regex atom-transform sub-list hash comment)))
+                 (list atom-seq atom-value atom-sub-list sub-list hash comment)))
 ;;
 
-(defun =data-form ()
-   "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-regex atom-transform sub-list hash comment _ _)
-                 (=list (?eq #\left_parenthesis)
-                        (=@-getter)
+(defun =datatype-form ()
+   "Match and return an atom in the d namespace."
+   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _ _)
+                 (=list (?whitespace)
+                        (?eq #\left_parenthesis)
+                        (=datatype-getter)
                         (%maybe (=msl-value))
                         (%maybe (=regex-getter))
-                        (%maybe (=bracketed-transform-getter))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value sub-list)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
-                                                     (%any (%or (=regex-getter)
-                                                                (=bracketed-transform-getter))))
+                                                     (%any (=regex-getter)))
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
-                                                     (%some (%or (=regex-getter)
-                                                                 (=bracketed-transform-getter)))))
+                                                     (%some (=regex-getter))))
                                             (list meta-keys meta-value sub-list)))
                                     (=destructure (meta-keys meta-value sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
-                                             (%any (%or (=regex-getter)
-                                                        (=bracketed-transform-getter))))
+                                             (%any (=regex-getter)))
                                       (list meta-keys meta-value sub-list))))
-                        (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value atom-regex atom-transform sub-list hash comment)))
+                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+;;
 ;;
 
 
@@ -347,4 +345,5 @@
 (setf (fdefinition '=msl-value/parser) (=msl-value)
       (fdefinition '=@-form/parser) (=@-form)
       (fdefinition 'regex-getter/parser) (=regex-getter)
-      (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter))
+      (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
+      (fdefinition 'datatype-form/parser) (=datatype-form))
