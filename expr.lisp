@@ -87,7 +87,20 @@
        (=msl-hash)
        (=msl-comment)
        (?seq (?eq #\right_parenthesis) (?end))))
+;;
 
+(defun ?expression-terminator ()
+  "Match the end of an expression."
+  (%or
+    (?seq
+      (?eq #\right_parenthesis)
+      (?end))
+    (?seq
+      (?eq #\right_parenthesis)
+      (?eq #\right_parenthesis))
+    (?seq
+        (?eq #\right_parenthesis)
+        (?whitespace))))
 
 (defun =msl-comment ()
  "Match a comment."
@@ -271,14 +284,15 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-sub-list sub-list hash comment _ _)
+   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
                         (%any (%or (=regex-getter)
+                                   (=datatype-form)
                                    (=bracketed-transform-getter)))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                    (%some (=destructure (meta-keys meta-value meta-sub-list)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -288,23 +302,23 @@
                                                      (%maybe (=msl-value))
                                                      (%some (%or (=regex-getter)
                                                                  (=bracketed-transform-getter)))))
-                                            (list meta-keys meta-value sub-list)))
-                                    (=destructure (meta-keys meta-value sub-list)
+                                            (list meta-keys meta-value meta-sub-list)))
+                                    (=destructure (meta-keys meta-value meta-sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (%or (=regex-getter)
                                                         (=bracketed-transform-getter))))
-                                      (list meta-keys meta-value sub-list))))
+                                      (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?eq #\right_parenthesis)
                         (?end))
-                 (list atom-seq atom-value atom-sub-list sub-list hash comment)))
+                 (list atom-seq atom-value atom-sub-list metadata-list hash comment)))
 ;;
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _ _)
+   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=datatype-getter)
@@ -326,17 +340,22 @@
                                              (%any (=regex-getter)))
                                       (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-comment))
-                        (?eq #\right_parenthesis)
-                        (?end))
+                        (?expression-terminator))
                  (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
 ;;
 ;;
 
 
-;; DESIRED OUTPUT:
+;; STANDARD OUTPUT:
 
 ;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
-;; (("@" "WALT") "Walt Disney" ("/" (("wregex1" "wenv1" "wconsume1 wconsume2") ("wregex2" "wenv2" NIL)) ("[]" ("wt1" "wt2") (((":" "wife") "Lillian" (("/" (("lregex" NIL NIL)))) ((":" "birthday") NIL (("[]" ("btransform"))) NIL NIL)
+;;
+;; (("@" "WALT") "Walt Disney" (("/" (("wregex1" "wenv1" "wconsume1 wconsume2") ("wregex2" "wenv2" NIL))) ("[]" ("wt1" "wt2"))) (((":" "wife") "Lillian" (("/" (("lregex" NIL NIL))))) ((":" "birthday") NIL (("[]" ("btransform"))))) NIL NIL)
+
+;; EMBEDDING AN ATOM
+;; (parse "(@bio Walt Disney was born in (@WALT :birthplace).)" (=@-form))
+;; (("@" "bio") "Walt Disney was born in (("@" "WALT") NIL NIL ((":" "birthplace") NIL NIL) NIL NIL)." NIL NIL NIL NIL)
+
 
   ;;
   ;; Function-namespace definitions for recursive functions
