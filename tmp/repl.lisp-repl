@@ -2548,4 +2548,4 @@ STREAMS/EXPR> (parse "(@WALT /regex/ /r2/ [t] [t2])" (=@-form))
 T
 T
 
-STREAMS/EXPR> 
+STREAMS/EXPR>
