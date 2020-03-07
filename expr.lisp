@@ -91,16 +91,8 @@
 
 (defun ?expression-terminator ()
   "Match the end of an expression."
-  (%or
     (?seq
-      (?eq #\right_parenthesis)
-      (?end))
-    (?seq
-      (?eq #\right_parenthesis)
-      (?eq #\right_parenthesis))
-    (?seq
-        (?eq #\right_parenthesis)
-        (?whitespace))))
+      (?eq #\right_parenthesis)))
 
 (defun =msl-comment ()
  "Match a comment."
