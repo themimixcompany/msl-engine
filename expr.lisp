@@ -86,6 +86,9 @@
        'datatype-form/parser
        (=msl-hash)
        (=msl-comment)
+       (?seq (?eq #\right_parenthesis) (=metadata-getter))
+       (?seq (?eq #\right_parenthesis) 'datatype-form/parser)
+       (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
        (?seq (?eq #\right_parenthesis) (?end))))
 ;;
 
@@ -99,7 +102,8 @@
   (=destructure (_ _ comment)
     (=list (?whitespace)
            (maxpc.char:?string "//")
-           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?end))))))))
+           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (%or (?end)
+                                                                      'msl-comment/parser))))))))
 ;;
 
 ;; STREAM List-of-Values Getters
@@ -291,18 +295,15 @@
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
-                                                     (%any (%or (=regex-getter)
-                                                                (=bracketed-transform-getter))))
+                                                     (%any (=subatomic-getter)))
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
-                                                     (%some (%or (=regex-getter)
-                                                                 (=bracketed-transform-getter)))))
+                                                     (%some (=subatomic-getter))))
                                             (list meta-keys meta-value meta-sub-list)))
                                     (=destructure (meta-keys meta-value meta-sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
-                                             (%any (%or (=regex-getter)
-                                                        (=bracketed-transform-getter))))
+                                             (%any (=subatomic-getter)))
                                       (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
@@ -359,4 +360,5 @@
       (fdefinition '=@-form/parser) (=@-form)
       (fdefinition 'regex-getter/parser) (=regex-getter)
       (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
-      (fdefinition 'datatype-form/parser) (=datatype-form))
+      (fdefinition 'datatype-form/parser) (=datatype-form)
+      (fdefinition 'msl-comment/parser) (=msl-comment))
