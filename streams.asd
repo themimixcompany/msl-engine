@@ -14,7 +14,7 @@
   :version "1.5.1"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
-               #:mof
+               #:marie
                #:clack
                #:clack-handler-hunchentoot
                #:websocket-driver
@@ -22,7 +22,6 @@
                #:closer-mop
                #:named-readtables
                #:maxpc
-               "streams/common"
                "streams/ethers"
                "streams/channels"
                "streams/expr"
