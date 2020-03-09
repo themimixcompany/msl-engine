@@ -85,7 +85,7 @@
        'bracketed-transform-getter/parser
        'datatype-form/parser
        (=msl-hash)
-       (=msl-comment)
+       'msl-comment/parser
        (?seq (?eq #\right_parenthesis) (=metadata-getter))
        (?seq (?eq #\right_parenthesis) 'datatype-form/parser)
        (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
@@ -102,8 +102,7 @@
   (=destructure (_ _ comment)
     (=list (?whitespace)
            (maxpc.char:?string "//")
-           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (%or (?end)
-                                                                      'msl-comment/parser))))))))
+           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?value-terminator))))))))
 ;;
 
 ;; STREAM List-of-Values Getters
