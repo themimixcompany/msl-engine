@@ -205,9 +205,14 @@
     (cond (transform-list (list "[]" transform-list)))))
 ;;
 
+(defun =subatomic-getter ()
+  "Match and return key sequence for / [] d namespace."
+  (%or (=regex-getter)
+       (=datatype-form)
+       (=bracketed-transform-getter)))
 
 (defun =metadata-getter ()
- "Match and return key sequence for :."
+ "Match and return key sequence for : namespace."
   (=destructure (_ ns key)
     (=list (?whitespace)
            (=metadata-namespace)
@@ -280,9 +285,7 @@
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%maybe (=msl-value))
-                        (%any (%or (=regex-getter)
-                                   (=datatype-form)
-                                   (=bracketed-transform-getter)))
+                        (%any (=subatomic-getter))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value meta-sub-list)
                                             (%or
