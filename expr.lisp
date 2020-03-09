@@ -71,8 +71,7 @@
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (%or (?value-terminator)
-               (?seq (?whitespace) '@-form/parser)))
+    (?not (?value-terminator))
     (=destructure (_ value)
       (=list
         (?whitespace)
@@ -82,7 +81,6 @@
 (defun ?value-terminator ()
   "Match the end of a value."
   (%or '@-form/parser
-       (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
@@ -306,14 +304,18 @@
 ;;
 
 
-
+(defun =nested-atom ()
+  "Match and return a nested atom."
+  (=destructure (_ atom)
+    (=list (?whitespace)
+           '@-form/parser)))
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
    (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
-                        (%any (%or '@-form/parser
+                        (%any (%or (=nested-atom)
                                    (=msl-value)))
                         (%any (=subatomic-getter))
                         (%maybe (%or
