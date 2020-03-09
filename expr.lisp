@@ -80,13 +80,15 @@
 
 (defun ?value-terminator ()
   "Match the end of a value."
-  (%or (=metadata-getter)
+  (%or (?seq (?whitespace) '@-form/parser)
+       (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
        'format-form/parser
        (=msl-hash)
        'msl-comment/parser
+       (?seq (?eq #\right_parenthesis) (?whitespace) '@-form/parser)
        (?seq (?eq #\right_parenthesis) (=metadata-getter))
        (?seq (?eq #\right_parenthesis) 'datatype-form/parser)
        (?seq (?eq #\right_parenthesis) 'format-form/parser)
@@ -121,7 +123,7 @@
            (=msl-key)
            (%maybe (=destructure (_ value)
                      (=list (?whitespace)
-                            '=msl-value/parser))))
+                            'msl-value/parser))))
     (list key value)))
 ;;
 
@@ -308,10 +310,11 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _ _)
+   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
-                        (%maybe (=msl-value))
+                        (%any (%or '@-form/parser
+                                   (=msl-value)))
                         (%any (=subatomic-getter))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value meta-sub-list)
@@ -330,8 +333,7 @@
                                       (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
-                        (?eq #\right_parenthesis)
-                        (?end))
+                        (?expression-terminator))
                  (list atom-seq atom-value atom-sub-list metadata-list hash comment)))
 ;;
 
@@ -408,8 +410,8 @@
   ;; Function-namespace definitions for recursive functions
   ;;
 
-(setf (fdefinition '=msl-value/parser) (=msl-value)
-      (fdefinition '=@-form/parser) (=@-form)
+(setf (fdefinition 'msl-value/parser) (=msl-value)
+      (fdefinition '@-form/parser) (=@-form)
       (fdefinition 'regex-getter/parser) (=regex-getter)
       (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
       (fdefinition 'datatype-form/parser) (=datatype-form)
