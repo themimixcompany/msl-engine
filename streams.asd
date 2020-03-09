@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "Blue Oak Model License 1.0.0"
-  :version "1.5.1"
+  :version "1.5.2"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:marie
@@ -28,5 +28,6 @@
                "streams/core"
                "streams/serve"
                "streams/build"
-               "streams/initialize")
+               "streams/initialize"
+               "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))

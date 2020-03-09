@@ -242,3 +242,42 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
                                                   (when r
                                                     (invoke-restart r))))))
      (defconstant ,name ,value)))
+
+
+;;; general eval
+
+;;; recursive eval
+
+;;; general recursive descent evaluator
+
+;;; structure:
+
+;; ((an ak)
+;;  av
+;;  ((/ ((r e c)
+;;       ...))
+;;   ([] (t
+;;        ...)))
+;;  (((mn mk)
+;;    mv
+;;    ((/ ((r e c)
+;;         ...))
+;;     ([] (t
+;;          ...))))
+;;   ...)
+;;  hash
+;;  comment)
+
+(defun eval-expr-1 (expr)
+  (block nil
+    (let ((expr (streams/expr::parse expr (streams/expr::=@-form))))
+      (if expr
+          (macrolet ((vt (v) `(values ,v)))
+            (destructuring-bind ((ns key) &optional value transforms metadata hash comment)
+                expr
+              (multiple-value-bind (v existsp)
+                  (namespace-hash key ns)
+                nil)))
+          (return nil)))))
+
+;; SUB-NAMESPACE-HASH
