@@ -84,10 +84,12 @@
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
+       'format-form/parser
        (=msl-hash)
        'msl-comment/parser
        (?seq (?eq #\right_parenthesis) (=metadata-getter))
        (?seq (?eq #\right_parenthesis) 'datatype-form/parser)
+       (?seq (?eq #\right_parenthesis) 'format-form/parser)
        (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
        (?seq (?eq #\right_parenthesis) (?end))))
 ;;
@@ -212,7 +214,15 @@
   "Match and return key sequence for / [] d namespace."
   (%or (=regex-getter)
        (=datatype-form)
+       (=format-form)
        (=bracketed-transform-getter)))
+;;
+
+(defun =format-sub-getter ()
+  "Match and return key sequence for / d f namespace."
+  (%or (=regex-getter)
+       'datatype-form/parser
+       'format-form/parser))
 
 (defun =metadata-getter ()
  "Match and return key sequence for : namespace."
@@ -242,6 +252,20 @@
   "Match and return key sequence for d."
   (=destructure (atom _ key)
     (=list (=datatype-namespace)
+           (?whitespace)
+           (=msl-key))
+    (list atom key)))
+;;
+
+(defun =format-namespace ()
+        "Match and return the f namespace."
+        (=subseq (?eq #\f)))
+;;
+
+(defun =format-getter ()
+  "Match and return key sequence for f."
+  (=destructure (atom _ key)
+    (=list (=format-namespace)
            (?whitespace)
            (=msl-key))
     (list atom key)))
@@ -340,6 +364,35 @@
 ;;
 ;;
 
+(defun =format-form ()
+   "Match and return an atom in the f namespace."
+   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
+                 (=list (?whitespace)
+                        (?eq #\left_parenthesis)
+                        (=format-getter)
+                        (%maybe (=msl-value))
+                        (%maybe (=format-sub-getter))
+                        (%maybe (%or
+                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                            (%or
+                                              (=list (=metadata-getter)
+                                                     (=msl-value)
+                                                     (%any (=regex-getter)))
+                                              (=list (=metadata-getter)
+                                                     (%maybe (=msl-value))
+                                                     (%some (=regex-getter))))
+                                            (list meta-keys meta-value sub-list)))
+                                    (=destructure (meta-keys meta-value sub-list)
+                                      (=list (=metadata-getter)
+                                             (%maybe (=msl-value))
+                                             (%any (=regex-getter)))
+                                      (list meta-keys meta-value sub-list))))
+                        (%maybe (=msl-comment))
+                        (?expression-terminator))
+                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+;;
+;;
+
 ;; STANDARD OUTPUT:
 
 ;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
@@ -360,4 +413,5 @@
       (fdefinition 'regex-getter/parser) (=regex-getter)
       (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
       (fdefinition 'datatype-form/parser) (=datatype-form)
+      (fdefinition 'format-form/parser) (=format-form)
       (fdefinition 'msl-comment/parser) (=msl-comment))
