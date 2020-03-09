@@ -71,7 +71,8 @@
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (?value-terminator))
+    (?not (%or (?value-terminator)
+               (?seq (?whitespace) '@-form/parser)))
     (=destructure (_ value)
       (=list
         (?whitespace)
@@ -80,7 +81,7 @@
 
 (defun ?value-terminator ()
   "Match the end of a value."
-  (%or (?seq (?whitespace) '@-form/parser)
+  (%or '@-form/parser
        (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
@@ -88,7 +89,6 @@
        'format-form/parser
        (=msl-hash)
        'msl-comment/parser
-       (?seq (?eq #\right_parenthesis) (?whitespace) '@-form/parser)
        (?seq (?eq #\right_parenthesis) (=metadata-getter))
        (?seq (?eq #\right_parenthesis) 'datatype-form/parser)
        (?seq (?eq #\right_parenthesis) 'format-form/parser)
@@ -339,7 +339,7 @@
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=datatype-getter)
@@ -362,13 +362,13 @@
                                       (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
 ;;
 ;;
 
 (defun =format-form ()
    "Match and return an atom in the f namespace."
-   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=format-getter)
@@ -391,7 +391,7 @@
                                       (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
 ;;
 ;;
 
