@@ -156,7 +156,7 @@
 
 (defun stop-websocket-servers ()
   "Stop all the websocket servers."
-  (streams/common:hide-debugger-output)
+  (marie:hide-debugger-output)
   (format *error-output* "Aborting.~&")
   (loop :for server :in *servers* :do (clack:stop server))
   (setf *servers* nil)

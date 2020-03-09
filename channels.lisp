@@ -132,8 +132,8 @@
   "Define functions for updating the namespace counters in the mx-universe."
   `(progn
      ,@(loop :for namespace :in namespaces
-             :for fname = (mof:hyphenate-intern nil "update" namespace "counter")
-             :for cname = (mof:hyphenate-intern nil namespace "counter")
+             :for fname = (marie:hyphenate-intern nil "update" namespace "counter")
+             :for cname = (marie:hyphenate-intern nil namespace "counter")
              :collect `(defun ,fname (mx-universe)
                          (update-counter mx-universe ,cname)))))
 (define-updaters machine world stream view canon atom)
@@ -146,7 +146,7 @@ character or a string to designate an entity."
 (defun table-name (ns &optional package)
   "Return the corresponding table of NS from the universe."
   (let ((name (entity-string ns)))
-    (mof:hyphenate-intern package name "table")))
+    (marie:hyphenate-intern package name "table")))
 
 (defun make-mx-atom (ns key &optional value (metadata (make-hash-table :test #'equal)) hash comment)
   "Return a new mx-atom instance from arguments."
@@ -190,17 +190,22 @@ character or a string to designate an entity."
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
 
+(defun slots (object)
+  "Return the slot names of an object."
+  (mapcar #'closer-mop:slot-definition-name
+          (closer-mop:class-slots (class-of object))))
+
 (defun dump-mx-universe ()
   "Dump the contents of the mx-universe."
-  (let* ((slots (streams/common:slots streams/ethers:*mx-universe*))
-         (string-slots (mapcar #'streams/common:string-convert slots))
+  (let* ((slots (slots streams/ethers:*mx-universe*))
+         (string-slots (mapcar #'marie:string-convert slots))
          (table-readers (loop :for item :in string-slots
                               :when (search "TABLE" item)
                               :collect item)))
     (loop :for table :in table-readers
           :do (progn
                 (format t "> ~A~%" table)
-                (streams/common:dump-table
-                 (funcall (intern (streams/common:string-convert table)
+                (marie:dump-table
+                 (funcall (intern (marie:string-convert table)
                                   (find-package :streams/channels))
                           streams/ethers:*mx-universe*))))))

@@ -31,3 +31,4 @@ scratch.lisp
 extras.lisp
 notes.lisp
 *.msl
+test.lisp

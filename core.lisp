@@ -24,7 +24,7 @@
 (defun upcase-keyword (keyword)
   "Return an upcased version of KEYWORD."
   (if (keywordp keyword)
-      (keyword-intern (string-upcase (streams/common:string-convert keyword)))
+      (keyword-intern (string-upcase (marie:string-convert keyword)))
       keyword))
 
 (defun upcase-keywords (list)
@@ -38,7 +38,7 @@
 
 (defun valid-key-p (key)
   "Return true if KEY is a valid key for an mx-atom."
-  (let ((v (streams/common:string-convert key)))
+  (let ((v (marie:string-convert key)))
     (valid-id-p v)))
 
 (defun key (value)
@@ -51,12 +51,12 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun intern-symbol (symbol package)
     "Set the home package of SYMBOL to PACKAGE, ensuring that SYMBOL is indeed a symbol."
-    (intern (streams/common:string-convert symbol) package)))
+    (intern (marie:string-convert symbol) package)))
 
 (defmacro bind-slots (v &rest slots)
   "Set the value of SLOTS in V, to the respective values in the surrounding
 scope, with the same names."
-  (mof:with-gensyms (obj)
+  (marie:with-gensyms (obj)
     `(let ((,obj ,v))
        (progn
          ,@(loop :for slot :in slots :collect
@@ -70,13 +70,13 @@ not. "
   (destructuring-bind (m &body body)
       metadata
     (and (null body)
-         (mof:solop m))))
+         (marie:solop m))))
 
 (defun all-recall-p (metadata)
   "Return true if all the items in METADATA are for recalling values. That
 is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
 not. "
-  (every #'mof:solop metadata))
+  (every #'marie:solop metadata))
 
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
@@ -106,7 +106,6 @@ character."
   (destructuring-bind ((table key) &optional value)
       spec
     (when (metadata-specifier-p table)
-      ;; This is already guaranteed to exist because of INITIALIZE-INSTANCE
       (let* ((metadata (streams/channels:metadata obj))
              (metatable (gethash table metadata)))
         (cond ((null value) (gethash key metatable))
@@ -115,7 +114,12 @@ character."
 
 (defun dump-metadata (obj)
   "Display information about the metadata stored in OBJ."
-  (streams/common:dump-table (streams/channels:metadata obj)))
+  (let ((table (streams/channels:metadata obj)))
+    (loop :for k :being :the :hash-keys :in table
+          :for v :being :the :hash-values :in table
+          :do (progn
+                (format t "* ~S~%" k)
+                (marie:dump-table v)))))
 
 (defun eval-expr (expr)
   "Evaluate EXPR as a complete MSL expression, store the result into the active
@@ -173,7 +177,7 @@ multiple values."
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
 the pair is the namespace marker and the second element of the pair is the key"
-  (mof:partition chain 2))
+  (marie:partition chain 2))
 
 (defun namespace-symbol-p (symbol)
   "Return true if SYMBOL is a valid namespace character."
@@ -188,7 +192,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun namespace-rank (ns)
   "Return the rank of NS as an integer. The lower the value the higher the rank."
-  (let* ((string (streams/common:string-convert ns))
+  (let* ((string (marie:string-convert ns))
          (sym (intern string (find-package :streams/ethers))))
     (position sym streams/ethers:*namespaces*)))
 
@@ -212,7 +216,7 @@ NS1 is less than the integer value of NS2."
                     nil)
                    (t (fun (cdr r))))))
     (cond ((null ranks) nil)
-          ((mof:solop ranks) t)
+          ((marie:solop ranks) t)
           (t (fun ranks)))))
 
 (defun namespace-chain-p (chain)

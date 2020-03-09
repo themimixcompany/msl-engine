@@ -21,7 +21,7 @@
             (let ((*read-eval* nil)
                   (*package* package))
               (set-macro-character #\, (constantly '|,|))
-              (streams/core:split-prefixes (streams/common:read-from-string* data))))))
+              (streams/core:split-prefixes (marie:read-from-string* data))))))
       (streams/core:split-prefixes data)))
 
 (defun tokenize-expr-2 (data)
