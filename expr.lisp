@@ -337,14 +337,14 @@
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=datatype-getter)
                         (%maybe (=msl-value))
                         (%maybe (=regex-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                    (%some (=destructure (meta-keys meta-value meta-sub-list)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -352,28 +352,28 @@
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
                                                      (%some (=regex-getter))))
-                                            (list meta-keys meta-value sub-list)))
-                                    (=destructure (meta-keys meta-value sub-list)
+                                            (list meta-keys meta-value meta-sub-list)))
+                                    (=destructure (meta-keys meta-value meta-sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (=regex-getter)))
-                                      (list meta-keys meta-value sub-list))))
+                                      (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
 ;;
 ;;
 
 (defun =format-form ()
    "Match and return an atom in the f namespace."
-   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=format-getter)
                         (%maybe (=msl-value))
                         (%maybe (=format-sub-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                    (%some (=destructure (meta-keys meta-value meta-sub-list)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -381,15 +381,15 @@
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
                                                      (%some (=regex-getter))))
-                                            (list meta-keys meta-value sub-list)))
-                                    (=destructure (meta-keys meta-value sub-list)
+                                            (list meta-keys meta-value meta-sub-list)))
+                                    (=destructure (meta-keys meta-value meta-sub-list)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (=regex-getter)))
-                                      (list meta-keys meta-value sub-list))))
+                                      (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
+                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
 ;;
 ;;
 
