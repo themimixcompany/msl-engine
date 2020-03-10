@@ -3,8 +3,8 @@
 (uiop:define-package :streams/driver
   (:nicknames :streams)
   (:use :uiop/common-lisp)
-  (:use-reexport #:streams/ethers
-                 #:streams/channels
+  (:use-reexport #:streams/specials
+                 #:streams/classes
                  #:streams/expr
                  #:streams/core
                  #:streams/serve

@@ -2,7 +2,6 @@
 
 (uiop:define-package #:streams/build
     (:use #:cl)
-  (:nicknames #:s/build)
   (:export #:build))
 
 (in-package #:streams/build)
