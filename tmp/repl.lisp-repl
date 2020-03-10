@@ -1,207 +1,141 @@
-; compiling (DEFUN =NESTED-ATOM ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime2
-; in: DEFUN =NESTED-ATOM
-;     (=DESTRUCTURE (_ ATOM) (=LIST (?WHITESPACE) '@-FORM/PARSER))
-;
-; caught STYLE-WARNING:
-;   undefined function: COMMON-LISP-USER::=DESTRUCTURE
-
-;     (=LIST (?WHITESPACE) '@-FORM/PARSER)
-;
-; caught STYLE-WARNING:
-;   undefined function: COMMON-LISP-USER::=LIST
-
-;     (?WHITESPACE)
-;
-; caught STYLE-WARNING:
-;   undefined function: COMMON-LISP-USER::?WHITESPACE
-
-;     (_ ATOM)
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:ATOM
-;
-; caught STYLE-WARNING:
-;   undefined function: COMMON-LISP-USER::_
-;
-; compilation unit finished
-;   Undefined functions:
-;     =DESTRUCTURE =LIST ?WHITESPACE _
-;   Undefined variable:
-;     ATOM
-;   caught 1 WARNING condition
-;   caught 4 STYLE-WARNING conditions
-; compiling (LET (#) ...)
+; compiling (LET (#) ...)
 ; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
   Load 1 ASDF system:
     streams
 ; Loading "streams"
-...........
+........
 
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
-; compiling (DEFUN =NESTED-ATOM ...)
-STREAMS/EXPR> (parse "(@WALT (@WED))" (=@-form))
 
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse " (@WALT)" (=nested-atom))
-(("@" "WALT") NIL NIL NIL NIL NIL)
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+(("@" "WALT") ("Walt Disney")
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") ":fsub fsubvalue" ("/" (("fregex" "fenv" "fconsume"))) NIL NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
 T
 T
 
-STREAMS/EXPR> (parse "(@WALT (@WED))" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-WARNING: redefining STREAMS/EXPR::?VALUE-TERMINATOR in DEFUN
-
-STREAMS/EXPR> (parse "(@WALT (@WED))" (=@-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT(@WED))" (=@-form))
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+(("@" "WALT") ("Walt Disney")
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") ":fsub fsubvalue" ("/" (("fregex" "fenv" "fconsume"))) NIL NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
 T
 T
-
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney)" (=@-form))
-(("@" "WALT") ("Walter Elias Disney") NIL NIL NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =MSL-VALUE ...)
-WARNING: redefining STREAMS/EXPR::=MSL-VALUE in DEFUN
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse " Walter Elias Disney (@WED))" (?seq (=msl-value) (=nested-atom))))
-
-STREAMS/EXPR> (parse " Walter Elias Disney (@WED))" (?seq (=msl-value) (=nested-atom)))
-NIL
-T
-NIL
-
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN =MSL-VALUE ...)
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-(("@" "WALT") ("Walter Elias Disney (@WED") NIL NIL NIL NIL)
-T
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Walter Elias Disney (@WED))" (=@-form))
-
-(("@" "WALT") ("Walter Elias Disney " (("@" "WED") NIL NIL NIL NIL NIL)) NIL
- NIL NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT (@WED))" (=@-form))
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-(("@" "WALT") ("Value " (("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-(("@" "WALT") ("Value " (("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-
-(("@" "WALT") ("Value " (("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
   Load 1 ASDF system:
     streams
 ; Loading "streams"
 ...
 
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-NIL
-NIL
-NIL
-; compiling (DEFUN ?VALUE-TERMINATOR ...)
-WARNING: redefining STREAMS/EXPR::?VALUE-TERMINATOR in DEFUN
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+(("@" "WALT") "Walt Disney"
+ ((("f" "other") NIL NIL NIL NIL NIL NIL)
+  (("d" "again") NIL NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL NIL)
+    (("f" "f2") NIL NIL NIL
+     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL NIL)
+    (("d" "d2") NIL NIL NIL NIL NIL NIL))))
+ NIL NIL)
+T
+T
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
 
-STREAMS/EXPR> (parse "(@WALT Value (@WED))" (=@-form))
-(("@" "WALT") ("Value" (("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+(("@" "WALT") "Walt Disney"
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") NIL NIL
+     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
+T
+T
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
+
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+(("@" "WALT") "Walt Disney"
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") NIL NIL
+     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
+T
+T
+; compiling (DEFUN =MSL-EXPRESSION ...)
+; compiling (DEFUN PARSE-MSL ...)
+; compiling (DEFUN PARSE-MSL ...)
+; compiling (DEFUN =MSL-EXPRESSION ...);
+                                       ; compilation unit aborted
+                                       ;   caught 2 fatal ERROR conditions
+;
+; compilation unit aborted
+;   caught 2 fatal ERROR conditions
+; compiling (DEFUN =MSL-EXPRESSION ...)
+; compiling (DEFUN PARSE-MSL ...)
+;
+; compilation unit aborted
+;   caught 2 fatal ERROR conditions
+; compiling (DEFUN PARSE-MSL ...)
+STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+
+(("@" "WALT") "Walt Disney"
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") NIL NIL
+     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))")
+(("@" "WALT") "Walt Disney"
+ ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
+ (((":" "wife") NIL
+   ((("f" "something") NIL NIL NIL NIL NIL)
+    (("f" "f2") NIL NIL
+     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
+     "fcomment")
+    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
+ NIL NIL)
 T
 T
 
