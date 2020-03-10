@@ -393,6 +393,16 @@
 ;;
 ;;
 
+(defun =msl-expression ()
+  "Match and return an MSL expression."
+  (%or (=@-form)))
+;;
+
+(defun parse-msl (expr)
+  "Parse an MSL expression."
+  (parse expr (=msl-expression)))
+;;
+
 ;; STANDARD OUTPUT:
 
 ;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
