@@ -80,7 +80,7 @@
 
 (defun ?value-terminator ()
   "Match the end of a value."
-  (%or '@-form/parser
+  (%or (?seq (?whitespace) '@-form/parser)
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
