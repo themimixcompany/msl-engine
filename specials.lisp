@@ -1,8 +1,7 @@
-;;;; ethers.lisp
+;;;; specials.lisp
 
-(uiop:define-package #:streams/ethers
+(uiop:define-package #:streams/specials
     (:use #:cl)
-  (:nicknames #:s/ethers)
   (:export #:*initial-machine-counter*
            #:*initial-world-counter*
            #:*initial-stream-counter*
@@ -12,9 +11,10 @@
            #:*mx-universe*
            #:*namespaces-names*
            #:*namespaces*
-           #:*metadata-prefixes*))
+           #:*transform-indicators*
+           #:*selector-indicators*))
 
-(in-package #:streams/ethers)
+(in-package #:streams/specials)
 
 (defvar *initial-machine-counter* 10000000
   "The initial mx-machine counter value.")
@@ -35,7 +35,7 @@
   "The initial mx-atom counter value.")
 
 (defvar *mx-universe* nil
-  "The top-level structure for the mx-universe.")
+  "The top-level structure for everything.")
 
 (defparameter *namespaces-names*
   '(("c" . "canon")
@@ -55,6 +55,10 @@ the full name.")
           *namespaces-names*)
   "The list of namespaces in simple form.")
 
-(defparameter *metadata-prefixes*
-  '(":" "d" "f" "/")
-  "The list of valid prefixes inside an mx-atom.")
+(defvar *transform-indicators*
+  '("/" "[]")
+  "")
+
+(defvar *selector-indicators*
+  '("d" "f")
+  "")

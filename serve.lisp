@@ -2,7 +2,6 @@
 
 (uiop:define-package #:streams/serve
     (:use #:cl)
-  (:nicknames #:s/serve)
   (:export #:serve))
 
 (in-package #:streams/serve)

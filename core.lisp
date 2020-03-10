@@ -2,7 +2,6 @@
 
 (uiop:define-package #:streams/core
     (:use #:cl)
-  (:nicknames #:s/core)
   (:export #:eval-expr
            #:show
            #:dump))
@@ -11,7 +10,7 @@
 
 (defun mx-atom-p (data)
   "Return true if DATA is an mx-atom instance."
-  (typep data 'streams/channels:mx-atom))
+  (typep data 'streams/classes:mx-atom))
 
 (defun keyword-intern (symbol)
   "Intern the symbol SYMBOL in the keyword package."
@@ -60,7 +59,7 @@ scope, with the same names."
     `(let ((,obj ,v))
        (progn
          ,@(loop :for slot :in slots :collect
-                    `(when ,slot (setf (,(intern-symbol slot :streams/channels) ,obj)
+                    `(when ,slot (setf (,(intern-symbol slot :streams/classes) ,obj)
                                        ,slot)))))))
 
 (defun single-recall-p (metadata)
@@ -80,8 +79,8 @@ not. "
 
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
-  (let* ((function (streams/channels:table-name namespace :streams/channels))
-         (table (funcall function streams/ethers:*mx-universe*)))
+  (let* ((function (streams/classes:table-name namespace :streams/classes))
+         (table (funcall function streams/specials:*mx-universe*)))
     table))
 
 (defun namespace-hash (key namespace)
@@ -95,7 +94,7 @@ not. "
 
 (defun metadata-specifier-p (prefix)
   "Return true if PREFIX is a valid identifier for a subatomic namespace."
-  (when (member prefix streams/ethers:*metadata-prefixes* :test #'equal)
+  (when (member prefix streams/specials:*metatable-prefixes* :test #'equal)
     t))
 
 (defun update-metadata (obj spec)
@@ -106,7 +105,7 @@ character."
   (destructuring-bind ((table key) &optional value)
       spec
     (when (metadata-specifier-p table)
-      (let* ((metadata (streams/channels:metadata obj))
+      (let* ((metadata (streams/classes:metadata obj))
              (metatable (gethash table metadata)))
         (cond ((null value) (gethash key metatable))
               (value (setf (gethash key metatable) value))
@@ -114,65 +113,65 @@ character."
 
 (defun dump-metadata (obj)
   "Display information about the metadata stored in OBJ."
-  (let ((table (streams/channels:metadata obj)))
+  (let ((table (streams/classes:metadata obj)))
     (loop :for k :being :the :hash-keys :in table
           :for v :being :the :hash-values :in table
           :do (progn
                 (format t "* ~S~%" k)
                 (marie:dump-table v)))))
 
-(defun eval-expr (expr)
-  "Evaluate EXPR as a complete MSL expression, store the result into the active
-namespace, then return the mx-atom instance and the corresponding table as
-multiple values."
-  (block nil
-    (let ((expr expr))                  ;(parse ...)
-      (if expr
-          (macrolet ((vt (v) `(values ,v)))
-            (destructuring-bind ((ns key) &optional value metadata hash comment)
-                expr
-              (multiple-value-bind (v existsp)
-                  (namespace-hash key ns)
-                (when existsp
-                  (bind-slots v hash comment))
-                (cond
-                  ;; (@walt)
-                  ;; ‘walt’ still does not exist
-                  ((and (null existsp) (null value))
-                   nil)
-                  ;; (@walt)
-                  ;; ‘walt’ already exists
-                  ((and existsp (null value) (null metadata))
-                   (vt v))
-                  ;; (@walt :age)
-                  ;; ‘walt’ exists, and there’s only one metadata recall
-                  ((and existsp (null value) (single-recall-p metadata))
-                   (let ((item (assoc (caar metadata) (streams/channels:metadata v))))
-                     (when item
-                       (vt v))))
-                  ;; (@walt :age :gender)
-                  ;; ‘walt’ exists, there is no value, all metadata are recalls
-                  ((and existsp (null value) (all-recall-p metadata))
-                   (vt v))
-                  ;; (@walt "Walt Disney" :age :gender)
-                  ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
-                  ((and existsp value (all-recall-p metadata))
-                   (bind-slots v value)
-                   (vt v))
-                  ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
-                  ;; ‘walt’ exists, and either p-values or s-values exists
-                  ((and existsp (or value metadata))
-                   (bind-slots v value)
-                   (when metadata
-                     (setf (streams/channels:metadata v)
-                           (union (streams/channels:metadata v) metadata :key #'car :test #'equal)))
-                   (vt v))
-                  ;; (@walt "Walt Disney" :age 65)
-                  ;; ‘walt’ does not exist and we’re creating a new instance
-                  (t (let ((o (streams/channels:make-mx-atom ns key value metadata hash comment)))
-                       (setf (namespace-hash key ns) o)
-                       (vt o)))))))
-          (return nil)))))
+;; (defun eval-expr (expr)
+;;   "Evaluate EXPR as a complete MSL expression, store the result into the active
+;; namespace, then return the mx-atom instance and the corresponding table as
+;; multiple values."
+;;   (block nil
+;;     (let ((expr expr))                  ;(parse ...)
+;;       (if expr
+;;           (macrolet ((vt (v) `(values ,v)))
+;;             (destructuring-bind ((ns key) &optional value metadata hash comment)
+;;                 expr
+;;               (multiple-value-bind (v existsp)
+;;                   (namespace-hash key ns)
+;;                 (when existsp
+;;                   (bind-slots v hash comment))
+;;                 (cond
+;;                   ;; (@walt)
+;;                   ;; ‘walt’ still does not exist
+;;                   ((and (null existsp) (null value))
+;;                    nil)
+;;                   ;; (@walt)
+;;                   ;; ‘walt’ already exists
+;;                   ((and existsp (null value) (null metadata))
+;;                    (vt v))
+;;                   ;; (@walt :age)
+;;                   ;; ‘walt’ exists, and there’s only one metadata recall
+;;                   ((and existsp (null value) (single-recall-p metadata))
+;;                    (let ((item (assoc (caar metadata) (streams/classes:metadata v))))
+;;                      (when item
+;;                        (vt v))))
+;;                   ;; (@walt :age :gender)
+;;                   ;; ‘walt’ exists, there is no value, all metadata are recalls
+;;                   ((and existsp (null value) (all-recall-p metadata))
+;;                    (vt v))
+;;                   ;; (@walt "Walt Disney" :age :gender)
+;;                   ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
+;;                   ((and existsp value (all-recall-p metadata))
+;;                    (bind-slots v value)
+;;                    (vt v))
+;;                   ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
+;;                   ;; ‘walt’ exists, and either p-values or s-values exists
+;;                   ((and existsp (or value metadata))
+;;                    (bind-slots v value)
+;;                    (when metadata
+;;                      (setf (streams/classes:metadata v)
+;;                            (union (streams/classes:metadata v) metadata :key #'car :test #'equal)))
+;;                    (vt v))
+;;                   ;; (@walt "Walt Disney" :age 65)
+;;                   ;; ‘walt’ does not exist and we’re creating a new instance
+;;                   (t (let ((o (streams/classes:make-mx-atom ns key value metadata hash comment)))
+;;                        (setf (namespace-hash key ns) o)
+;;                        (vt o)))))))
+;;           (return nil)))))
 
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
@@ -181,8 +180,8 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun namespace-symbol-p (symbol)
   "Return true if SYMBOL is a valid namespace character."
-  (let ((sym (intern (string symbol) (find-package :streams/ethers))))
-    (when (member sym streams/ethers:*namespaces*)
+  (let ((sym (intern (string symbol) (find-package :streams/specials))))
+    (when (member sym streams/specials:*namespaces*)
       t)))
 
 (defun namespace-pairs-p (pairs)
@@ -193,8 +192,8 @@ the pair is the namespace marker and the second element of the pair is the key"
 (defun namespace-rank (ns)
   "Return the rank of NS as an integer. The lower the value the higher the rank."
   (let* ((string (marie:string-convert ns))
-         (sym (intern string (find-package :streams/ethers))))
-    (position sym streams/ethers:*namespaces*)))
+         (sym (intern string (find-package :streams/specials))))
+    (position sym streams/specials:*namespaces*)))
 
 (defun either-zero-p (x y)
   "Return true if either X or Y is a zero."
@@ -244,29 +243,7 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
      (defconstant ,name ,value)))
 
 
-;;; general eval
-
 ;;; recursive eval
-
-;;; general recursive descent evaluator
-
-;;; structure:
-
-;; ((an ak)
-;;  av
-;;  ((/ ((r e c)
-;;       ...))
-;;   ([] (t
-;;        ...)))
-;;  (((mn mk)
-;;    mv
-;;    ((/ ((r e c)
-;;         ...))
-;;     ([] (t
-;;          ...))))
-;;   ...)
-;;  hash
-;;  comment)
 
 (defun eval-expr-1 (expr)
   (block nil
@@ -281,3 +258,11 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
           (return nil)))))
 
 ;; SUB-NAMESPACE-HASH
+
+(defun store-mx-atom (expr)
+  "Parse EXPR and store in the mx-universe."
+  (block nil
+    (multiple-value-bind (value presentp successp)
+        (streams/expr::parse expr (streams/expr::=@-form))
+      (declare (ignorable presentp successp))
+      nil)))
