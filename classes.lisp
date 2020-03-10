@@ -15,6 +15,7 @@
            #:ns
            #:key
            #:value
+           #:mods
            #:metadata
            #:hash
            #:comment
@@ -26,10 +27,7 @@
            #:table-name
 
            #:make-mx-atom-data
-           #:make-mx-atom-metadata
-
-           #:transforms
-           #:selectors))
+           #:make-mx-atom-metadata))
 
 (in-package #:streams/classes)
 
@@ -76,23 +74,19 @@
   ((ns :initarg :ns
        :initform nil
        :reader ns
-       :documentation "The type of namespace and consequently storage that an mx-atom has")
+       :documentation "The type of namespace, and consequently storage type, that an mx-atom has.")
    (key :initarg :key
         :initform nil
         :accessor key
-        :documentation "A unique string to identify an mx-atom in the universe.")
+        :documentation "The unique string to identify an mx-atom in the universe.")
    (value :initarg :value
           :initform nil
           :accessor value
-          :documentation "The primary text value, along with embedded mx-atoms, of an mx-atom.")
-   (transforms :initarg :transforms
-               :initform nil
-               :accessor transforms
-               :documentation "The slot for / and [] transforms")
-   (selectors :initarg :selectors
-              :initform nil
-              :accessor selectors
-              :documentation "The slot for F and D selectors"))
+          :documentation "The primary string value, along with embedded mx-atoms, of an mx-atom.")
+   (mods :initarg :mods
+         :initform nil
+         :accessor mods
+         :documentation "The slot for selectors and transforms."))
   (:documentation "The base class for mx-atoms."))
 
 (defclass mx-atom-data (mx-atom)
@@ -116,14 +110,18 @@
                :initform nil
                :accessor canonizedp
                :documentation "The flag to indicate whether an mx-atom has canon values."))
-  (:documentation "The data class for containing information about an atom."))
+  (:documentation "The class for containing primary data about an atom."))
 
 (defclass mx-atom-metadata (mx-atom)
-  ((flag :initarg :flag
+  ((ns :initarg :ns
+       :initform ":"
+       :accessor ns
+       :documentation "The namespace of a metadata which defaults to :.")
+   (flag :initarg :flag
          :initform nil
          :accessor flag
          :documentation "Placeholder flag"))
-  (:documentation "The class for containing atom metadata stored in the colon space."))
+  (:documentation "The class for containing atom metadata in the colon namespace."))
 
 (defmacro update-counter (mx-universe accessor)
   "Update the counter in MX-UNIVERSE with ACCESSOR."
@@ -150,50 +148,60 @@ character or a string to designate an entity."
   (let ((name (entity-string ns)))
     (marie:hyphenate-intern package name "table")))
 
-(defun make-mx-atom-data (ns key &optional value transforms selectors metadata hash comment)
-  "Return a new mx-atom-data instance."
-  (make-instance 'mx-atom-data
-                 :ns ns :key key :value value
-                 :transforms transforms :selectors selectors
-                 :metadata metadata
-                 :hash hash :comment comment
-                 :mx-universe streams/specials:*mx-universe*))
+(defun make-mx-atom-metadata (seq &optional value mods)
+  "Return a new MX-ATOM-METADATA instance."
+  (destructuring-bind (ns key)
+      seq
+    (make-instance 'mx-atom-metadata
+                   :ns ns :key key :value value :mods mods)))
 
-(defun make-mx-atom-metadata (key &optional value transforms selectors)
-  "Return a new mx-atom-data instance."
-  (make-instance 'mx-atom-metadata
-                 :ns ":" :key key :value value
-                 :transforms transforms :selectors selectors))
+(defun make-mx-atom-data (seq &optional value mods metadata hash comment)
+  "Return a new MX-ATOM-DATA instance."
+  (destructuring-bind (ns key)
+      seq
+    (make-instance 'mx-atom-data
+                   :ns ns :key key :value value :mods mods
+                   :metadata metadata
+                   :hash hash :comment comment
+                   :mx-universe streams/specials:*mx-universe*)))
 
-(defun initialize-mx-atom (mx-atom)
-  "Initialize the metadata hash tables inside mx-atom to empty values."
-  (let ((transforms streams/specials:*transform-indicators*)
-        (selectors streams/specials:*selector-indicators*)
-        (metadata (streams/classes:metadata mx-atom)))
+;; (defun initialize-mx-atom-data (mx-atom-data)
+;;   "Initialize the mods of mx-atom-data to empty values."
+;;   (let ((transforms streams/specials:*transform-indicators*)
+;;         (selectors streams/specials:*selector-indicators*)
+;;         (metadata (streams/classes:metadata mx-atom)))
 
-    (setf (streams/classes:transforms mx-atom)
-          (pairlis transforms '(nil nil)))
+;;     (setf (streams/classes:transforms mx-atom)
+;;           (pairlis transforms '(nil nil)))
 
-    (loop :for subtable :in selectors
-          :do (setf (gethash subtable metadata)
-                    (make-hash-table :test #'equal)))))
+;;     (loop :for subtable :in selectors
+;;           :do (setf (gethash subtable metadata)
+;;                     (make-hash-table :test #'equal)))))
 
-(defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
+(defmethod initialize-instance :after ((mx-atom-data mx-atom-data) &key mx-universe)
   "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
     (with-slots (id ns key metadata table)
-        mx-atom
+        mx-atom-data
       (setf id counter)
-      ;; (initialize-mx-atom mx-atom)
+
+      ;; (initialize-mx-atom-data mx-atom-data)
+
       (with-slots (atom-table)
           mx-universe
-        (setf (gethash key atom-table) mx-atom)))))
+        (setf (gethash key atom-table) mx-atom-data)))))
 
-(defmethod print-object ((mx-atom mx-atom) stream)
-  (print-unreadable-object (mx-atom stream :type t)
-    (with-slots (ns id key)
-        mx-atom
+(defmethod print-object ((mx-atom-data mx-atom-data) stream)
+  (print-unreadable-object (mx-atom-data stream :type t)
+    (with-slots (id ns key)
+        mx-atom-data
       (format stream "~A ~A ~A" id ns key))))
+
+(defmethod print-object ((mx-atom-metadata mx-atom-metadata) stream)
+  (print-unreadable-object (mx-atom-metadata stream :type t)
+    (with-slots (ns key)
+        mx-atom-metadata
+      (format stream "~A ~A" ns key))))
 
 (defmethod print-object ((h hash-table) stream)
   (print-unreadable-object (h stream :type t)

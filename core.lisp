@@ -92,11 +92,6 @@ not. "
   (let ((table (namespace-table namespace)))
     (setf (gethash key table) value)))
 
-(defun metadata-specifier-p (prefix)
-  "Return true if PREFIX is a valid identifier for a subatomic namespace."
-  (when (member prefix streams/specials:*transform-indicators* :test #'equal)
-    t))
-
 (defun update-metadata (obj spec)
   "Update mx-atom OBJ with the list SPEC. The first value of SPEC is a list of
 two elements where the first element is the type of the table and the second
@@ -104,12 +99,11 @@ element is the key. The second value of SPEC is a either a string, integer, or
 character."
   (destructuring-bind ((table key) &optional value)
       spec
-    (when (metadata-specifier-p table)
-      (let* ((metadata (streams/classes:metadata obj))
-             (metatable (gethash table metadata)))
-        (cond ((null value) (gethash key metatable))
-              (value (setf (gethash key metatable) value))
-              (t nil))))))
+    (let* ((metadata (streams/classes:metadata obj))
+           (metatable (gethash table metadata)))
+      (cond ((null value) (gethash key metatable))
+            (value (setf (gethash key metatable) value))
+            (t nil)))))
 
 (defun dump-metadata (obj)
   "Display information about the metadata stored in OBJ."
@@ -234,35 +228,29 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (let ((pairs (namespace-pairs path)))
       pairs)))
 
-(defmacro define-dynamic-constant (name value)
-  "Bind NAME to VALUE and only change the binding after subsequent calls to the macro."
-  `(handler-bind ((sb-ext:defconstant-uneql #'(lambda (c)
-                                                (let ((r (find-restart 'continue c)))
-                                                  (when r
-                                                    (invoke-restart r))))))
-     (defconstant ,name ,value)))
+(defun build-mx-atom-metadata (metadata)
+  "Return a list of MX-ATOM-METADATA instances from METADATA."
+  (flet ((fn (args)
+           (apply #'streams/classes:make-mx-atom-metadata args)))
+    (when metadata
+      (mapcar #'fn metadata))))
 
-
-;;; recursive eval
-
-(defun eval-expr-1 (expr)
-  (block nil
-    (let ((expr (streams/expr::parse expr (streams/expr::=@-form))))
-      (if expr
-          (macrolet ((vt (v) `(values ,v)))
-            (destructuring-bind ((ns key) &optional value transforms metadata hash comment)
-                expr
-              (multiple-value-bind (v existsp)
-                  (namespace-hash key ns)
-                nil)))
-          (return nil)))))
-
-;; SUB-NAMESPACE-HASH
+(defun build-mx-atom-data (&rest data)
+  "Return an MX-ATOM-DATA instance from DATA."
+  (when data
+    (apply #'streams/classes:make-mx-atom-data data)))
 
 (defun store-mx-atom (expr)
   "Parse EXPR and store in the mx-universe."
-  (block nil
-    (multiple-value-bind (value presentp successp)
-        (streams/expr::parse expr (streams/expr::=@-form))
-      (declare (ignorable presentp successp))
-      nil)))
+  (multiple-value-bind (value presentp successp)
+      (streams/expr::parse-msl expr)
+    (if (and value presentp successp)
+        (destructuring-bind ((ns key) &optional value mods metadata hash comment)
+            value
+          (multiple-value-bind (v existsp)
+              (namespace-hash key ns)
+            (cond (existsp v)
+                  (t (let* ((m (build-mx-atom-metadata metadata))
+                            (d (build-mx-atom-data (list ns key) value mods m hash comment)))
+                       d)))))
+        nil)))

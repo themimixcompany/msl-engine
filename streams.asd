@@ -20,7 +20,6 @@
                #:websocket-driver
                #:bordeaux-threads
                #:closer-mop
-               #:named-readtables
                #:maxpc
                "streams/specials"
                "streams/classes"
@@ -29,5 +28,6 @@
                "streams/serve"
                "streams/build"
                "streams/initialize"
+               "streams/etc"
                "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))

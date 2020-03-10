@@ -80,7 +80,9 @@
 
 (defun ?value-terminator ()
   "Match the end of a value."
-  (%or '@-form/parser
+  (%or
+       (=nested-atom)
+       (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
@@ -98,6 +100,14 @@
   "Match the end of an expression."
     (?seq
       (?eq #\right_parenthesis)))
+;;
+
+(defun =nested-atom ()
+  "Match and return a nested atom."
+  (=destructure (_ atom)
+    (=list (?whitespace)
+           '@-form/parser)))
+;;
 
 (defun =msl-comment ()
  "Match a comment."
@@ -304,22 +314,18 @@
 ;;
 
 
-(defun =nested-atom ()
-  "Match and return a nested atom."
-  (=destructure (_ atom)
-    (=list (?whitespace)
-           '@-form/parser)))
+
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _)
+   (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
                         (%any (%or (=nested-atom)
                                    (=msl-value)))
                         (%any (=subatomic-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value meta-sub-list)
+                                    (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -327,28 +333,28 @@
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
                                                      (%some (=subatomic-getter))))
-                                            (list meta-keys meta-value meta-sub-list)))
-                                    (=destructure (meta-keys meta-value meta-sub-list)
+                                            (list meta-seq meta-value meta-mods)))
+                                    (=destructure (meta-seq meta-value meta-mods)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (=subatomic-getter)))
-                                      (list meta-keys meta-value meta-sub-list))))
+                                      (list meta-seq meta-value meta-mods))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-sub-list metadata-list hash comment)))
+                 (list atom-seq atom-value atom-mods metadata hash comment)))
 ;;
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=datatype-getter)
                         (%maybe (=msl-value))
                         (%maybe (=regex-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                    (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -356,28 +362,28 @@
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
                                                      (%some (=regex-getter))))
-                                            (list meta-keys meta-value sub-list)))
-                                    (=destructure (meta-keys meta-value sub-list)
+                                            (list meta-seq meta-value meta-mods)))
+                                    (=destructure (meta-seq meta-value meta-mods)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (=regex-getter)))
-                                      (list meta-keys meta-value sub-list))))
+                                      (list meta-seq meta-value meta-mods))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
+                 (list atom-seq atom-value atom-mods metadata NIL comment)))
 ;;
 ;;
 
 (defun =format-form ()
    "Match and return an atom in the f namespace."
-   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=format-getter)
                         (%maybe (=msl-value))
                         (%maybe (=format-sub-getter))
                         (%maybe (%or
-                                    (%some (=destructure (meta-keys meta-value sub-list)
+                                    (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
@@ -385,16 +391,26 @@
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
                                                      (%some (=regex-getter))))
-                                            (list meta-keys meta-value sub-list)))
-                                    (=destructure (meta-keys meta-value sub-list)
+                                            (list meta-seq meta-value meta-mods)))
+                                    (=destructure (meta-seq meta-value meta-mods)
                                       (=list (=metadata-getter)
                                              (%maybe (=msl-value))
                                              (%any (=regex-getter)))
-                                      (list meta-keys meta-value sub-list))))
+                                      (list meta-seq meta-value meta-mods))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
+                 (list atom-seq atom-value atom-mods metadata NIL comment)))
 ;;
+;;
+
+(defun =msl-expression ()
+  "Match and return an MSL expression."
+  (%or (=@-form)))
+;;
+
+(defun parse-msl (expr)
+  "Parse an MSL expression."
+  (parse expr (=msl-expression)))
 ;;
 
 ;; STANDARD OUTPUT:
