@@ -1,7 +1,8 @@
 ;;;; expr.lisp
 
 (uiop:define-package #:streams/expr
-    (:use #:cl #:maxpc))
+    (:use #:cl #:maxpc)
+  (:nicknames #:s/expr))
 
 (in-package #:streams/expr)
 

@@ -94,7 +94,7 @@ not. "
 
 (defun metadata-specifier-p (prefix)
   "Return true if PREFIX is a valid identifier for a subatomic namespace."
-  (when (member prefix streams/specials:*metatable-prefixes* :test #'equal)
+  (when (member prefix streams/specials:*transform-indicators* :test #'equal)
     t))
 
 (defun update-metadata (obj spec)

@@ -62,3 +62,6 @@ the full name.")
 (defvar *selector-indicators*
   '("d" "f")
   "")
+
+;;; NOTE
+;;; f is a transform.
