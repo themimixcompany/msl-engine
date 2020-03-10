@@ -26,7 +26,10 @@
            #:table-name
 
            #:make-mx-atom-data
-           #:make-mx-atom-metadata))
+           #:make-mx-atom-metadata
+
+           #:transforms
+           #:selectors))
 
 (in-package #:streams/classes)
 
@@ -89,7 +92,7 @@
    (selectors :initarg :selectors
               :initform nil
               :accessor selectors
-              :documentatino "The slot for F and D selectors"))
+              :documentation "The slot for F and D selectors"))
   (:documentation "The base class for mx-atoms."))
 
 (defclass mx-atom-data (mx-atom)
@@ -120,7 +123,7 @@
          :initform nil
          :accessor flag
          :documentation "Placeholder flag"))
-  (:documentation "The class for containing atom metadata stored in the colon selector."))
+  (:documentation "The class for containing atom metadata stored in the colon space."))
 
 (defmacro update-counter (mx-universe accessor)
   "Update the counter in MX-UNIVERSE with ACCESSOR."
@@ -164,10 +167,16 @@ character or a string to designate an entity."
 
 (defun initialize-mx-atom (mx-atom)
   "Initialize the metadata hash tables inside mx-atom to empty values."
-  (loop :for subtable :in streams/specials:*selector-indicators*
-        :with metadata = (streams/classes:metadata mx-atom)
-        :do (setf (gethash subtable metadata)
-                  (make-hash-table :test #'equal))))
+  (let ((transforms streams/specials:*transform-indicators*)
+        (selectors streams/specials:*selector-indicators*)
+        (metadata (streams/classes:metadata mx-atom)))
+
+    (setf (streams/classes:transforms mx-atom)
+          (pairlis transforms '(nil nil)))
+
+    (loop :for subtable :in selectors
+          :do (setf (gethash subtable metadata)
+                    (make-hash-table :test #'equal)))))
 
 (defmethod initialize-instance :after ((mx-atom mx-atom) &key mx-universe)
   "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
