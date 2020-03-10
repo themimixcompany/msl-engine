@@ -37,7 +37,7 @@
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
   (cond ((not item-list) nil)
-        (t (format t "~% ~A: ~A" (car (car item-list)) (cdr (car item-list))) (explain (cdr item-list)))))
+        (t (format t "~% ~A: ~A" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
 
 ;;
 ;; STREAM (Character) Parsers
