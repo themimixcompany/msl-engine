@@ -24,6 +24,21 @@
   (= (length value) 64))
 ;;
 
+(defun collate (&rest lists)
+  "Combine the first item of each list, second item, etc."
+  (apply #'mapcar #'list lists))
+
+(defun parse-explain (expr)
+  "Parse and explain an MSL expression."
+  (let ((parsed-atom (parse-msl expr))
+        (@-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+      (explain (collate @-explainer parsed-atom))))
+
+(defun explain (item-list)
+  "Show a printed explainer for a parsed MSL expression."
+  (cond ((not item-list) nil)
+        (t (format t "~% ~A: ~A" (car (car item-list)) (cdr (car item-list))) (explain (cdr item-list)))))
+
 ;;
 ;; STREAM (Character) Parsers
 ;;
@@ -415,14 +430,8 @@
 
 ;; STANDARD OUTPUT:
 
-;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
-;;
-;; (("@" "WALT") "Walt Disney" (("/" (("wregex1" "wenv1" "wconsume1 wconsume2") ("wregex2" "wenv2" NIL))) ("[]" ("wt1" "wt2"))) (((":" "wife") "Lillian" (("/" (("lregex" NIL NIL))))) ((":" "birthday") NIL (("[]" ("btransform"))))) NIL NIL)
-
-;; EMBEDDING AN ATOM
-;; (parse "(@bio Walt Disney was born in (@WALT :birthplace).)" (=@-form))
-;; (("@" "bio") "Walt Disney was born in (("@" "WALT") NIL NIL ((":" "birthplace") NIL NIL) NIL NIL)." NIL NIL NIL NIL)
-
+;; (parse-msl "(@WALT Walt Disney (@WED) (f format fvalue :fsub /fregex/))")
+;; (("@" "WALT") ("Walt Disney" (("@" "WED") NIL NIL NIL NIL NIL)) ((("f" "format") "fvalue" NIL (((":" "fsub") NIL (("/" (("fregex" NIL NIL)))))) NIL NIL NIL NIL NIL
 
   ;;
   ;; Function-namespace definitions for recursive functions
