@@ -55,13 +55,14 @@ the full name.")
           *namespaces-names*)
   "The list of namespaces in simple form.")
 
-(defvar *transform-indicators*
-  '("/" "[]")
-  "")
+;; (defvar *transform-indicators*
+;;   '("/" "[]")
+;;   "")
 
-(defvar *selector-indicators*
-  '("d" "f")
-  "")
+;; (defvar *selector-indicators*
+;;   '("d" "f")
+;;   "")
 
 ;;; NOTE
 ;;; f is a transform.
+;;; / is a selector.

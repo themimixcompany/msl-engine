@@ -9,7 +9,8 @@
                  #:streams/core
                  #:streams/serve
                  #:streams/build
-                 #:streams/initialize))
+                 #:streams/initialize
+                 #:streams/etc))
 
 (provide "streams")
 (provide "STREAMS")
