@@ -80,7 +80,7 @@
 
 (defun ?value-terminator ()
   "Match the end of a value."
-  (%or (?seq (?whitespace) '@-form/parser)
+  (%or (=metadata-getter)
        'regex-getter/parser
        'bracketed-transform-getter/parser
        'datatype-form/parser
@@ -121,7 +121,7 @@
            (=msl-key)
            (%maybe (=destructure (_ value)
                      (=list (?whitespace)
-                            'msl-value/parser))))
+                            '=msl-value/parser))))
     (list key value)))
 ;;
 
@@ -304,19 +304,14 @@
 ;;
 
 
-(defun =nested-atom ()
-  "Match and return a nested atom."
-  (=destructure (_ atom)
-    (=list (?whitespace)
-           '@-form/parser)))
+
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _)
+   (=destructure (_ atom-seq atom-value atom-sub-list metadata-list hash comment _ _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
-                        (%any (%or (=nested-atom)
-                                   (=msl-value)))
+                        (%maybe (=msl-value))
                         (%any (=subatomic-getter))
                         (%maybe (%or
                                     (%some (=destructure (meta-keys meta-value meta-sub-list)
@@ -335,13 +330,14 @@
                                       (list meta-keys meta-value meta-sub-list))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
-                        (?expression-terminator))
+                        (?eq #\right_parenthesis)
+                        (?end))
                  (list atom-seq atom-value atom-sub-list metadata-list hash comment)))
 ;;
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=datatype-getter)
@@ -364,13 +360,13 @@
                                       (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
+                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
 ;;
 ;;
 
 (defun =format-form ()
    "Match and return an atom in the f namespace."
-   (=destructure (_ _ atom-seq atom-value atom-sub-list metadata-list comment _)
+   (=destructure (_ _ atom-seq atom-value atom-regex sub-list comment _)
                  (=list (?whitespace)
                         (?eq #\left_parenthesis)
                         (=format-getter)
@@ -393,7 +389,7 @@
                                       (list meta-keys meta-value sub-list))))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
-                 (list atom-seq atom-value atom-sub-list metadata-list NIL comment)))
+                 (list atom-seq atom-value atom-regex NIL sub-list NIL comment)))
 ;;
 ;;
 
@@ -412,8 +408,8 @@
   ;; Function-namespace definitions for recursive functions
   ;;
 
-(setf (fdefinition 'msl-value/parser) (=msl-value)
-      (fdefinition '@-form/parser) (=@-form)
+(setf (fdefinition '=msl-value/parser) (=msl-value)
+      (fdefinition '=@-form/parser) (=@-form)
       (fdefinition 'regex-getter/parser) (=regex-getter)
       (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
       (fdefinition 'datatype-form/parser) (=datatype-form)
