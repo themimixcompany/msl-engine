@@ -28,6 +28,10 @@
   "Combine the first item of each list, second item, etc."
   (apply #'mapcar #'list lists))
 
+  ;;
+  ;; MSL Explainer System (MSLES)
+  ;;
+
 (defun parse-explain (expr)
   "Parse and explain an MSL expression."
   (let ((parsed-atom (parse-msl expr))
@@ -37,7 +41,7 @@
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
   (cond ((not item-list) nil)
-        (t (format t "~% ~A: ~S" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
+        (t (format t "~% ~A~13T| ~15T ~S" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
 
 ;;
 ;; STREAM (Character) Parsers
@@ -190,6 +194,10 @@
     (=subseq (?eq #\@)))
 ;;
 
+(defun =prelude-namespace ()
+    "Match and return the msl namespace."
+    (=subseq (maxpc.char:?string "msl")))
+;;
 
 (defun =single-getter ()
   "Return the components for a single mx-read operation."
@@ -199,6 +207,14 @@
 (defun =metadata-selector ()
   "Match and return the key sequence for a : selector."
   ())
+;;
+
+(defun =prelude-getter ()
+  "Match and return the key sequence for a prelude."
+  (=list (=destructure (ns _)
+           (=list (=prelude-namespace)
+                  (?whitespace)))
+         (=msl-key)))
 ;;
 
 (defun =grouping-getter ()
@@ -328,6 +344,40 @@
   (%or (=@-form)
        (=canon-form)))
 ;;
+
+(defun =prelude-form ()
+   "Match and return an atom in the msl namespace."
+   (let ((saved-val))
+     (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
+                   (=list (?eq #\left_parenthesis)
+                          (=prelude-getter)
+                          (=transform (%any (=msl-value))
+                                      (lambda (val)
+                                              (when val (setf saved-val val))))
+                          (%any (=atom-mods))
+                          (%maybe (%or
+                                      (%some (=destructure (meta-seq meta-value meta-mods)
+                                              (%or
+                                                (=list (=metadata-getter)
+                                                       (%some (=msl-value))
+                                                       (%any (=atom-mods)))
+                                                (=list (=metadata-getter)
+                                                       (%any (=msl-value))
+                                                       (%some (=atom-mods))))
+                                              (list meta-seq meta-value meta-mods)))
+                                      (=destructure (meta-seq meta-value meta-mods)
+                                        (=list (=metadata-getter)
+                                               (?satisfies (lambda (val)
+                                                                   (declare (ignore val)) (unless saved-val t))
+                                                           (%maybe (=msl-value)))
+                                               (%any (=atom-mods)))
+                                        (list (list meta-seq meta-value meta-mods)))))
+                          (%maybe (=msl-hash))
+                          (%maybe (=msl-comment))
+                          (?expression-terminator))
+                   (list atom-seq atom-value atom-mods metadata hash comment))))
+;;;;
+
 
 
 (defun =grouping-form ()
@@ -514,7 +564,8 @@
   "Match and return an MSL expression."
   (%or (=@-form)
        (=grouping-form)
-       (=canon-form)))
+       (=canon-form)
+       (=prelude-form)))
 ;;
 
 (defun parse-msl (expr)
