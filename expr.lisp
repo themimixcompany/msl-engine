@@ -63,7 +63,7 @@
 
 (defun =msl-key ()
   "Match and return a valid MSL key."
-  (=subseq (?seq (%some (?satisfies 'alpha-char-p))
+  (=subseq (?seq (%some (?satisfies 'alphanumericp))
                  (%any (?seq (%maybe (?eq #\-))
                          (%some (?satisfies 'alphanumericp)))))))
 
@@ -339,7 +339,7 @@
                              (=transform (%any (%or (=nested-atom)
                                                     (=msl-value)))
                                          (lambda (val)
-                                                 (cond (val (setf saved-val val)))))
+                                                 (when val (setf saved-val val))))
                              (%any (=atom-mods))
                              (%maybe (%or
                                          (%some (=destructure (meta-seq meta-value meta-mods)
@@ -356,7 +356,7 @@
                                          (=destructure (meta-seq meta-value meta-mods)
                                            (=list (=metadata-getter)
                                                   (?satisfies (lambda (val)
-                                                                      (declare (ignore val)) (cond ((not saved-val) t)))
+                                                                      (declare (ignore val)) (unless saved-val t))
                                                               (%maybe (%or (=nested-@)
                                                                            (=nested-canon)
                                                                            (=msl-value))))
@@ -378,7 +378,7 @@
                                                  (=nested-canon)
                                                  (=msl-value)))
                                       (lambda (val)
-                                              (cond (val (setf saved-val val)))))
+                                              (when val (setf saved-val val))))
                           (%any (=atom-mods))
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
@@ -397,7 +397,7 @@
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list (=metadata-getter)
                                                (?satisfies (lambda (val)
-                                                                   (declare (ignore val)) (cond ((not saved-val) t)))
+                                                                   (declare (ignore val)) (unless saved-val t))
                                                            (%maybe (%or (=nested-@)
                                                                         (=nested-canon)
                                                                         (=msl-value))))
@@ -422,7 +422,7 @@
                                                  (=nested-group)
                                                  (=msl-value)))
                                       (lambda (val)
-                                              (cond (val (setf saved-val val)))))
+                                              (when val (setf saved-val val))))
                           (%any (=atom-mods))
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
@@ -441,7 +441,7 @@
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list (=metadata-getter)
                                                (?satisfies (lambda (val)
-                                                                   (declare (ignore val)) (cond ((not saved-val) t)))
+                                                                   (declare (ignore val)) (unless saved-val t))
                                                            (%maybe (%or (=nested-@)
                                                                         (=nested-group)
                                                                         (=msl-value))))
