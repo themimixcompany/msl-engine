@@ -2,7 +2,7 @@
 
 (uiop:define-package #:streams/expr
     (:use #:cl #:maxpc)
-  (:nicknames #:s/expr))
+    (:export #:parse-msl #:parse-explain))
 
 (in-package #:streams/expr)
 
@@ -37,7 +37,7 @@
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
   (cond ((not item-list) nil)
-        (t (format t "~% ~A: ~A" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
+        (t (format t "~% ~A: ~S" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
 
 ;;
 ;; STREAM (Character) Parsers
@@ -121,7 +121,30 @@
   "Match and return a nested atom."
   (=destructure (_ atom)
     (=list (?whitespace)
+           (%or '@-form/parser
+                'canon-form/parser
+                'grouping-form/parser))))
+;;
+
+(defun =nested-@ ()
+  "Match and return a nested atom."
+  (=destructure (_ atom)
+    (=list (?whitespace)
            '@-form/parser)))
+;;
+
+(defun =nested-group ()
+  "Match and return a nested atom."
+  (=destructure (_ atom)
+    (=list (?whitespace)
+           'grouping-form/parser)))
+;;
+
+(defun =nested-canon ()
+  "Match and return a nested atom."
+  (=destructure (_ atom)
+    (=list (?whitespace)
+           'canon-form/parser)))
 ;;
 
 (defun =msl-comment ()
@@ -166,7 +189,6 @@
     "Match and return the @ namespace."
     (=subseq (?eq #\@)))
 ;;
-
 
 
 (defun =single-getter ()
@@ -269,8 +291,8 @@
 ;;
 
 (defun =datatype-namespace ()
-        "Match and return the d namespace."
-        (=subseq (?eq #\d)))
+  "Match and return the d namespace."
+  (=subseq (?eq #\d)))
 ;;
 
 (defun =datatype-getter ()
@@ -301,31 +323,90 @@
     (=subseq (?eq #\/)))
 ;;
 
+(defun =atom-form ()
+  "Match and return @ c m w s v namespace."
+  (%or (=@-form)
+       (=canon-form)))
+;;
+
+
 (defun =grouping-form ()
-  "Match and return an atom in m w s v namespace."
-  (=destructure (_ getter-setter _ _)
-    (=list (?eq #\left_parenthesis)
-           (%or (=destructure (atom _ sub)
-                  (=list (=grouping-getter)
-                         (?whitespace)
-                         (=subatomic-getter))
-                  (list atom sub))
-                (=single-getter))
-           (?eq #\right_parenthesis)
-           (?end))))
+   "Match and return an atom in the @ namespace."
+   (let ((saved-val))
+        (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
+                      (=list (?eq #\left_parenthesis)
+                             (=grouping-getter)
+                             (=transform (%any (%or (=nested-atom)
+                                                    (=msl-value)))
+                                         (lambda (val)
+                                                 (cond (val (setf saved-val val)))))
+                             (%any (=atom-mods))
+                             (%maybe (%or
+                                         (%some (=destructure (meta-seq meta-value meta-mods)
+                                                 (%or
+                                                   (=list (=metadata-getter)
+                                                          (%some (%or (=nested-atom)
+                                                                      (=msl-value)))
+                                                          (%any (=atom-mods)))
+                                                   (=list (=metadata-getter)
+                                                          (%any (%or (=nested-atom)
+                                                                     (=msl-value)))
+                                                          (%some (=atom-mods))))
+                                                 (list meta-seq meta-value meta-mods)))
+                                         (=destructure (meta-seq meta-value meta-mods)
+                                           (=list (=metadata-getter)
+                                                  (?satisfies (lambda (val)
+                                                                      (declare (ignore val)) (cond ((not saved-val) t)))
+                                                              (%maybe (%or (=nested-@)
+                                                                           (=nested-canon)
+                                                                           (=msl-value))))
+                                                  (%any (=atom-mods)))
+                                           (list (list meta-seq meta-value meta-mods)))))
+                             (%maybe (=msl-hash))
+                             (%maybe (=msl-comment))
+                             (?expression-terminator))
+                      (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;
 
 (defun =canon-form ()
-  "Match and return an atom in c namespace."
-  (=destructure (_ getter-setter _ _)
-    (=list (?eq #\left_parenthesis)
-           (=destructure (atom _ sub)
-                  (=list (=canon-getter)
-                         (?whitespace)
-                         (=metadata-getter))
-                  (list atom sub))
-           (?eq #\right_parenthesis)
-           (?end))))
+   "Match and return an atom in the @ namespace."
+   (let ((saved-val))
+     (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
+                   (=list (?eq #\left_parenthesis)
+                          (=canon-getter)
+                          (=transform (%any (%or (=nested-@)
+                                                 (=nested-canon)
+                                                 (=msl-value)))
+                                      (lambda (val)
+                                              (cond (val (setf saved-val val)))))
+                          (%any (=atom-mods))
+                          (%maybe (%or
+                                      (%some (=destructure (meta-seq meta-value meta-mods)
+                                              (%or
+                                                (=list (=metadata-getter)
+                                                       (%some (%or (=nested-@)
+                                                                   (=nested-canon)
+                                                                   (=msl-value)))
+                                                       (%any (=atom-mods)))
+                                                (=list (=metadata-getter)
+                                                       (%any (%or (=nested-@)
+                                                                  (=nested-canon)
+                                                                  (=msl-value)))
+                                                       (%some (=atom-mods))))
+                                              (list meta-seq meta-value meta-mods)))
+                                      (=destructure (meta-seq meta-value meta-mods)
+                                        (=list (=metadata-getter)
+                                               (?satisfies (lambda (val)
+                                                                   (declare (ignore val)) (cond ((not saved-val) t)))
+                                                           (%maybe (%or (=nested-@)
+                                                                        (=nested-canon)
+                                                                        (=msl-value))))
+                                               (%any (=atom-mods)))
+                                        (list (list meta-seq meta-value meta-mods)))))
+                          (%maybe (=msl-hash))
+                          (%maybe (=msl-comment))
+                          (?expression-terminator))
+                   (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;
 
 
@@ -337,7 +418,8 @@
      (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                    (=list (?eq #\left_parenthesis)
                           (=@-getter)
-                          (=transform (%any (%or (=nested-atom)
+                          (=transform (%any (%or (=nested-@)
+                                                 (=nested-group)
                                                  (=msl-value)))
                                       (lambda (val)
                                               (cond (val (setf saved-val val)))))
@@ -346,20 +428,23 @@
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
                                                 (=list (=metadata-getter)
-                                                       (%some (%or (=nested-atom)
+                                                       (%some (%or (=nested-@)
+                                                                   (=nested-group)
                                                                    (=msl-value)))
                                                        (%any (=atom-mods)))
                                                 (=list (=metadata-getter)
-                                                       (%any (%or (=nested-atom)
+                                                       (%any (%or (=nested-@)
+                                                                  (=nested-group)
                                                                   (=msl-value)))
                                                        (%some (=atom-mods))))
                                               (list meta-seq meta-value meta-mods)))
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list (=metadata-getter)
-                                               (%and (?not (%or (=nested-atom)
-                                                                (=msl-value)))
-                                                     (?satisfies (lambda (&optional val)
-                                                                         (declare (ignore val)) (cond (saved-val)))))
+                                               (?satisfies (lambda (val)
+                                                                   (declare (ignore val)) (cond ((not saved-val) t)))
+                                                           (%maybe (%or (=nested-@)
+                                                                        (=nested-group)
+                                                                        (=msl-value))))
                                                (%any (=atom-mods)))
                                         (list (list meta-seq meta-value meta-mods)))))
                           (%maybe (=msl-hash))
@@ -428,7 +513,9 @@
 
 (defun =msl-expression ()
   "Match and return an MSL expression."
-  (%or (=@-form)))
+  (%or (=@-form)
+       (=grouping-form)
+       (=canon-form)))
 ;;
 
 (defun parse-msl (expr)
@@ -447,6 +534,9 @@
 
 (setf (fdefinition 'msl-value/parser) (=msl-value)
       (fdefinition '@-form/parser) (=@-form)
+      (fdefinition 'grouping-form/parser) (=grouping-form)
+      (fdefinition 'canon-form/parser) (=canon-form)
+      (fdefinition 'atom-form/parser) (=atom-form)
       (fdefinition 'regex-getter/parser) (=regex-getter)
       (fdefinition 'bracketed-transform-getter/parser) (=bracketed-transform-getter)
       (fdefinition 'datatype-form/parser) (=datatype-form)
