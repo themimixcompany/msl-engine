@@ -152,7 +152,7 @@
   (=destructure (_ _ comment)
     (=list (?whitespace)
            (maxpc.char:?string "//")
-           (=subseq (%some (?not (?seq (?eq #\right_parenthesis) (?value-terminator))))))))
+           (=subseq (%some (?not (?value-terminator)))))))
 ;;
 
 ;; STREAM List-of-Values Getters
