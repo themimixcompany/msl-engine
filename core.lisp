@@ -1,10 +1,11 @@
 ;;;; core.lisp
 
 (uiop:define-package #:streams/core
-    (:use #:cl)
-  (:export #:eval-expr
-           #:show
-           #:dump))
+  (:use #:cl)
+  (:export #:store-msl
+           #:dump-msl
+           #:dump-metadata
+           #:eval-msl))
 
 (in-package #:streams/core)
 
@@ -240,8 +241,8 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   (when data
     (apply #'streams/classes:make-mx-atom-data data)))
 
-(defun store-mx-atom (expr)
-  "Parse EXPR and store in the mx-universe."
+(defun store-msl (expr)
+  "Parse EXPR as MSL and store the resulting object in the universe."
   (multiple-value-bind (value presentp successp)
       (streams/expr::parse-msl expr)
     (if (and value presentp successp)
@@ -254,3 +255,12 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
                             (d (build-mx-atom-data (list ns key) value mods m hash comment)))
                        d)))))
         nil)))
+
+(defun dump-msl (expr)
+  "Print infromation about EXPR as parsed MSL."
+  (streams/etc:dump-object (store-msl expr)))
+
+(defun dump-metadata (mx-atom)
+  "Print information about the METADATA slot of MX-ATOM."
+  (marie:when-let ((metadata (streams/classes:metadata mx-atom)))
+    (loop :for m :in metadata :do (streams/etc:dump-object m))))
