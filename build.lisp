@@ -11,7 +11,7 @@
 
 (defmethod build :before (&optional root)
   (declare (ignorable root))
-  (marie:hide-debugger-output))
+  (marie:muffle-debugger))
 
 (defmethod build (&optional (root *default-pathname-defaults*))
   (let ((arch (string (uiop:architecture))))

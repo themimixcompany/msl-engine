@@ -4,13 +4,22 @@
   (:use #:cl)
   (:export #:mx-universe
            #:machine-table
+           #:machine-counter
            #:world-table
+           #:world-counter
            #:stream-table
+           #:stream-counter
            #:view-table
+           #:view-counter
            #:canon-table
+           #:canon-counter
            #:atom-table
+           #:atom-counter
 
            #:mx-atom
+           #:mx-atom-data
+           #:mx-atom-metadata
+
            #:id
            #:ns
            #:key
@@ -19,13 +28,9 @@
            #:metadata
            #:hash
            #:comment
+           #:canonizedp
 
-           #:make-mx-universe
-           #:dump-mx-universe
-
-           #:entity-string
            #:table-name
-
            #:make-mx-atom-data
            #:make-mx-atom-metadata))
 
@@ -165,28 +170,12 @@ character or a string to designate an entity."
                    :hash hash :comment comment
                    :mx-universe streams/specials:*mx-universe*)))
 
-;; (defun initialize-mx-atom-data (mx-atom-data)
-;;   "Initialize the mods of mx-atom-data to empty values."
-;;   (let ((transforms streams/specials:*transform-indicators*)
-;;         (selectors streams/specials:*selector-indicators*)
-;;         (metadata (streams/classes:metadata mx-atom)))
-
-;;     (setf (streams/classes:transforms mx-atom)
-;;           (pairlis transforms '(nil nil)))
-
-;;     (loop :for subtable :in selectors
-;;           :do (setf (gethash subtable metadata)
-;;                     (make-hash-table :test #'equal)))))
-
 (defmethod initialize-instance :after ((mx-atom-data mx-atom-data) &key mx-universe)
   "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
     (with-slots (id ns key metadata table)
         mx-atom-data
       (setf id counter)
-
-      ;; (initialize-mx-atom-data mx-atom-data)
-
       (with-slots (atom-table)
           mx-universe
         (setf (gethash key atom-table) mx-atom-data)))))
@@ -212,23 +201,3 @@ character or a string to designate an entity."
 (defun make-mx-universe ()
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
-
-(defun slots (object)
-  "Return the slot names of an object."
-  (mapcar #'closer-mop:slot-definition-name
-          (closer-mop:class-slots (class-of object))))
-
-(defun dump-mx-universe ()
-  "Dump the contents of the mx-universe."
-  (let* ((slots (slots streams/specials:*mx-universe*))
-         (string-slots (mapcar #'marie:string-convert slots))
-         (table-readers (loop :for item :in string-slots
-                              :when (search "TABLE" item)
-                              :collect item)))
-    (loop :for table :in table-readers
-          :do (progn
-                (format t "> ~A~%" table)
-                (marie:dump-table
-                 (funcall (intern (marie:string-convert table)
-                                  (find-package :streams/classes))
-                          streams/specials:*mx-universe*))))))
