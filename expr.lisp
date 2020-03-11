@@ -451,7 +451,7 @@
                           (%maybe (=msl-comment))
                           (?expression-terminator))
                    (list atom-seq atom-value atom-mods metadata hash comment))))
-;;
+;;;;
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
