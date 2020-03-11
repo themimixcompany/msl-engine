@@ -117,6 +117,17 @@
                :documentation "The flag to indicate whether an mx-atom has canon values."))
   (:documentation "The class for containing primary data about an atom."))
 
+(defclass mx-atom-modsdata (mx-atom)
+  ((metadata :initarg :metadata
+             :initform nil
+             :accessor metadata
+             :documentation "The slot for additional information about an mx-atom.")
+   (comment :initarg :comment
+            :initform nil
+            :accessor comment
+            :documentation "The optional free-form string about an mx-atom."))
+  (:documentation "The class for containing information about an atom’s mods."))
+
 (defclass mx-atom-metadata (mx-atom)
   ((ns :initarg :ns
        :initform ":"
@@ -153,22 +164,31 @@ character or a string to designate an entity."
   (let ((name (entity-string ns)))
     (marie:hyphenate-intern package name "table")))
 
+(defun make-mx-atom-data (seq &optional value mods metadata hash comment)
+  "Return a new MX-ATOM-DATA instance."
+  (destructuring-bind (ns key)
+      seq
+    (make-instance 'mx-atom-data
+                   :ns ns :key key :value value
+                   :mods mods :metadata metadata
+                   :hash hash :comment comment
+                   :mx-universe streams/specials:*mx-universe*)))
+
+(defun make-mx-atom-modsdata (seq &optional value mods metadata hash comment)
+  "Return a new MX-ATOM-MODSDATA instance."
+  (destructuring-bind (ns key)
+      seq
+    (make-instance 'mx-atom-modsdata
+                   :ns ns :key key :value value
+                   :mods mods :metadata metadata
+                   :hash nil :comment comment)))
+
 (defun make-mx-atom-metadata (seq &optional value mods)
   "Return a new MX-ATOM-METADATA instance."
   (destructuring-bind (ns key)
       seq
     (make-instance 'mx-atom-metadata
                    :ns ns :key key :value value :mods mods)))
-
-(defun make-mx-atom-data (seq &optional value mods metadata hash comment)
-  "Return a new MX-ATOM-DATA instance."
-  (destructuring-bind (ns key)
-      seq
-    (make-instance 'mx-atom-data
-                   :ns ns :key key :value value :mods mods
-                   :metadata metadata
-                   :hash hash :comment comment
-                   :mx-universe streams/specials:*mx-universe*)))
 
 (defmethod initialize-instance :after ((mx-atom-data mx-atom-data) &key mx-universe)
   "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
@@ -190,6 +210,12 @@ character or a string to designate an entity."
   (print-unreadable-object (mx-atom-metadata stream :type t)
     (with-slots (ns key)
         mx-atom-metadata
+      (format stream "~A ~A" ns key))))
+
+(defmethod print-object ((mx-atom-modsdata mx-atom-modsdata) stream)
+  (print-unreadable-object (mx-atom-modsdata stream :type t)
+    (with-slots (ns key)
+        mx-atom-modsdata
       (format stream "~A ~A" ns key))))
 
 (defmethod print-object ((h hash-table) stream)
