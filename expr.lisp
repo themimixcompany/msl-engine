@@ -24,6 +24,21 @@
   (= (length value) 64))
 ;;
 
+(defun collate (&rest lists)
+  "Combine the first item of each list, second item, etc."
+  (apply #'mapcar #'list lists))
+
+(defun parse-explain (expr)
+  "Parse and explain an MSL expression."
+  (let ((parsed-atom (parse-msl expr))
+        (@-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+      (explain (collate @-explainer parsed-atom))))
+
+(defun explain (item-list)
+  "Show a printed explainer for a parsed MSL expression."
+  (cond ((not item-list) nil)
+        (t (format t "~% ~A: ~A" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
+
 ;;
 ;; STREAM (Character) Parsers
 ;;
@@ -220,15 +235,15 @@
     (cond (transform-list (list "[]" transform-list)))))
 ;;
 
-(defun =subatomic-getter ()
-  "Match and return key sequence for / [] d namespace."
+(defun =atom-mods ()
+  "Match and return key sequence for / [] d f namespace."
   (%or (=regex-getter)
        (=datatype-form)
        (=format-form)
        (=bracketed-transform-getter)))
 ;;
 
-(defun =format-sub-getter ()
+(defun =format-mods ()
   "Match and return key sequence for / d f namespace."
   (%or (=regex-getter)
        'datatype-form/parser
@@ -321,24 +336,28 @@
    (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
-                        (%any (%or (=nested-atom)
-                                   (=msl-value)))
-                        (%any (=subatomic-getter))
+                        (=transform (%any (%or (=nested-atom)
+                                               (=msl-value)))
+                                    (lambda (val)
+                                            (cond ((not (null val)) (setf saved-val val)))))
+                        (%any (=atom-mods))
                         (%maybe (%or
                                     (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
                                               (=list (=metadata-getter)
                                                      (=msl-value)
-                                                     (%any (=subatomic-getter)))
+                                                     (%any (=atom-mods)))
                                               (=list (=metadata-getter)
                                                      (%maybe (=msl-value))
-                                                     (%some (=subatomic-getter))))
+                                                     (%some (=atom-mods))))
                                             (list meta-seq meta-value meta-mods)))
                                     (=destructure (meta-seq meta-value meta-mods)
                                       (=list (=metadata-getter)
-                                             (%maybe (=msl-value))
-                                             (%any (=subatomic-getter)))
-                                      (list meta-seq meta-value meta-mods))))
+                                             (%and (?not (=msl-value)) (?satisfies
+                                                                         (lambda (val)
+                                                                                 (cond ((not (null saved-val)))))))
+                                             (%any (=atom-mods)))
+                                      (list (list meta-seq meta-value meta-mods)))))
                         (%maybe (=msl-hash))
                         (%maybe (=msl-comment))
                         (?expression-terminator))
@@ -381,7 +400,7 @@
                         (?eq #\left_parenthesis)
                         (=format-getter)
                         (%maybe (=msl-value))
-                        (%maybe (=format-sub-getter))
+                        (%maybe (=format-mods))
                         (%maybe (%or
                                     (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
@@ -415,14 +434,8 @@
 
 ;; STANDARD OUTPUT:
 
-;; (parse "(@WALT Walt Disney /wregex1/wenv1 wconsume1 wconsume2 /wregex2/wenv2 [wt1] [wt2] :wife Lillian /lregex/ :birthday [btransform])" (=@-form))
-;;
-;; (("@" "WALT") "Walt Disney" (("/" (("wregex1" "wenv1" "wconsume1 wconsume2") ("wregex2" "wenv2" NIL))) ("[]" ("wt1" "wt2"))) (((":" "wife") "Lillian" (("/" (("lregex" NIL NIL))))) ((":" "birthday") NIL (("[]" ("btransform"))))) NIL NIL)
-
-;; EMBEDDING AN ATOM
-;; (parse "(@bio Walt Disney was born in (@WALT :birthplace).)" (=@-form))
-;; (("@" "bio") "Walt Disney was born in (("@" "WALT") NIL NIL ((":" "birthplace") NIL NIL) NIL NIL)." NIL NIL NIL NIL)
-
+;; (parse-msl "(@WALT Walt Disney (@WED) (f format fvalue :fsub /fregex/))")
+;; (("@" "WALT") ("Walt Disney" (("@" "WED") NIL NIL NIL NIL NIL)) ((("f" "format") "fvalue" NIL (((":" "fsub") NIL (("/" (("fregex" NIL NIL)))))) NIL NIL NIL NIL NIL
 
   ;;
   ;; Function-namespace definitions for recursive functions
