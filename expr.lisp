@@ -336,8 +336,10 @@
    (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                  (=list (?eq #\left_parenthesis)
                         (=@-getter)
-                        (%any (%or (=nested-atom)
-                                   (=msl-value)))
+                        (=transform (%any (%or (=nested-atom)
+                                               (=msl-value)))
+                                    (lambda (val)
+                                            (cond ((not (null val)) (setf saved-val val)))))
                         (%any (=atom-mods))
                         (%maybe (%or
                                     (%some (=destructure (meta-seq meta-value meta-mods)
@@ -351,7 +353,9 @@
                                             (list meta-seq meta-value meta-mods)))
                                     (=destructure (meta-seq meta-value meta-mods)
                                       (=list (=metadata-getter)
-                                             (%maybe (=msl-value))
+                                             (%and (?not (=msl-value)) (?satisfies
+                                                                         (lambda (val)
+                                                                                 (cond ((not (null saved-val)))))))
                                              (%any (=atom-mods)))
                                       (list (list meta-seq meta-value meta-mods)))))
                         (%maybe (=msl-hash))

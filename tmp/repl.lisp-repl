@@ -8,121 +8,35 @@
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
-(("@" "WALT") ("Walt Disney")
- ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL)
-    (("f" "f2") ":fsub fsubvalue" ("/" (("fregex" "fenv" "fconsume"))) NIL NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
-(("@" "WALT") ("Walt Disney")
- ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL)
-    (("f" "f2") ":fsub fsubvalue" ("/" (("fregex" "fenv" "fconsume"))) NIL NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-...
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
-(("@" "WALT") "Walt Disney"
- ((("f" "other") NIL NIL NIL NIL NIL NIL)
-  (("d" "again") NIL NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL NIL)
-    (("f" "f2") NIL NIL NIL
-     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL NIL)
-    (("d" "d2") NIL NIL NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-...
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
-(("@" "WALT") "Walt Disney"
- ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL)
-    (("f" "f2") NIL NIL
-     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-...
-
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
-(("@" "WALT") "Walt Disney"
- ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL)
-    (("f" "f2") NIL NIL
-     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-; compiling (DEFUN =MSL-EXPRESSION ...)
-; compiling (DEFUN PARSE-MSL ...)
-; compiling (DEFUN PARSE-MSL ...)
-; compiling (DEFUN =MSL-EXPRESSION ...);
-                                       ; compilation unit aborted
-                                       ;   caught 2 fatal ERROR conditions
-;
-; compilation unit aborted
-;   caught 2 fatal ERROR conditions
-; compiling (DEFUN =MSL-EXPRESSION ...)
-; compiling (DEFUN PARSE-MSL ...)
+STREAMS/EXPR> (parse-msl "(WALT)")
+; in: PARSE-MSL "(WALT)"
+;     (STREAMS/EXPR::PARSE-MSL "(WALT)")
 ;
-; compilation unit aborted
-;   caught 2 fatal ERROR conditions
-; compiling (DEFUN PARSE-MSL ...)
-STREAMS/EXPR> (parse "(@WALT Walt Disney (f other) (d again) :wife (f something) (f f2 :fsub fsubvalue /fregex/fenv fconsume //fcomment) (d another) (d d2))" (=@-form))
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::PARSE-MSL
+;
+; compilation unit finished
+;   Undefined function:
+;     PARSE-MSL
+;   caught 1 STYLE-WARNING condition
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
 
-(("@" "WALT") "Walt Disney"
- ((("f" "other") NIL NIL NIL NIL NIL) (("d" "again") NIL NIL NIL NIL NIL))
- (((":" "wife") NIL
-   ((("f" "something") NIL NIL NIL NIL NIL)
-    (("f" "f2") NIL NIL
-     (((":" "fsub") "fsubvalue" (("/" (("fregex" "fenv" "fconsume")))))) NIL
-     "fcomment")
-    (("d" "another") NIL NIL NIL NIL NIL) (("d" "d2") NIL NIL NIL NIL NIL))))
- NIL NIL)
+STREAMS/EXPR> (parse-msl "(WALT)")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT)")
+(("@" "WALT") NIL NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :birthday 1901)")
+(("@" "WALT") "Walt Disney" NIL (((":" "birthday") "1901" NIL)) NIL NIL)
 T
 T
 
@@ -138,5 +52,2028 @@ STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f other) (d again) :wife (f someth
  NIL NIL)
 T
 T
+; compiling (DEFUN =NESTED-ATOM ...)
+STREAMS/EXPR> (parse " (@WALT)" (=nested-atom))
+
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse " (@WALT)" (=nested-atom))
+
+; compiling (SETF (FDEFINITION #) ...)
+; compiling (DEFUN =METADATA-SELECTOR ...)
+WARNING: redefining STREAMS/EXPR::=METADATA-SELECTOR in DEFUN
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse " (@WALT)" (=nested-atom))
+
+(("@" "WALT") NIL NIL NIL NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse " (@WALT)" (=nested-atom))
+(("@" "WALT") NIL NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT)")
+(("@" "WALT") NIL NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+WARNING: redefining STREAMS/EXPR::?VALUE-TERMINATOR in DEFUN
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT(@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT (f format :fsub fsubval))")
+(("@" "WALT") NIL
+ ((("f" "format") NIL NIL (((":" "fsub") "fsubval" NIL)) NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney)")
+(("@" "WALT") ("Walt Disney") NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT (f format :fsub fsubval))")
+(("@" "WALT") NIL
+ ((("f" "format") NIL NIL (((":" "fsub") "fsubval" NIL)) NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :wife Lillian")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :wife Lillian)")
+(("@" "WALT") ("Walt Disney") NIL (((":" "wife") "Lillian" NIL)) NIL NIL)
+T
+T
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :wife Lillian)")
+
+(("@" "WALT") ("Walt Disney") NIL (((":" "wife") "Lillian" NIL)) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :wife Lillian)")
+(("@" "WALT") ("Walt Disney") NIL (((":" "wife") "Lillian" NIL)) NIL NIL)
+T
+T
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney :wife Lillian)")
+(("@" "WALT") ("Walt Disney") NIL (((":" "wife") "Lillian" NIL)) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+WARNING: redefining STREAMS/EXPR::?VALUE-TERMINATOR in DEFUN
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "something (@WED)" (=msl-value))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse " something (@WED)" (=msl-value))
+"something "
+T
+NIL
+
+STREAMS/EXPR> (parse " something (@WED)" (=seq (=msl-value) (=nested-atom)))
+; in: PARSE " something (@WED)"
+;     (STREAMS/EXPR::=SEQ (STREAMS/EXPR::=MSL-VALUE) (STREAMS/EXPR::=NESTED-ATOM))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::=SEQ
+;
+; compilation unit finished
+;   Undefined function:
+;     =SEQ
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR> (parse " something (@WED)" (?seq (=msl-value) (=nested-atom)))
+NIL
+NIL
+NIL
+; compiling (DEFUN ?VALUE-TERMINATOR ...)
+STREAMS/EXPR> (parse " something (@WED)" (?seq (=msl-value) (=nested-atom)))
+
+NIL
+T
+T
+
+STREAMS/EXPR> (parse " something (@WED)" (=seq (=msl-value) (=nested-atom)))
+
+STREAMS/EXPR> (parse " something (@WED)" (=seq (=msl-value) (=nested-atom)))
+
+STREAMS/EXPR> (parse " something (@WED)" (=msl-value))
+"something"
+T
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED))")
+
+(("@" "WALT") ("Walt Disney" (("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (f someformat :fsub fsubvalue))")
+(("@" "WALT") ("Walt Disney")
+ ((("f" "someformat") NIL NIL (((":" "fsub") "fsubvalue" NIL)) NIL NIL)) NIL
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT  (@WED))")
+(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED))")
+(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED) (f format fvalue))")
+(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL))
+ ((("f" "format") "fvalue" NIL NIL NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED) (f format fvalue /fregex/))")
+(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL))
+ ((("f" "format") "fvalue" ("/" (("fregex" NIL NIL))) NIL NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT (@WED) (f format fvalue :fsub /fregex/))")
+(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL))
+ ((("f" "format") "fvalue" NIL
+   (((":" "fsub") NIL (("/" (("fregex" NIL NIL)))))) NIL NIL))
+ NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (@WED) (f format fvalue :fsub /fregex/))")
+(("@" "WALT") ("Walt Disney" (("@" "WED") NIL NIL NIL NIL NIL))
+ ((("f" "format") "fvalue" NIL
+   (((":" "fsub") NIL (("/" (("fregex" NIL NIL)))))) NIL NIL))
+ NIL NIL NIL)
+T
+T
+; compiling (DEFUN TRANSPOSE ...)
+STREAMS/EXPR> (transpose '(a b c) '(d e f))
+
+((A D) (B E) (C F))
+; compiling (DEFUN COLLATE ...)
+STREAMS/EXPR> (collate '(a b c) '(d e f))
+
+((A D) (B E) (C F))
+; compiling (DEFUN COLLATE ...)
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (explain '(ponies))
+
+PONIES 
+PONIES
+
+STREAMS/EXPR> (explain '(ponies dogs))
+
+PONIES 
+PONIES
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (explain '(ponies dogs))
+Item PONIES
+NIL
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime44
+; in: DEFUN PARSE-EXPLAIN
+;     (LET (STREAMS/EXPR::@-EXPLAINER
+;           (QUOTE
+;            (STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;             STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;             STREAMS/EXPR::COMMENT))))
+;
+; caught STYLE-WARNING:
+;   The variable @-EXPLAINER is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable QUOTE is defined but never used.
+
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET (STREAMS/EXPR::@-EXPLAINER
+;             (QUOTE
+;              (STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;               STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;               STREAMS/EXPR::COMMENT)))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET (STREAMS/EXPR::@-EXPLAINER (QUOTE #)))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+
+; file: C:/Users/David/AppData/Local/Temp/slime44
+; in: DEFUN PARSE-EXPLAIN
+;     (LET (STREAMS/EXPR::@-EXPLAINER
+;           (QUOTE
+;            (STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;             STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;             STREAMS/EXPR::COMMENT))))
+; ==>
+;   (STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;    STREAMS/EXPR::METADATA STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::ATOM-MODS
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ATOM-SEQ
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::ATOM-VALUE
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::COMMENT
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::HASH
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::METADATA
+;
+; compilation unit finished
+;   Undefined function:
+;     ATOM-SEQ
+;   Undefined variables:
+;     ATOM-MODS ATOM-VALUE COMMENT HASH METADATA
+;   caught 5 WARNING conditions
+;   caught 4 STYLE-WARNING conditions
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime45
+; in: DEFUN PARSE-EXPLAIN
+;     '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;       STREAMS/EXPR::METADATA STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
+;
+; caught ERROR:
+;   The variable QUOTE occurs more than once in the LET.
+
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((QUOTE STREAMS/EXPR::@-EXPLAINER)
+;             (QUOTE
+;              (STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;               STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;               STREAMS/EXPR::COMMENT)))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET ((QUOTE STREAMS/EXPR::@-EXPLAINER) (QUOTE #)))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime46
+; in: DEFUN PARSE-EXPLAIN
+;     (LET ((STREAMS/EXPR::X 0)))
+;
+; caught STYLE-WARNING:
+;   The variable X is defined but never used.
+
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((STREAMS/EXPR::X 0))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN (LET ((STREAMS/EXPR::X 0)))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 2 STYLE-WARNING conditions
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime47
+; in: DEFUN PARSE-EXPLAIN
+;     (LET ((STREAMS/EXPR::X 0)))
+;
+; caught STYLE-WARNING:
+;   The variable X is defined but never used.
+
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((STREAMS/EXPR::X 0))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN (LET ((STREAMS/EXPR::X 0)))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 2 STYLE-WARNING conditions
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime48
+; in: DEFUN PARSE-EXPLAIN
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((STREAMS/EXPR::X 0))
+;         (+ STREAMS/EXPR::X 2)))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET ((STREAMS/EXPR::X 0))
+;           (+ STREAMS/EXPR::X 2))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+STREAMS/EXPR> (parse-explain 3)
+
+3
+; compiling (DEFUN PARSE-EXPLAIN ...)
+STREAMS/EXPR> (parse-explain 3)
+
+8
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime51
+; in: DEFUN PARSE-EXPLAIN
+;     (LET ((STREAMS/EXPR::@-EXPLAINER
+;            '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;              STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;              STREAMS/EXPR::COMMENT)))
+;       (+ STREAMS/EXPR::X STREAMS/EXPR::EXPR))
+;
+; caught STYLE-WARNING:
+;   The variable @-EXPLAINER is defined but never used.
+
+; file: C:/Users/David/AppData/Local/Temp/slime51
+; in: DEFUN PARSE-EXPLAIN
+;     (+ STREAMS/EXPR::X STREAMS/EXPR::EXPR)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::X
+;
+; compilation unit finished
+;   Undefined variable:
+;     X
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime52
+; in: DEFUN PARSE-EXPLAIN
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((STREAMS/EXPR::@-EXPLAINER
+;              '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;                STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;                STREAMS/EXPR::COMMENT)))
+;         STREAMS/EXPR::@-EXPLAINER))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET ((STREAMS/EXPR::@-EXPLAINER '#))
+;           STREAMS/EXPR::@-EXPLAINER)))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime53
+; in: DEFUN PARSE-EXPLAIN
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET ((STREAMS/EXPR::@-EXPLAINER
+;              '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;                STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;                STREAMS/EXPR::COMMENT)))
+;         STREAMS/EXPR::@-EXPLAINER))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET ((STREAMS/EXPR::@-EXPLAINER '#))
+;           STREAMS/EXPR::@-EXPLAINER)))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+STREAMS/EXPR> (parse-explain)
+
+(ATOM-SEQ ATOM-VALUE ATOM-MODS METADATA HASH COMMENT)
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime55
+; in: DEFUN PARSE-EXPLAIN
+;     (LET (STREAMS/EXPR::PARSED-ATOM (STREAMS/EXPR::PARSE-MSL STREAMS/EXPR::EXPR))
+;       (STREAMS/EXPR::@-EXPLAINER
+;        '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;          STREAMS/EXPR::METADATA STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
+;        STREAMS/EXPR::@-EXPLAINER))
+;
+; caught STYLE-WARNING:
+;   The variable PARSED-ATOM is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable PARSE-MSL is defined but never used.
+
+; file: C:/Users/David/AppData/Local/Temp/slime55
+; in: DEFUN PARSE-EXPLAIN
+;     (STREAMS/EXPR::@-EXPLAINER
+;      '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;        STREAMS/EXPR::METADATA STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT)
+;      STREAMS/EXPR::@-EXPLAINER)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::@-EXPLAINER
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::@-EXPLAINER
+;
+; compilation unit finished
+;   Undefined function:
+;     @-EXPLAINER
+;   Undefined variable:
+;     @-EXPLAINER
+;   caught 1 WARNING condition
+;   caught 3 STYLE-WARNING conditions
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime56
+; in: DEFUN PARSE-EXPLAIN
+;     (STREAMS/EXPR::PARSED-ATOM (STREAMS/EXPR::PARSE-MSL STREAMS/EXPR::EXPR)
+;      (STREAMS/EXPR::@-EXPLAINER
+;       '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;         STREAMS/EXPR::METADATA STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT))
+;      STREAMS/EXPR::@-EXPLAINER)
+;
+; caught ERROR:
+;   The variable @-EXPLAINER occurs more than once in the LET.
+
+;     (DEFUN STREAMS/EXPR::PARSE-EXPLAIN (STREAMS/EXPR::EXPR)
+;       "Parse and explain an MSL expression."
+;       (LET (STREAMS/EXPR::PARSED-ATOM
+;             (STREAMS/EXPR::PARSE-MSL STREAMS/EXPR::EXPR)
+;             (STREAMS/EXPR::@-EXPLAINER
+;              '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;                STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;                STREAMS/EXPR::COMMENT))
+;             STREAMS/EXPR::@-EXPLAINER)))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::PARSE-EXPLAIN
+;         (STREAMS/EXPR::EXPR)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Parse and explain an MSL expression."
+;       (BLOCK STREAMS/EXPR::PARSE-EXPLAIN
+;         (LET (STREAMS/EXPR::PARSED-ATOM
+;               (STREAMS/EXPR::PARSE-MSL STREAMS/EXPR::EXPR)
+;               (STREAMS/EXPR::@-EXPLAINER '#)
+;               STREAMS/EXPR::@-EXPLAINER))))
+;
+; caught STYLE-WARNING:
+;   The variable EXPR is defined but never used.
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime57
+; in: DEFUN PARSE-EXPLAIN
+;     (LET ((STREAMS/EXPR::PARSED-ATOM
+;            (STREAMS/EXPR::PARSE-MSL STREAMS/EXPR::EXPR))
+;           (STREAMS/EXPR::@-EXPLAINER
+;            '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;              STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;              STREAMS/EXPR::COMMENT)))
+;       STREAMS/EXPR::@-EXPLAINER)
+;
+; caught STYLE-WARNING:
+;   The variable PARSED-ATOM is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT)")
+
+"Combine the first item of each list, second item, etc."
+; compiling (DEFUN COLLATE ...)
+STREAMS/EXPR> (parse-explain "(@WALT)")
+
+((ATOM-SEQ ("@" "WALT")) (ATOM-VALUE NIL) (ATOM-MODS NIL) (METADATA NIL)
+ (HASH NIL) (COMMENT NIL))
+
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+((ATOM-SEQ ("@" "WALT")) (ATOM-VALUE NIL)
+ (ATOM-MODS (("/" (("wregex" NIL NIL))))) (METADATA NIL) (HASH NIL)
+ (COMMENT NIL))
+; compiling (DEFUN EXPLAIN ...)
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime61
+; in: DEFUN EXPLAIN
+;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
+;       "Show a printed explainer for a parsed MSL expression."
+;       (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM) (CDR STREAMS/EXPR::ITEM)))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
+;         (STREAMS/EXPR::ITEM-LIST)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Show a printed explainer for a parsed MSL expression."
+;       (BLOCK STREAMS/EXPR::EXPLAIN
+;         (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM) (CDR STREAMS/EXPR::ITEM))))
+;
+; caught STYLE-WARNING:
+;   The variable ITEM-LIST is defined but never used.
+
+; file: C:/Users/David/AppData/Local/Temp/slime61
+; in: DEFUN EXPLAIN
+;     (CAR STREAMS/EXPR::ITEM)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::ITEM
+;
+; compilation unit finished
+;   Undefined variable:
+;     ITEM
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN PARSE-EXPLAIN ...)
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime63
+; in: DEFUN EXPLAIN
+;     T
+;
+; caught ERROR:
+;   during macroexpansion of (COND (NOT ITEM-LIST NIL) T ...). Use
+;   *BREAK-ON-SIGNALS* to intercept.
+;
+;    COND clause is not a CONS: T
+
+;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
+;       "Show a printed explainer for a parsed MSL expression."
+;       (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;             (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                     (CDR STREAMS/EXPR::ITEM))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
+;         (STREAMS/EXPR::ITEM-LIST)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Show a printed explainer for a parsed MSL expression."
+;       (BLOCK STREAMS/EXPR::EXPLAIN
+;         (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;               (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                       (CDR STREAMS/EXPR::ITEM)))))
+;
+; caught STYLE-WARNING:
+;   The variable ITEM-LIST is defined but never used.
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime64
+; in: DEFUN EXPLAIN
+;     T
+;
+; caught ERROR:
+;   during macroexpansion of (COND (NOT ITEM-LIST NIL) T ...). Use
+;   *BREAK-ON-SIGNALS* to intercept.
+;
+;    COND clause is not a CONS: T
+
+;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
+;       "Show a printed explainer for a parsed MSL expression."
+;       (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;             (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                     (CDR STREAMS/EXPR::ITEM-LIST))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
+;         (STREAMS/EXPR::ITEM-LIST)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Show a printed explainer for a parsed MSL expression."
+;       (BLOCK STREAMS/EXPR::EXPLAIN
+;         (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;               (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                       (CDR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught STYLE-WARNING:
+;   The variable ITEM-LIST is defined but never used.
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR>
+; No value
+STREAMS/EXPR>
+; No value; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime65
+; in: DEFUN EXPLAIN
+;     T
+;
+; caught ERROR:
+;   during macroexpansion of (COND (NOT ITEM-LIST NIL) T ...). Use
+;   *BREAK-ON-SIGNALS* to intercept.
+;
+;    COND clause is not a CONS: T
+
+;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
+;       "Show a printed explainer for a parsed MSL expression."
+;       (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;             (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                     (CDR STREAMS/EXPR::ITEM-LIST))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
+;         (STREAMS/EXPR::ITEM-LIST)
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Show a printed explainer for a parsed MSL expression."
+;       (BLOCK STREAMS/EXPR::EXPLAIN
+;         (COND (NOT STREAMS/EXPR::ITEM-LIST NIL) T
+;               (FORMAT T "~A: ~A" (CAR STREAMS/EXPR::ITEM-LIST)
+;                       (CDR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught STYLE-WARNING:
+;   The variable ITEM-LIST is defined but never used.
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+(ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL)
+                                                     (ATOM-MODS
+                                                      ((/ ((wregex NIL NIL)))))
+                                                     (METADATA NIL) (HASH NIL)
+                                                     (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+; compiling (DEFUN PARSE-EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+(ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL)
+                                                           (ATOM-MODS
+                                                            ((/
+                                                              ((wregex NIL
+                                                                NIL)))))
+                                                           (METADATA NIL)
+                                                           (HASH NIL)
+                                                           (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+(ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL)
+                                                     (ATOM-MODS
+                                                      ((/ ((wregex NIL NIL)))))
+                                                     (METADATA NIL) (HASH NIL)
+                                                     (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+(ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL)
+                                                     (ATOM-MODS
+                                                      ((/ ((wregex NIL NIL)))))
+                                                     (METADATA NIL) (HASH NIL)
+                                                     (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+
+ (ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL) (ATOM-MODS ((/ ((wregex NIL NIL)))))
+                       (METADATA NIL) (HASH NIL) (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+
+ (ATOM-SEQ (@ WALT)): ((ATOM-VALUE NIL) (ATOM-MODS ((/ ((wregex NIL NIL)))))
+                       (METADATA NIL) (HASH NIL) (COMMENT NIL))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime73
+; in: DEFUN EXPLAIN
+;     (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR
+;              (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+;     (CDR STREAMS/EXPR::ITEM-LIST)
+; ==>
+;   STREAMS/EXPR::ITEM-LIST
+;
+; note: deleting unreachable code
+
+; file: C:/Users/David/AppData/Local/Temp/slime73
+; in: DEFUN EXPLAIN
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   caught 2 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+;   printed 1 note
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime74
+; in: DEFUN EXPLAIN
+;     (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR
+;              (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+;     (CDR STREAMS/EXPR::ITEM-LIST)
+; ==>
+;   STREAMS/EXPR::ITEM-LIST
+;
+; note: deleting unreachable code
+
+; file: C:/Users/David/AppData/Local/Temp/slime74
+; in: DEFUN EXPLAIN
+;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
+;           (T (FORMAT T "~% ~A: ~A" (CAR (CAR # #))))
+;           (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
+; --> IF IF
+; ==>
+;   (IF STREAMS/EXPR::EXPLAIN
+;       (CDR STREAMS/EXPR::ITEM-LIST)
+;       NIL)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::EXPLAIN
+
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   Undefined variable:
+;     EXPLAIN
+;   caught 3 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+;   printed 1 note
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime75
+; in: DEFUN EXPLAIN
+;     (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR
+;              (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+; file: C:/Users/David/AppData/Local/Temp/slime75
+; in: DEFUN EXPLAIN
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   caught 2 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+
+STREAMS/EXPR>
+; No value; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime76
+; in: DEFUN EXPLAIN
+;     (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR
+;              (CAR (STREAMS/EXPR::ITEM-LIST) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+; file: C:/Users/David/AppData/Local/Temp/slime76
+; in: DEFUN EXPLAIN
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   caught 2 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime77
+; in: DEFUN EXPLAIN
+;     (CAR (CAR (STREAMS/EXPR::ITEM-LIST)) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR (CAR (STREAMS/EXPR::ITEM-LIST))
+;                  (CDR (CAR STREAMS/EXPR::ITEM-LIST))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+; file: C:/Users/David/AppData/Local/Temp/slime77
+; in: DEFUN EXPLAIN
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   caught 2 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime78
+; in: DEFUN EXPLAIN
+;     (CAR (CAR (STREAMS/EXPR::ITEM-LIST)) (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught WARNING:
+;   The function CAR is called with two arguments, but wants exactly one.
+
+;     (FORMAT T "~% ~A: ~A"
+;             (CAR (CAR (STREAMS/EXPR::ITEM-LIST))
+;                  (CDR (CAR STREAMS/EXPR::ITEM-LIST))))
+;
+; caught WARNING:
+;   Too few arguments (1) to FORMAT "~% ~A: ~A": requires at least 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+
+; file: C:/Users/David/AppData/Local/Temp/slime78
+; in: DEFUN EXPLAIN
+;     (STREAMS/EXPR::ITEM-LIST)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::ITEM-LIST
+;
+; compilation unit finished
+;   Undefined function:
+;     ITEM-LIST
+;   caught 2 WARNING conditions
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+
+ ATOM-SEQ: ((@ WALT))
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT /wregex/)")
+
+ ATOM-SEQ: ((@ WALT))
+ ATOM-VALUE: (NIL)
+ ATOM-MODS: (((/ ((wregex NIL NIL)))))
+ METADATA: (NIL)
+ HASH: (NIL)
+ COMMENT: (NIL)
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (@WED) (f format fvalue :fsub /fregex/))")
+
+ ATOM-SEQ: ((@ WALT))
+ ATOM-VALUE: ((((@ WED) NIL NIL NIL NIL NIL)))
+ ATOM-MODS: ((((f format) fvalue NIL (((: fsub) NIL ((/ ((fregex NIL NIL))))))
+               NIL NIL)))
+ METADATA: (NIL)
+ HASH: (NIL)
+ COMMENT: (NIL)
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (@WED) (f format fvalue :fsub /fregex/) :birthday 1901)")
+
+ ATOM-SEQ: ((@ WALT))
+ ATOM-VALUE: ((((@ WED) NIL NIL NIL NIL NIL)))
+ ATOM-MODS: ((((f format) fvalue NIL (((: fsub) NIL ((/ ((fregex NIL NIL))))))
+               NIL NIL)))
+ METADATA: ((((: birthday) 1901 NIL)))
+ HASH: (NIL)
+ COMMENT: (NIL)
+NIL
+; compiling (DEFUN EXPLAIN ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime81
+; in: DEFUN EXPLAIN
+;     (FORMAT T "~% ~A: ~A" (CAR (CAR STREAMS/EXPR::ITEM-LIST))
+;             (CAR (CDR (CAR STREAMS/EXPR::ITEM-LIST)))
+;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
+;
+; caught STYLE-WARNING:
+;   Too many arguments (3) to FORMAT "~% ~A: ~A": uses at most 2.
+;   See also:
+;     The ANSI Standard, Section 22.3.10.2
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT (@WED) (f format fvalue :fsub /fregex/) :birthday 1901)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (((@ WED) NIL NIL NIL NIL NIL))
+ ATOM-MODS: (((f format) fvalue NIL (((: fsub) NIL ((/ ((fregex NIL NIL))))))
+              NIL NIL))
+ METADATA: (((: birthday) 1901 NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday 1901)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) 1901 NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: ((: birthday) NIL NIL)
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =ATOM-MODS ...)
+; compiling (DEFUN =FORMAT-MODS ...)
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: ((: birthday) NIL NIL)
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =FORMAT-FORM ...)
+WARNING: redefining STREAMS/EXPR::=FORMAT-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: ((: birthday) NIL NIL)
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f format :fsub fsubvalue /fsubregex/))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f format) NIL NIL
+              (((: fsub) fsubvalue ((/ ((fsubregex NIL NIL)))))) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f format :fsub (f sub2)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f format)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (((f sub2) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f format) (f format2)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (d type))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((d type) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (d type) (d type2))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((d type) NIL NIL NIL NIL NIL) ((d type2) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type) (f type2))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f type) NIL NIL NIL NIL NIL) ((f type2) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type (d ftype)) (f type2))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f type) NIL ((d ftype) NIL NIL NIL NIL NIL) NIL NIL NIL)
+             ((f type2) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub  something))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f type) NIL NIL (((: fsub) something NIL)) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub something (d subtype)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f type)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) something (((d subtype) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f :fsub (d fsubd))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (((d fsubd) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f :fsub [ftransub]))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (([] (ftransub)))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =DATATYPE-FORM ...)
+WARNING: redefining STREAMS/EXPR::=DATATYPE-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (d :fsub [ftransub]))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (d)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (([] (ftransub)))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-msl "(@WALT Walt Disney (d :fsub [ftransub]))")
+(("@" "WALT") ("Walt Disney (d") NIL (((":" "fsub") NIL (("[]" ("ftransub")))))
+ NIL NIL)
+T
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f :fsub [ftransub]))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (([] (ftransub)))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f :fsub [ftransub]))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (([] (ftransub)))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub  something))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f type) NIL NIL (((: fsub) something NIL)) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub (@WED)))")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub (@WED))))")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub /fsubregex/)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub /fsubregex/))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: (((f type) NIL NIL (((: fsub) NIL ((/ ((fsubregex NIL NIL)))))) NIL
+              NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub (d fsubd)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f type)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (((d fsubd) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub (f fsubf)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f type)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (((f fsubf) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney (f type :fsub (f fsubf)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney (f type)
+ ATOM-MODS: NIL
+ METADATA: (((: fsub) NIL (((f fsubf) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse " (f format)" (=format-form))
+(("f" "format") NIL NIL NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse " (f format :fsub)" (=format-form))
+(("f" "format") NIL NIL ((":" "fsub") NIL NIL) NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse " (f format :fsub /fsubr/)" (=format-form))
+(("f" "format") NIL NIL (((":" "fsub") NIL (("/" (("fsubr" NIL NIL)))))) NIL
+ NIL)
+T
+T
+
+STREAMS/EXPR> (parse " (f format :fsub (d fsubd))" (=format-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse " (f format :fsub (d fsubd))" (=format-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse " (f format (d fsubd))" (=format-form))
+(("f" "format") NIL (("d" "fsubd") NIL NIL NIL NIL NIL) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT (f format (d fsubd)))" (=format-form))
+NIL
+NIL
+NIL
+
+STREAMS/EXPR> (parse "(@WALT (f format (d fsubd)))" (=@-form))
+(("@" "WALT") NIL
+ ((("f" "format") NIL (("d" "fsubd") NIL NIL NIL NIL NIL) NIL NIL NIL)) NIL NIL
+ NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT :fsub (f format (d fsubd)))" (=@-form))
+(("@" "WALT") NIL NIL
+ (((":" "fsub") NIL
+   ((("f" "format") NIL (("d" "fsubd") NIL NIL NIL NIL NIL) NIL NIL NIL))))
+ NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse "(@WALT (f format :fsub (d fsubd)))" (=@-form))
+(("@" "WALT") ("(f format") NIL
+ (((":" "fsub") NIL ((("d" "fsubd") NIL NIL NIL NIL NIL)))) NIL NIL)
+T
+NIL
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse "(@WALT (f format :fsub (d fsubd)))" (=@-form))
+(("@" "WALT") ("(f format") NIL
+ (((":" "fsub") NIL ((("d" "fsubd") NIL NIL NIL NIL NIL)))) NIL NIL)
+T
+NIL
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse "(@WALT (f format :fsub (d fsubd)))" (=@-form))
+
+(("@" "WALT") ("(f format") NIL
+ (((":" "fsub") NIL ((("d" "fsubd") NIL NIL NIL NIL NIL)))) NIL NIL)
+T
+NIL
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+...
+
+STREAMS/EXPR> (parse "(@WALT (f format :fsub (d fsubd)))" (=@-form))
+(("@" "WALT") ("(f format") NIL
+ (((":" "fsub") NIL ((("d" "fsubd") NIL NIL NIL NIL NIL)))) NIL NIL)
+T
+NIL
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse "(@WALT (f format Format Value :fsub (d fsubd)))" (=@-form))
+(("@" "WALT") ("(f format Format Value") NIL
+ (((":" "fsub") NIL ((("d" "fsubd") NIL NIL NIL NIL NIL)))) NIL NIL)
+T
+NIL
+
+STREAMS/EXPR> (parse "(@WALT (f format))" (=@-form))
+(("@" "WALT") NIL ((("f" "format") NIL NIL NIL NIL NIL)) NIL NIL NIL)
+T
+T
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format value))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) value NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format value :fsub fvalue))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) value NIL (((: fsub) fvalue NIL)) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format value of some kind :fsub fvalue))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) value of some kind NIL (((: fsub) fvalue NIL)) NIL
+              NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format value of some kind :fsub fvalue of another kind))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) value of some kind NIL
+              (((: fsub) fvalue of another kind NIL)) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL NIL ((: sub) NIL NIL) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub subvalue))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL NIL (((: sub) subvalue NIL)) NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub (d type)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: ((f format)
+ ATOM-MODS: NIL
+ METADATA: (((: sub) NIL (((d type) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =FORMAT-FORM ...)
+WARNING: redefining STREAMS/EXPR::=FORMAT-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub (d type)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: ((f format)
+ ATOM-MODS: NIL
+ METADATA: (((: sub) NIL (((d type) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =FORMAT-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime96
+; in: DEFUN =FORMAT-FORM
+;     (STREAMS/EXPR::%FAIL NIL)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%FAIL
+
+;     (STREAMS/EXPR::%MABYE (STREAMS/EXPR::%FAIL NIL))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%MABYE
+;
+; compilation unit finished
+;   Undefined functions:
+;     %FAIL %MABYE
+;   caught 2 STYLE-WARNING conditions
+; compiling (DEFUN =FORMAT-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime97
+; in: DEFUN =FORMAT-FORM
+;     (STREAMS/EXPR::%FAIL NIL)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%FAIL
+;
+; compilation unit finished
+;   Undefined function:
+;     %FAIL
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =FORMAT-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub (d type)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: ((f format)
+ ATOM-MODS: NIL
+ METADATA: (((: sub) NIL (((d type) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =FORMAT-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime99
+; in: DEFUN =FORMAT-FORM
+;     ((MAXPC:%MAYBE
+;       (MAXPC:%OR
+;        (MAXPC:%SOME
+;         (MAXPC:=DESTRUCTURE #
+;             #
+;           #))
+;        (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                             STREAMS/EXPR::META-MODS)
+;            (MAXPC:=LIST # # #)
+;          (LIST STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                STREAMS/EXPR::META-MODS)))))
+;
+; caught ERROR:
+;   illegal function call
+
+;     (STREAMS/EXPR::=MSL-COMMENT)
+;
+; note: deleting unreachable code
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   printed 1 note
+; compiling (DEFUN =FORMAT-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime100
+; in: DEFUN =FORMAT-FORM
+;     ((MAXPC:%MAYBE
+;       (MAXPC:%OR
+;        (MAXPC:%SOME
+;         (MAXPC:=DESTRUCTURE #
+;             #
+;           #))
+;        (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                             STREAMS/EXPR::META-MODS)
+;            (MAXPC:=LIST # # #)
+;          (LIST STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                STREAMS/EXPR::META-MODS)))))
+;
+; caught ERROR:
+;   illegal function call
+
+;     (STREAMS/EXPR::=MSL-COMMENT)
+;
+; note: deleting unreachable code
+;
+; compilation unit finished
+;   caught 1 ERROR condition
+;   printed 1 note
+; compiling (DEFUN =FORMAT-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT (f format :sub (d type)))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: ((f format)
+ ATOM-MODS: NIL
+ METADATA: (((: sub) NIL (((d type) NIL NIL NIL NIL NIL))))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format))")"
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+STREAMS/EXPR> (parse-explain "(@WALT (f format))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL NIL NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT (f format /fregex/))")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: (((f format) NIL (/ ((fregex NIL NIL))) NIL NIL NIL))
+ METADATA: NIL
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: ((: birthday) NIL NIL)
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime102
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                          STREAMS/EXPR::META-MODS))
+;
+; caught ERROR:
+;   during macroexpansion of (=DESTRUCTURE (META-SEQ META-VALUE META-MODS)). Use
+;   *BREAK-ON-SIGNALS* to intercept.
+;
+;    Error while parsing arguments to DEFMACRO =DESTRUCTURE:
+;      too few elements in
+;        ((META-SEQ META-VALUE META-MODS))
+;      to satisfy lambda list
+;        ((&REST MAXPC::LAMBDA-LIST) MAXPC::PARSER &BODY MAXPC::FORMS):
+;      at least 2 expected, but got 1
+
+;     (STREAMS/EXPR::=METADATA-GETTER)
+;
+; note: deleting unreachable code
+
+; file: C:/Users/David/AppData/Local/Temp/slime102
+; in: DEFUN =@-FORM
+;     (LIST STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE STREAMS/EXPR::META-MODS)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-MODS
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-SEQ
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-VALUE
+;
+; compilation unit finished
+;   Undefined variables:
+;     META-MODS META-SEQ META-VALUE
+;   caught 1 ERROR condition
+;   caught 3 WARNING conditions
+;   printed 1 note
+; compiling (DEFUN =@-FORM ...)
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday :wife)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday 1901 :wife Lillian)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) 1901 NIL) ((: wife) Lillian NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse '(1) (?satisfies 'numberp))
+NIL
+T
+T
+
+STREAMS/EXPR> (parse '(1) (=subseq (?satisfies 'numberp)))
+(1)
+T
+T
+
+STREAMS/EXPR> (parse "'3" (=subseq (?satisfies 'numberp)))
+
+STREAMS/EXPR> fdf
+
+STREAMS/EXPR> (parse "3" (=subseq (?satisfies 'numberp)))
+NIL
+NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime105
+; in: DEFUN =@-FORM
+;     (STREAMS/EXPR::%TRANSFORM
+;      (MAXPC:%ANY (MAXPC:%OR (STREAMS/EXPR::=NESTED-ATOM)))
+;      (STREAMS/EXPR::=MSL-VALUE)
+;      (LAMBDA (STREAMS/EXPR::VAL) (NOT (NIL STREAMS/EXPR::VAL))))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::%TRANSFORM
+
+;     (NIL STREAMS/EXPR::VAL)
+;
+; caught WARNING:
+;   The function NIL is undefined, and its name is reserved by ANSI CL so that even
+;   if it were defined later, the code doing so would not be portable.
+;
+; compilation unit finished
+;   Undefined functions:
+;     %TRANSFORM NIL
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime106
+; in: DEFUN =@-FORM
+;     (MAXPC:=TRANSFORM (MAXPC:%ANY (MAXPC:%OR (STREAMS/EXPR::=NESTED-ATOM)))
+;                       (STREAMS/EXPR::=MSL-VALUE)
+;                       (LAMBDA (STREAMS/EXPR::VAL) (NOT (NIL STREAMS/EXPR::VAL))))
+;
+; caught STYLE-WARNING:
+;   The function =TRANSFORM is called with three arguments, but wants exactly two.
+
+; file: C:/Users/David/AppData/Local/Temp/slime106
+; in: DEFUN =@-FORM
+;     (NIL STREAMS/EXPR::VAL)
+;
+; caught WARNING:
+;   The function NIL is undefined, and its name is reserved by ANSI CL so that even
+;   if it were defined later, the code doing so would not be portable.
+;
+; compilation unit finished
+;   Undefined function:
+;     NIL
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime107
+; in: DEFUN =@-FORM
+;     (MAXPC:=TRANSFORM (MAXPC:%ANY (MAXPC:%OR (STREAMS/EXPR::=NESTED-ATOM)))
+;                       (STREAMS/EXPR::=MSL-VALUE)
+;                       (LAMBDA (STREAMS/EXPR::VAL) (NOT (NULL STREAMS/EXPR::VAL))))
+;
+; caught STYLE-WARNING:
+;   The function =TRANSFORM is called with three arguments, but wants exactly two.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: T
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime109
+; in: DEFUN =@-FORM
+;     (NOT (NULL STREAMS/EXPR::VAL) (STREAMS/EXPR::VAL))
+;
+; caught WARNING:
+;   The function NOT is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime109
+; in: DEFUN =@-FORM
+;     (STREAMS/EXPR::VAL)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::VAL
+;
+; compilation unit finished
+;   Undefined function:
+;     VAL
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: NIL
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@WALT Walt Disney :birthday)")
+
+ ATOM-SEQ: (@ WALT)
+ ATOM-VALUE: (Walt Disney)
+ ATOM-MODS: NIL
+ METADATA: (((: birthday) NIL NIL))
+ HASH: NIL
+ COMMENT: NIL
+NIL
 
 STREAMS/EXPR> 
