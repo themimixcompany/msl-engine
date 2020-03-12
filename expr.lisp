@@ -327,6 +327,13 @@
   (%or 'regex-sequence
        'datatype-form
        'format-form))
+;;
+
+(defun =datatype-mods ()
+  "Match and return key sequence for /  namespace."
+  (%or 'regex-sequence))
+;;
+
 
 (defun =prelude-form ()
    "Match and return an atom in the msl namespace."
@@ -491,21 +498,21 @@
                         (?eq #\left_parenthesis)
                         (=datatype-sequence)
                         (%maybe 'msl-value)
-                        (%maybe 'regex-sequence)
+                        (%maybe 'datatype-mods)
                         (%maybe (%or
                                     (%some (=destructure (meta-seq meta-value meta-mods)
                                             (%or
                                               (=list 'metadata-sequence
                                                      'msl-value
-                                                     (%any 'regex-sequence))
+                                                     (%any 'datatype-mods))
                                               (=list 'metadata-sequence
                                                      (%maybe 'msl-value)
-                                                     (%some 'regex-sequence)))
+                                                     (%some 'datatype-mods)))
                                             (list meta-seq meta-value meta-mods)))
                                     (=destructure (meta-seq meta-value meta-mods)
                                       (=list 'metadata-sequence
                                              (%maybe 'msl-value)
-                                             (%any 'regex-sequence))
+                                             (%any 'datatype-mods))
                                       (list meta-seq meta-value meta-mods))))
                         (%maybe 'msl-comment)
                         (?expression-terminator))
@@ -555,7 +562,9 @@
       (fdefinition 'grouping-sequence) (=grouping-sequence)
       (fdefinition 'atom-mods) (=atom-mods)
       (fdefinition 'format-mods) (=format-mods)
+      (fdefinition 'datatype-mods) (=datatype-mods)
       (fdefinition 'nested-@) (=nested-@)
+      (fdefinition 'nested-group) (=nested-group)
       (fdefinition 'nested-canon) (=nested-canon)
       (fdefinition 'nested-atom) (=nested-atom)
       (fdefinition 'msl-hash) (=msl-hash)
