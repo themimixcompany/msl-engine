@@ -405,13 +405,13 @@
                                                           (%some 'atom-mods)))
                                                  (list meta-seq meta-value meta-mods)))
                                          (=destructure (meta-seq meta-value meta-mods)
-                                           (=list 'metadata-sequence
-                                                  (?satisfies (lambda (val)
-                                                                      (declare (ignore val)) (unless saved-val t))
-                                                              (%maybe (%or 'nested-atom
-                                                                           'msl-value)))
-                                                  (%any 'atom-mods))
-                                           (list (list meta-seq meta-value meta-mods)))))
+                                                       (=list 'metadata-sequence
+                                                              (?satisfies (lambda (val)
+                                                                                  (declare (ignore val)) (unless saved-val t))
+                                                                          (%maybe (%or 'nested-atom
+                                                                                       'msl-value)))
+                                                              (%any 'atom-mods))
+                                                       (list (list meta-seq meta-value meta-mods)))))
                              (%maybe 'msl-hash)
                              (%maybe 'msl-comment)
                              (?expression-terminator))
