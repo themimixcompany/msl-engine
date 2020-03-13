@@ -38,9 +38,12 @@
 
 (defun parse-explain (expr)
   "Parse and explain an MSL expression."
+  (format t "~%~A~%" expr)
   (let ((parsed-atom (parse-msl expr))
         (@-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+      (format t "~%~S~%" parsed-atom)
       (explain (collate @-explainer parsed-atom))))
+
 ;;
 
 (defun explain (item-list)
