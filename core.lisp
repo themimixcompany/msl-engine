@@ -263,7 +263,7 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
                    (t (fn (cdr args)
                           (destructuring-bind (head body)
                               (car args)
-                            (acons (list "z" head) body acc)))))))
+                            (acons (list "z" head) (list body) acc)))))))
     (fn mods nil)))
 
 (defun normalize-mods (mods)
