@@ -8,6 +8,7 @@
            #:*initial-view-counter*
            #:*initial-canon-counter*
            #:*initial-atom-counter*
+           #:*initial-mods-counter*
            #:*mx-universe*
            #:*namespaces-names*
            #:*namespaces*
@@ -34,6 +35,9 @@
 (defvar *initial-atom-counter* 100
   "The initial mx-atom counter value.")
 
+(defvar *initial-mods-counter* 100000000
+  "The initial counter for atom mods.")
+
 (defvar *mx-universe* nil
   "The top-level structure for everything.")
 
@@ -54,15 +58,3 @@ the full name.")
               (read-from-string (string (car name))))
           *namespaces-names*)
   "The list of namespaces in simple form.")
-
-;; (defvar *transform-indicators*
-;;   '("/" "[]")
-;;   "")
-
-;; (defvar *selector-indicators*
-;;   '("d" "f")
-;;   "")
-
-;;; NOTE
-;;; f is a transform.
-;;; / is a selector.
