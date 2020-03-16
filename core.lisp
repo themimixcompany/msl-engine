@@ -232,13 +232,56 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   (when data
     (apply #'streams/classes:make-mx-atom-data data)))
 
+(defmacro define-mod-checker (name type &optional doc)
+  "Define a mod checker."
+  `(defun ,name (mod)
+     ,(when doc doc)
+     (destructuring-bind (head &optional &rest body)
+         mod
+       (declare (ignore body))
+       (unless (listp head)
+         (string= head ,type)))))
+
+(define-mod-checker regex-mod-p
+  "/"
+  "Return true if MOD is a regex.")
+
+(define-mod-checker bracketed-transform-mod-p
+  "[]"
+  "Return true if MOD is bracketed transform.")
+
+(defun simple-mod-p (mod)
+  "Return true if MOD is either a regex or bracketed-transform mod."
+  (marie:f-or mod
+              #'regex-mod-p
+              #'bracketed-transform-mod-p))
+
+(defun build-z-mods (mods)
+  "Return a collection of simple mods from MODS."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   (t (fn (cdr args)
+                          (destructuring-bind (head body)
+                              (car args)
+                            (acons (list "z" head) body acc)))))))
+    (fn mods nil)))
+
+(defun normalize-mods (mods)
+  "Reformat MODs and return a list of mods for normal atom processing."
+  (loop :for mod :in mods
+        :when (simple-mod-p mod)
+          :collect mod :into simple-mods
+        :unless (simple-mod-p mod)
+          :collect mod :into real-mods
+        :finally (return (append (build-z-mods simple-mods)
+                                 real-mods))))
+
 (defun build-mx-atom-modsdata (modsdata)
   "Return an MX-ATOM-MODSDATA instance from MODSDATA."
   (flet ((fn (args)
            (apply #'streams/classes:make-mx-atom-modsdata args)))
-    ;; add code for handling the different types of mods here
-    (when modsdata
-      (mapcar #'fn modsdata))))
+    (marie:when-let ((mods (normalize-mods modsdata)))
+      (mapcar #'fn mods))))
 
 (defun build-mx-atom-metadata (metadata)
   "Return a list of MX-ATOM-METADATA instances from METADATA."
@@ -251,6 +294,10 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   "Parse EXPR as MSL and store the resulting object in the universe."
   (flet ((fn (seq &optional value mods metadata hash comment)
            (let* ((m (build-mx-atom-metadata metadata))
+
+                  ;; apply general atom creator for d and f
+                  ;; store them in the universe
+
                   ;; handle mods here
                   (d (build-mx-atom-data seq value mods m hash comment)))
              d)))

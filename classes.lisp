@@ -73,7 +73,13 @@
                  :accessor atom-counter)
    (atom-table :initarg :atom-table
                :initform (make-hash-table :test #'equal)
-               :accessor atom-table))
+               :accessor atom-table)
+   (mods-counter :initarg :mods-counter
+                 :initform streams/specials:*initial-mods-counter*
+                 :accessor mods-counter)
+   (mods-table :initarg :mods-table
+               :initform (make-hash-table :test #'equal)
+               :accessor mods-table))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-atom ()
@@ -119,14 +125,18 @@
   (:documentation "The class for containing primary data about an atom."))
 
 (defclass mx-atom-modsdata (mx-atom)
-  ((metadata :initarg :metadata
+  ((id :initarg :id
+       :initform -1
+       :reader id
+       :documentation "A unique integer to identify a mod in the mx-universe.")
+   (metadata :initarg :metadata
              :initform nil
              :accessor metadata
-             :documentation "The slot for additional information about mods.")
+             :documentation "The slot for additional information about a mods group.")
    (comment :initarg :comment
             :initform nil
             :accessor comment
-            :documentation "The optional free-form string about mods."))
+            :documentation "The optional free-form string about a mods group."))
   (:documentation "The class for containing information about an atom’s mods."))
 
 (defclass mx-atom-metadata (mx-atom)
@@ -153,7 +163,7 @@
              :for cname = (marie:hyphenate-intern nil namespace "counter")
              :collect `(defun ,fname (mx-universe)
                          (update-counter mx-universe ,cname)))))
-(define-updaters machine world stream view canon atom)
+(define-updaters machine world stream view canon atom mods)
 
 (defun entity-string (id)
   "Return the corresponding universe name from ID, where ID is either a single
@@ -177,29 +187,41 @@ character or a string to designate an entity."
 
 (defun make-mx-atom-modsdata (seq &optional value mods metadata hash comment)
   "Return a new MX-ATOM-MODSDATA instance."
+  (declare (ignore hash))
   (destructuring-bind (ns key)
       seq
     (make-instance 'mx-atom-modsdata
                    :ns ns :key key :value value
                    :mods mods :metadata metadata
-                   :hash nil :comment comment)))
+                   :comment comment)))
 
 (defun make-mx-atom-metadata (seq &optional value mods)
   "Return a new MX-ATOM-METADATA instance."
   (destructuring-bind (ns key)
       seq
     (make-instance 'mx-atom-metadata
-                   :ns ns :key key :value value :mods mods)))
+                   :ns ns :key key :value value
+                   :mods mods)))
 
 (defmethod initialize-instance :after ((mx-atom-data mx-atom-data) &key mx-universe)
-  "Initialize mx-atom MX-ATOM in mx-universe MX-UNIVERSE."
+  "Perform operations on an MX-ATOM-DATA instance after instantiation in MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
-    (with-slots (id ns key metadata table)
+    (with-slots (id)
         mx-atom-data
       (setf id counter)
       (with-slots (atom-table)
           mx-universe
         (setf (gethash key atom-table) mx-atom-data)))))
+
+(defmethod initialize-instance :after ((mx-atom-modsdata mx-atom-modsdata) &key mx-universe)
+  "Perform operations on an MX-ATOM-MODSDATA instance after instantiation in MX-UNIVERSE."
+  (let ((counter (update-mods-counter mx-universe)))
+    (with-slots (id)
+        mx-atom-modsdata
+      (setf id counter)
+      (with-slots (mods-table)
+          mx-universe
+        (setf (gethash key mods-table) mx-atom-modsdata)))))
 
 (defmethod print-object ((mx-atom-data mx-atom-data) stream)
   (print-unreadable-object (mx-atom-data stream :type t)
@@ -209,9 +231,9 @@ character or a string to designate an entity."
 
 (defmethod print-object ((mx-atom-metadata mx-atom-metadata) stream)
   (print-unreadable-object (mx-atom-metadata stream :type t)
-    (with-slots (ns key)
+    (with-slots (id ns key)
         mx-atom-metadata
-      (format stream "~A ~A" ns key))))
+      (format stream "~A ~A ~A" id ns key))))
 
 (defmethod print-object ((mx-atom-modsdata mx-atom-modsdata) stream)
   (print-unreadable-object (mx-atom-modsdata stream :type t)
