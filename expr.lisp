@@ -38,18 +38,23 @@
 
 (defun parse-explain (expr)
   "Parse and explain an MSL expression."
-  (format t "~%~A~%" expr)
   (let ((parsed-atom (parse-msl expr))
-        (@-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+        (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
       (format t "~%~S~%" parsed-atom)
-      (explain (collate @-explainer parsed-atom))))
+      (explain (collate atom-explainer parsed-atom))
+      (format t "~%~%")
+      expr))
 
 ;;
 
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
-  (cond ((not item-list) nil)
-        (t (format t "~% ~A~13T| ~15T ~S" (car (car item-list)) (car (cdr (car item-list)))) (explain (cdr item-list)))))
+  (let* ((item (car item-list))
+         (item-label (car item))
+         (item-value (car (cdr item)))
+         (item-sublist (car item-value)))
+        (cond ((not item-list) nil)
+              (t (format t "~% ~A~13T| ~15T ~S" item-label item-value) (explain (cdr item-list))))))
 ;;
 
 (defun collate (&rest lists)
@@ -506,7 +511,7 @@
                    (=list (?whitespace)
                           (?eq #\left_parenthesis)
                           (=format-sequence)
-                          (=transform (%maybe 'msl-value)
+                          (=transform (%any 'msl-value)
                                       (lambda (val)
                                               (cond (val (setf saved-val val))
                                                     (t (setf saved-val NIL)))))
