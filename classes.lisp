@@ -32,7 +32,8 @@
 
            #:table-name
            #:make-mx-atom-data
-           #:make-mx-atom-metadata))
+           #:make-mx-atom-metadata
+           #:make-mx-atom-modsdata))
 
 (in-package #:streams/classes)
 
@@ -121,11 +122,11 @@
   ((metadata :initarg :metadata
              :initform nil
              :accessor metadata
-             :documentation "The slot for additional information about an mx-atom.")
+             :documentation "The slot for additional information about mods.")
    (comment :initarg :comment
             :initform nil
             :accessor comment
-            :documentation "The optional free-form string about an mx-atom."))
+            :documentation "The optional free-form string about mods."))
   (:documentation "The class for containing information about an atom’s mods."))
 
 (defclass mx-atom-metadata (mx-atom)
