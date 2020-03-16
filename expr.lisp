@@ -28,7 +28,7 @@
   (%or '@-form
        'grouping-form
        'canon-form
-       (=prelude-form)))
+       'prelude-form))
 ;;
 
 (defun parse-msl (expr)
@@ -40,8 +40,15 @@
   "Parse and explain an MSL expression."
   (let ((parsed-atom (parse-msl expr))
         (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+      (format t "~%")
+      (princ "  MX OUTPUT ")
+      (format t "~%")
       (format t "~%~S~%" parsed-atom)
+      (format t "~%  ~A~13T| ~15T ~A" "LABEL" "MX OUTPUT")
+      (format t "~%")
       (explain (collate atom-explainer parsed-atom))
+      (format t "~%~%")
+      (princ "  MSL ")
       (format t "~%~%")
       expr))
 
@@ -51,10 +58,9 @@
   "Show a printed explainer for a parsed MSL expression."
   (let* ((item (car item-list))
          (item-label (car item))
-         (item-value (car (cdr item)))
-         (item-sublist (car item-value)))
+         (item-value (car (cdr item))))
         (cond ((not item-list) nil)
-              (t (format t "~% ~A~13T| ~15T ~S" item-label item-value) (explain (cdr item-list))))))
+              (t (format t "~%  ~A~13T| ~15T ~S" item-label item-value) (explain (cdr item-list))))))
 ;;
 
 (defun collate (&rest lists)
@@ -105,7 +111,7 @@
 (defun =sha256 ()
   "Match and return a SHA-256 string."
   (=subseq (?seq (?satisfies 'length-64-p
-                   (=subseq (%some (?hexp)))))))
+                   (=subseq (%some 'hexp))))))
 ;;
 
 (defun =msl-key ()
@@ -123,7 +129,7 @@
 (defun =msl-hash ()
   "Match and return a hash value."
   (=destructure (_ _ hash)
-      (=list (?whitespace)
+      (=list 'whitespace
              (?eq #\#)
              (=sha256))))
 ;;
@@ -131,19 +137,19 @@
 (defun =msl-value ()
   "Match and return a raw value."
   (%and
-    (?not (?value-terminator))
+    (?not 'value-terminator)
     (=destructure (_ value)
       (=list
-        (?whitespace)
-        (=subseq (%some (?not (?value-terminator))))))))
+        'whitespace
+        (=subseq (%some (?not 'value-terminator)))))))
 ;;
 
 (defun =msl-comment ()
  "Match a comment."
   (=destructure (_ _ comment)
-    (=list (?whitespace)
+    (=list 'whitespace
            (maxpc.char:?string "//")
-           (=subseq (%some (?not (%or (?expression-terminator))))))))
+           (=subseq (%some (?not (%or 'expression-terminator)))))))
 ;;
 
 ;; Nested Expression Parsers
@@ -151,14 +157,14 @@
 (defun =nested-@ ()
   "Match and return a nested atom."
   (=destructure (_ atom)
-    (=list (?whitespace)
+    (=list 'whitespace
            '@-form)))
 ;;
 
 (defun =nested-atom ()
   "Match and return a nested atom."
   (=destructure (_ atom)
-    (=list (?whitespace)
+    (=list 'whitespace
            (%or '@-form
                 'canon-form
                 'grouping-form))))
@@ -167,14 +173,14 @@
 (defun =nested-group ()
   "Match and return a nested atom."
   (=destructure (_ atom)
-    (=list (?whitespace)
+    (=list 'whitespace
            'grouping-form)))
 ;;
 
 (defun =nested-canon ()
   "Match and return a nested atom."
   (=destructure (_ atom)
-    (=list (?whitespace)
+    (=list 'whitespace
            'canon-form)))
 ;;
 
@@ -233,40 +239,40 @@
   "Match and return the key sequence for an @."
   (=list (=destructure (ns _)
            (=list (=@-namespace)
-                  (%maybe (?whitespace))))
-         (=msl-key)))
+                  (%maybe 'whitespace)))
+         'msl-key))
 ;;
 
 (defun =grouping-sequence ()
   "Match and return the key sequence for an atom."
   (=list (=destructure (ns _)
            (=list (=grouping-namespace)
-                  (?whitespace)))
-         (=msl-key)))
+                  'whitespace))
+         'msl-key))
 ;;
 
 (defun =canon-sequence ()
   "Match and return the key sequence for canon."
   (=list (=destructure (ns _)
            (=list (=canon-namespace)
-                  (?whitespace)))
-         (=msl-key)))
+                  'whitespace))
+         'msl-key))
 ;;
 
 (defun =prelude-sequence ()
   "Match and return the key sequence for a prelude."
   (=list (=destructure (ns _)
            (=list (=prelude-namespace)
-                  (?whitespace)))
-         (=msl-key)))
+                  'whitespace))
+         'msl-key))
 ;;
 
 (defun =metadata-sequence ()
  "Match and return key sequence for : namespace."
   (=destructure (_ ns key)
-    (=list (?whitespace)
+    (=list 'whitespace
            (=metadata-namespace)
-           (=msl-key))
+           'msl-key)
     (list ns key)))
 ;;
 
@@ -276,7 +282,7 @@
                 (=list
                   (%some
                     (=destructure (_ _ regex _ env value)
-                      (=list (?whitespace)
+                      (=list 'whitespace
                              (=regex-namespace)
                              (=subseq (%some (?satisfies 'alphanumericp)))
                              (=regex-namespace)
@@ -293,7 +299,7 @@
     (=list
       (%some
         (=destructure (_ _ url _)
-          (=list (?whitespace)
+          (=list 'whitespace
                  (?eq #\[)
                  (=msl-filespec)
                  (?eq #\])))))
@@ -305,8 +311,8 @@
   "Match and return key sequence for d."
   (=destructure (atom _ key)
     (=list (=datatype-namespace)
-           (?whitespace)
-           (=msl-key))
+           'whitespace
+           'msl-key)
     (list atom key)))
 ;;
 
@@ -314,8 +320,8 @@
   "Match and return key sequence for f."
   (=destructure (atom _ key)
     (=list (=format-namespace)
-           (?whitespace)
-           (=msl-key))
+           'whitespace
+           'msl-key)
     (list atom key)))
 ;;
 
@@ -383,7 +389,7 @@
                                         (list (list meta-seq meta-value meta-mods)))))
                           (%maybe 'msl-hash)
                           (%maybe 'msl-comment)
-                          (?expression-terminator))
+                          'expression-terminator)
                    (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;;;
 
@@ -422,7 +428,7 @@
                                                        (list (list meta-seq meta-value meta-mods)))))
                              (%maybe 'msl-hash)
                              (%maybe 'msl-comment)
-                             (?expression-terminator))
+                             'expression-terminator)
                       (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;
 
@@ -464,7 +470,7 @@
                                         (list (list meta-seq meta-value meta-mods)))))
                           (%maybe 'msl-hash)
                           (%maybe 'msl-comment)
-                          (?expression-terminator))
+                          'expression-terminator)
                    (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;
 
@@ -473,7 +479,7 @@
    "Match and return an atom in the d namespace."
    (let ((saved-val))
         (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
-                      (=list (?whitespace)
+                      (=list 'whitespace
                              (?eq #\left_parenthesis)
                              (=datatype-sequence)
                              (=transform (%maybe 'msl-value)
@@ -499,7 +505,7 @@
                                                   (%any 'datatype-mods))
                                           (list meta-seq meta-value meta-mods))))
                              (%maybe 'msl-comment)
-                             (?expression-terminator))
+                             'expression-terminator)
                       (list atom-seq atom-value atom-mods metadata NIL comment))))
 ;;
 
@@ -508,7 +514,7 @@
    "Match and return an atom in the f namespace."
    (let ((saved-val))
      (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
-                   (=list (?whitespace)
+                   (=list 'whitespace
                           (?eq #\left_parenthesis)
                           (=format-sequence)
                           (=transform (%any 'msl-value)
@@ -534,7 +540,7 @@
                                                (%any 'format-mods))
                                         (list meta-seq meta-value meta-mods))))
                           (%maybe 'msl-comment)
-                          (?expression-terminator))
+                          'expression-terminator)
                    (list atom-seq atom-value atom-mods metadata NIL comment))))
 ;;
 
@@ -568,18 +574,38 @@
                                         (list (list meta-seq meta-value meta-mods)))))
                           (%maybe 'msl-hash)
                           (%maybe 'msl-comment)
-                          (?expression-terminator))
+                          'expression-terminator)
                    (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;;;
 
+;; SEQUENCE (LIST) PARSERS
+
+(defun =single-setter ()
+  "Reduce a parsed expression to a list of single-setters."
+  (=destructure (atom-seq atom-value atom-mods metadata hash comment)
+    (=list (=element)
+           (=element)
+           (=element)
+           (=element)
+           (=element)
+           (=element))
+    (list (list (nconc atom-seq (list "=")) atom-value)
+          atom-mods)))
+
 ;; Function-namespace definitions (Create closures over let)
 
-(setf (fdefinition 'msl-value) (=msl-value)
+(setf (fdefinition 'msl-key) (=msl-key)
+      (fdefinition 'msl-value) (=msl-value)
+      (fdefinition 'whitespace) (?whitespace)
+      (fdefinition 'hexp) (?hexp)
+      (fdefinition 'value-terminator) (?value-terminator)
+      (fdefinition 'expression-terminator) (?expression-terminator)
       (fdefinition '@-form) (=@-form)
       (fdefinition 'grouping-form) (=grouping-form)
       (fdefinition 'canon-form) (=canon-form)
       (fdefinition 'datatype-form) (=datatype-form)
       (fdefinition 'format-form) (=format-form)
+      (fdefinition 'prelude-form) (=prelude-form)
       (fdefinition 'regex-sequence) (=regex-sequence)
       (fdefinition 'bracketed-transform-sequence) (=bracketed-transform-sequence)
       (fdefinition 'metadata-sequence) (=metadata-sequence)
