@@ -1,0 +1,474 @@
+; compiling (LET (#) ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+........
+
+CL-USER> (in-package :streams/expr)
+#<PACKAGE "STREAMS/EXPR">
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon some value)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("some value")
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+; compiling (LET (#) ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+....
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon value)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("value")
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   ("value")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon my new value)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("my new value")
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   ("my new value")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("my new value")
+NIL
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon I get saved! :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("I get saved!")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("I get saved!")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("I get saved!")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon I was ovewritten :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("I was ovewritten")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("I was ovewritten")
+NIL
+; compiling (DEFUN =CANON-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime7
+; in: DEFUN =CANON-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::_ STREAMS/EXPR::ATOM-SEQ
+;                          STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
+;                          STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;                          STREAMS/EXPR::COMMENT STREAMS/EXPR::_)
+;         (MAXPC:=LIST (MAXPC:?EQ #\() (STREAMS/EXPR::=CANON-SEQUENCE)
+;                      (MAXPC:=TRANSFORM
+;                       (MAXPC:%ANY
+;                        (MAXPC:%OR 'STREAMS/EXPR::NESTED-@
+;                                   'STREAMS/EXPR::NESTED-CANON
+;                                   'STREAMS/EXPR::MSL-VALUE))
+;                       (LAMBDA (STREAMS/EXPR::VAL) (COND # #)))
+;                      (MAXPC:%ANY 'STREAMS/EXPR::ATOM-MODS)
+;                      (MAXPC:%MAYBE
+;                       (MAXPC:%OR (MAXPC:%SOME #)
+;                                  (MAXPC:=DESTRUCTURE #
+;                                      #
+;                                    #)))
+;                      (MAXPC:%MAYBE 'STREAMS/EXPR::MSL-HASH)
+;                      (MAXPC:%MAYBE 'STREAMS/EXPR::MSL-COMMENT)
+;                      (STREAMS/EXPR::?EXPRESSION-TERMINATOR))
+;       (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;             STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;             STREAMS/EXPR::SAVED-VAL))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G13
+;           (SB-C::CHECK-DS-LIST #:|result0| 8 8
+;                                '(#:|_1| STREAMS/EXPR::ATOM-SEQ
+;                                  STREAMS/EXPR::ATOM-VALUE
+;                                  STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA
+;                                  STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT
+;                                  #:|_2|)))
+;          (#:|_1| (POP #:G13))
+;          (STREAMS/EXPR::ATOM-SEQ (POP #:G13))
+;          (STREAMS/EXPR::ATOM-VALUE (POP #:G13))
+;          (STREAMS/EXPR::ATOM-MODS (POP #:G13))
+;          (STREAMS/EXPR::METADATA (POP #:G13))
+;          (STREAMS/EXPR::HASH (POP #:G13))
+;          (STREAMS/EXPR::COMMENT (POP #:G13))
+;          (#:|_2| (POP #:G13)))
+;     (DECLARE (IGNORE #:|_2| #:|_1|))
+;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;           STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;           STREAMS/EXPR::SAVED-VAL))
+;
+; caught STYLE-WARNING:
+;   The variable COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=CANON-FORM in DEFUN
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-explain "(c my-canon I was ovewritten :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("I was ovewritten")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("I was ovewritten")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon canon value :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("canon value")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("canon value")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon canon value :sub)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon my new value :sub)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon my new value :sub subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   ("my new value")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   ("my new value")
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub-char)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub-char") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(c my-canon :sub-char subvalue)")
+
+ ATOM-SEQ    |   ("c" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub-char") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(@ my-canon :sub-char subvalue)")
+
+ ATOM-SEQ    |   ("@" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub-char") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@ my-canon value :sub-char subvalue)")
+
+ ATOM-SEQ    |   ("@" "my-canon")
+ ATOM-VALUE  |   ("value")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub-char") ("subvalue") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@ my-canon value :sub-char)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(@ my-canon value)")
+
+ ATOM-SEQ    |   ("@" "my-canon")
+ ATOM-VALUE  |   ("value")
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@ my-canon)")
+
+ ATOM-SEQ    |   ("@" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(@ my-canon :sub)")
+NIL
+; compiling (DEFUN =GROUPING-FORM ...)
+WARNING: redefining STREAMS/EXPR::=GROUPING-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(w my-canon :sub)")
+
+ ATOM-SEQ    |   ("w" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") NIL NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-canon val :sub)")
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-canon val :sub subval)")
+
+ ATOM-SEQ    |   ("w" "my-canon")
+ ATOM-VALUE  |   ("val")
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subval") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-canon :sub subval)")
+
+ ATOM-SEQ    |   ("w" "my-canon")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   NIL
+ METADATA    |   (((":" "sub") ("subval") NIL))
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+; compiling (DEFUN =DATATYPE-FORM ...)
+WARNING: redefining STREAMS/EXPR::=DATATYPE-FORM in DEFUN
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") NIL NIL NIL NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type val))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") "val" NIL NIL NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type val :sub val))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") "val" NIL (((":" "sub") "val" NIL)) NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type val :sub val))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") "val" NIL (((":" "sub") "val" NIL)) NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type :sub val))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") NIL NIL (((":" "sub") "val" NIL)) NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type :sub))")
+NIL
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-explain "(w my-world (d type :sub))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") NIL NIL ((":" "sub") NIL NIL) NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type not me :sub))")
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (d type not me :sub ok now))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("d" "type") "not me" NIL (((":" "sub") "ok now" NIL)) NIL
+                   NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+; compiling (DEFUN =FORMAT-FORM ...)
+WARNING: redefining STREAMS/EXPR::=FORMAT-FORM in DEFUN
+; compiling (SETF (FDEFINITION #) ...)
+; compiling (SETF (FDEFINITION #) ...)
+STREAMS/EXPR> (parse-explain "(w my-world (f type not me :sub ok now))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("f" "type") "not me" NIL (((":" "sub") "ok now" NIL)) NIL
+                   NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (f type not me :sub))")
+NIL
+
+STREAMS/EXPR> (parse-explain "(w my-world (f type :sub))")
+
+ ATOM-SEQ    |   ("w" "my-world")
+ ATOM-VALUE  |   NIL
+ ATOM-MODS   |   ((("f" "type") NIL NIL ((":" "sub") NIL NIL) NIL NIL))
+ METADATA    |   NIL
+ HASH        |   NIL
+ COMMENT     |   NIL
+NIL
+
+STREAMS/EXPR> 
