@@ -38,9 +38,12 @@
 
 (defun parse-explain (expr)
   "Parse and explain an MSL expression."
+  (format t "~%~A~%" expr)
   (let ((parsed-atom (parse-msl expr))
         (@-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+      (format t "~%~S~%" parsed-atom)
       (explain (collate @-explainer parsed-atom))))
+
 ;;
 
 (defun explain (item-list)
@@ -335,39 +338,6 @@
 ;;
 
 
-(defun =prelude-form ()
-   "Match and return an atom in the msl namespace."
-   (let ((saved-val))
-     (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
-                   (=list (?eq #\left_parenthesis)
-                          (=prelude-sequence)
-                          (=transform (%any 'msl-value)
-                                      (lambda (val)
-                                              (when val (setf saved-val val))))
-                          (%any 'atom-mods)
-                          (%maybe (%or
-                                      (%some (=destructure (meta-seq meta-value meta-mods)
-                                              (%or
-                                                (=list 'metadata-sequence
-                                                       (%some 'msl-value)
-                                                       (%any 'atom-mods))
-                                                (=list 'metadata-sequence
-                                                       (%any 'msl-value)
-                                                       (%some 'atom-mods)))
-                                              (list meta-seq meta-value meta-mods)))
-                                      (=destructure (meta-seq meta-value meta-mods)
-                                        (=list 'metadata-sequence
-                                               (?satisfies (lambda (val)
-                                                                   (declare (ignore val)) (unless saved-val t))
-                                                           (%maybe 'msl-value))
-                                               (%any 'atom-mods))
-                                        (list (list meta-seq meta-value meta-mods)))))
-                          (%maybe 'msl-hash)
-                          (%maybe 'msl-comment)
-                          (?expression-terminator))
-                   (list atom-seq atom-value atom-mods metadata hash comment))))
-;;;;
-
 ;; Atom Forms
 
 (defun =@-form ()
@@ -380,7 +350,8 @@
                                                  'nested-group
                                                  'msl-value))
                                       (lambda (val)
-                                              (when val (setf saved-val val))))
+                                              (cond (val (setf saved-val val))
+                                                    (t (setf saved-val NIL)))))
                           (%any 'atom-mods)
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
@@ -421,7 +392,8 @@
                              (=transform (%any (%or 'nested-atom
                                                     'msl-value))
                                          (lambda (val)
-                                                 (when val (setf saved-val val))))
+                                                 (cond (val (setf saved-val val))
+                                                       (t (setf saved-val NIL)))))
                              (%any 'atom-mods)
                              (%maybe (%or
                                          (%some (=destructure (meta-seq meta-value meta-mods)
@@ -436,13 +408,13 @@
                                                           (%some 'atom-mods)))
                                                  (list meta-seq meta-value meta-mods)))
                                          (=destructure (meta-seq meta-value meta-mods)
-                                           (=list 'metadata-sequence
-                                                  (?satisfies (lambda (val)
-                                                                      (declare (ignore val)) (unless saved-val t))
-                                                              (%maybe (%or 'nested-atom
-                                                                           'msl-value)))
-                                                  (%any 'atom-mods))
-                                           (list (list meta-seq meta-value meta-mods)))))
+                                                       (=list 'metadata-sequence
+                                                              (?satisfies (lambda (val)
+                                                                                  (declare (ignore val)) (unless saved-val t))
+                                                                          (%maybe (%or 'nested-atom
+                                                                                       'msl-value)))
+                                                              (%any 'atom-mods))
+                                                       (list (list meta-seq meta-value meta-mods)))))
                              (%maybe 'msl-hash)
                              (%maybe 'msl-comment)
                              (?expression-terminator))
@@ -459,7 +431,8 @@
                                                  'nested-canon
                                                  'msl-value))
                                       (lambda (val)
-                                              (when val (setf saved-val val))))
+                                              (cond (val (setf saved-val val))
+                                                    (t (setf saved-val NIL)))))
                           (%any 'atom-mods)
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
@@ -493,62 +466,108 @@
 
 (defun =datatype-form ()
    "Match and return an atom in the d namespace."
-   (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
-                 (=list (?whitespace)
-                        (?eq #\left_parenthesis)
-                        (=datatype-sequence)
-                        (%maybe 'msl-value)
-                        (%maybe 'datatype-mods)
-                        (%maybe (%or
-                                    (%some (=destructure (meta-seq meta-value meta-mods)
-                                            (%or
-                                              (=list 'metadata-sequence
-                                                     'msl-value
-                                                     (%any 'datatype-mods))
-                                              (=list 'metadata-sequence
-                                                     (%maybe 'msl-value)
-                                                     (%some 'datatype-mods)))
-                                            (list meta-seq meta-value meta-mods)))
-                                    (=destructure (meta-seq meta-value meta-mods)
-                                      (=list 'metadata-sequence
-                                             (%maybe 'msl-value)
-                                             (%any 'datatype-mods))
-                                      (list meta-seq meta-value meta-mods))))
-                        (%maybe 'msl-comment)
-                        (?expression-terminator))
-                 (list atom-seq atom-value atom-mods metadata NIL comment)))
+   (let ((saved-val))
+        (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
+                      (=list (?whitespace)
+                             (?eq #\left_parenthesis)
+                             (=datatype-sequence)
+                             (=transform (%maybe 'msl-value)
+                                         (lambda (val)
+                                                 (cond (val (setf saved-val val))
+                                                       (t (setf saved-val NIL)))))
+                             (%maybe 'datatype-mods)
+                             (%maybe (%or
+                                         (%some (=destructure (meta-seq meta-value meta-mods)
+                                                 (%or
+                                                   (=list 'metadata-sequence
+                                                          'msl-value
+                                                          (%any 'datatype-mods))
+                                                   (=list 'metadata-sequence
+                                                          (%maybe 'msl-value)
+                                                          (%some 'datatype-mods)))
+                                                 (list meta-seq meta-value meta-mods)))
+                                         (=destructure (meta-seq meta-value meta-mods)
+                                           (=list 'metadata-sequence
+                                                  (?satisfies (lambda (val)
+                                                                      (declare (ignore val)) (unless saved-val t))
+                                                              (%maybe 'msl-value))
+                                                  (%any 'datatype-mods))
+                                          (list meta-seq meta-value meta-mods))))
+                             (%maybe 'msl-comment)
+                             (?expression-terminator))
+                      (list atom-seq atom-value atom-mods metadata NIL comment))))
 ;;
-;;
+
 
 (defun =format-form ()
    "Match and return an atom in the f namespace."
-   (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
-                 (=list (?whitespace)
-                        (?eq #\left_parenthesis)
-                        (=format-sequence)
-                        (%maybe 'msl-value)
-                        (%maybe 'format-mods)
-                        (%maybe (%or
-                                    (%some (=destructure (meta-seq meta-value meta-mods)
-                                            (%or
-                                              (=list 'metadata-sequence
-                                                     'msl-value
-                                                     (%any 'format-mods))
-                                              (=list 'metadata-sequence
-                                                     (%maybe 'msl-value)
-                                                     (%some 'format-mods)))
-                                            (list meta-seq meta-value meta-mods)))
-                                    (=destructure (meta-seq meta-value meta-mods)
-                                      (=list 'metadata-sequence
-                                             (%maybe 'msl-value)
-                                             (%any 'format-mods))
-                                      (list meta-seq meta-value meta-mods))))
-                        (%maybe 'msl-comment)
-                        (?expression-terminator))
-                 (list atom-seq atom-value atom-mods metadata NIL comment)))
+   (let ((saved-val))
+     (=destructure (_ _ atom-seq atom-value atom-mods metadata comment _)
+                   (=list (?whitespace)
+                          (?eq #\left_parenthesis)
+                          (=format-sequence)
+                          (=transform (%maybe 'msl-value)
+                                      (lambda (val)
+                                              (cond (val (setf saved-val val))
+                                                    (t (setf saved-val NIL)))))
+                          (%maybe 'format-mods)
+                          (%maybe (%or
+                                      (%some (=destructure (meta-seq meta-value meta-mods)
+                                              (%or
+                                                (=list 'metadata-sequence
+                                                       'msl-value
+                                                       (%any 'format-mods))
+                                                (=list 'metadata-sequence
+                                                       (%maybe 'msl-value)
+                                                       (%some 'format-mods)))
+                                              (list meta-seq meta-value meta-mods)))
+                                      (=destructure (meta-seq meta-value meta-mods)
+                                        (=list 'metadata-sequence
+                                               (?satisfies (lambda (val)
+                                                                   (declare (ignore val)) (unless saved-val t))
+                                                           (%maybe 'msl-value))
+                                               (%any 'format-mods))
+                                        (list meta-seq meta-value meta-mods))))
+                          (%maybe 'msl-comment)
+                          (?expression-terminator))
+                   (list atom-seq atom-value atom-mods metadata NIL comment))))
 ;;
 
-;; Function-namespace definitions
+(defun =prelude-form ()
+   "Match and return an atom in the msl namespace."
+   (let ((saved-val))
+     (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
+                   (=list (?eq #\left_parenthesis)
+                          (=prelude-sequence)
+                          (=transform (%any 'msl-value)
+                                      (lambda (val)
+                                              (cond (val (setf saved-val val))
+                                                    (t (setf saved-val NIL)))))
+                          (%any 'atom-mods)
+                          (%maybe (%or
+                                      (%some (=destructure (meta-seq meta-value meta-mods)
+                                              (%or
+                                                (=list 'metadata-sequence
+                                                       (%some 'msl-value)
+                                                       (%any 'atom-mods))
+                                                (=list 'metadata-sequence
+                                                       (%any 'msl-value)
+                                                       (%some 'atom-mods)))
+                                              (list meta-seq meta-value meta-mods)))
+                                      (=destructure (meta-seq meta-value meta-mods)
+                                        (=list 'metadata-sequence
+                                               (?satisfies (lambda (val)
+                                                                   (declare (ignore val)) (unless saved-val t))
+                                                           (%maybe 'msl-value))
+                                               (%any 'atom-mods))
+                                        (list (list meta-seq meta-value meta-mods)))))
+                          (%maybe 'msl-hash)
+                          (%maybe 'msl-comment)
+                          (?expression-terminator))
+                   (list atom-seq atom-value atom-mods metadata hash comment))))
+;;;;
+
+;; Function-namespace definitions (Create closures over let)
 
 (setf (fdefinition 'msl-value) (=msl-value)
       (fdefinition '@-form) (=@-form)
