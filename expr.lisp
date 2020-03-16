@@ -87,8 +87,8 @@
   (%or
        'nested-atom
        'metadata-sequence
-       'regex-sequence
-       'bracketed-transform-sequence
+       'regex-selector
+       'bracketed-transform-selector
        'datatype-form
        'format-form
        'msl-hash
@@ -276,7 +276,7 @@
     (list ns key)))
 ;;
 
-(defun =regex-sequence ()
+(defun =regex-selector ()
   "Match and return the key sequence for /."
   (=destructure (regex-list)
                 (=list
@@ -289,11 +289,11 @@
                              (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
                              (%maybe 'msl-value))
                       (list regex env value))))
-                (cond (regex-list (list "/" regex-list)))))
+                (cond (regex-list (list (list "/") regex-list NIL NIL NIL NIL)))))
 
 ;;
 
-(defun =bracketed-transform-sequence ()
+(defun =bracketed-transform-selector ()
  "Match and return the key sequence for []."
   (=destructure (transform-list)
     (=list
@@ -304,7 +304,7 @@
                  (=msl-filespec)
                  (?eq #\])))))
 
-    (cond (transform-list (list "[]" transform-list)))))
+    (cond (transform-list (list (list "[]") transform-list NIL NIL NIL NIL)))))
 ;;
 
 (defun =datatype-sequence ()
@@ -330,22 +330,22 @@
 
 (defun =atom-mods ()
   "Match and return key sequence for / [] d f namespace."
-  (%or 'regex-sequence
+  (%or 'regex-selector
        'datatype-form
        'format-form
-       'bracketed-transform-sequence))
+       'bracketed-transform-selector))
 ;;
 
 (defun =format-mods ()
   "Match and return key sequence for / d f namespace."
-  (%or 'regex-sequence
+  (%or 'regex-selector
        'datatype-form
        'format-form))
 ;;
 
 (defun =datatype-mods ()
-  "Match and return key sequence for /  namespace."
-  (%or 'regex-sequence))
+  "Match and return key sequence for / namespace."
+  (%or 'regex-selector))
 ;;
 
 
@@ -353,17 +353,22 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (let ((saved-val))
+   (let ((saved-val) (saved-seq))
      (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                    (=list (?eq #\left_parenthesis)
-                          (=@-sequence)
+                          (=transform
+                                      (=@-sequence)
+                                      (lambda (seq)
+                                              (setf saved-seq seq)))
                           (=transform (%any (%or 'nested-@
                                                  'nested-group
                                                  'msl-value))
                                       (lambda (val)
                                               (cond (val (setf saved-val val))
                                                     (t (setf saved-val NIL)))))
-                          (%any 'atom-mods)
+                          (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
+                                              'atom-mods
+                                            (list (append saved-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
@@ -482,7 +487,7 @@
                       (=list 'whitespace
                              (?eq #\left_parenthesis)
                              (=datatype-sequence)
-                             (=transform (%maybe 'msl-value)
+                             (=transform (%any 'msl-value)
                                          (lambda (val)
                                                  (cond (val (setf saved-val val))
                                                        (t (setf saved-val NIL)))))
@@ -606,8 +611,8 @@
       (fdefinition 'datatype-form) (=datatype-form)
       (fdefinition 'format-form) (=format-form)
       (fdefinition 'prelude-form) (=prelude-form)
-      (fdefinition 'regex-sequence) (=regex-sequence)
-      (fdefinition 'bracketed-transform-sequence) (=bracketed-transform-sequence)
+      (fdefinition 'regex-selector) (=regex-selector)
+      (fdefinition 'bracketed-transform-selector) (=bracketed-transform-selector)
       (fdefinition 'metadata-sequence) (=metadata-sequence)
       (fdefinition 'grouping-sequence) (=grouping-sequence)
       (fdefinition 'atom-mods) (=atom-mods)
