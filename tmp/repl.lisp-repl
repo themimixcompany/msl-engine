@@ -8,2527 +8,277 @@
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon some value)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("some value")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (LET (#) ...)
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-....
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon value)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("value")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   ("value")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon my new value)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("my new value")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   ("my new value")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("my new value")
-NIL
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon I get saved! :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("I get saved!")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("I get saved!")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("I get saved!")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon I was ovewritten :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("I was ovewritten")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("I was ovewritten")
-NIL
-; compiling (DEFUN =CANON-FORM ...)
+  MX OUTPUT
 
-; file: C:/Users/David/AppData/Local/Temp/slime7
-; in: DEFUN =CANON-FORM
-;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::_ STREAMS/EXPR::ATOM-SEQ
-;                          STREAMS/EXPR::ATOM-VALUE STREAMS/EXPR::ATOM-MODS
-;                          STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
-;                          STREAMS/EXPR::COMMENT STREAMS/EXPR::_)
-;         (MAXPC:=LIST (MAXPC:?EQ #\() (STREAMS/EXPR::=CANON-SEQUENCE)
-;                      (MAXPC:=TRANSFORM
-;                       (MAXPC:%ANY
-;                        (MAXPC:%OR 'STREAMS/EXPR::NESTED-@
-;                                   'STREAMS/EXPR::NESTED-CANON
-;                                   'STREAMS/EXPR::MSL-VALUE))
-;                       (LAMBDA (STREAMS/EXPR::VAL) (COND # #)))
-;                      (MAXPC:%ANY 'STREAMS/EXPR::ATOM-MODS)
-;                      (MAXPC:%MAYBE
-;                       (MAXPC:%OR (MAXPC:%SOME #)
-;                                  (MAXPC:=DESTRUCTURE #
-;                                      #
-;                                    #)))
-;                      (MAXPC:%MAYBE 'STREAMS/EXPR::MSL-HASH)
-;                      (MAXPC:%MAYBE 'STREAMS/EXPR::MSL-COMMENT)
-;                      (STREAMS/EXPR::?EXPRESSION-TERMINATOR))
-;       (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
-;             STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
-;             STREAMS/EXPR::SAVED-VAL))
-; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
-; --> SB-INT:BINDING*
-; ==>
-;   (LET* ((#:G13
-;           (SB-C::CHECK-DS-LIST #:|result0| 8 8
-;                                '(#:|_1| STREAMS/EXPR::ATOM-SEQ
-;                                  STREAMS/EXPR::ATOM-VALUE
-;                                  STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA
-;                                  STREAMS/EXPR::HASH STREAMS/EXPR::COMMENT
-;                                  #:|_2|)))
-;          (#:|_1| (POP #:G13))
-;          (STREAMS/EXPR::ATOM-SEQ (POP #:G13))
-;          (STREAMS/EXPR::ATOM-VALUE (POP #:G13))
-;          (STREAMS/EXPR::ATOM-MODS (POP #:G13))
-;          (STREAMS/EXPR::METADATA (POP #:G13))
-;          (STREAMS/EXPR::HASH (POP #:G13))
-;          (STREAMS/EXPR::COMMENT (POP #:G13))
-;          (#:|_2| (POP #:G13)))
-;     (DECLARE (IGNORE #:|_2| #:|_1|))
-;     (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
-;           STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
-;           STREAMS/EXPR::SAVED-VAL))
-;
-; caught STYLE-WARNING:
-;   The variable COMMENT is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-WARNING: redefining STREAMS/EXPR::=CANON-FORM in DEFUN
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(c my-canon I was ovewritten :sub subvalue)")
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
+
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")
+  ATOM-VALUE |   ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+  ATOM-MODS  |   ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+  METADATA   |   (((":" "csub") ("csubvalue")
+                   (("/" (("csubregex" "csugenv" "csugconsume"))))))
+  HASH       |   NIL
+  COMMENT    |   NIL
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
+; compiling (DEFUN EXPLAIN ...)
+WARNING: redefining STREAMS/EXPR::EXPLAIN in DEFUN
 
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("I was ovewritten")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("I was ovewritten")
-NIL
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-STREAMS/EXPR> (parse-explain "(c my-canon)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon canon value :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("canon value")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("canon value")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon canon value :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon my new value :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon my new value :sub subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   ("my new value")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   ("my new value")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub-char)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub-char") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c my-canon :sub-char subvalue)")
-
- ATOM-SEQ    |   ("c" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub-char") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (DEFUN =@-FORM ...)
-WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
-
-STREAMS/EXPR> (parse-explain "(@ my-canon :sub-char subvalue)")
-
- ATOM-SEQ    |   ("@" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub-char") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ my-canon value :sub-char subvalue)")
-
- ATOM-SEQ    |   ("@" "my-canon")
- ATOM-VALUE  |   ("value")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub-char") ("subvalue") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ my-canon value :sub-char)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ my-canon value)")
-
- ATOM-SEQ    |   ("@" "my-canon")
- ATOM-VALUE  |   ("value")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ my-canon)")
-
- ATOM-SEQ    |   ("@" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ my-canon :sub)")
-NIL
-; compiling (DEFUN =GROUPING-FORM ...)
-WARNING: redefining STREAMS/EXPR::=GROUPING-FORM in DEFUN
-
-STREAMS/EXPR> (parse-explain "(w my-canon :sub)")
-
- ATOM-SEQ    |   ("w" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-canon val :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-canon val :sub subval)")
-
- ATOM-SEQ    |   ("w" "my-canon")
- ATOM-VALUE  |   ("val")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subval") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-canon :sub subval)")
-
- ATOM-SEQ    |   ("w" "my-canon")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("subval") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (DEFUN =DATATYPE-FORM ...)
-WARNING: redefining STREAMS/EXPR::=DATATYPE-FORM in DEFUN
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type val))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") "val" NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type val :sub val))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") "val" NIL (((":" "sub") "val" NIL)) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type val :sub val))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") "val" NIL (((":" "sub") "val" NIL)) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type :sub val))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") NIL NIL (((":" "sub") "val" NIL)) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type :sub))")
-NIL
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(w my-world (d type :sub))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") NIL NIL ((":" "sub") NIL NIL) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type not me :sub))")
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (d type not me :sub ok now))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("d" "type") "not me" NIL (((":" "sub") "ok now" NIL)) NIL
-                   NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (DEFUN =FORMAT-FORM ...)
-WARNING: redefining STREAMS/EXPR::=FORMAT-FORM in DEFUN
-; compiling (SETF (FDEFINITION #) ...)
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(w my-world (f type not me :sub ok now))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "not me" NIL (((":" "sub") "ok now" NIL)) NIL
-                   NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type not me :sub))")
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type :sub))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") NIL NIL ((":" "sub") NIL NIL) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
+  MX OUTPUT
+
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
+
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")
 STREAMS/EXPR>
-STREAMS/EXPR> (parse-explain "(w my-world (f type :sub))")
 
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") NIL NIL ((":" "sub") NIL NIL) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
+; No value; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-STREAMS/EXPR> (parse-explain "(w my-world (f type :sub subvalue))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") NIL NIL (((":" "sub") "subvalue" NIL)) NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub))")
-NIL
-; compiling (DEFUN =PRELUDE-FORM ...)
-WARNING: redefining STREAMS/EXPR::=PRELUDE-FORM in DEFUN
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(msl my-program David's Program)")
-
- ATOM-SEQ    |   ("msl" "my-program")
- ATOM-VALUE  |   ("David's Program")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(msl my-program David's Program :sub)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(msl my-program David's Program :sub value)")
-
- ATOM-SEQ    |   ("msl" "my-program")
- ATOM-VALUE  |   ("David's Program")
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("value") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(msl my-program \:sub value)")
-
- ATOM-SEQ    |   ("msl" "my-program")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") ("value") NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(msl my-program :sub)")
-
- ATOM-SEQ    |   ("msl" "my-program")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(msl my-program :sub //program comment)")
-
- ATOM-SEQ    |   ("msl" "my-program")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   (((":" "sub") NIL NIL))
- HASH        |   NIL
- COMMENT     |   "program comment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment))")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment"))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment) //wcomment)")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment"))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   "wcomment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment) //wcomment) (f type2 second type val)")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment"))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   "wcomment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment) (f type2) //wcomment)")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment")
-                  (("f" "type2") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   "wcomment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment) (f type2) (d something) //wcomment)")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment")
-                  (("f" "type2") NIL NIL NIL NIL NIL)
-                  (("d" "something") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   "wcomment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(w my-world (f type value :sub subvalue //fcomment [notallowed]) (f type2) (d something) //wcomment)")
-
- ATOM-SEQ    |   ("w" "my-world")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "type") "value" NIL (((":" "sub") "subvalue" NIL)) NIL
-                   "fcomment [notallowed]")
-                  (("f" "type2") NIL NIL NIL NIL NIL)
-                  (("d" "something") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   "wcomment"
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f function))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "function") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f function (d type)))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "function") NIL (("d" "type") NIL NIL NIL NIL NIL) NIL
-                   NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f function (d type) (f format)))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("(f function")
- ATOM-MODS   |   ((("d" "type") NIL NIL NIL NIL NIL)
-                  (("f" "format") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f function (d type) (f format) [tno]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("(f function")
- ATOM-MODS   |   ((("d" "type") NIL NIL NIL NIL NIL)
-                  (("f" "format") NIL NIL NIL NIL NIL) ("[]" ("tno")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (@ function (d type) (f format) [tno]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "function") NIL
-                   ((("d" "type") NIL NIL NIL NIL NIL)
-                    (("f" "format") NIL NIL NIL NIL NIL) ("[]" ("tno")))
-                   NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f format [no]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("(f format")
- ATOM-MODS   |   (("[]" ("no")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f format) [atommod])")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "format") NIL NIL NIL NIL NIL) ("[]" ("atommod")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (f format [no]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("(f format")
- ATOM-MODS   |   (("[]" ("no")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (c format [no]))")
-NIL
-
-STREAMS/EXPR> (parse-explain "(@WALT (@ format [no]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL (("[]" ("no"))) NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@ format [no]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL (("[]" ("no"))) NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   ((("@" "format") NIL (("[]" ("no"))) NIL NIL NIL))
-NIL
-; compiling (SETF (FDEFINITION #) ...)
-STREAMS/EXPR> (parse-explain "(c WALT (@ format [no]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL (("[]" ("no"))) NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   ((("@" "format") NIL (("[]" ("no"))) NIL NIL NIL))
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT)")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@WED))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   ((("@" "WED") NIL NIL NIL NIL NIL))
-NIL
-; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
-  Load 1 ASDF system:
-    streams
-; Loading "streams"
-....
-
-STREAMS/EXPR> (parse-explain "(c WALT (@WED))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@WED [t]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL (("[]" ("t"))) NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@WED [t]) [ct])")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL (("[]" ("t"))) NIL NIL NIL))
- ATOM-MODS   |   (("[]" ("ct")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (f format)")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (f format))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "format") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (f format /regex/))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   ((("f" "format") NIL ("/" (("regex" NIL NIL))) NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (f format /regex/ (d type)))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("(f format")
- ATOM-MODS   |   (("/" (("regex" NIL NIL))) (("d" "type") NIL NIL NIL NIL NIL))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (f format /regex/ (d type) [no]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("(f format")
- ATOM-MODS   |   (("/" (("regex" NIL NIL))) (("d" "type") NIL NIL NIL NIL NIL)
-                  ("[]" ("no")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@ format /regex/ (d type) [no]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL
-                   (("/" (("regex" NIL NIL)))
-                    (("d" "type") NIL NIL NIL NIL NIL) ("[]" ("no")))
-                   NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@ format /regex/ (d type) [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL
-                   (("/" (("regex" NIL NIL)))
-                    (("d" "type") NIL NIL NIL NIL NIL) ("[]" ("oktransform")))
-                   NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (c format /regex/ (d type) [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("c" "format") NIL
-                   (("/" (("regex" NIL NIL)))
-                    (("d" "type") NIL NIL NIL NIL NIL) ("[]" ("oktransform")))
-                   NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (w format /regex/ (d type) [oktransform]))")
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (@ format /regex/ (d type) [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ((("@" "format") NIL
-                   (("/" (("regex" NIL NIL)))
-                    (("d" "type") NIL NIL NIL NIL NIL) ("[]" ("oktransform")))
-                   NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT (d format /regex/ (d type) [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("(d format")
- ATOM-MODS   |   (("/" (("regex" NIL NIL))) (("d" "type") NIL NIL NIL NIL NIL)
-                  ("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT [d format /regex/ (d type) [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("[d format")
- ATOM-MODS   |   (("/" (("regex" NIL NIL))) (("d" "type") NIL NIL NIL NIL NIL)
-                  ("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT [My bracketed sentence.] [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.]")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(c WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
- ATOM-SEQ    |   ("c" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-
-STREAMS/EXPR> (parse-msl "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-T
-NIL
-
-STREAMS/EXPR> (parse-msl "(@WED (@WED))")
-(("@" "WED") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse-msl "(@WALT (@WED))")
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-; compiling (DEFUN PARSE-EXPLAIN ...)
-WARNING: redefining STREAMS/EXPR:PARSE-EXPLAIN in DEFUN
-
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-((@ WALT)
- ([My bracketed sentence.] (My parenthentical expression.) inside narrative text.)
- (([] (oktransform))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (DEFUN PARSE-EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime26
-; in: DEFUN PARSE-EXPLAIN
-;     (FORMAT T "~A~A~%" STREAMS/EXPR::PARSED-ATOM)
-;
-; caught WARNING:
-;   Too few arguments (1) to FORMAT "~A~A~%": requires at least 2.
-;   See also:
-;     The ANSI Standard, Section 22.3.10.2
-
-;     (STREAMS/EXPR::COLLATE STREAMS/EXPR::@-EXPLAINER STREAMS/EXPR::PARSED-ATOM)
-; ==>
-;   STREAMS/EXPR::@-EXPLAINER
-;
-; note: deleting unreachable code
-;
-; compilation unit finished
-;   caught 1 WARNING condition
-;   printed 1 note
-
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-; compiling (DEFUN PARSE-EXPLAIN ...)
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-NIL
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))
-NIL
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-"(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))"
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-"(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))"
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))")
-
-(("@" "WALT")
- ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- (("[]" ("oktransform"))) NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ("[My bracketed sentence.] (My parenthentical expression.) inside narrative text.")
- ATOM-MODS   |   (("[]" ("oktransform")))
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@ WALT [My bracketed sentence.] (My parenthentical expression.) inside narrative text. [oktransform]))"
-
-STREAMS/EXPR>
-STREAMS/EXPR> (parse-msl "(@WALT (@WED))")
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-6
-; compiling (DEFUN PARSE-EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime35
-; in: DEFUN EXPLAIN
-;     (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;           (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;           (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM))))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T (FORMAT T "~% ~A~13T| ~15T ~S" (CAR #) (CAR #))
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM is defined but never used.
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LABEL is defined but never used.
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-VALUE is defined but never used.
-
-; file: C:/Users/David/AppData/Local/Temp/slime35
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-;
-; compilation unit finished
-;   Undefined variable:
-;     ITEM
-;   caught 1 WARNING condition
-;   caught 3 STYLE-WARNING conditions
-WARNING: redefining STREAMS/EXPR::EXPLAIN in DEFUN
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime36
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" (CAR (CAR STREAMS/EXPR::ITEM-LIST))
-;                    (CAR (CDR #)))
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-;
-; caught ERROR:
-;   The LET binding spec (COND ((NOT ITEM-LIST) NIL)
-;                              (T
-;                               (FORMAT T "~% ~A~13T| ~15T ~S"
-;                                       (CAR (CAR ITEM-LIST))
-;                                       (CAR (CDR (CAR ITEM-LIST))))
-;                               (EXPLAIN (CDR ITEM-LIST)))) is malformed.
-
-;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
-;       "Show a printed explainer for a parsed MSL expression."
-;       (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;             (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;             (STREAMS/EXPR::ITEM-VALUE (CAR #))
-;             (COND (# NIL) (T # #)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
-;         (STREAMS/EXPR::ITEM-LIST)
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Show a printed explainer for a parsed MSL expression."
-;       (BLOCK STREAMS/EXPR::EXPLAIN
-;         (LET ((STREAMS/EXPR::ITEM #)
-;               (STREAMS/EXPR::ITEM-LABEL #)
-;               (STREAMS/EXPR::ITEM-VALUE #)
-;               (COND # #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 ERROR condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime37
-; in: DEFUN EXPLAIN
-;     (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;           (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;           (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM))))
-;       (COND
-;        ((NOT STREAMS/EXPR::ITEM-LIST) NIL
-;         (T (FORMAT T "~% ~A~13T| ~15T ~S" # #) (STREAMS/EXPR::EXPLAIN #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM is defined but never used.
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LABEL is defined but never used.
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-VALUE is defined but never used.
-
-; file: C:/Users/David/AppData/Local/Temp/slime37
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-
-;     (T
-;      (FORMAT T "~% ~A~13T| ~15T ~S" (CAR (CAR STREAMS/EXPR::ITEM-LIST))
-;              (CAR (CDR (CAR STREAMS/EXPR::ITEM-LIST))))
-;      (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught WARNING:
-;   The function T is undefined, and its name is reserved by ANSI CL so that even
-;   if it were defined later, the code doing so would not be portable.
-;
-; compilation unit finished
-;   Undefined function:
-;     T
-;   Undefined variable:
-;     ITEM
-;   caught 2 WARNING conditions
-;   caught 3 STYLE-WARNING conditions
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime38
-; in: DEFUN EXPLAIN
-;     (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST)))
-;       (COND
-;        ((NOT STREAMS/EXPR::ITEM-LIST) NIL
-;         (T (FORMAT T "~% ~A~13T| ~15T ~S" # #) (STREAMS/EXPR::EXPLAIN #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM is defined but never used.
-
-; file: C:/Users/David/AppData/Local/Temp/slime38
-; in: DEFUN EXPLAIN
-;     (T
-;      (FORMAT T "~% ~A~13T| ~15T ~S" (CAR (CAR STREAMS/EXPR::ITEM-LIST))
-;              (CAR (CDR (CAR STREAMS/EXPR::ITEM-LIST))))
-;      (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught WARNING:
-;   The function T is undefined, and its name is reserved by ANSI CL so that even
-;   if it were defined later, the code doing so would not be portable.
-;
-; compilation unit finished
-;   Undefined function:
-;     T
-;   caught 1 WARNING condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime39
-; in: DEFUN EXPLAIN
-;     (T
-;      (FORMAT T "~% ~A~13T| ~15T ~S" (CAR STREAMS/EXPR::ITEM)
-;              (CAR (CDR STREAMS/EXPR::ITEM)))
-;      (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught WARNING:
-;   The function T is undefined, and its name is reserved by ANSI CL so that even
-;   if it were defined later, the code doing so would not be portable.
-;
-; compilation unit finished
-;   Undefined function:
-;     T
-;   caught 1 WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime41
-; in: DEFUN EXPLAIN
-;     (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T (FORMAT T "~% ~A~13T| ~15T ~S" (CAR #) (CAR #))
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime44
-; in: DEFUN EXPLAIN
-;     (LET ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;           (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T (FORMAT T "~% ~A~13T| ~15T ~S" (CAR STREAMS/EXPR::ITEM) (CAR #))
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LABEL is defined but never used.
-
-; file: C:/Users/David/AppData/Local/Temp/slime44
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-;
-; compilation unit finished
-;   Undefined variable:
-;     ITEM
-;   caught 1 WARNING condition
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime45
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-;
-; compilation unit finished
-;   Undefined variable:
-;     ITEM
-;   caught 1 WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime46
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-;
-; compilation unit finished
-;   Undefined variable:
-;     ITEM
-;   caught 1 WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime47
-; in: DEFUN EXPLAIN
-;     ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught ERROR:
-;   illegal function call
-
-;     (STREAMS/EXPR::LETX ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST)))
-;      (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;      (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;            (T (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL (CAR #))
-;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; note: deleting unreachable code
-
-;     (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;             (CAR (CDR STREAMS/EXPR::ITEM)))
-; ==>
-;   "~% ~A~13T| ~15T ~S"
-;
-; note: deleting unreachable code
-
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; note: deleting unreachable code
-
-; file: C:/Users/David/AppData/Local/Temp/slime47
-; in: DEFUN EXPLAIN
-;     (CAR STREAMS/EXPR::ITEM)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM
-
-;     (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;             (CAR (CDR STREAMS/EXPR::ITEM)))
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM-LABEL
-
-;     (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::ITEM-LABEL
-
-;     (STREAMS/EXPR::LETX ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST)))
-;      (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;      (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;            (T (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL (CAR #))
-;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::LETX
-;
-; compilation unit finished
-;   Undefined functions:
-;     ITEM-LABEL LETX
-;   Undefined variables:
-;     ITEM ITEM-LABEL
-;   caught 1 ERROR condition
-;   caught 2 WARNING conditions
-;   caught 2 STYLE-WARNING conditions
-;   printed 3 notes
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime48
-; in: DEFUN EXPLAIN
-;     (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;             (CAR (CDR STREAMS/EXPR::ITEM)))
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEM-LABEL
-
-;     (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::ITEM-LABEL
-;
-; compilation unit finished
-;   Undefined function:
-;     ITEM-LABEL
-;   Undefined variable:
-;     ITEM-LABEL
-;   caught 1 WARNING condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime50
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE)
-;            (CAR (CDR STREAMS/EXPR::ITEM)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL (CAR #))
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-VALUE is defined but never used.
-;
-; caught STYLE-WARNING:
-;   The variable CAR is defined but never used.
-;
-; compilation unit finished
-;   caught 2 STYLE-WARNING conditions
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime51
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE)
-;            (CAR (CDR STREAMS/EXPR::ITEM)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable CAR is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   NIL
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN PARSE-EXPLAIN ...)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime53
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE)
-;            (CAR (CDR STREAMS/EXPR::ITEM)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable CAR is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   NIL
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN PARSE-EXPLAIN ...)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime55
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE)
-;            (CAR (CDR STREAMS/EXPR::ITEM)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable CAR is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime58
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           ((EQ (LENGTH STREAMS/EXPR::ITEM-VALUE) 6) 'STREAMS/EXPR::EMBEDDED ATOM)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-; --> IF IF
-; ==>
-;   (PROGN 'STREAMS/EXPR::EMBEDDED ATOM)
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:ATOM
-;
-; compilation unit finished
-;   Undefined variable:
-;     ATOM
-;   caught 1 WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-
-STREAMS/EXPR> (eq (length '(0 1 2 3 4 5)) 6)
-T
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
+  MX OUTPUT
 
-; file: C:/Users/David/AppData/Local/Temp/slime62
-; in: DEFUN EXPLAIN
-;     (LENGTH STREAMS/EXPR::ITEM-VALUE)
-; ==>
-;   STREAMS/EXPR::ITEM-VALUE
-;
-; note: deleting unreachable code
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-; file: C:/Users/David/AppData/Local/Temp/slime62
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           ((EQ (LENGTH STREAMS/EXPR::ITEM-VALUE) 6) (PRINT 6))
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;           (PRINT (LENGTH STREAMS/EXPR::ITEM-VALUE)))
-; --> IF IF IF
-; ==>
-;   (IF PRINT
-;       (LENGTH STREAMS/EXPR::ITEM-VALUE)
-;       NIL)
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:PRINT
-;
-; compilation unit finished
-;   Undefined variable:
-;     PRINT
-;   caught 1 WARNING condition
-;   printed 1 note
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime63
-; in: DEFUN EXPLAIN
-;     (LENGTH STREAMS/EXPR::ITEM-VALUE)
-; ==>
-;   STREAMS/EXPR::ITEM-VALUE
-;
-; note: deleting unreachable code
-
-; file: C:/Users/David/AppData/Local/Temp/slime63
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           ((EQ (LENGTH STREAMS/EXPR::ITEM-VALUE) 6) (PRINT 6))
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;           (PRINC (LENGTH STREAMS/EXPR::ITEM-VALUE)))
-; --> IF IF IF
-; ==>
-;   (IF PRINC
-;       (LENGTH STREAMS/EXPR::ITEM-VALUE)
-;       NIL)
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:PRINC
-;
-; compilation unit finished
-;   Undefined variable:
-;     PRINC
-;   caught 1 WARNING condition
-;   printed 1 note
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL0000012
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime65
-; in: DEFUN EXPLAIN
-;     (FORMAT T "~% ~A~13T| ~15T ~S ~A" STREAMS/EXPR::ITEM-LABEL
-;             STREAMS/EXPR::ITEM-VALUE (LENGTH STREAMS/EXPR::ITEM-VALUE)
-;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught STYLE-WARNING:
-;   Too many arguments (4) to FORMAT "~% ~A~13T| ~15T ~S ~A": uses at most 3.
-;   See also:
-;     The ANSI Standard, Section 22.3.10.2
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- COMMENT     |   NIL 0
- HASH        |   NIL 0
- METADATA    |   NIL 0
- ATOM-MODS   |   NIL 0
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL)) 1
- ATOM-SEQ    |   ("@" "WALT") 2
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime66
-; in: DEFUN EXPLAIN
-;     (FORMAT T "~% ~A~13T| ~15T ~S ~A" STREAMS/EXPR::ITEM-LABEL
-;             STREAMS/EXPR::ITEM-VALUE (LENGTH (CAR STREAMS/EXPR::ITEM-VALUE))
-;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))
-;
-; caught STYLE-WARNING:
-;   Too many arguments (4) to FORMAT "~% ~A~13T| ~15T ~S ~A": uses at most 3.
-;   See also:
-;     The ANSI Standard, Section 22.3.10.2
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- COMMENT     |   NIL 0
- HASH        |   NIL 0
- METADATA    |   NIL 0
- ATOM-MODS   |   NIL 0
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL)) 6
- ATOM-SEQ    |   ("@" "WALT") 1
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime67
-; in: DEFUN EXPLAIN
-;     (LENGTH (CAR STREAMS/EXPR::ITEM-VALUE) 6)
-;
-; caught WARNING:
-;   The function LENGTH is called with two arguments, but wants exactly one.
-;
-; compilation unit finished
-;   caught 1 WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime68
-; in: DEFUN EXPLAIN
-;     (LENGTH (CAR STREAMS/EXPR::ITEM-VALUE) 6)
-;
-; caught WARNING:
-;   The function LENGTH is called with two arguments, but wants exactly one.
-;
-; compilation unit finished
-;   caught 1 WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-6
-
-"(@WALT (@WED))"
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-6
-
-"(@WALT (@WED))"
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-6
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime72
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-;
-; caught ERROR:
-;   The LET* binding spec (COND ((NOT ITEM-LIST) NIL)
-;                               (T
-;                                (FORMAT T "~% ~A~13T| ~15T ~S" ITEM-LABEL
-;                                        ITEM-VALUE)
-;                                (EXPLAIN (CDR ITEM-LIST)))) is malformed.
-
-;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
-;       "Show a printed explainer for a parsed MSL expression."
-;       (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;              (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;              (STREAMS/EXPR::ITEM-VALUE (CAR #))
-;              (COND (# NIL) (T # #)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
-;         (STREAMS/EXPR::ITEM-LIST)
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Show a printed explainer for a parsed MSL expression."
-;       (BLOCK STREAMS/EXPR::EXPLAIN
-;         (LET* ((STREAMS/EXPR::ITEM #)
-;                (STREAMS/EXPR::ITEM-LABEL #)
-;                (STREAMS/EXPR::ITEM-VALUE #)
-;                (COND # #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 ERROR condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime73
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-;
-; caught ERROR:
-;   The LET* binding spec (COND ((NOT ITEM-LIST) NIL)
-;                               (T
-;                                (FORMAT T "~% ~A~13T| ~15T ~S" ITEM-LABEL
-;                                        ITEM-VALUE)
-;                                (EXPLAIN (CDR ITEM-LIST)))) is malformed.
-
-;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
-;       "Show a printed explainer for a parsed MSL expression."
-;       (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;              (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;              (STREAMS/EXPR::ITEM-VALUE (CAR #))
-;              (COND (# NIL) (T # #)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
-;         (STREAMS/EXPR::ITEM-LIST)
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Show a printed explainer for a parsed MSL expression."
-;       (BLOCK STREAMS/EXPR::EXPLAIN
-;         (LET* ((STREAMS/EXPR::ITEM #)
-;                (STREAMS/EXPR::ITEM-LABEL #)
-;                (STREAMS/EXPR::ITEM-VALUE #)
-;                (COND # #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 ERROR condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime74
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-;
-; caught ERROR:
-;   The LET* binding spec (COND ((NOT ITEM-LIST) NIL)
-;                               (T
-;                                (FORMAT T "~% ~A~13T| ~15T ~S" ITEM-LABEL
-;                                        ITEM-VALUE)
-;                                (EXPLAIN (CDR ITEM-LIST)))) is malformed.
-
-;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
-;       "Show a printed explainer for a parsed MSL expression."
-;       (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;              (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;              (STREAMS/EXPR::ITEM-VALUE (CAR #))
-;              (COND (# NIL) (T # #)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
-;         (STREAMS/EXPR::ITEM-LIST)
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Show a printed explainer for a parsed MSL expression."
-;       (BLOCK STREAMS/EXPR::EXPLAIN
-;         (LET* ((STREAMS/EXPR::ITEM #)
-;                (STREAMS/EXPR::ITEM-LABEL #)
-;                (STREAMS/EXPR::ITEM-VALUE #)
-;                (COND # #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 ERROR condition
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime76
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-;
-; caught ERROR:
-;   The LET* binding spec (COND ((NOT ITEM-LIST) NIL)
-;                               (T
-;                                (FORMAT T "~% ~A~13T| ~15T ~S" ITEM-LABEL
-;                                        ITEM-VALUE)
-;                                (EXPLAIN (CDR ITEM-LIST)))) is malformed.
-
-;     (DEFUN STREAMS/EXPR::EXPLAIN (STREAMS/EXPR::ITEM-LIST)
-;       "Show a printed explainer for a parsed MSL expression."
-;       (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;              (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;              (STREAMS/EXPR::ITEM-VALUE (CAR #))
-;              (COND (# NIL) (T # #)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN
-;         (STREAMS/EXPR::ITEM-LIST)
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Show a printed explainer for a parsed MSL expression."
-;       (BLOCK STREAMS/EXPR::EXPLAIN
-;         (LET* ((STREAMS/EXPR::ITEM #)
-;                (STREAMS/EXPR::ITEM-LABEL #)
-;                (STREAMS/EXPR::ITEM-VALUE #)
-;                (COND # #)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-LIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 ERROR condition
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime77
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM)))
-;            (STREAMS/EXPR::ITEM-SUBLIST (CAR STREAMS/EXPR::ITEM-VALUE)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-SUBLIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime79
-; in: DEFUN EXPLAIN
-;     (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;           (AND (LISTP STREAMS/EXPR::ITEMSUBLIST)
-;                (EQ (LENGTH STREAMS/EXPR::ITEM-SUBLIST) 6))
-;           (STREAMS/EXPR::EXPLAIN STREAMS/EXPR::ITEM-SUBLIST)
-;           (T
-;            (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                    STREAMS/EXPR::ITEM-VALUE)
-;            (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST))))
-; --> IF
-; ==>
-;   (IF AND
-;       (PROGN
-;        (LISTP STREAMS/EXPR::ITEMSUBLIST)
-;        (EQ (LENGTH STREAMS/EXPR::ITEM-SUBLIST) 6))
-;       (IF STREAMS/EXPR::EXPLAIN
-;           STREAMS/EXPR::ITEM-SUBLIST
-;           (THE T
-;                (PROGN
-;                 (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                         STREAMS/EXPR::ITEM-VALUE)
-;                 (STREAMS/EXPR::EXPLAIN #)))))
-;
-; caught WARNING:
-;   undefined variable: COMMON-LISP:AND
-
-; --> IF IF
-; ==>
-;   (IF STREAMS/EXPR::EXPLAIN
-;       STREAMS/EXPR::ITEM-SUBLIST
-;       (THE T
-;            (PROGN
-;             (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                     STREAMS/EXPR::ITEM-VALUE)
-;             (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::EXPLAIN
-
-;     (LISTP STREAMS/EXPR::ITEMSUBLIST)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEMSUBLIST
-;
-; compilation unit finished
-;   Undefined variables:
-;     AND EXPLAIN ITEMSUBLIST
-;   caught 3 WARNING conditions
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime80
-; in: DEFUN EXPLAIN
-;     (LISTP STREAMS/EXPR::ITEMSUBLIST)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::ITEMSUBLIST
-;
-; compilation unit finished
-;   Undefined variable:
-;     ITEMSUBLIST
-;   caught 1 WARNING condition
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  LABEL      |   MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
+  ATOM-SEQ   |   ("c" "WALT")
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")((@ WED) NIL NIL NIL NIL NIL)
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")(ATOM-VALUE
+                              (wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2))
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- (@ WED)     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")(wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2)
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- (@ WED)     |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")!(wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2)
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")!wvalue
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- (@ WED)     |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+
+  MX OUTPUT
+
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
+
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")
+  ATOM-SEQ   |   ("@" "WED")
+  ATOM-VALUE |   NIL
+  ATOM-MODS  |   NIL
+  METADATA   |   NIL
+  HASH       |   NIL
+  COMMENT    |   NIL
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
+; compiling (DEFUN EXPLAIN ...)
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+
+  MX OUTPUT
+
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
+
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
 
-; file: C:/Users/David/AppData/Local/Temp/slime87
+; file: C:/Users/David/AppData/Local/Temp/slime13
 ; in: DEFUN EXPLAIN
 ;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
 ;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
 ;            (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM)))
-;            (STREAMS/EXPR::ITEM-SUBLIST (CAR STREAMS/EXPR::ITEM-VALUE)))
+;            (STREAMS/EXPR::ITEM-SUBLIST (CAR (CDR STREAMS/EXPR::ITEM-VALUE)))
+;            (STREAMS/EXPR::ATOM-EXPLAINER
+;             '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
+;               STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
+;               STREAMS/EXPR::COMMENT)))
 ;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
+;             ((EQ (LENGTH STREAMS/EXPR::ITEM-SUBLIST) 6) (PRINC "!")
+;              (PRINC STREAMS/EXPR::ITEM-SUBLIST))
 ;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
+;              (FORMAT T "~%  ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
 ;                      STREAMS/EXPR::ITEM-VALUE)
 ;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
 ;
 ; caught STYLE-WARNING:
-;   The variable ITEM-SUBLIST is defined but never used.
+;   The variable ATOM-EXPLAINER is defined but never used.
 ;
 ; compilation unit finished
 ;   caught 1 STYLE-WARNING condition
 
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
+  LABEL      |   MX OUTPUT
 
-; file: C:/Users/David/AppData/Local/Temp/slime88
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM)))
-;            (STREAMS/EXPR::ITEM-SUBLIST (CAR STREAMS/EXPR::ITEM-VALUE)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-SUBLIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
-
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
 
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+  MSL
 
-"(@WALT (@WED))"
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL NIL NIL NIL NIL))
- (@ WED)     |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")!
+  ATOM-SEQ   |   ("@" "WED")
+  ATOM-VALUE |   NIL
+  ATOM-MODS  |   NIL
+  METADATA   |   NIL
+  HASH       |   NIL
+  COMMENT    |   NIL
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 ; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
+  MX OUTPUT
 
- ATOM-SEQ    |   ("@" "WALT")
- (@ WED)     |   NIL
- ATOM-VALUE  |   NIL
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
+(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
+ ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+ (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
+ NIL NIL)
 
-"(@WALT (@WED))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(@WALT (@WED))")
+  LABEL      |   MX OUTPUT
+
+  ATOM-SEQ   |   ("c" "WALT")
+  ATOM-SEQ   |   ("@" "WED")
+  ATOM-VALUE |   NIL
+  ATOM-MODS  |   NIL
+  METADATA   |   NIL
+  HASH       |   NIL
+  COMMENT    |   NIL
+  ATOM-VALUE |   NIL
+  ATOM-MODS  |   ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
+  METADATA   |   (((":" "csub") ("csubvalue")
+                   (("/" (("csubregex" "csugenv" "csugconsume"))))))
+  HASH       |   NIL
+  COMMENT    |   NIL
+
+  MSL
+
+"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
 
-(("@" "WALT") ((("@" "WED") NIL NIL NIL NIL NIL)) NIL NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- (@ WED)     |   NIL
- ATOM-VALUE  |   NIL
-
-"(@WALT (@WED))"
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED /regex/))")
-
-(("@" "WALT") ((("@" "WED") NIL (("/" (("regex" NIL NIL)))) NIL NIL NIL)) NIL
- NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- (@ WED)     |   NIL
- ATOM-VALUE  |   NIL
-
-"(@WALT (@WED /regex/))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime92
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM)))
-;            (STREAMS/EXPR::ITEM-SUBLIST (CAR STREAMS/EXPR::ITEM-VALUE)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             (T
-;              (FORMAT T "~% ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
-;
-; caught STYLE-WARNING:
-;   The variable ITEM-SUBLIST is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-
-STREAMS/EXPR> (parse-explain "(@WALT (@WED /regex/))")
-
-(("@" "WALT") ((("@" "WED") NIL (("/" (("regex" NIL NIL)))) NIL NIL NIL)) NIL
- NIL NIL NIL)
-
- ATOM-SEQ    |   ("@" "WALT")
- ATOM-VALUE  |   ((("@" "WED") NIL (("/" (("regex" NIL NIL)))) NIL NIL NIL))
- ATOM-MODS   |   NIL
- METADATA    |   NIL
- HASH        |   NIL
- COMMENT     |   NIL
-
-"(@WALT (@WED /regex/))"
-
-STREAMS/EXPR> 
+STREAMS/EXPR>
