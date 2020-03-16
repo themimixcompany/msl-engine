@@ -193,7 +193,8 @@ character or a string to designate an entity."
     (make-instance 'mx-atom-modsdata
                    :ns ns :key key :value value
                    :mods mods :metadata metadata
-                   :comment comment)))
+                   :comment comment
+                   :mx-universe streams/specials:*mx-universe*)))
 
 (defun make-mx-atom-metadata (seq &optional value mods)
   "Return a new MX-ATOM-METADATA instance."
@@ -206,7 +207,7 @@ character or a string to designate an entity."
 (defmethod initialize-instance :after ((mx-atom-data mx-atom-data) &key mx-universe)
   "Perform operations on an MX-ATOM-DATA instance after instantiation in MX-UNIVERSE."
   (let ((counter (update-atom-counter mx-universe)))
-    (with-slots (id)
+    (with-slots (id key)
         mx-atom-data
       (setf id counter)
       (with-slots (atom-table)
@@ -216,7 +217,7 @@ character or a string to designate an entity."
 (defmethod initialize-instance :after ((mx-atom-modsdata mx-atom-modsdata) &key mx-universe)
   "Perform operations on an MX-ATOM-MODSDATA instance after instantiation in MX-UNIVERSE."
   (let ((counter (update-mods-counter mx-universe)))
-    (with-slots (id)
+    (with-slots (id key)
         mx-atom-modsdata
       (setf id counter)
       (with-slots (mods-table)
@@ -231,15 +232,15 @@ character or a string to designate an entity."
 
 (defmethod print-object ((mx-atom-metadata mx-atom-metadata) stream)
   (print-unreadable-object (mx-atom-metadata stream :type t)
-    (with-slots (id ns key)
+    (with-slots (ns key)
         mx-atom-metadata
-      (format stream "~A ~A ~A" id ns key))))
+      (format stream "~A ~A" ns key))))
 
 (defmethod print-object ((mx-atom-modsdata mx-atom-modsdata) stream)
   (print-unreadable-object (mx-atom-modsdata stream :type t)
-    (with-slots (ns key)
+    (with-slots (id ns key)
         mx-atom-modsdata
-      (format stream "~A ~A" ns key))))
+      (format stream "~A ~A ~A" id ns key))))
 
 (defmethod print-object ((h hash-table) stream)
   (print-unreadable-object (h stream :type t)
