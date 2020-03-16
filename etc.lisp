@@ -1,8 +1,11 @@
 ;;;; etc.lisp - things that do not belong to the other modules
 
 (uiop:define-package #:streams/etc
-    (:use #:cl)
-  (:export #:dump-object))
+  (:use #:cl)
+  (:export #:dump-object
+           #:dump-universe
+           #:dump-msl
+           #:dump-metadata))
 
 (in-package #:streams/etc)
 
@@ -30,3 +33,12 @@
                  (funcall (intern (marie:string-convert table)
                                   (find-package :streams/classes))
                           streams/specials:*mx-universe*))))))
+
+(defun dump-msl (expr)
+  "Print infromation about EXPR as parsed MSL."
+  (streams/etc:dump-object (store-msl expr)))
+
+(defun dump-metadata (mx-atom)
+  "Print information about the METADATA slot of MX-ATOM."
+  (marie:when-let ((metadata (streams/classes:metadata mx-atom)))
+    (loop :for m :in metadata :do (streams/etc:dump-object m))))

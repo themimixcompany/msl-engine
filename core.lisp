@@ -3,8 +3,6 @@
 (uiop:define-package #:streams/core
   (:use #:cl)
   (:export #:store-msl
-           #:dump-msl
-           #:dump-metadata
            #:eval-msl))
 
 (in-package #:streams/core)
@@ -229,6 +227,19 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (let ((pairs (namespace-pairs path)))
       pairs)))
 
+(defun build-mx-atom-data (&rest data)
+  "Return an MX-ATOM-DATA instance from DATA."
+  (when data
+    (apply #'streams/classes:make-mx-atom-data data)))
+
+(defun build-mx-atom-modsdata (modsdata)
+  "Return an MX-ATOM-MODSDATA instance from MODSDATA."
+  (flet ((fn (args)
+           (apply #'streams/classes:make-mx-atom-modsdata args)))
+    ;; add code for handling the different types of mods here
+    (when modsdata
+      (mapcar #'fn modsdata))))
+
 (defun build-mx-atom-metadata (metadata)
   "Return a list of MX-ATOM-METADATA instances from METADATA."
   (flet ((fn (args)
@@ -236,31 +247,23 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (when metadata
       (mapcar #'fn metadata))))
 
-(defun build-mx-atom-data (&rest data)
-  "Return an MX-ATOM-DATA instance from DATA."
-  (when data
-    (apply #'streams/classes:make-mx-atom-data data)))
-
-(defun store-msl (expr)
+(defun store-msl (expr &optional force)
   "Parse EXPR as MSL and store the resulting object in the universe."
-  (multiple-value-bind (value presentp successp)
-      (streams/expr::parse-msl expr)
-    (if (and value presentp successp)
-        (destructuring-bind ((ns key) &optional value mods metadata hash comment)
-            value
-          (multiple-value-bind (v existsp)
-              (namespace-hash key ns)
-            (cond (existsp v)
-                  (t (let* ((m (build-mx-atom-metadata metadata))
-                            (d (build-mx-atom-data (list ns key) value mods m hash comment)))
-                       d)))))
-        nil)))
-
-(defun dump-msl (expr)
-  "Print infromation about EXPR as parsed MSL."
-  (streams/etc:dump-object (store-msl expr)))
-
-(defun dump-metadata (mx-atom)
-  "Print information about the METADATA slot of MX-ATOM."
-  (marie:when-let ((metadata (streams/classes:metadata mx-atom)))
-    (loop :for m :in metadata :do (streams/etc:dump-object m))))
+  (flet ((fn (seq &optional value mods metadata hash comment)
+           (let* ((m (build-mx-atom-metadata metadata))
+                  ;; handle mods here
+                  (d (build-mx-atom-data seq value mods m hash comment)))
+             d)))
+    (multiple-value-bind (value presentp successp)
+        (streams/expr:parse-msl expr)
+      (if (and value presentp successp)
+          (destructuring-bind ((ns key) &optional value mods metadata hash comment)
+              value
+            (multiple-value-bind (v existsp)
+                (namespace-hash key ns)
+              ;; Also recurse with nested exprs
+              (symbol-macrolet ((mk (fn (list ns key) value mods metadata hash comment)))
+                (cond (existsp v)
+                      (force mk)
+                      (t mk)))))
+          nil))))
