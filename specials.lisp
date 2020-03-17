@@ -32,9 +32,6 @@
 (defvar *format-counter* 10000
   "The initial mx-format counter value.")
 
-(defvar *metadata-counter* 100000
-  "The initial mx-metadata counter value.")
-
 (defvar *namespaces-names*
   '(("c" . "canon")
     ("m" . "machine")
@@ -58,7 +55,8 @@ the full name.")
   "The common keys used in atom tables.")
 
 (defvar *atom-keys*
-  (append *base-keys* '(":" "[]" "f" "d" "#"))
+  ;; (append *base-keys* '(":" "[]" "f" "d" "#"))
+  (append *base-keys* '("[]" "f" "d" "#"))
   "The keys used for atom data.")
 
 (defvar *datatype-keys*
