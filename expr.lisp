@@ -54,6 +54,16 @@
 
 ;;
 
+(defun parse-setters (expr)
+  "Parse an MSL expression and explain as MIL single-setters."
+       (format t "~%")
+       (explain-lines (parse-msl expr)))
+
+(defun explain-lines (setters &optional (line-num 1))
+  "Print each setter from a list on a separate line."
+  (cond ((not setters) NIL)
+        (t (format t "~A.~4T~S~%" line-num (car setters)) (explain-lines (cdr setters) (+ line-num 1)))))
+
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
   (let* ((item (car item-list))
@@ -353,36 +363,46 @@
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
-   (let ((saved-val) (saved-seq))
+   (let ((atom-val) (atom-seq) (meta-seq))
      (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
                    (=list (?eq #\left_parenthesis)
                           (=transform
                                       (=@-sequence)
                                       (lambda (seq)
-                                              (setf saved-seq seq)))
+                                              (setf atom-seq seq)))
                           (=transform (%any (%or 'nested-@
                                                  'nested-group
                                                  'msl-value))
                                       (lambda (val)
-                                              (cond (val (setf saved-val val))
-                                                    (t (setf saved-val NIL)))))
+                                              (cond (val (setf atom-val val))
+                                                    (t (setf atom-val NIL)))))
                           (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                               'atom-mods
-                                            (list (append saved-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
+                                            (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                           (%maybe (%or
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
-                                                (=list 'metadata-sequence
+                                                (=list (=transform
+                                                            'metadata-sequence
+                                                            (lambda (seq)
+                                                                    (setf meta-seq seq)))
                                                        (%some (%or 'nested-@
                                                                    'nested-group
                                                                    'msl-value))
-                                                       (%any 'atom-mods))
-                                                (=list 'metadata-sequence
+                                                       (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
+                                                                           'atom-mods
+                                                                           (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                                                (=list (=transform
+                                                            'metadata-sequence
+                                                            (lambda (seq)
+                                                                    (setf meta-seq seq)))
                                                        (%any (%or 'nested-@
                                                                   'nested-group
                                                                   'msl-value))
-                                                       (%some 'atom-mods)))
-                                              (list meta-seq meta-value meta-mods)))
+                                                       (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
+                                                                           'atom-mods
+                                                                           (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))))
+                                              (list (append atom-seq meta-seq) meta-value meta-mods)))
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list 'metadata-sequence
                                                (?satisfies (lambda (val)
@@ -390,8 +410,10 @@
                                                            (%maybe (%or 'nested-@
                                                                         'nested-group
                                                                         'msl-value)))
-                                               (%any 'atom-mods))
-                                        (list (list meta-seq meta-value meta-mods)))))
+                                               (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
+                                                                   'atom-mods
+                                                                   (list (append saved-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                                        (list (list (append saved-seq meta-seq) meta-value meta-mods)))))
                           (%maybe 'msl-hash)
                           (%maybe 'msl-comment)
                           'expression-terminator)
