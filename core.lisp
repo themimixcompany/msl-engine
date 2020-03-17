@@ -2,7 +2,11 @@
 
 (uiop:define-package #:streams/core
   (:use #:cl)
-  (:export #:store-msl
+  (:export #:build-mx-atom-data
+           #:build-mx-atom-modsdata
+           #:build-mx-atom-metadata
+           #:normalize-mods
+           #:store-msl
            #:eval-msl))
 
 (in-package #:streams/core)
@@ -76,9 +80,19 @@ is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
 not. "
   (every #'marie:solop metadata))
 
+(defun entity-string (id)
+  "Return the corresponding universe name from ID, where ID is either a single
+character or a string to designate an entity."
+  (cdr (assoc id streams/specials:*namespaces-names* :test #'equal)))
+
+(defun table-name (ns &optional package)
+  "Return the corresponding table of NS from the universe."
+  (let ((name (entity-string ns)))
+    (marie:hyphenate-intern package name "table")))
+
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
-  (let* ((function (streams/classes:table-name namespace :streams/classes))
+  (let* ((function (table-name namespace :streams/classes))
          (table (funcall function streams/specials:*mx-universe*)))
     table))
 
@@ -91,27 +105,27 @@ not. "
   (let ((table (namespace-table namespace)))
     (setf (gethash key table) value)))
 
-(defun update-metadata (obj spec)
-  "Update mx-atom OBJ with the list SPEC. The first value of SPEC is a list of
-two elements where the first element is the type of the table and the second
-element is the key. The second value of SPEC is a either a string, integer, or
-character."
-  (destructuring-bind ((table key) &optional value)
-      spec
-    (let* ((metadata (streams/classes:metadata obj))
-           (metatable (gethash table metadata)))
-      (cond ((null value) (gethash key metatable))
-            (value (setf (gethash key metatable) value))
-            (t nil)))))
+;; (defun update-metadata (obj spec)
+;;   "Update mx-atom OBJ with the list SPEC. The first value of SPEC is a list of
+;; two elements where the first element is the type of the table and the second
+;; element is the key. The second value of SPEC is a either a string, integer, or
+;; character."
+;;   (destructuring-bind ((table key) &optional value)
+;;       spec
+;;     (let* ((metadata (streams/classes:metadata obj))
+;;            (metatable (gethash table metadata)))
+;;       (cond ((null value) (gethash key metatable))
+;;             (value (setf (gethash key metatable) value))
+;;             (t nil)))))
 
-(defun dump-metadata (obj)
-  "Display information about the metadata stored in OBJ."
-  (let ((table (streams/classes:metadata obj)))
-    (loop :for k :being :the :hash-keys :in table
-          :for v :being :the :hash-values :in table
-          :do (progn
-                (format t "* ~S~%" k)
-                (marie:dump-table v)))))
+;; (defun dump-metadata (obj)
+;;   "Display information about the metadata stored in OBJ."
+;;   (let ((table (streams/classes:metadata obj)))
+;;     (loop :for k :being :the :hash-keys :in table
+;;           :for v :being :the :hash-values :in table
+;;           :do (progn
+;;                 (format t "* ~S~%" k)
+;;                 (marie:dump-table v)))))
 
 ;; (defun eval-expr (expr)
 ;;   "Evaluate EXPR as a complete MSL expression, store the result into the active
@@ -227,10 +241,10 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (let ((pairs (namespace-pairs path)))
       pairs)))
 
-(defun build-mx-atom-data (&rest data)
-  "Return an MX-ATOM-DATA instance from DATA."
-  (when data
-    (apply #'streams/classes:make-mx-atom-data data)))
+(defun build-mx-atom (&rest args)
+  "Return an MX-ATOM instance from ARGS."
+  (when args
+    (apply #'streams/classes:make-mx-atom args)))
 
 (defmacro define-mod-checker (name type &optional doc)
   "Define a mod checker."
@@ -276,40 +290,19 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
         :finally (return (append (build-z-mods simple-mods)
                                  real-mods))))
 
-(defun build-mx-atom-modsdata (modsdata)
-  "Return an MX-ATOM-MODSDATA instance from MODSDATA."
-  (flet ((fn (args)
-           (apply #'streams/classes:make-mx-atom-modsdata args)))
-    (marie:when-let ((mods (normalize-mods modsdata)))
-      (mapcar #'fn mods))))
-
-(defun build-mx-atom-metadata (metadata)
-  "Return a list of MX-ATOM-METADATA instances from METADATA."
-  (flet ((fn (args)
-           (apply #'streams/classes:make-mx-atom-metadata args)))
-    (when metadata
-      (mapcar #'fn metadata))))
-
 (defun store-msl (expr &optional force)
   "Parse EXPR as MSL and store the resulting object in the universe."
   (flet ((fn (seq &optional value mods metadata hash comment)
-           (let* ((m (build-mx-atom-metadata metadata))
-
-                  ;; apply general atom creator for d and f
-                  ;; store them in the universe
-
-                  ;; handle mods here
-                  (d (build-mx-atom-data seq value mods m hash comment)))
-             d)))
+           (let* ((mx-atom (build-mx-atom seq value)))
+             mx-atom)))
     (multiple-value-bind (value presentp successp)
         (streams/expr:parse-msl expr)
       (if (and value presentp successp)
-          (destructuring-bind ((ns key) &optional value mods metadata hash comment)
+          (destructuring-bind ((ns key) &optional value)
               value
             (multiple-value-bind (v existsp)
                 (namespace-hash key ns)
-              ;; Also recurse with nested exprs
-              (symbol-macrolet ((mk (fn (list ns key) value mods metadata hash comment)))
+              (symbol-macrolet ((mk (fn (list ns key) value)))
                 (cond (existsp v)
                       (force mk)
                       (t mk)))))
