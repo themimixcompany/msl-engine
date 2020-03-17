@@ -115,12 +115,12 @@
            (updater-name (make-name "update" class "counter"))
            (table-name (make-name class "table")))
       `(progn
-         (defun ,maker-name (seq &optional table)
+         (defun ,maker-name (seq &optional value)
            (destructuring-bind (ns key)
                seq
              (make-instance ',class :ns ns :key key :value value
                             ,@(when allocate
-                                `(list :mx-universe streams/specials:*mx-universe*)))))
+                                `(:mx-universe streams/specials:*mx-universe*)))))
          (defun ,builder-name (arg)
            (flet ((fn (args)
                     (apply #',maker-name args)))
@@ -159,6 +159,3 @@
         (sub-tables '("=" "/" "f" "d")))
     (loop :for sub :in sub-tables
           :do (setf (gethash sub table) (make-hash-table :test #'equal)))))
-
-;;; initialize the tables
-;;; determine if a mod can be instantianed with MX-DATATYPE and MX-FORMAT
