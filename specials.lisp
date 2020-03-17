@@ -1,60 +1,71 @@
 ;;;; specials.lisp
 
 (uiop:define-package #:streams/specials
-    (:use #:cl)
-  (:export #:*initial-machine-counter*
-           #:*initial-world-counter*
-           #:*initial-stream-counter*
-           #:*initial-view-counter*
-           #:*initial-canon-counter*
-           #:*initial-atom-counter*
-           #:*initial-mods-counter*
-           #:*mx-universe*
+  (:use #:cl)
+  (:export #:*mx-universe*
+           #:*atom-counter*
+           #:*datatype-counter*
+           #:*format-counter*
+           #:*metadata-counter*
            #:*namespaces-names*
            #:*namespaces*
-           #:*transform-indicators*
-           #:*selector-indicators*))
+           #:*base-tables*
+           #:*atom-tables*
+           #:*metadata-tables*
+           #:*datatype-tables*
+           #:*format-tables*))
 
 (in-package #:streams/specials)
-
-(defvar *initial-machine-counter* 10000000
-  "The initial mx-machine counter value.")
-
-(defvar *initial-world-counter* 1000000
-  "The initial mx-world counter value.")
-
-(defvar *initial-stream-counter* 100000
-  "The initial mx-stream counter value.")
-
-(defvar *initial-view-counter* 10000
-  "The initial mx-view counter value.")
-
-(defvar *initial-canon-counter* 1000
-  "The initial mx-canon counter value.")
-
-(defvar *initial-atom-counter* 100
-  "The initial mx-atom counter value.")
-
-(defvar *initial-mods-counter* 100000000
-  "The initial counter for atom mods.")
 
 (defvar *mx-universe* nil
   "The top-level structure for everything.")
 
-(defparameter *namespaces-names*
+(defvar *atom-counter* 100
+  "The initial mx-atom counter value.")
+
+(defvar *datatype-counter* 1000
+  "The initial mx-datatype counter value.")
+
+(defvar *format-counter* 10000
+  "The initial mx-format counter value.")
+
+(defvar *metadata-counter* 100000
+  "The initial mx-metadata counter value.")
+
+(defvar *namespaces-names*
   '(("c" . "canon")
     ("m" . "machine")
     ("w" . "world")
     ("s" . "stream")
     ("v" . "view")
     ("@" . "atom")
-    ("d" . "data-type")
+    ("d" . "datatype")
     ("f" . "format"))
   "The assocation list of namespaces, where the CAR is the alias and the CDR is
 the full name.")
 
-(defparameter *namespaces*
+(defvar *namespaces*
   (mapcar #'(lambda (name)
               (read-from-string (string (car name))))
           *namespaces-names*)
   "The list of namespaces in simple form.")
+
+(defvar *base-tables*
+  '("=" "/")
+  "The set of common tables used in other atom instances.")
+
+(defvar *atom-tables*
+  (append *base-tables* '(":" "[]" "f" "d" "#"))
+  "The set of tables for atom data.")
+
+(defvar *datatype-tables*
+  (append *base-tables* '(":"))
+  "The set of tables used for atom data types.")
+
+(defvar *format-tables*
+  (append *base-tables* '(":" "f" "d"))
+  "The set of tables used for atom formats.")
+
+(defvar *metadata-tables*
+  (append *base-tables* '("f" "d"))
+  "The set of tables used with atom metadata.")
