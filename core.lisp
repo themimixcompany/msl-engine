@@ -62,8 +62,8 @@ scope, with the same names."
     `(let ((,obj ,v))
        (progn
          ,@(loop :for slot :in slots :collect
-                    `(when ,slot (setf (,(intern-symbol slot :streams/classes) ,obj)
-                                       ,slot)))))))
+                 `(when ,slot (setf (,(intern-symbol slot :streams/classes) ,obj)
+                                    ,slot)))))))
 
 (defun single-recall-p (metadata)
   "Return true if there is only a single recall in METADATA. That is,
@@ -241,11 +241,6 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (let ((pairs (namespace-pairs path)))
       pairs)))
 
-(defun build-mx-atom (&rest args)
-  "Return an MX-ATOM instance from ARGS."
-  (when args
-    (apply #'streams/classes:make-mx-atom args)))
-
 (defmacro define-mod-checker (name type &optional doc)
   "Define a mod checker."
   `(defun ,name (mod)
@@ -292,7 +287,7 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
 
 (defun store-msl (expr &optional force)
   "Parse EXPR as MSL and store the resulting object in the universe."
-  (flet ((fn (seq &optional value mods metadata hash comment)
+  (flet ((fn (seq &optional value)
            (let* ((mx-atom (build-mx-atom seq value)))
              mx-atom)))
     (multiple-value-bind (value presentp successp)

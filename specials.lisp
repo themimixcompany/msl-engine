@@ -3,17 +3,20 @@
 (uiop:define-package #:streams/specials
   (:use #:cl)
   (:export #:*mx-universe*
+
            #:*atom-counter*
            #:*datatype-counter*
            #:*format-counter*
            #:*metadata-counter*
+
            #:*namespaces-names*
            #:*namespaces*
-           #:*base-tables*
-           #:*atom-tables*
-           #:*metadata-tables*
-           #:*datatype-tables*
-           #:*format-tables*))
+
+           #:*base-keys*
+           #:*atom-keys*
+           #:*metadata-keys*
+           #:*datatype-keys*
+           #:*format-keys*))
 
 (in-package #:streams/specials)
 
@@ -50,22 +53,22 @@ the full name.")
           *namespaces-names*)
   "The list of namespaces in simple form.")
 
-(defvar *base-tables*
+(defvar *base-keys*
   '("=" "/")
-  "The set of common tables used in other atom instances.")
+  "The common keys used in atom tables.")
 
-(defvar *atom-tables*
-  (append *base-tables* '(":" "[]" "f" "d" "#"))
-  "The set of tables for atom data.")
+(defvar *atom-keys*
+  (append *base-keys* '(":" "[]" "f" "d" "#"))
+  "The keys used for atom data.")
 
-(defvar *datatype-tables*
-  (append *base-tables* '(":"))
-  "The set of tables used for atom data types.")
+(defvar *datatype-keys*
+  (append *base-keys* '(":"))
+  "The keys used for atom datatypes.")
 
-(defvar *format-tables*
-  (append *base-tables* '(":" "f" "d"))
-  "The set of tables used for atom formats.")
+(defvar *format-keys*
+  (append *base-keys* '(":" "f" "d"))
+  "The keys used for atom formats.")
 
-(defvar *metadata-tables*
-  (append *base-tables* '("f" "d"))
-  "The set of tables used with atom metadata.")
+(defvar *metadata-keys*
+  (append *base-keys* '("f" "d"))
+  "The keys used for atom metadata.")
