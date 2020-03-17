@@ -72,18 +72,28 @@
   (:documentation "The base class for everything."))
 
 (defclass mx-atom (mx-base)
-  ((canonizedp :initarg :canonizedp
+  ((id :initarg :id
+       :initform -1
+       :accessor id
+       :documentation "The unique integer to identify the mx-atom in the universe.")
+   (canonizedp :initarg :canonizedp
                :initform nil
                :accessor canonizedp
                :documentation "The flag to indicate whether an mx-atom has canon values."))
   (:documentation "The class for atom data."))
 
 (defclass mx-datatype (mx-base)
-  ()
+  ((id :initarg :id
+       :initform -1
+       :accessor id
+       :documentation "The unique integer to identify the mx-datatype in the universe."))
   (:documentation "The class for datatypes, and instances are allocated on the universe."))
 
 (defclass mx-format (mx-base)
-  ()
+  ((id :initarg :id
+       :initform -1
+       :accessor id
+       :documentation "The unique integer to identify the mx-format in the universe."))
   (:documentation "The class for formats, and instances are allocated on the universe."))
 
 (defclass mx-metadata (mx-base)
