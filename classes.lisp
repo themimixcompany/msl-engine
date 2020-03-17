@@ -106,7 +106,8 @@
 (define-updaters atom datatype format)
 
 (defmacro define-maker (class &key allocate)
-  "Define functions for MX classes."
+  "Define functions for MX classes. CLASS is the name of MX class to be
+instantiated. ALLOCATE is a boolean whether to allocate the instance on the universe."
   (flet ((make-name (&rest args)
            (apply #'marie:hyphenate-intern nil args)))
     (let* ((mx-name (make-name "mx" class))
@@ -118,7 +119,7 @@
          (defun ,maker-name (seq &optional value)
            (destructuring-bind (ns key)
                seq
-             (make-instance ',class :ns ns :key key :value value
+             (make-instance ',mx-name :ns ns :key key :value value
                             ,@(when allocate
                                 `(:mx-universe streams/specials:*mx-universe*)))))
          (defun ,builder-name (arg)
@@ -126,15 +127,15 @@
                     (apply #',maker-name args)))
              (when arg
                (mapcar #'fn arg))))
-         (defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
-           (let ((counter (,updater-name mx-universe)))
-             (with-slots (id key)
-                 ,mx-name
-               (setf id counter)
-               ,(when allocate
-                  `(with-slots (,table-name)
-                       mx-universe
-                     (setf (gethash key ,table-name) ,mx-name))))))
+         ,(when allocate
+            `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
+              (let ((counter (,updater-name mx-universe)))
+                (with-slots (id key)
+                    ,mx-name
+                  (setf id counter)
+                  (with-slots (,table-name)
+                      mx-universe
+                    (setf (gethash key ,table-name) ,mx-name))))))
          (defmethod print-object ((,mx-name ,mx-name) stream)
            (print-unreadable-object (,mx-name stream :type t)
              (with-slots (ns key)
