@@ -288,16 +288,19 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
 (defun store-msl (expr &optional force)
   "Parse EXPR as MSL and store the resulting object in the universe."
   (flet ((fn (seq &optional value)
+           ;; review PARSE-MSL return value
+           ;; build the atom here, along with its constituents
+           ;; check if D and F are already allocated
            (let* ((mx-atom (build-mx-atom seq value)))
              mx-atom)))
-    (multiple-value-bind (value presentp successp)
+    (multiple-value-bind (val presentp successp)
         (streams/expr:parse-msl expr)
-      (if (and value presentp successp)
-          (destructuring-bind ((ns key) &optional value)
-              value
+      (if (and val presentp successp)
+          (destructuring-bind ((ns key) &optional mods meta hash comment)
+              val
             (multiple-value-bind (v existsp)
                 (namespace-hash key ns)
-              (symbol-macrolet ((mk (fn (list ns key) value)))
+              (symbol-macrolet ((mk (fn (list ns key) mods meta hash comment)))
                 (cond (existsp v)
                       (force mk)
                       (t mk)))))

@@ -109,12 +109,16 @@
   "Define functions for MX classes. CLASS is the name of MX class to be
 instantiated. ALLOCATE is a boolean whether to allocate the instance on the universe."
   (flet ((make-name (&rest args)
-           (apply #'marie:hyphenate-intern nil args)))
+           (apply #'marie:hyphenate-intern nil args))
+         (make-keys-name (class)
+           (marie:cat-intern nil "*" (marie:hyphenate class "keys") "*")))
     (let* ((mx-name (make-name "mx" class))
            (maker-name (make-name "make" mx-name))
            (builder-name (make-name "build" mx-name))
            (updater-name (make-name "update" class "counter"))
-           (table-name (make-name class "table")))
+           (table-name (make-name class "table"))
+           (keys (make-keys-name class)))
+      (declare (ignorable keys))
       `(progn
          (defun ,maker-name (seq &optional value)
            (destructuring-bind (ns key)
@@ -130,7 +134,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          ,(when allocate
             `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
               (let ((counter (,updater-name mx-universe)))
-                (with-slots (id key)
+                (with-slots (id ns key value)
                     ,mx-name
                   (setf id counter)
                   (with-slots (,table-name)
