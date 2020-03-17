@@ -3,282 +3,322 @@
   Load 1 ASDF system:
     streams
 ; Loading "streams"
-........
+.............
+
+CL-USER> (parse-explain "(@WALT :birthday)")
+; in: PARSE-EXPLAIN "(@WALT :birthday)"
+;     (PARSE-EXPLAIN "(@WALT :birthday)")
+;
+; caught STYLE-WARNING:
+;   undefined function: COMMON-LISP-USER::PARSE-EXPLAIN
+;
+; compilation unit finished
+;   Undefined function:
+;     PARSE-EXPLAIN
+;   caught 1 STYLE-WARNING condition
 
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+STREAMS/EXPR> (parse-msl "(@WALT :wife Lillian)")
+(("@" "WALT") NIL NIL ((("@" "WALT" ":" "wife") ("Lillian") NIL)) NIL NIL)
+T
+T
 
-  MX OUTPUT
+STREAMS/EXPR> (parse-msl "(@WALT :wife Lillian /lregex/)")
+(("@" "WALT") NIL NIL
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
+ NIL NIL)
+T
+T
+; compiling (DEF EXPLAIN-LINES ...)
 
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
+; file: C:/Users/David/AppData/Local/Temp/slime4
+; in: DEF EXPLAIN-LINES
+;     (NOT STREAMS/EXPR::EXPR NIL)
+;
+; caught WARNING:
+;   The function NOT is called with two arguments, but wants exactly one.
 
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")
-  ATOM-VALUE |   ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
-  ATOM-MODS  |   ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
-  METADATA   |   (((":" "csub") ("csubvalue")
-                   (("/" (("csubregex" "csugenv" "csugconsume"))))))
-  HASH       |   NIL
-  COMMENT    |   NIL
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-WARNING: redefining STREAMS/EXPR::EXPLAIN in DEFUN
-
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")
-STREAMS/EXPR>
-
-; No value; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")(ATOM-VALUE
-                              (wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2))
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")(wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2)
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")!(wvalue ((@ WED) NIL NIL NIL NIL NIL) wvalue2)
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")!wvalue
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")
-  ATOM-SEQ   |   ("@" "WED")
-  ATOM-VALUE |   NIL
-  ATOM-MODS  |   NIL
-  METADATA   |   NIL
-  HASH       |   NIL
-  COMMENT    |   NIL
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
-
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime13
-; in: DEFUN EXPLAIN
-;     (LET* ((STREAMS/EXPR::ITEM (CAR STREAMS/EXPR::ITEM-LIST))
-;            (STREAMS/EXPR::ITEM-LABEL (CAR STREAMS/EXPR::ITEM))
-;            (STREAMS/EXPR::ITEM-VALUE (CAR (CDR STREAMS/EXPR::ITEM)))
-;            (STREAMS/EXPR::ITEM-SUBLIST (CAR (CDR STREAMS/EXPR::ITEM-VALUE)))
-;            (STREAMS/EXPR::ATOM-EXPLAINER
-;             '(STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE
-;               STREAMS/EXPR::ATOM-MODS STREAMS/EXPR::METADATA STREAMS/EXPR::HASH
-;               STREAMS/EXPR::COMMENT)))
-;       (COND ((NOT STREAMS/EXPR::ITEM-LIST) NIL)
-;             ((EQ (LENGTH STREAMS/EXPR::ITEM-SUBLIST) 6) (PRINC "!")
-;              (PRINC STREAMS/EXPR::ITEM-SUBLIST))
-;             (T
-;              (FORMAT T "~%  ~A~13T| ~15T ~S" STREAMS/EXPR::ITEM-LABEL
-;                      STREAMS/EXPR::ITEM-VALUE)
-;              (STREAMS/EXPR::EXPLAIN (CDR STREAMS/EXPR::ITEM-LIST)))))
+; file: C:/Users/David/AppData/Local/Temp/slime4
+; in: DEF EXPLAIN-LINES
+;     (STREAMS/EXPR::DEF STREAMS/EXPR::EXPLAIN-LINES (STREAMS/EXPR::SETTERS)
+;      "Print each setter from a list on a separate line."
+;      (COND ((NOT STREAMS/EXPR::EXPR NIL))
+;            (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
+;             (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
 ;
 ; caught STYLE-WARNING:
-;   The variable ATOM-EXPLAINER is defined but never used.
+;   undefined function: STREAMS/EXPR::DEF
+
+;     (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS))
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::EXPLAIN-LINES
+
+;     (STREAMS/EXPR::DEF STREAMS/EXPR::EXPLAIN-LINES (STREAMS/EXPR::SETTERS)
+;      "Print each setter from a list on a separate line."
+;      (COND ((NOT STREAMS/EXPR::EXPR NIL))
+;            (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
+;             (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::EXPLAIN-LINES
+
+;     (NOT STREAMS/EXPR::EXPR NIL)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::EXPR
+
+;     (CAR STREAMS/EXPR::SETTERS)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::SETTERS
+
+;     (STREAMS/EXPR::SETTERS)
+;
+; caught STYLE-WARNING:
+;   undefined function: STREAMS/EXPR::SETTERS
+;
+; compilation unit finished
+;   Undefined functions:
+;     DEF EXPLAIN-LINES SETTERS
+;   Undefined variables:
+;     EXPLAIN-LINES EXPR SETTERS
+;   caught 4 WARNING conditions
+;   caught 3 STYLE-WARNING conditions
+; compiling (DEFUN PARSE-SETTERS ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime5
+; in: DEFUN PARSE-SETTERS
+;     (LET ((STREAMS/EXPR::PARSED-ATOM
+;            (STREAMS/EXPR:PARSE-MSL STREAMS/EXPR::EXPR))))
+;
+; caught STYLE-WARNING:
+;   The variable PARSED-ATOM is defined but never used.
 ;
 ; compilation unit finished
 ;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN-LINES ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime6
+; in: DEFUN EXPLAIN-LINES
+;     (NOT STREAMS/EXPR::EXPR NIL)
+;
+; caught WARNING:
+;   The function NOT is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime6
+; in: DEFUN EXPLAIN-LINES
+;     (NOT STREAMS/EXPR::EXPR NIL)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::EXPR
+;
+; compilation unit finished
+;   Undefined variable:
+;     EXPR
+;   caught 2 WARNING conditions
+; compiling (DEFUN EXPLAIN-LINES ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime7
+; in: DEFUN EXPLAIN-LINES
+;     (NOT STREAMS/EXPR::SETTERS NIL)
+;
+; caught WARNING:
+;   The function NOT is called with two arguments, but wants exactly one.
+;
+; compilation unit finished
+;   caught 1 WARNING condition
+; compiling (DEFUN EXPLAIN-LINES ...)
+; compiling (DEFUN PARSE-SETTERS ...)
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
+("@" "WALT")
+("Walt Disney")
+((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+NIL
+NIL
+NIL
+NIL
+; compiling (DEFUN EXPLAIN-LINES ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime11
+; in: DEFUN EXPLAIN-LINES
+;     (DEFUN STREAMS/EXPR::EXPLAIN-LINES
+;            (STREAMS/EXPR::SETTERS &OPTIONAL (STREAMS/EXPR::LINE 0))
+;       "Print each setter from a list on a separate line."
+;       (COND ((NOT STREAMS/EXPR::SETTERS) NIL)
+;             (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
+;              (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
+; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
+; ==>
+;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN-LINES
+;         (STREAMS/EXPR::SETTERS &OPTIONAL (STREAMS/EXPR::LINE 0))
+;       (DECLARE (SB-C::TOP-LEVEL-FORM))
+;       "Print each setter from a list on a separate line."
+;       (BLOCK STREAMS/EXPR::EXPLAIN-LINES
+;         (COND ((NOT STREAMS/EXPR::SETTERS) NIL)
+;               (T (FORMAT T "~S~%" #) (STREAMS/EXPR::EXPLAIN-LINES #)))))
+;
+; caught STYLE-WARNING:
+;   The variable LINE is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
+0. ("@" "WALT")
+0.  ("Walt Disney")
+0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+0.  NIL
+0.  NIL
+0.  NIL
+NIL
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+0.  ("@" "WALT")
+
+0.  ("Walt Disney")
+
+0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+
+0.  NIL
+
+0.  NIL
+
+0.  NIL
+
+NIL
+; compiling (DEFUN PARSE-SETTERS ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-  MX OUTPUT
 
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
+0.  ("@" "WALT")
 
-  LABEL      |   MX OUTPUT
+0.  ("Walt Disney")
 
-  ATOM-SEQ   |   ("c" "WALT")!((@ WED) NIL NIL NIL NIL NIL)
+0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
 
-  MSL
+0.  NIL
 
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+0.  NIL
+
+0.  NIL
+
+NIL
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-  MX OUTPUT
-
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")!
-  ATOM-SEQ   |   ("@" "WED")
-  ATOM-VALUE |   NIL
-  ATOM-MODS  |   NIL
-  METADATA   |   NIL
-  HASH       |   NIL
-  COMMENT    |   NIL
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
-; compiling (DEFUN EXPLAIN ...)
-STREAMS/EXPR> (parse-explain "(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))")
+0.  ("@" "WALT")
+0.  ("Walt Disney")
+0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+0.  NIL
+0.  NIL
+0.  NIL
+NIL
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-  MX OUTPUT
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  NIL
+5.  NIL
+6.  NIL
+NIL
+; compiling (DEFUN EXPLAIN-LINES ...)
 
-(("c" "WALT") ("wvalue" (("@" "WED") NIL NIL NIL NIL NIL) "wvalue2")
- ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
- (((":" "csub") ("csubvalue") (("/" (("csubregex" "csugenv" "csugconsume"))))))
- NIL NIL)
-
-  LABEL      |   MX OUTPUT
-
-  ATOM-SEQ   |   ("c" "WALT")
-  ATOM-SEQ   |   ("@" "WED")
-  ATOM-VALUE |   NIL
-  ATOM-MODS  |   NIL
-  METADATA   |   NIL
-  HASH       |   NIL
-  COMMENT    |   NIL
-  ATOM-VALUE |   NIL
-  ATOM-MODS  |   ((("f" "waltformat") ("waltformatvalue") NIL NIL NIL NIL))
-  METADATA   |   (((":" "csub") ("csubvalue")
-                   (("/" (("csubregex" "csugenv" "csugconsume"))))))
-  HASH       |   NIL
-  COMMENT    |   NIL
-
-  MSL
-
-"(c WALT wvalue (@WED) wvalue2 (f waltformat waltformatvalue)  :csub csubvalue /csubregex/csugenv csugconsume))"
+; file: C:/Users/David/AppData/Local/Temp/slime17
+; in: DEFUN EXPLAIN-LINES
+;     (FORMAT T "~A.~4T~S~%" STREAMS/EXPR::LINE (CAR STREAMS/EXPR::SETTERS))
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::LINE
+;
+; compilation unit finished
+;   Undefined variable:
+;     LINE
+;   caught 1 WARNING condition
+; compiling (DEFUN EXPLAIN-LINES ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-STREAMS/EXPR>
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  NIL
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d waltd))")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+     (("@" "WALT" "d" "waltd") NIL NIL NIL NIL NIL))
+4.  NIL
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian)")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  ((("@" "WALT" ":" "wife") ("Lillian") NIL))
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
+5.  NIL
+6.  NIL
+NIL
+; compiling (DEFUN PARSE-SETTERS ...)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ )")
+
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  NIL
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
+
+1.  ("@" "WALT")
+2.  ("Walt Disney")
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+4.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
+5.  NIL
+6.  NIL
+NIL
+
+STREAMS/EXPR> 
