@@ -2,12 +2,7 @@
 
 (uiop:define-package #:streams/core
   (:use #:cl)
-  (:export #:build-mx-atom-data
-           #:build-mx-atom-modsdata
-           #:build-mx-atom-metadata
-           #:normalize-mods
-           #:store-msl
-           #:eval-msl))
+  (:export #:store-msl))
 
 (in-package #:streams/core)
 
@@ -83,7 +78,7 @@ not. "
 (defun entity-string (id)
   "Return the corresponding universe name from ID, where ID is either a single
 character or a string to designate an entity."
-  (cdr (assoc id streams/specials:*namespaces-names* :test #'equal)))
+  (cdr (assoc id streams/specials:*namespace-aliases* :test #'equal)))
 
 (defun table-name (ns &optional package)
   "Return the corresponding table of NS from the universe."
@@ -105,141 +100,16 @@ character or a string to designate an entity."
   (let ((table (namespace-table namespace)))
     (setf (gethash key table) value)))
 
-;; (defun update-metadata (obj spec)
-;;   "Update mx-atom OBJ with the list SPEC. The first value of SPEC is a list of
-;; two elements where the first element is the type of the table and the second
-;; element is the key. The second value of SPEC is a either a string, integer, or
-;; character."
-;;   (destructuring-bind ((table key) &optional value)
-;;       spec
-;;     (let* ((metadata (streams/classes:metadata obj))
-;;            (metatable (gethash table metadata)))
-;;       (cond ((null value) (gethash key metatable))
-;;             (value (setf (gethash key metatable) value))
-;;             (t nil)))))
-
-;; (defun dump-metadata (obj)
-;;   "Display information about the metadata stored in OBJ."
-;;   (let ((table (streams/classes:metadata obj)))
-;;     (loop :for k :being :the :hash-keys :in table
-;;           :for v :being :the :hash-values :in table
-;;           :do (progn
-;;                 (format t "* ~S~%" k)
-;;                 (marie:dump-table v)))))
-
-;; (defun eval-expr (expr)
-;;   "Evaluate EXPR as a complete MSL expression, store the result into the active
-;; namespace, then return the mx-atom instance and the corresponding table as
-;; multiple values."
-;;   (block nil
-;;     (let ((expr expr))                  ;(parse ...)
-;;       (if expr
-;;           (macrolet ((vt (v) `(values ,v)))
-;;             (destructuring-bind ((ns key) &optional value metadata hash comment)
-;;                 expr
-;;               (multiple-value-bind (v existsp)
-;;                   (namespace-hash key ns)
-;;                 (when existsp
-;;                   (bind-slots v hash comment))
-;;                 (cond
-;;                   ;; (@walt)
-;;                   ;; ‘walt’ still does not exist
-;;                   ((and (null existsp) (null value))
-;;                    nil)
-;;                   ;; (@walt)
-;;                   ;; ‘walt’ already exists
-;;                   ((and existsp (null value) (null metadata))
-;;                    (vt v))
-;;                   ;; (@walt :age)
-;;                   ;; ‘walt’ exists, and there’s only one metadata recall
-;;                   ((and existsp (null value) (single-recall-p metadata))
-;;                    (let ((item (assoc (caar metadata) (streams/classes:metadata v))))
-;;                      (when item
-;;                        (vt v))))
-;;                   ;; (@walt :age :gender)
-;;                   ;; ‘walt’ exists, there is no value, all metadata are recalls
-;;                   ((and existsp (null value) (all-recall-p metadata))
-;;                    (vt v))
-;;                   ;; (@walt "Walt Disney" :age :gender)
-;;                   ;; ‘walt’ exists, there are p-values, and all the s-values are recalls
-;;                   ((and existsp value (all-recall-p metadata))
-;;                    (bind-slots v value)
-;;                    (vt v))
-;;                   ;; (@walt "Walt Disney") | (@walt :age 65) | (@walt "Walt Disney" :age 65)
-;;                   ;; ‘walt’ exists, and either p-values or s-values exists
-;;                   ((and existsp (or value metadata))
-;;                    (bind-slots v value)
-;;                    (when metadata
-;;                      (setf (streams/classes:metadata v)
-;;                            (union (streams/classes:metadata v) metadata :key #'car :test #'equal)))
-;;                    (vt v))
-;;                   ;; (@walt "Walt Disney" :age 65)
-;;                   ;; ‘walt’ does not exist and we’re creating a new instance
-;;                   (t (let ((o (streams/classes:make-mx-atom ns key value metadata hash comment)))
-;;                        (setf (namespace-hash key ns) o)
-;;                        (vt o)))))))
-;;           (return nil)))))
-
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
 the pair is the namespace marker and the second element of the pair is the key"
   (marie:partition chain 2))
 
-(defun namespace-symbol-p (symbol)
-  "Return true if SYMBOL is a valid namespace character."
-  (let ((sym (intern (string symbol) (find-package :streams/specials))))
-    (when (member sym streams/specials:*namespaces*)
-      t)))
-
-(defun namespace-pairs-p (pairs)
-  "Return true if PAIRS is a valid namespace pairs."
-  (every #'(lambda (pair) (namespace-symbol-p (first pair)))
-         pairs))
-
-(defun namespace-rank (ns)
-  "Return the rank of NS as an integer. The lower the value the higher the rank."
-  (let* ((string (marie:string-convert ns))
-         (sym (intern string (find-package :streams/specials))))
-    (position sym streams/specials:*namespaces*)))
-
-(defun either-zero-p (x y)
-  "Return true if either X or Y is a zero."
-  (or (zerop x) (zerop y)))
-
-(defun rank-greater-p (ns1 ns2)
-  "Return true if NS1 has a higher rank than NS2, that is, the integer value of
-NS1 is less than the integer value of NS2."
-  (cond ((either-zero-p ns1 ns2) t)
-        (t (< ns1 ns2))))
-
-(defun valid-ranks-p (ranks)
-  "Return true if RANKS is a valid sequencing of namespace ranks."
-  (labels ((fun (r)
-             (cond ((and (first r) (null (second r)))
-                    t)
-                   ((null r) t)
-                   ((not (rank-greater-p (first r) (second r)))
-                    nil)
-                   (t (fun (cdr r))))))
-    (cond ((null ranks) nil)
-          ((marie:solop ranks) t)
-          (t (fun ranks)))))
-
-(defun namespace-chain-p (chain)
-  "Return true if CHAIN is a valid chaining of namespaces, wherein the namespace
-ranks are in the correct order."
-  (when (evenp (length chain))
-    (let ((pairs (namespace-pairs chain)))
-      (when (namespace-pairs-p pairs)
-        (let ((ranks (loop :for pair :in pairs :collect (namespace-rank (first pair)))))
-          (valid-ranks-p ranks))))))
-
-(defun compose-namespaces (path)
+(defun path-groups (path)
   "Return a namespace chain object by linearly composing the namespace path from
 NAMESPACES. The object returned contains complete namespace traversal information."
-  (when (namespace-chain-p path)
-    (let ((pairs (namespace-pairs path)))
-      pairs)))
+  (let ((pairs (namespace-pairs path)))
+    pairs))
 
 (defmacro define-mod-checker (name type &optional doc)
   "Define a mod checker."
@@ -285,23 +155,63 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
         :finally (return (append (build-z-mods simple-mods)
                                  real-mods))))
 
+(defun make-value (&rest args)
+  "Return a new table containing all information about an atom."
+  (destructuring-bind (value mods meta hash comment)
+      args
+    (declare (ignore comment))
+    (let ((table (make-hash-table #'equal)))
+      (when value (setf (gethash "=" table) value))
+      (when hash (setf (gethash "#" table) hash)))))
+
+(defun on-atom-p (groups)
+  "Return true if GROUPS should be stored locally on the atom."
+  (let ((last (marie:last* groups)))
+    (when (marie:solop last)
+      t)))
+
+(defun sub-namespace-aliases ()
+  "Return the list of namespaces under an atom."
+  (loop :for ns-spec :in streams/specials:*namespace-list*
+        :when (destructuring-bind (alias name rank)
+                     ns-spec
+                   (declare (ignore alias name))
+                (= rank 9))
+          :collect (first ns-spec)))
+
+(defun on-universe-p (groups)
+  "Return true if GROUPS should be stored globally on the universe."
+  (let ((last (marie:last* groups)))
+    (or (destructuring-bind (ns &optional key)
+            last
+          (declare (ignore key))
+          (when (member ns (sub-namespace-aliases) :test #'equal)
+            t))
+        (not (on-atom-p groups)))))
+
+(defun store-on-atom (groups params &optional force)
+  "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
+will be reallocated on the universe."
+  (destructuring-bind ((ns key) location)
+      groups
+    (destructuring-bind (params-head &rest params-body)
+        params
+      (declare (ignore params-body))
+      (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
+                                                   (make-hash-table :test #'equal)
+                                                   force)))
+        (destructuring-bind (loc &rest rest)
+            location
+          (declare (ignore rest))
+          (setf (gethash loc (streams/classes:value mx-atom))
+                params-head))))))
+
 (defun store-msl (expr &optional force)
-  "Parse EXPR as MSL and store the resulting object in the universe."
-  (flet ((fn (seq &optional value)
-           ;; review PARSE-MSL return value
-           ;; build the atom here, along with its constituents
-           ;; check if D and F are already allocated
-           (let* ((mx-atom (build-mx-atom seq value)))
-             mx-atom)))
-    (multiple-value-bind (val presentp successp)
-        (streams/expr:parse-msl expr)
-      (if (and val presentp successp)
-          (destructuring-bind ((ns key) &optional mods meta hash comment)
-              val
-            (multiple-value-bind (v existsp)
-                (namespace-hash key ns)
-              (symbol-macrolet ((mk (fn (list ns key) mods meta hash comment)))
-                (cond (existsp v)
-                      (force mk)
-                      (t mk)))))
-          nil))))
+  "Parse EXPR as an MSL expression and store the resulting object in the universe."
+  (let ((value-list expr))        ;(streams/expr:parse-msl expr)
+    (loop :for value :in value-list
+          :do (destructuring-bind (path &optional &rest params)
+                  value
+                (let ((groups (path-groups path)))
+                  (cond ((on-atom-p groups) (store-on-atom groups params force))
+                        (t nil)))))))

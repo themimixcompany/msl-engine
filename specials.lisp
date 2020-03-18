@@ -9,8 +9,8 @@
            #:*format-counter*
            #:*metadata-counter*
 
-           #:*namespaces-names*
-           #:*namespaces*
+           #:*namespace-list*
+           #:*namespace-aliases*
 
            #:*base-keys*
            #:*atom-keys*
@@ -32,22 +32,22 @@
 (defvar *format-counter* 10000
   "The initial mx-format counter value.")
 
-(defvar *namespaces-names*
-  '(("c" . "canon")
-    ("m" . "machine")
-    ("w" . "world")
-    ("s" . "stream")
-    ("v" . "view")
-    ("@" . "atom")
-    ("d" . "datatype")
-    ("f" . "format"))
-  "The assocation list of namespaces, where the CAR is the alias and the CDR is
-the full name.")
+(defvar *metadata-counter* 100000
+  "The initial metadata counter value.")
 
-(defvar *namespaces*
-  (mapcar #'(lambda (name)
-              (read-from-string (string (car name))))
-          *namespaces-names*)
+(defvar *namespace-list*
+  '(("c" "canon" 0)
+    ("m" "machine" 1)
+    ("w" "world" 2)
+    ("s" "stream" 3)
+    ("v" "view" 4)
+    ("@" "atom" 5)
+    ("d" "datatype" 9)
+    ("f" "format" 9))
+  "The assocation list of namespaces, where the CAR is the alias and the CDR is the full name.")
+
+(defvar *namespace-aliases*
+  (mapcar #'first *namespace-list*)
   "The list of namespaces in simple form.")
 
 (defvar *base-keys*
@@ -55,7 +55,6 @@ the full name.")
   "The common keys used in atom tables.")
 
 (defvar *atom-keys*
-  ;; (append *base-keys* '(":" "[]" "f" "d" "#"))
   (append *base-keys* '("[]" "f" "d" "#"))
   "The keys used for atom data.")
 

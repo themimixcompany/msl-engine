@@ -31,7 +31,11 @@
 
            #:id
            #:ns
-           #:value))
+           #:value
+
+           #:make-mx-universe
+           #:make-sub-tables
+           #:canonize))
 
 (in-package #:streams/classes)
 
@@ -53,7 +57,13 @@
                    :accessor format-counter)
    (format-table :initarg :format-table
                  :initform (make-hash-table :test #'equal)
-                 :accessor format-table))
+                 :accessor format-table)
+   (metadata-counter :initarg :metadata-counter
+                     :initform streams/specials:*metadata-counter*
+                     :accessor metadata-counter)
+   (metadata-table :initarg :metadata-table
+                   :initform (make-hash-table :test #'equal)
+                   :accessor metadata-table))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-base ()
@@ -66,9 +76,9 @@
         :accessor key
         :documentation "The unique string to identify an mx-atom in the universe.")
    (value :initarg :value
-          :initform nil
+          :initform (make-hash-table :test #'equal)
           :accessor value
-          :documentation "The hash table to store everything related to an atom."))
+          :documentation "The hash table to store everything local to an atom."))
   (:documentation "The base class for everything."))
 
 (defclass mx-atom (mx-base)
@@ -107,12 +117,14 @@
 
 (defmacro define-updaters (&rest namespaces)
   "Define functions for updating the namespace counters in the mx-universe."
-  `(progn
-     ,@(loop :for namespace :in namespaces
-             :for fname = (marie:hyphenate-intern nil "update" namespace "counter")
-             :for cname = (marie:hyphenate-intern nil namespace "counter")
-             :collect `(defun ,fname (mx-universe)
-                         (update-counter mx-universe ,cname)))))
+  (flet ((make-name (&rest args)
+           (apply #'marie:hyphenate-intern nil args)))
+    `(progn
+       ,@(loop :for namespace :in namespaces
+               :for fname = (make-name "update" namespace "counter")
+               :for cname = (make-name namespace "counter")
+               :collect `(defun ,fname (mx-universe)
+                           (update-counter mx-universe ,cname))))))
 (define-updaters atom datatype format)
 
 (defmacro define-maker (class &key allocate)
@@ -130,31 +142,33 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
            (keys (make-keys-name class)))
       (declare (ignorable keys))
       `(progn
-         (defun ,maker-name (seq &optional value)
+         (defun ,maker-name (seq &optional value force)
            (destructuring-bind (ns key)
                seq
-             (make-instance ',mx-name :ns ns :key key :value value
-                            ,@(when allocate
-                                `(:mx-universe streams/specials:*mx-universe*)))))
-         (defun ,builder-name (arg)
-           (flet ((fn (args)
-                    (apply #',maker-name args)))
-             (when arg
-               (mapcar #'fn arg))))
+             (let ((obj (gethash key (,table-name streams/specials:*mx-universe*))))
+               (flet ((fn ()
+                        (make-instance ',mx-name :ns ns :key key :value value
+                                       ,@(when allocate
+                                           `(:mx-universe streams/specials:*mx-universe*)))))
+                 (cond (force (fn))
+                       (t (or obj (fn))))))))
+         (defun ,builder-name (args)
+           (when args
+             (apply #',maker-name args)))
          ,(when allocate
             `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
-              (let ((counter (,updater-name mx-universe)))
-                (with-slots (id ns key value)
-                    ,mx-name
-                  (setf id counter)
-                  (with-slots (,table-name)
-                      mx-universe
-                    (setf (gethash key ,table-name) ,mx-name))))))
+               (let ((counter (,updater-name mx-universe)))
+                 (with-slots (id ns key value)
+                     ,mx-name
+                   (setf id counter)
+                   (with-slots (,table-name)
+                       mx-universe
+                     (setf (gethash key ,table-name) ,mx-name))))))
          (defmethod print-object ((,mx-name ,mx-name) stream)
            (print-unreadable-object (,mx-name stream :type t)
-             (with-slots (ns key)
+             (with-slots (id ns key)
                  ,mx-name
-               (format stream "~A ~A" ns key))))))))
+               (format stream "~A ~A ~A" id ns key))))))))
 
 (defmacro define-makers (specs)
   "Define MX structure makers and helpers with DEFINE-MAKER."
@@ -168,9 +182,14 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
 
-(defun make-sub-table (obj)
-  "Define sub tables under OBJ."
+(defun make-sub-tables (obj)
+  "Define sub tables under OBJ. This is mainly used by metadata."
   (let ((table (streams/classes:value mx-atom-data))
         (sub-tables '("=" "/" "f" "d")))
     (loop :for sub :in sub-tables
           :do (setf (gethash sub table) (make-hash-table :test #'equal)))))
+
+(defun canonize (mx-atom)
+  "Set the canonized flag of MX-ATOM to true, irrespective of its existing value."
+  (setf (canonizedp mx-atom) t)
+  mx-atom)
