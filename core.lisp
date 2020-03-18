@@ -6,28 +6,6 @@
 
 (in-package #:streams/core)
 
-(defun mx-atom-p (data)
-  "Return true if DATA is an mx-atom instance."
-  (typep data 'streams/classes:mx-atom))
-
-(defun keyword-intern (symbol)
-  "Intern the symbol SYMBOL in the keyword package."
-  (intern symbol (find-package :keyword)))
-
-(defun tokenize-expr (data)
-  "Tokenize DATA."
-  data)
-
-(defun upcase-keyword (keyword)
-  "Return an upcased version of KEYWORD."
-  (if (keywordp keyword)
-      (keyword-intern (string-upcase (marie:string-convert keyword)))
-      keyword))
-
-(defun upcase-keywords (list)
-  "Return a list wherein all keyword elements are upcased."
-  (mapcar #'upcase-keyword list))
-
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
   (when (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)
@@ -37,13 +15,6 @@
   "Return true if KEY is a valid key for an mx-atom."
   (let ((v (marie:string-convert key)))
     (valid-id-p v)))
-
-(defun key (value)
-  "Extract the key used in VALUE."
-  (destructuring-bind (ns key &optional &body body)
-      value
-    (declare (ignore ns body))
-    key))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun intern-symbol (symbol package)
@@ -59,21 +30,6 @@ scope, with the same names."
          ,@(loop :for slot :in slots :collect
                  `(when ,slot (setf (,(intern-symbol slot :streams/classes) ,obj)
                                     ,slot)))))))
-
-(defun single-recall-p (metadata)
-  "Return true if there is only a single recall in METADATA. That is,
-((\"birthday\")) is a single recall, while ((\"birthday\") (\"state\")) is
-not. "
-  (destructuring-bind (m &body body)
-      metadata
-    (and (null body)
-         (marie:solop m))))
-
-(defun all-recall-p (metadata)
-  "Return true if all the items in METADATA are for recalling values. That
-is,((\"birthday\") (\"state\")) is an all recall, while ((\"birthday\")) is
-not. "
-  (every #'marie:solop metadata))
 
 (defun entity-string (id)
   "Return the corresponding universe name from ID, where ID is either a single
@@ -120,49 +76,6 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
        (declare (ignore body))
        (unless (listp head)
          (string= head ,type)))))
-
-(define-mod-checker regex-mod-p
-  "/"
-  "Return true if MOD is a regex.")
-
-(define-mod-checker bracketed-transform-mod-p
-  "[]"
-  "Return true if MOD is bracketed transform.")
-
-(defun simple-mod-p (mod)
-  "Return true if MOD is either a regex or bracketed-transform mod."
-  (marie:f-or mod
-              #'regex-mod-p
-              #'bracketed-transform-mod-p))
-
-(defun build-z-mods (mods)
-  "Return a collection of simple mods from MODS."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   (t (fn (cdr args)
-                          (destructuring-bind (head body)
-                              (car args)
-                            (acons (list "z" head) (list body) acc)))))))
-    (fn mods nil)))
-
-(defun normalize-mods (mods)
-  "Reformat MODs and return a list of mods for normal atom processing."
-  (loop :for mod :in mods
-        :when (simple-mod-p mod)
-          :collect mod :into simple-mods
-        :unless (simple-mod-p mod)
-          :collect mod :into real-mods
-        :finally (return (append (build-z-mods simple-mods)
-                                 real-mods))))
-
-(defun make-value (&rest args)
-  "Return a new table containing all information about an atom."
-  (destructuring-bind (value mods meta hash comment)
-      args
-    (declare (ignore comment))
-    (let ((table (make-hash-table #'equal)))
-      (when value (setf (gethash "=" table) value))
-      (when hash (setf (gethash "#" table) hash)))))
 
 (defun on-atom-p (groups)
   "Return true if GROUPS should be stored locally on the atom."
