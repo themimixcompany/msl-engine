@@ -31,11 +31,13 @@
 
            #:id
            #:ns
+           #:key
            #:value
 
            #:make-mx-universe
            #:make-sub-tables
-           #:canonize))
+           #:canonize
+           #:canonizedp))
 
 (in-package #:streams/classes)
 

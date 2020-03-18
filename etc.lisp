@@ -2,8 +2,8 @@
 
 (uiop:define-package #:streams/etc
   (:use #:cl)
-  (:export #:dump-object
-           #:dump-universe
+  (:export #:dump-universe
+           #:dump-object
            #:dump-atom))
 
 (in-package #:streams/etc)
@@ -12,12 +12,6 @@
   "Return the slot names of an object."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
-
-(defun dump-object (object)
-  "Display the contents of OBJECT."
-  (loop :for slot :in (slots object)
-        :do (progn
-              (format t "~S => ~S~%" slot (funcall slot object)))))
 
 (defun dump-universe ()
   "Dump the contents of the mx-universe."
@@ -34,8 +28,14 @@
                                   (find-package :streams/classes))
                           streams/specials:*mx-universe*))))))
 
+(defun dump-object (object)
+  "Display the contents of OBJECT."
+  (loop :for slot :in (slots object)
+        :do (format t "~S => ~S~%" slot (funcall slot object))))
+
 (defun dump-atom (key)
   "Print information about an atom stored in the universe."
-  (marie:when-let ((obj (gethash key (streams/classes:atom-table streams/specials:*mx-universe*))))
+  (marie:when-let* ((obj (gethash key (streams/classes:atom-table streams/specials:*mx-universe*)))
+                    (table (streams/classes:value obj)))
     (dump-object obj)
-    (marie:dump-table (streams/classes:value obj))))
+    (marie:dump-table table)))
