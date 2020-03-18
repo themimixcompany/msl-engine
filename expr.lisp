@@ -57,7 +57,9 @@
 (defun parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
        (format t "~%")
-       (explain-lines (parse-msl expr)))
+       (let ((parsed-atom (parse-msl expr)))
+          (when (explain-lines parsed-atom) parsed-atom)))
+
 
 (defun explain-lines (setters &optional (line-num 1))
   "Print each setter from a list on a separate line."
