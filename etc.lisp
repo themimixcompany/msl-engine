@@ -16,7 +16,8 @@
 (defun dump-object (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (slots object)
-        :do (format t "~S => ~S~%" slot (funcall slot object))))
+        :do (progn
+              (format t "~S => ~S~%" slot (funcall slot object)))))
 
 (defun dump-universe ()
   "Dump the contents of the mx-universe."
@@ -36,4 +37,5 @@
 (defun dump-atom (key)
   "Print information about an atom stored in the universe."
   (marie:when-let ((obj (gethash key (streams/classes:atom-table streams/specials:*mx-universe*))))
+    (dump-object obj)
     (marie:dump-table (streams/classes:value obj))))
