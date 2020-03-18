@@ -59,7 +59,7 @@
        (format t "~%")
        (let ((parsed-atom (parse-msl expr))
              (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
-          (when (explain-lines parsed-atom) (explain (collate atom-explainer parsed-atom)))))
+          (when (explain-lines parsed-atom) parsed-atom)))
 
 
 (defun explain-lines (setters &optional (line-num 1))
