@@ -1,11 +1,10 @@
-;;;; etc.lisp - things that do not belong to the other modules
+;;;; etc.lisp
 
 (uiop:define-package #:streams/etc
   (:use #:cl)
   (:export #:dump-object
            #:dump-universe
-           #:dump-msl
-           #:dump-metadata))
+           #:dump-atom))
 
 (in-package #:streams/etc)
 
@@ -34,11 +33,7 @@
                                   (find-package :streams/classes))
                           streams/specials:*mx-universe*))))))
 
-(defun dump-msl (expr)
-  "Print infromation about EXPR as parsed MSL."
-  (streams/etc:dump-object (store-msl expr)))
-
-(defun dump-metadata (mx-atom)
-  "Print information about the METADATA slot of MX-ATOM."
-  (marie:when-let ((metadata (streams/classes:metadata mx-atom)))
-    (loop :for m :in metadata :do (streams/etc:dump-object m))))
+(defun dump-atom (key)
+  "Print information about an atom stored in the universe."
+  (marie:when-let ((obj (gethash key (streams/classes:atom-table streams/specials:*mx-universe*))))
+    (marie:dump-table (streams/classes:value obj))))
