@@ -5,244 +5,9 @@
 ; Loading "streams"
 .............
 
-CL-USER> (parse-explain "(@WALT :birthday)")
-; in: PARSE-EXPLAIN "(@WALT :birthday)"
-;     (PARSE-EXPLAIN "(@WALT :birthday)")
-;
-; caught STYLE-WARNING:
-;   undefined function: COMMON-LISP-USER::PARSE-EXPLAIN
-;
-; compilation unit finished
-;   Undefined function:
-;     PARSE-EXPLAIN
-;   caught 1 STYLE-WARNING condition
-
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
-STREAMS/EXPR> (parse-msl "(@WALT :wife Lillian)")
-(("@" "WALT") NIL NIL ((("@" "WALT" ":" "wife") ("Lillian") NIL)) NIL NIL)
-T
-T
-
-STREAMS/EXPR> (parse-msl "(@WALT :wife Lillian /lregex/)")
-(("@" "WALT") NIL NIL
- ((("@" "WALT" ":" "wife") ("Lillian")
-   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
- NIL NIL)
-T
-T
-; compiling (DEF EXPLAIN-LINES ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime4
-; in: DEF EXPLAIN-LINES
-;     (NOT STREAMS/EXPR::EXPR NIL)
-;
-; caught WARNING:
-;   The function NOT is called with two arguments, but wants exactly one.
-
-; file: C:/Users/David/AppData/Local/Temp/slime4
-; in: DEF EXPLAIN-LINES
-;     (STREAMS/EXPR::DEF STREAMS/EXPR::EXPLAIN-LINES (STREAMS/EXPR::SETTERS)
-;      "Print each setter from a list on a separate line."
-;      (COND ((NOT STREAMS/EXPR::EXPR NIL))
-;            (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
-;             (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::DEF
-
-;     (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS))
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::EXPLAIN-LINES
-
-;     (STREAMS/EXPR::DEF STREAMS/EXPR::EXPLAIN-LINES (STREAMS/EXPR::SETTERS)
-;      "Print each setter from a list on a separate line."
-;      (COND ((NOT STREAMS/EXPR::EXPR NIL))
-;            (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
-;             (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::EXPLAIN-LINES
-
-;     (NOT STREAMS/EXPR::EXPR NIL)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::EXPR
-
-;     (CAR STREAMS/EXPR::SETTERS)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::SETTERS
-
-;     (STREAMS/EXPR::SETTERS)
-;
-; caught STYLE-WARNING:
-;   undefined function: STREAMS/EXPR::SETTERS
-;
-; compilation unit finished
-;   Undefined functions:
-;     DEF EXPLAIN-LINES SETTERS
-;   Undefined variables:
-;     EXPLAIN-LINES EXPR SETTERS
-;   caught 4 WARNING conditions
-;   caught 3 STYLE-WARNING conditions
-; compiling (DEFUN PARSE-SETTERS ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime5
-; in: DEFUN PARSE-SETTERS
-;     (LET ((STREAMS/EXPR::PARSED-ATOM
-;            (STREAMS/EXPR:PARSE-MSL STREAMS/EXPR::EXPR))))
-;
-; caught STYLE-WARNING:
-;   The variable PARSED-ATOM is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN EXPLAIN-LINES ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime6
-; in: DEFUN EXPLAIN-LINES
-;     (NOT STREAMS/EXPR::EXPR NIL)
-;
-; caught WARNING:
-;   The function NOT is called with two arguments, but wants exactly one.
-
-; file: C:/Users/David/AppData/Local/Temp/slime6
-; in: DEFUN EXPLAIN-LINES
-;     (NOT STREAMS/EXPR::EXPR NIL)
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::EXPR
-;
-; compilation unit finished
-;   Undefined variable:
-;     EXPR
-;   caught 2 WARNING conditions
-; compiling (DEFUN EXPLAIN-LINES ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime7
-; in: DEFUN EXPLAIN-LINES
-;     (NOT STREAMS/EXPR::SETTERS NIL)
-;
-; caught WARNING:
-;   The function NOT is called with two arguments, but wants exactly one.
-;
-; compilation unit finished
-;   caught 1 WARNING condition
-; compiling (DEFUN EXPLAIN-LINES ...)
-; compiling (DEFUN PARSE-SETTERS ...)
-; compiling (DEFUN EXPLAIN-LINES ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-("@" "WALT")
-("Walt Disney")
-((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-NIL
-NIL
-NIL
-NIL
-; compiling (DEFUN EXPLAIN-LINES ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime11
-; in: DEFUN EXPLAIN-LINES
-;     (DEFUN STREAMS/EXPR::EXPLAIN-LINES
-;            (STREAMS/EXPR::SETTERS &OPTIONAL (STREAMS/EXPR::LINE 0))
-;       "Print each setter from a list on a separate line."
-;       (COND ((NOT STREAMS/EXPR::SETTERS) NIL)
-;             (T (FORMAT T "~S~%" (CAR STREAMS/EXPR::SETTERS))
-;              (STREAMS/EXPR::EXPLAIN-LINES (CDR STREAMS/EXPR::SETTERS)))))
-; --> PROGN SB-IMPL::%DEFUN SB-IMPL::%DEFUN SB-INT:NAMED-LAMBDA
-; ==>
-;   #'(SB-INT:NAMED-LAMBDA STREAMS/EXPR::EXPLAIN-LINES
-;         (STREAMS/EXPR::SETTERS &OPTIONAL (STREAMS/EXPR::LINE 0))
-;       (DECLARE (SB-C::TOP-LEVEL-FORM))
-;       "Print each setter from a list on a separate line."
-;       (BLOCK STREAMS/EXPR::EXPLAIN-LINES
-;         (COND ((NOT STREAMS/EXPR::SETTERS) NIL)
-;               (T (FORMAT T "~S~%" #) (STREAMS/EXPR::EXPLAIN-LINES #)))))
-;
-; caught STYLE-WARNING:
-;   The variable LINE is defined but never used.
-;
-; compilation unit finished
-;   caught 1 STYLE-WARNING condition
-; compiling (DEFUN EXPLAIN-LINES ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-0. ("@" "WALT")
-0.  ("Walt Disney")
-0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-0.  NIL
-0.  NIL
-0.  NIL
-NIL
-; compiling (DEFUN EXPLAIN-LINES ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-
-0.  ("@" "WALT")
-
-0.  ("Walt Disney")
-
-0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-
-0.  NIL
-
-0.  NIL
-
-0.  NIL
-
-NIL
-; compiling (DEFUN PARSE-SETTERS ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-
-
-0.  ("@" "WALT")
-
-0.  ("Walt Disney")
-
-0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-
-0.  NIL
-
-0.  NIL
-
-0.  NIL
-
-NIL
-; compiling (DEFUN EXPLAIN-LINES ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-
-0.  ("@" "WALT")
-0.  ("Walt Disney")
-0.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-0.  NIL
-0.  NIL
-0.  NIL
-NIL
-; compiling (DEFUN EXPLAIN-LINES ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
-
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-4.  NIL
-5.  NIL
-6.  NIL
-NIL
-; compiling (DEFUN EXPLAIN-LINES ...)
-
-; file: C:/Users/David/AppData/Local/Temp/slime17
-; in: DEFUN EXPLAIN-LINES
-;     (FORMAT T "~A.~4T~S~%" STREAMS/EXPR::LINE (CAR STREAMS/EXPR::SETTERS))
-;
-; caught WARNING:
-;   undefined variable: STREAMS/EXPR::LINE
-;
-; compilation unit finished
-;   Undefined variable:
-;     LINE
-;   caught 1 WARNING condition
-; compiling (DEFUN EXPLAIN-LINES ...)
 STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
 1.  ("@" "WALT")
@@ -253,72 +18,44 @@ STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 6.  NIL
 NIL
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d waltd))")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf))")
 
 1.  ("@" "WALT")
 2.  ("Walt Disney")
 3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
-     (("@" "WALT" "d" "waltd") NIL NIL NIL NIL NIL))
+     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
 4.  NIL
 5.  NIL
 6.  NIL
 NIL
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian)")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf) :wife Lillian /lregex/)")
 
 1.  ("@" "WALT")
 2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-4.  ((("@" "WALT" ":" "wife") ("Lillian") NIL))
-5.  NIL
-6.  NIL
-NIL
-
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
-
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-4.  ((("@" "WALT" ":" "wife") ("Lillian")
-      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
-5.  NIL
-6.  NIL
-NIL
-; compiling (DEFUN PARSE-SETTERS ...)
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
-
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
 4.  ((("@" "WALT" ":" "wife") ("Lillian")
       ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
 5.  NIL
 6.  NIL
 NIL
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ )")
-
-NIL
-
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf) :wife Lillian (d ltype))")
 
 1.  ("@" "WALT")
 2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
-4.  NIL
-5.  NIL
-6.  NIL
-NIL
-
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
-
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
 4.  ((("@" "WALT" ":" "wife") ("Lillian")
-      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
+      ((("@" "WALT" ":" "wife" "d" "ltype") NIL NIL NIL NIL NIL))))
 5.  NIL
 6.  NIL
 NIL
+; compiling (DEFUN =MSL-HASH ...)
+WARNING: redefining STREAMS/EXPR::=MSL-HASH in DEFUN
 
-STREAMS/EXPR> 
+STREAMS/EXPR>

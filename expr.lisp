@@ -62,7 +62,8 @@
 (defun explain-lines (setters &optional (line-num 1))
   "Print each setter from a list on a separate line."
   (cond ((not setters) NIL)
-        (t (format t "~A.~4T~S~%" line-num (car setters)) (explain-lines (cdr setters) (+ line-num 1)))))
+        (t (format t "~A.~4T~S~%" line-num (car setters)) (explain-lines (cdr setters) (+ line-num 1)) t)))
+
 
 (defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
@@ -138,10 +139,11 @@
 
 (defun =msl-hash ()
   "Match and return a hash value."
-  (=destructure (_ _ hash)
+  (=destructure (_ ns hash)
       (=list 'whitespace
-             (?eq #\#)
-             (=sha256))))
+             (=subseq (?eq #\#))
+             (=sha256))
+      (list (list ns) (list hash))))
 ;;
 
 (defun =msl-value ()
@@ -364,7 +366,7 @@
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
    (let ((atom-val) (atom-seq) (meta-seq))
-     (=destructure (_ atom-seq atom-value atom-mods metadata hash comment _)
+     (=destructure (_ atom-seq atom-value atom-mods metadata hash _ _)
                    (=list (?eq #\left_parenthesis)
                           (=transform
                                       (=@-sequence)
@@ -401,23 +403,25 @@
                                                                   'msl-value))
                                                        (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            'atom-mods
-                                                                           (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))))
-                                              (list (append atom-seq meta-seq) meta-value meta-mods)))
+                                                                           (append (list (append atom-seq meta-seq mod-seq) mod-value) mod-mods mod-meta mod-hash mod-comment)))))
+                                              (append (list (append atom-seq meta-seq) meta-value) meta-mods)))
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list 'metadata-sequence
                                                (?satisfies (lambda (val)
-                                                                   (declare (ignore val)) (unless saved-val t))
+                                                                   (declare (ignore val)) (unless atom-val t))
                                                            (%maybe (%or 'nested-@
                                                                         'nested-group
                                                                         'msl-value)))
                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                    'atom-mods
-                                                                   (list (append saved-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
-                                        (list (list (append saved-seq meta-seq) meta-value meta-mods)))))
-                          (%maybe 'msl-hash)
+                                                                   (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                                        (list (list (append atom-seq meta-seq) meta-value meta-mods)))))
+                          (%maybe (=destructure (hash-seq hash-value)
+                                                'msl-hash
+                                                (list (list (append atom-seq hash-seq) hash-value))))
                           (%maybe 'msl-comment)
                           'expression-terminator)
-                   (list atom-seq atom-value atom-mods metadata hash comment))))
+                   (append (list (list atom-seq atom-value)) atom-mods metadata hash))))
 ;;;;
 
 
