@@ -116,12 +116,6 @@ will be reallocated on the universe."
                    (setf (gethash location (streams/classes:value mx-atom))
                          params-head))))))))
 
-;;; NOTE: can '("@" "WALT") be used as a table key?
-;;; NOTE: should the namespaces be initialized as tables in the universe?
-
-;;; TODO: create true tables under the namespaces
-;;; TODO: Maybe remove the other classes and store all on MX-ATOM
-;;; TODO: This should not be allocated on MX-ATOM because of the CANONIZEDP flag
 (defun dispatch-on-universe (groups &optional params force)
   "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
 will be reallocated on the universe."
@@ -140,7 +134,6 @@ will be reallocated on the universe."
                  (setf (gethash key (streams/classes:value mx-atom))
                        params-head)))))))
 
-;;; TODO: Should D and F be allocated like @?
 (defun dispatch (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
@@ -173,6 +166,6 @@ universe."
                           (gethash (car args) tab))))))
     (fn path source)))
 
-(defun dump-chain (path source)
-  "Print information about a table chain specified by PATH in SOURCE."
-  (marie:dump-table (read-chain path source)))
+(defun dump-chain (chain)
+  "Print information about SOURCE recursively."
+  (marie:dump-table* chain))
