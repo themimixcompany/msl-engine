@@ -72,7 +72,7 @@
   ((ns :initarg :ns
        :initform nil
        :reader ns
-       :documentation "The type of namespace, and consequently storage type, that an mx-atom has.")
+       :documentation "The type of namespace, and consequently storage type, that an mx-base has.")
    (key :initarg :key
         :initform nil
         :accessor key
@@ -93,6 +93,9 @@
                :accessor canonizedp
                :documentation "The flag to indicate whether an mx-atom has canon values."))
   (:documentation "The class for atom data."))
+
+;;; TODO: should a common class between DATATYPE and FORMAT be created?
+;;; TODO: if so, DEFINE-MAKERS should be updated.
 
 (defclass mx-datatype (mx-base)
   ((id :initarg :id
