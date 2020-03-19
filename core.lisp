@@ -102,29 +102,35 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
             t))
         (not (on-atom-p groups)))))
 
-(defun store-on-atom (groups params &optional force)
+(defun recall-from-atom (key location)
+  "Retrieve an atom value from the universe as specified by KEY and LOCATION."
+  (gethash location
+           (streams/classes:value
+            (gethash key (streams/classes:atom-table streams/specials:*mx-universe*)))))
+
+(defun dispatch-on-atom (groups &optional params force)
   "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
 will be reallocated on the universe."
-  (destructuring-bind ((ns key) location)
+  (destructuring-bind ((ns key) place)
       groups
-    (destructuring-bind (params-head &rest params-body)
+    (destructuring-bind (&optional params-head &rest params-body)
         params
       (declare (ignore params-body))
-      (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
-                                                   (make-hash-table :test #'equal)
-                                                   force)))
-        (destructuring-bind (loc &rest rest)
-            location
-          (declare (ignore rest))
-          (setf (gethash loc (streams/classes:value mx-atom))
-                params-head))))))
+      (let ((location (first place)))
+        (cond ((null params) (recall-from-atom key location))
+              (t (let ((mx-atom (streams/classes:make-mx-atom
+                                 (list ns key)
+                                 (make-hash-table :test #'equal)
+                                 force)))
+                   (setf (gethash location (streams/classes:value mx-atom))
+                         params-head))))))))
 
-(defun store-msl (expr &optional force)
+(defun dispatch (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the universe."
   (let ((value-list expr))        ;(streams/expr:parse-msl expr)
     (loop :for value :in value-list
-          :do (destructuring-bind (path &optional &rest params)
-                  value
-                (let ((groups (path-groups path)))
-                  (cond ((on-atom-p groups) (store-on-atom groups params force))
-                        (t nil)))))))
+          :collect (destructuring-bind (path &optional &rest params)
+                       value
+                     (let ((groups (path-groups path)))
+                       (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
+                             (t 'on-universe)))))))
