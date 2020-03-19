@@ -116,7 +116,12 @@ will be reallocated on the universe."
                    (setf (gethash location (streams/classes:value mx-atom))
                          params-head))))))))
 
-;;; Maybe remove the other classes and store all on MX-ATOM
+;;; NOTE: can '("@" "WALT") be used as a table key?
+;;; NOTE: should the namespaces be initialized as tables in the universe?
+
+;;; TODO: create true tables under the namespaces
+;;; TODO: Maybe remove the other classes and store all on MX-ATOM
+;;; TODO: This should not be allocated on MX-ATOM because of the CANONIZEDP flag
 (defun dispatch-on-universe (groups &optional params force)
   "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
 will be reallocated on the universe."
@@ -128,14 +133,14 @@ will be reallocated on the universe."
       (declare (ignore params-body))
       (cond ((or (null params) (null params-head))
              ;; recall here
-             )
+             nil)
             (t (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
                                                             (make-hash-table :test #'equal)
                                                             force)))
                  (setf (gethash key (streams/classes:value mx-atom))
                        params-head)))))))
 
-;;; TODO: allocate D and F like @
+;;; TODO: Should D and F be allocated like @?
 (defun dispatch (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
@@ -147,3 +152,27 @@ universe."
                        (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
                              ((on-universe-p groups) (dispatch-on-universe groups params force))
                              (t 'else)))))))
+
+(defun build-chain (path destination)
+  "Return a hash table containing the embedded value tables as specified in PATH."
+  (labels ((fn (args tab)
+             (cond ((null args) destination)
+                   (t (fn (cdr args)
+                          (if (hash-table-p (gethash (car args) tab))
+                              (gethash (car args) tab)
+                              (let ((ht (make-hash-table :test #'equal)))
+                                (setf (gethash (car args) tab) ht)
+                                ht)))))))
+    (fn path destination)))
+
+(defun read-chain (path source)
+  "Return the final table specified by PATH starting from SOURCE."
+  (labels ((fn (args tab)
+             (cond ((null args) tab)
+                   (t (fn (cdr args)
+                          (gethash (car args) tab))))))
+    (fn path source)))
+
+(defun dump-chain (path source)
+  "Print information about a table chain specified by PATH in SOURCE."
+  (marie:dump-table (read-chain path source)))
