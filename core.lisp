@@ -67,30 +67,22 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   (let ((pairs (namespace-pairs path)))
     pairs))
 
-(defmacro define-mod-checker (name type &optional doc)
-  "Define a mod checker."
-  `(defun ,name (mod)
-     ,(when doc doc)
-     (destructuring-bind (head &optional &rest body)
-         mod
-       (declare (ignore body))
-       (unless (listp head)
-         (string= head ,type)))))
-
 (defun on-atom-p (groups)
   "Return true if GROUPS should be stored locally on the atom."
   (let ((last (marie:last* groups)))
     (when (marie:solop last)
       t)))
 
-(defun sub-namespace-aliases ()
-  "Return the list of namespaces under an atom."
-  (loop :for ns-spec :in streams/specials:*namespace-list*
-        :when (destructuring-bind (alias name rank)
-                     ns-spec
-                   (declare (ignore alias name))
-                (= rank 9))
-          :collect (first ns-spec)))
+(defun sub-namespace-p (ns)
+  "Return true if NS is subnamespace."
+  (let ((names (loop :for ns-spec :in streams/specials:*namespace-list*
+                     :when (destructuring-bind (alias name rank)
+                               ns-spec
+                             (declare (ignore alias name))
+                             (= rank 9))
+                       :collect (first ns-spec))))
+    (when (member ns names :test #'equal)
+      t)))
 
 (defun on-universe-p (groups)
   "Return true if GROUPS should be stored globally on the universe."
@@ -98,15 +90,14 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
     (or (destructuring-bind (ns &optional key)
             last
           (declare (ignore key))
-          (when (member ns (sub-namespace-aliases) :test #'equal)
-            t))
+          (sub-namespace-p ns))
         (not (on-atom-p groups)))))
 
 (defun recall-from-atom (key location)
   "Retrieve an atom value from the universe as specified by KEY and LOCATION."
-  (gethash location
-           (streams/classes:value
-            (gethash key (streams/classes:atom-table streams/specials:*mx-universe*)))))
+  (let* ((table (streams/classes:atom-table streams/specials:*mx-universe*))
+         (value (streams/classes:value (gethash key table))))
+    (gethash location value)))
 
 (defun dispatch-on-atom (groups &optional params force)
   "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
@@ -126,11 +117,13 @@ will be reallocated on the universe."
                          params-head))))))))
 
 (defun dispatch (expr &optional force)
-  "Parse EXPR as an MSL expression and store the resulting object in the universe."
+  "Parse EXPR as an MSL expression and store the resulting object in the
+universe."
   (let ((value-list expr))        ;(streams/expr:parse-msl expr)
     (loop :for value :in value-list
           :collect (destructuring-bind (path &optional &rest params)
                        value
                      (let ((groups (path-groups path)))
                        (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
-                             (t 'on-universe)))))))
+                             ((on-universe-p groups) 'on-universe)
+                             (t 'else)))))))
