@@ -93,9 +93,9 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
           (sub-namespace-p ns))
         (not (on-atom-p groups)))))
 
-(defun recall-from-atom (key location)
+(defun recall (key location &optional (universe-table #'streams/classes:atom-table))
   "Retrieve an atom value from the universe as specified by KEY and LOCATION."
-  (let* ((table (streams/classes:atom-table streams/specials:*mx-universe*))
+  (let* ((table (funcall universe-table streams/specials:*mx-universe*))
          (value (streams/classes:value (gethash key table))))
     (gethash location value)))
 
@@ -108,14 +108,34 @@ will be reallocated on the universe."
         params
       (declare (ignore params-body))
       (let ((location (first place)))
-        (cond ((null params) (recall-from-atom key location))
-              (t (let ((mx-atom (streams/classes:make-mx-atom
-                                 (list ns key)
-                                 (make-hash-table :test #'equal)
-                                 force)))
+        (cond ((or (null params) (null params-head))
+               (recall key location))
+              (t (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
+                                                              (make-hash-table :test #'equal)
+                                                              force)))
                    (setf (gethash location (streams/classes:value mx-atom))
                          params-head))))))))
 
+;;; Maybe remove the other classes and store all on MX-ATOM
+(defun dispatch-on-universe (groups &optional params force)
+  "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
+will be reallocated on the universe."
+  (destructuring-bind (place (ns key))
+      groups
+    (declare (ignore place))
+    (destructuring-bind (&optional params-head &rest params-body)
+        params
+      (declare (ignore params-body))
+      (cond ((or (null params) (null params-head))
+             ;; recall here
+             )
+            (t (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
+                                                            (make-hash-table :test #'equal)
+                                                            force)))
+                 (setf (gethash key (streams/classes:value mx-atom))
+                       params-head)))))))
+
+;;; TODO: allocate D and F like @
 (defun dispatch (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
@@ -125,5 +145,5 @@ universe."
                        value
                      (let ((groups (path-groups path)))
                        (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
-                             ((on-universe-p groups) 'on-universe)
+                             ((on-universe-p groups) (dispatch-on-universe groups params force))
                              (t 'else)))))))
