@@ -74,15 +74,9 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
       t)))
 
 (defun sub-namespace-p (ns)
-  "Return true if NS is subnamespace."
-  (let ((names (loop :for ns-spec :in streams/specials:*namespace-list*
-                     :when (destructuring-bind (alias name rank)
-                               ns-spec
-                             (declare (ignore alias name))
-                             (= rank 9))
-                       :collect (first ns-spec))))
-    (when (member ns names :test #'equal)
-      t)))
+  "Return true if NS is sub-namespace."
+  (when (member ns streams/specials:*sub-namespace-aliases* :test #'equal)
+    t))
 
 (defun on-universe-p (groups)
   "Return true if GROUPS should be stored globally on the universe."
@@ -134,27 +128,36 @@ will be reallocated on the universe."
                  (setf (gethash key (streams/classes:value mx-atom))
                        params-head)))))))
 
-;;; Is there a general dispatcher?
-(defun dispatch (expr &optional force)
+(defun dispatch-0 (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
-  (let ((value-list expr))        ;(streams/expr:parse-msl expr)
-    (loop :for value :in value-list
+  (let ((terms expr))        ;(streams/expr:parse-msl expr)
+    (loop :for term :in terms
           :collect (destructuring-bind (path &optional &rest params)
-                       value
+                       term
                      (let ((groups (path-groups path)))
                        (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
                              ((on-universe-p groups) (dispatch-on-universe groups params force))
                              (t 'else)))))))
 
+(defun sub-atom-path-p (path)
+  "Return true if PATH is a sub-atom."
+  (destructuring-bind (&optional ns key sub-ns sub-key)
+      path
+    (declare (ignore ns key sub-key))
+    (sub-namespace-p sub-ns)))
+
+(defun sub-atom-path (path)
+  "Return the sub-atom path from PATH."
+  (subseq path 2))
+
 (defun write-chain (term &optional (destination (make-hash-table :test #'equal)))
-  "Return a hash table containing the embedded value tables as specified in PATH."
-  (destructuring-bind (path &optional &rest value)
+  "Return a hash table containing the embedded value tables as specified in TERM."
+  (destructuring-bind (path &optional &rest params)
       term
     (labels ((fn (args tab)
                (cond ((marie:solop args)
-                      (progn (setf (gethash (marie:stem args) tab)
-                                   value)
+                      (progn (setf (gethash (marie:stem args) tab) params)
                              destination))
                      (t (fn (cdr args)
                             (if (hash-table-p (gethash (car args) tab))
@@ -164,14 +167,35 @@ universe."
                                   ht)))))))
       (fn path destination))))
 
-(defun read-chain (path source)
-  "Return the final table specified by PATH starting from SOURCE."
-  (labels ((fn (args tab)
-             (cond ((null args) tab)
-                   (t (fn (cdr args)
-                          (gethash (car args) tab))))))
-    (fn path source)))
+(defun read-chain (term source)
+  "Return the value specified by PATH starting from SOURCE."
+  (destructuring-bind (path &optional &rest params)
+      term
+    (declare (ignore params))
+    (labels ((fn (args tab)
+               (cond ((null args) tab)
+                     (t (fn (cdr args)
+                            (gethash (car args) tab))))))
+      (fn path source))))
 
 (defun dump-chain (chain)
   "Print information about SOURCE recursively."
   (marie:dump-table* chain))
+
+(defun dispatch (expr)
+  "Parse EXPR as an MSL expression and store the resulting object in the
+universe."
+  (flet ((fn (path params table)
+           (write-chain (list path params)
+                        (funcall table streams/specials:*mx-universe*))))
+    (let ((terms expr))        ;(streams/expr:parse-msl expr)
+      (loop :for term :in terms
+            :collect
+            (destructuring-bind (path &optional &rest params)
+                term
+              (cond ((sub-atom-path-p path)
+                     (fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
+                    ((not (sub-atom-path-p path))
+                     (fn path params #'streams/classes:atom-table))
+                    (t nil)))))))
+
