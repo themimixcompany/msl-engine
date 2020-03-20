@@ -134,6 +134,7 @@ will be reallocated on the universe."
                  (setf (gethash key (streams/classes:value mx-atom))
                        params-head)))))))
 
+;;; Is there a general dispatcher?
 (defun dispatch (expr &optional force)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
@@ -146,19 +147,22 @@ universe."
                              ((on-universe-p groups) (dispatch-on-universe groups params force))
                              (t 'else)))))))
 
-;;; How can DISPATCH use WRITE-CHAIN?
-;;; Should there be validation for the root tables?
-(defun write-chain (path destination)
+(defun write-chain (term &optional (destination (make-hash-table :test #'equal)))
   "Return a hash table containing the embedded value tables as specified in PATH."
-  (labels ((fn (args tab)
-             (cond ((null args) destination)
-                   (t (fn (cdr args)
-                          (if (hash-table-p (gethash (car args) tab))
-                              (gethash (car args) tab)
-                              (let ((ht (make-hash-table :test #'equal)))
-                                (setf (gethash (car args) tab) ht)
-                                ht)))))))
-    (fn path destination)))
+  (destructuring-bind (path &optional &rest value)
+      term
+    (labels ((fn (args tab)
+               (cond ((marie:solop args)
+                      (progn (setf (gethash (marie:stem args) tab)
+                                   value)
+                             destination))
+                     (t (fn (cdr args)
+                            (if (hash-table-p (gethash (car args) tab))
+                                (gethash (car args) tab)
+                                (let ((ht (make-hash-table :test #'equal)))
+                                  (setf (gethash (car args) tab) ht)
+                                  ht)))))))
+      (fn path destination))))
 
 (defun read-chain (path source)
   "Return the final table specified by PATH starting from SOURCE."
