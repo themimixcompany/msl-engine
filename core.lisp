@@ -146,7 +146,9 @@ universe."
                              ((on-universe-p groups) (dispatch-on-universe groups params force))
                              (t 'else)))))))
 
-(defun build-chain (path destination)
+;;; How can DISPATCH use WRITE-CHAIN?
+;;; Should there be validation for the root tables?
+(defun write-chain (path destination)
   "Return a hash table containing the embedded value tables as specified in PATH."
   (labels ((fn (args tab)
              (cond ((null args) destination)
