@@ -364,7 +364,7 @@
 ;;
 
 
-;; Atom Forms
+;; Atom Forms (Single-Setter)
 
 (defun =@-form ()
    "Match and return an atom in the @ namespace."
@@ -385,8 +385,10 @@
                                               'atom-mods
                                             (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                           (%maybe (%or
+                                      ;; one or more metadata keys
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
+                                                ;; with values, maybe mods
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
@@ -396,7 +398,8 @@
                                                                    'msl-value))
                                                        (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            'atom-mods
-                                                                           (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                                                                           (append (list (list (append atom-seq meta-seq mod-seq) mod-value)) mod-mods mod-meta mod-hash mod-comment))))
+                                                ;; maybe values, all with mods
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
@@ -407,7 +410,9 @@
                                                        (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            'atom-mods
                                                                            (append (list (append atom-seq meta-seq mod-seq) mod-value) mod-mods mod-meta mod-hash mod-comment)))))
-                                              (append (list (append atom-seq meta-seq) meta-value) meta-mods)))
+                                              (append (list (list (append atom-seq meta-seq) meta-value)) meta-mods)))
+
+                                      ;; single metadata key, with value, maybe mods
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list 'metadata-sequence
                                                (?satisfies (lambda (val)
@@ -418,7 +423,7 @@
                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                    'atom-mods
                                                                    (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
-                                        (list (list (append atom-seq meta-seq) meta-value meta-mods)))))
+                                        (list (list (append atom-seq meta-seq) meta-value) meta-mods))))
                           (%maybe (=destructure (hash-seq hash-value)
                                                 'msl-hash
                                                 (list (list (append atom-seq hash-seq) hash-value))))

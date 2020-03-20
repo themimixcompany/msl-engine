@@ -3,59 +3,3035 @@
   Load 1 ASDF system:
     streams
 ; Loading "streams"
-.............
+........
 
 CL-USER> (in-package :streams/expr)
 #<PACKAGE "STREAMS/EXPR">
 
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime4
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::HERE))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::HERE))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime6
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST 'STREAMS/EXPR::X
+;             (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                     STREAMS/EXPR::MOD-SEQ)
+;             STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;             STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::X))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST 'STREAMS/EXPR::X
+;           (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                   STREAMS/EXPR::MOD-SEQ)
+;           STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;           STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::X))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (X ("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL X))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (X ("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL X))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime8
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (X ("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL X))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (X ("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL X))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime10
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime12
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime14
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime15
+; in: DEFUN =@-FORM
+;     (APPEND (LIST (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE))
+;             STREAMS/EXPR::ATOM-MODS 'STREAMS/EXPR::X STREAMS/EXPR::METADATA
+;             STREAMS/EXPR::HASH)
+;
+; note: deleting unreachable code
+
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+
+;     (APPEND (LIST (LIST STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::ATOM-VALUE))
+;             STREAMS/EXPR::ATOM-MODS 'STREAMS/EXPR::X STREAMS/EXPR::METADATA
+;             STREAMS/EXPR::HASH)
+;
+; caught WARNING:
+;   Constant X conflicts with its asserted type LIST.
+;   See also:
+;     The SBCL Manual, Node "Handling of Types"
+;
+; compilation unit finished
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+;   printed 1 note
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime17
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  X
+5.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+6.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) X
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime19
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime21
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype //dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") NIL NIL NIL NIL "dcomment")
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime23
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime25
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+3.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime27
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+3.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime29
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+     (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL))
+3.  (((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+4.  ((("@" "WALT" "#")
+      ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL))
+ (((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL)))
+ ((("@" "WALT" "#")
+   ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime31
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime33
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  HERE
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) HERE
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (IN-PACKAGE :STREAMS/EXPR)
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+     (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL))
+3.  (((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+4.  ((("@" "WALT" "#")
+      ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL))
+ (((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+ ((("@" "WALT" "#")
+   ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (PARSE-MSL "(c WALT Walt Disney /rsomereg/ (d sometype somevalue) (f someformat somevalue) [t1] [t2])")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime52
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        'STREAMS/EXPR::HERE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      'STREAMS/EXPR::HERE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-VALUE is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") HERE NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") HERE NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime54
+; in: DEFUN =@-FORM
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::META-VALUE)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-VALUE
+;
+; compilation unit finished
+;   Undefined variable:
+;     META-VALUE
+;   caught 1 WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian /lregex/ #50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c //comment)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  HERE
+5.  (("@" "WALT" "#")
+     ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) HERE
+ (("@" "WALT" "#")
+  ("50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c")))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  HERE
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) HERE)
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  NIL
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  NIL
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  NIL
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  NIL
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL) NIL)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dcomment) (f wform) [wt1] [wt2] :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+3.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+5.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dcomment") NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2)(f wform) [wt1] [wt2] :wife Lillian)")
+
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) [wt1] [wt2] :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+6.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ [wt1] [wt2] :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ /wregex2/ [wt1] [wt2] :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ /wregex2/ [wt1] [wt2] :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ /wregex2/ [wt1] [wt2] :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ /wregex2/ [wt1] [wt2] :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d wtype dvalue) (d wtype2) (f wform) /wregex/ /wregex2/ [wt1] [wt2] :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+6.  (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "wtype") ("dvalue") NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wtype2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wform") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "[]") ("wt1" "wt2") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT)")
+
+1.  (("@" "WALT") NIL)
+((("@" "WALT") NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+((("@" "WALT") ("Walt Disney")))
+
 STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
 
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype))")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2))")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2) (f wformat))")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2) (f wformat) (f format2))")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+6.  (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2) (f wformat) (f format2) :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+6.  (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2) (f wformat) (f format2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+6.  (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "format2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ /wregex2/ (d walttype) (d type2) (f wformat) (f format2 format2value) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+5.  (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+6.  (("@" "WALT" "f" "format2") ("format2value") NIL NIL NIL NIL)
+7.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wformat") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "format2") ("format2value") NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+
+STREAMS/EXPR> (parse-setters "(@WALT)")
+
+1.  (("@" "WALT") NIL)
+((("@" "WALT") NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+((("@" "WALT") ("Walt Disney")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney :wife Lillian)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney")) (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") NIL) (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime75
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::HERE))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::HERE))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime77
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE3))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G35
+;           (SB-C::CHECK-DS-LIST #:|result34| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G35))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G35))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G35))
+;          (STREAMS/EXPR::MOD-META (POP #:G35))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G35))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G35)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE3))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (APPEND
+;        (LIST
+;         (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                 STREAMS/EXPR::MOD-SEQ)
+;         STREAMS/EXPR::MOD-VALUE)
+;        STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;        'STREAMS/EXPR::CASE2))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G22
+;           (SB-C::CHECK-DS-LIST #:|result21| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G22))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G22))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G22))
+;          (STREAMS/EXPR::MOD-META (POP #:G22))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G22))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G22)))
+;     (DECLARE (IGNORE))
+;     (APPEND
+;      (LIST
+;       (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;               STREAMS/EXPR::MOD-SEQ)
+;       STREAMS/EXPR::MOD-VALUE)
+;      STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;      'STREAMS/EXPR::CASE2))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE1))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE1))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 3 STYLE-WARNING conditions
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL HERE)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL CASE1))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL CASE1)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime79
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                STREAMS/EXPR::MOD-SEQ)
+;        STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;        STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE3))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G35
+;           (SB-C::CHECK-DS-LIST #:|result34| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G35))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G35))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G35))
+;          (STREAMS/EXPR::MOD-META (POP #:G35))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G35))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G35)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;              STREAMS/EXPR::MOD-SEQ)
+;      STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;      STREAMS/EXPR::MOD-HASH 'STREAMS/EXPR::CASE3))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (APPEND
+;        (LIST
+;         (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                 STREAMS/EXPR::MOD-SEQ)
+;         STREAMS/EXPR::MOD-VALUE)
+;        STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;        'STREAMS/EXPR::CASE2))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G22
+;           (SB-C::CHECK-DS-LIST #:|result21| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G22))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G22))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G22))
+;          (STREAMS/EXPR::MOD-META (POP #:G22))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G22))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G22)))
+;     (DECLARE (IGNORE))
+;     (APPEND
+;      (LIST
+;       (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;               STREAMS/EXPR::MOD-SEQ)
+;       STREAMS/EXPR::MOD-VALUE)
+;      STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;      'STREAMS/EXPR::CASE2))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (LIST
+;         (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                 STREAMS/EXPR::MOD-SEQ)
+;         STREAMS/EXPR::MOD-VALUE)
+;        STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;        'STREAMS/EXPR::CASE1))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (LIST
+;       (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;               STREAMS/EXPR::MOD-SEQ)
+;       STREAMS/EXPR::MOD-VALUE)
+;      STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;      'STREAMS/EXPR::CASE1))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 3 STYLE-WARNING conditions
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL CASE1))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL CASE1)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))))
+((("@" "WALT") NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype):wife Lillian /lregex/)")
+
+NIL
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") NIL))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
 4.  NIL
-5.  NIL
-6.  NIL
-NIL
+(((("@" "WALT") NIL))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+ NIL)
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf))")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
 
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
-     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
-     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
 4.  NIL
-5.  NIL
-6.  NIL
-NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+ NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf) :wife Lillian /lregex/)")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
 
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
-     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
-     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
-4.  ((("@" "WALT" ":" "wife") ("Lillian")
-      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)) NIL NIL NIL NIL))))
-5.  NIL
-6.  NIL
-NIL
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
 
-STREAMS/EXPR> (parse-setters "(@WALT Walt Disney /wregex/ (d wd) (f wf) :wife Lillian (d ltype))")
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
 
-1.  ("@" "WALT")
-2.  ("Walt Disney")
-3.  ((("@" "WALT" "/") (("wregex" NIL NIL)) NIL NIL NIL NIL)
-     (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
-     (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
-4.  ((("@" "WALT" ":" "wife") ("Lillian")
-      ((("@" "WALT" ":" "wife" "d" "ltype") NIL NIL NIL NIL NIL))))
-5.  NIL
-6.  NIL
-NIL
-; compiling (DEFUN =MSL-HASH ...)
-WARNING: redefining STREAMS/EXPR::=MSL-HASH in DEFUN
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
 
-STREAMS/EXPR>
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian") NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian") NIL))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+ NIL)
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime103
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       (LIST
+;        (LIST
+;         (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;                 STREAMS/EXPR::MOD-SEQ)
+;         STREAMS/EXPR::MOD-VALUE)
+;        STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;        'STREAMS/EXPR::MOD-COMMENT))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (LIST
+;       (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ
+;               STREAMS/EXPR::MOD-SEQ)
+;       STREAMS/EXPR::MOD-VALUE)
+;      STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;      'STREAMS/EXPR::MOD-COMMENT))
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL
+       MOD-COMMENT)))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL
+    MOD-COMMENT)))
+ NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime106
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                          STREAMS/EXPR::META-MODS)
+;         (MAXPC:=LIST 'STREAMS/EXPR::METADATA-SEQUENCE
+;                      (MAXPC:?SATISFIES
+;                       (LAMBDA (STREAMS/EXPR::VAL)
+;                         (DECLARE #)
+;                         (UNLESS STREAMS/EXPR::ATOM-VAL T))
+;                       (MAXPC:%MAYBE
+;                        (MAXPC:%OR 'STREAMS/EXPR::NESTED-@
+;                                   'STREAMS/EXPR::NESTED-GROUP
+;                                   'STREAMS/EXPR::MSL-VALUE)))
+;                      (MAXPC:%ANY
+;                       (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ
+;                                            STREAMS/EXPR::MOD-VALUE
+;                                            STREAMS/EXPR::MOD-MODS
+;                                            STREAMS/EXPR::MOD-META
+;                                            STREAMS/EXPR::MOD-HASH
+;                                            STREAMS/EXPR::MOD-COMMENT)
+;                           'STREAMS/EXPR::ATOM-MODS
+;                         (LIST # STREAMS/EXPR::MOD-VALUE STREAMS/EXPR::MOD-MODS
+;                               STREAMS/EXPR::MOD-META STREAMS/EXPR::MOD-HASH
+;                               STREAMS/EXPR::MOD-COMMENT))))
+;       (LIST
+;        (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;              STREAMS/EXPR::META-VALUE)
+;        'STREAMS/EXPR::META-MODS))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G42
+;           (SB-C::CHECK-DS-LIST #:|result33| 3 3
+;                                '(STREAMS/EXPR::META-SEQ
+;                                  STREAMS/EXPR::META-VALUE
+;                                  STREAMS/EXPR::META-MODS)))
+;          (STREAMS/EXPR::META-SEQ (POP #:G42))
+;          (STREAMS/EXPR::META-VALUE (POP #:G42))
+;          (STREAMS/EXPR::META-MODS (POP #:G42)))
+;     (DECLARE (IGNORE))
+;     (LIST
+;      (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;            STREAMS/EXPR::META-VALUE)
+;      'STREAMS/EXPR::META-MODS))
+;
+; caught STYLE-WARNING:
+;   The variable META-MODS is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+ NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+ NIL)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian")
+      ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian")
+   ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+ NIL)
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime111
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                          STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                          STREAMS/EXPR::MOD-HASH STREAMS/EXPR::MOD-COMMENT)
+;         'STREAMS/EXPR::ATOM-MODS
+;       'STREAMS/EXPR::IMETA)
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G14
+;           (SB-C::CHECK-DS-LIST #:|result13| 6 6
+;                                '(STREAMS/EXPR::MOD-SEQ STREAMS/EXPR::MOD-VALUE
+;                                  STREAMS/EXPR::MOD-MODS STREAMS/EXPR::MOD-META
+;                                  STREAMS/EXPR::MOD-HASH
+;                                  STREAMS/EXPR::MOD-COMMENT)))
+;          (STREAMS/EXPR::MOD-SEQ (POP #:G14))
+;          (STREAMS/EXPR::MOD-VALUE (POP #:G14))
+;          (STREAMS/EXPR::MOD-MODS (POP #:G14))
+;          (STREAMS/EXPR::MOD-META (POP #:G14))
+;          (STREAMS/EXPR::MOD-HASH (POP #:G14))
+;          (STREAMS/EXPR::MOD-COMMENT (POP #:G14)))
+;     (DECLARE (IGNORE))
+;     'STREAMS/EXPR::IMETA)
+;
+; caught STYLE-WARNING:
+;   The variable MOD-SEQ is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable MOD-VALUE is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable MOD-MODS is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable MOD-META is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable MOD-HASH is defined but never used.
+;
+; caught STYLE-WARNING:
+;   The variable MOD-COMMENT is defined but never used.
+;
+; compilation unit finished
+;   caught 6 STYLE-WARNING conditions
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") ("Walt Disney")))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian") IMETA))
+4.  NIL
+(((("@" "WALT") ("Walt Disney")))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian") IMETA)) NIL)
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  ((("@" "WALT") NIL))
+2.  ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+     (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+3.  ((("@" "WALT" ":" "wife") ("Lillian") IMETA))
+4.  NIL
+(((("@" "WALT") NIL))
+ ((("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL))
+ ((("@" "WALT" ":" "wife") ("Lillian") IMETA)) NIL)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") MOD-VALUE) NIL NIL NIL NIL))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") MOD-VALUE) NIL NIL NIL NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian")))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime117
+; in: DEFUN =@-FORM
+;     (MAXPC:%SOME
+;      (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                           STREAMS/EXPR::META-MODS)
+;          (MAXPC:%OR
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%SOME #) (MAXPC:%ANY #))
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%ANY #) (MAXPC:%SOME #))))
+;      (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;            STREAMS/EXPR::META-VALUE))
+;
+; caught STYLE-WARNING:
+;   The function %SOME is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime117
+; in: DEFUN =@-FORM
+;     (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;           STREAMS/EXPR::META-VALUE)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-VALUE
+;
+; compilation unit finished
+;   Undefined variable:
+;     META-VALUE
+;   caught 1 WARNING condition
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+;
+; compilation unit aborted
+;   caught 1 fatal ERROR condition
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime122
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                          STREAMS/EXPR::META-MODS)
+;         (MAXPC:%OR
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%SOME
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%ANY
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #)))
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%ANY
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%SOME
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #))))
+;       (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;             STREAMS/EXPR::META-VALUE))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G29
+;           (SB-C::CHECK-DS-LIST #:|result12| 3 3
+;                                '(STREAMS/EXPR::META-SEQ
+;                                  STREAMS/EXPR::META-VALUE
+;                                  STREAMS/EXPR::META-MODS)))
+;          (STREAMS/EXPR::META-SEQ (POP #:G29))
+;          (STREAMS/EXPR::META-VALUE (POP #:G29))
+;          (STREAMS/EXPR::META-MODS (POP #:G29)))
+;     (DECLARE (IGNORE))
+;     (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;           STREAMS/EXPR::META-VALUE))
+;
+; caught STYLE-WARNING:
+;   The variable META-MODS is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") NIL)
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") NIL) (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian"))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")))
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime124
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                          STREAMS/EXPR::META-MODS)
+;         (MAXPC:%OR
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%SOME
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%ANY
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #)))
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%ANY
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%SOME
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #))))
+;       (APPEND
+;        (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;              STREAMS/EXPR::META-VALUE)))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G29
+;           (SB-C::CHECK-DS-LIST #:|result12| 3 3
+;                                '(STREAMS/EXPR::META-SEQ
+;                                  STREAMS/EXPR::META-VALUE
+;                                  STREAMS/EXPR::META-MODS)))
+;          (STREAMS/EXPR::META-SEQ (POP #:G29))
+;          (STREAMS/EXPR::META-VALUE (POP #:G29))
+;          (STREAMS/EXPR::META-MODS (POP #:G29)))
+;     (DECLARE (IGNORE))
+;     (APPEND
+;      (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;            STREAMS/EXPR::META-VALUE)))
+;
+; caught STYLE-WARNING:
+;   The variable META-MODS is defined but never used.
+
+;     (MAXPC:%SOME
+;      (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                           STREAMS/EXPR::META-MODS)
+;          (MAXPC:%OR
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%SOME #) (MAXPC:%ANY #))
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%ANY #) (MAXPC:%SOME #)))
+;        (APPEND
+;         (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;               STREAMS/EXPR::META-VALUE)))
+;      STREAMS/EXPR::META-MODS)
+;
+; caught STYLE-WARNING:
+;   The function %SOME is called with two arguments, but wants exactly one.
+
+; file: C:/Users/David/AppData/Local/Temp/slime124
+; in: DEFUN =@-FORM
+;     (MAXPC:%SOME
+;      (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                           STREAMS/EXPR::META-MODS)
+;          (MAXPC:%OR
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%SOME #) (MAXPC:%ANY #))
+;           (MAXPC:=LIST (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE #)
+;                        (MAXPC:%ANY #) (MAXPC:%SOME #)))
+;        (APPEND
+;         (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;               STREAMS/EXPR::META-VALUE)))
+;      STREAMS/EXPR::META-MODS)
+;
+; caught WARNING:
+;   undefined variable: STREAMS/EXPR::META-MODS
+;
+; compilation unit finished
+;   Undefined variable:
+;     META-MODS
+;   caught 1 WARNING condition
+;   caught 2 STYLE-WARNING conditions
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (DEFUN =@-FORM ...)
+
+; file: C:/Users/David/AppData/Local/Temp/slime125
+; in: DEFUN =@-FORM
+;     (MAXPC:=DESTRUCTURE (STREAMS/EXPR::META-SEQ STREAMS/EXPR::META-VALUE
+;                          STREAMS/EXPR::META-MODS)
+;         (MAXPC:%OR
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%SOME
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%ANY
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #)))
+;          (MAXPC:=LIST
+;           (MAXPC:=TRANSFORM 'STREAMS/EXPR::METADATA-SEQUENCE (LAMBDA # #))
+;           (MAXPC:%ANY
+;            (MAXPC:%OR 'STREAMS/EXPR::NESTED-@ 'STREAMS/EXPR::NESTED-GROUP
+;                       'STREAMS/EXPR::MSL-VALUE))
+;           (MAXPC:%SOME
+;            (MAXPC:=DESTRUCTURE #
+;                'STREAMS/EXPR::ATOM-MODS
+;              #))))
+;       (APPEND
+;        (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;              STREAMS/EXPR::META-VALUE)))
+; --> MAXPC:=TRANSFORM LAMBDA FUNCTION DESTRUCTURING-BIND
+; --> SB-INT:BINDING*
+; ==>
+;   (LET* ((#:G29
+;           (SB-C::CHECK-DS-LIST #:|result12| 3 3
+;                                '(STREAMS/EXPR::META-SEQ
+;                                  STREAMS/EXPR::META-VALUE
+;                                  STREAMS/EXPR::META-MODS)))
+;          (STREAMS/EXPR::META-SEQ (POP #:G29))
+;          (STREAMS/EXPR::META-VALUE (POP #:G29))
+;          (STREAMS/EXPR::META-MODS (POP #:G29)))
+;     (DECLARE (IGNORE))
+;     (APPEND
+;      (LIST (APPEND STREAMS/EXPR::ATOM-SEQ STREAMS/EXPR::META-SEQ)
+;            STREAMS/EXPR::META-VALUE)))
+;
+; caught STYLE-WARNING:
+;   The variable META-MODS is defined but never used.
+;
+; compilation unit finished
+;   caught 1 STYLE-WARNING condition
+; compiling (DEFUN =@-FORM ...)
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (("@" "WALT" ":" "wife") ("Lillian")
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" ":" "wife") ("Lillian")
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian")) NIL)
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian")) NIL))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  (((("@" "WALT" ":" "wife") ("Lillian"))) (NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ (((("@" "WALT" ":" "wife") ("Lillian"))) (NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+.....
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (DEFUN =@-FORM ...)
+WARNING: redefining STREAMS/EXPR::=@-FORM in DEFUN
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+; compiling (QUICKLISP-CLIENT:QUICKLOAD :STREAMS)To load "streams":
+  Load 1 ASDF system:
+    streams
+; Loading "streams"
+
+
+STREAMS/EXPR> (parse-setters "(@WALT Walt Disney (d walttype) (d type2) :wife Lillian /lregex/)")
+
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+3.  (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+4.  ((("@" "WALT" ":" "wife") ("Lillian"))
+     ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL))
+((("@" "WALT") ("Walt Disney"))
+ (("@" "WALT" "d" "walttype") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "type2") NIL NIL NIL NIL NIL)
+ ((("@" "WALT" ":" "wife") ("Lillian"))
+  ((("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL))) NIL NIL NIL NIL)))
+
+STREAMS/EXPR> 
