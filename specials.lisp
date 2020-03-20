@@ -61,23 +61,3 @@ namespace alias, full namespace name, and the rank.")
 (defvar *namespace-aliases*
   (mapcar #'first *namespace-list*)
   "The list of namespaces in simple form.")
-
-(defvar *base-keys*
-  '("=" "/")
-  "The common keys used in atom tables.")
-
-(defvar *atom-keys*
-  (append *base-keys* '("[]" "f" "d" "#"))
-  "The keys used for atom data.")
-
-(defvar *datatype-keys*
-  (append *base-keys* '(":"))
-  "The keys used for atom datatypes.")
-
-(defvar *format-keys*
-  (append *base-keys* '(":" "f" "d"))
-  "The keys used for atom formats.")
-
-(defvar *metadata-keys*
-  (append *base-keys* '("f" "d"))
-  "The keys used for atom metadata.")
