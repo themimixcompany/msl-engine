@@ -35,16 +35,28 @@
 (defvar *metadata-counter* 100000
   "The initial metadata counter value.")
 
-(defvar *namespace-list*
+(defvar *base-namespace-list*
   '(("c" "canon" 0)
     ("m" "machine" 1)
     ("w" "world" 2)
     ("s" "stream" 3)
     ("v" "view" 4)
-    ("@" "atom" 5)
-    ("d" "datatype" 9)
+    ("@" "atom" 5))
+  "The list of base namespaces, where the individual elements contain the
+namespace alias, full namespace name, and the rank. Table instances will be
+stored on MX-ATOM.")
+
+(defvar *sub-namespace-list*
+  '(("d" "datatype" 9)
     ("f" "format" 9))
-  "The assocation list of namespaces, where the CAR is the alias and the CDR is the full name.")
+  "The list of sub atomic namespaces, where the individual elements contain the
+namespace alias, full namespace name, and the rank. Table instances will be
+stored on MX-SUB-ATOM.")
+
+(defvar *namespace-list*
+  (append *base-namespace-list* *sub-namespace-list*)
+  "The full list of namespaces, where the individual elements contain the
+namespace alias, full namespace name, and the rank.")
 
 (defvar *namespace-aliases*
   (mapcar #'first *namespace-list*)

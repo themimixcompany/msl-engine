@@ -6,37 +6,31 @@
 
            #:atom-table
            #:atom-counter
-           #:datatype-table
-           #:datatype-counter
-           #:format-table
-           #:format-counter
+           #:sub-atom-table
+           #:sub-atom-counter
+           #:metadata-table
+           #:metadata-counter
 
            #:mx-base
-
            #:mx-atom
+           #:mx-sub-atom
+           #:mx-metadata
+
            #:make-mx-atom
            #:build-mx-atom
-
-           #:mx-datatype
-           #:make-mx-datatype
-           #:build-mx-datatype
-
-           #:mx-format
-           #:make-mx-format
-           #:build-mx-format
-
-           #:mx-metadata
+           #:make-mx-sub-atom
+           #:build-mx-sub-atom
            #:make-mx-metadata
            #:build-mx-metadata
 
+           ;; Think about the irrelevance of some of these symbols
            #:id
            #:ns
            #:key
            #:value
+           #:canonize
 
            #:make-mx-universe
-           #:make-sub-tables
-           #:canonize
            #:canonizedp))
 
 (in-package #:streams/classes)
@@ -44,28 +38,28 @@
 (defclass mx-universe ()
   ((atom-counter :initarg :atom-counter
                  :initform streams/specials:*atom-counter*
-                 :accessor atom-counter)
+                 :accessor atom-counter
+                 :documentation "The global integer counter for base atoms.")
    (atom-table :initarg :atom-table
                :initform (make-hash-table :test #'equal)
-               :accessor atom-table)
-   (datatype-counter :initarg :datatype-counter
-                     :initform streams/specials:*datatype-counter*
-                     :accessor datatype-counter)
-   (datatype-table :initarg :datatype-table
+               :accessor atom-table
+               :documentation "The table where all base atoms live.")
+   (sub-atom-counter :initarg :sub-atom-counter
+                     :initform streams/specials:*sub-atom-counter*
+                     :accessor sub-atom-counter
+                     :documentation "The global integer counter for sub atoms.")
+   (sub-atom-table :initarg :sub-atom-table
                    :initform (make-hash-table :test #'equal)
-                   :accessor datatype-table)
-   (format-counter :initarg :format-counter
-                   :initform streams/specials:*format-counter*
-                   :accessor format-counter)
-   (format-table :initarg :format-table
-                 :initform (make-hash-table :test #'equal)
-                 :accessor format-table)
+                   :accessor sub-atom-table
+                   :documentation "The table where sub atoms live.")
    (metadata-counter :initarg :metadata-counter
                      :initform streams/specials:*metadata-counter*
-                     :accessor metadata-counter)
+                     :accessor metadata-counter
+                     :documentation "The global integer counter for metadata.")
    (metadata-table :initarg :metadata-table
                    :initform (make-hash-table :test #'equal)
-                   :accessor metadata-table))
+                   :accessor metadata-table
+                   :documentation "The table where metadata things live."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-base ()
@@ -94,22 +88,12 @@
                :documentation "The flag to indicate whether an mx-atom has canon values."))
   (:documentation "The class for atom data."))
 
-;;; TODO: should a common class between DATATYPE and FORMAT be created?
-;;; TODO: if so, DEFINE-MAKERS should be updated.
-
-(defclass mx-datatype (mx-base)
+(defclass mx-sub-atom (mx-base)
   ((id :initarg :id
        :initform -1
        :accessor id
-       :documentation "The unique integer to identify the mx-datatype in the universe."))
-  (:documentation "The class for datatypes, and instances are allocated on the universe."))
-
-(defclass mx-format (mx-base)
-  ((id :initarg :id
-       :initform -1
-       :accessor id
-       :documentation "The unique integer to identify the mx-format in the universe."))
-  (:documentation "The class for formats, and instances are allocated on the universe."))
+       :documentation "The unique integer to identify the mx-sub-atom in the universe."))
+  (:documentation "The class for mx-sub-atoms, and instances are allocated on the universe."))
 
 (defclass mx-metadata (mx-base)
   ()
@@ -130,7 +114,7 @@
                :for cname = (make-name namespace "counter")
                :collect `(defun ,fname (mx-universe)
                            (update-counter mx-universe ,cname))))))
-(define-updaters atom datatype format)
+(define-updaters atom sub-atom)
 
 (defmacro define-maker (class &key allocate)
   "Define functions for MX classes. CLASS is the name of MX class to be
@@ -181,18 +165,11 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                      (destructuring-bind (name &optional allocate)
                          spec
                        `(define-maker ,name :allocate ,allocate)))))
-(define-makers ((atom t) (datatype t) (format t) (metadata)))
+(define-makers ((atom t) (sub-atom t) (metadata)))
 
 (defun make-mx-universe ()
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
-
-(defun make-sub-tables (obj)
-  "Define sub tables under OBJ. This is mainly used by metadata."
-  (let ((table (streams/classes:value mx-atom-data))
-        (sub-tables '("=" "/" "f" "d")))
-    (loop :for sub :in sub-tables
-          :do (setf (gethash sub table) (make-hash-table :test #'equal)))))
 
 (defun canonize (mx-atom)
   "Set the canonized flag of MX-ATOM to true, irrespective of its existing value."
