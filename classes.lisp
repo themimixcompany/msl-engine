@@ -16,13 +16,6 @@
            #:mx-sub-atom
            #:mx-metadata
 
-           #:make-mx-atom
-           #:build-mx-atom
-           #:make-mx-sub-atom
-           #:build-mx-sub-atom
-           #:make-mx-metadata
-           #:build-mx-metadata
-
            ;; Think about the irrelevance of some of these symbols
            #:id
            #:ns
@@ -125,7 +118,8 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
            (maker-name (make-name "make" mx-name))
            (builder-name (make-name "build" mx-name))
            (updater-name (make-name "update" class "counter"))
-           (table-name (make-name class "table")))
+           (table-name (make-name class "table"))
+           (default-table-name (make-name "default" table-name)))
       `(progn
          (defun ,maker-name (seq &optional value force)
            (destructuring-bind (ns key)
@@ -140,6 +134,8 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          (defun ,builder-name (args)
            (when args
              (apply #',maker-name args)))
+         (defun ,default-table-name ()
+           (,table-name streams/specials:*mx-universe*))
          ,(when allocate
             `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
                (let ((counter (,updater-name mx-universe)))
@@ -153,7 +149,10 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
            (print-unreadable-object (,mx-name stream :type t)
              (with-slots (id ns key)
                  ,mx-name
-               (format stream "~A ~A ~A" id ns key))))))))
+               (format stream "~A ~A ~A" id ns key))))
+         (export ',maker-name)
+         (export ',builder-name)
+         (export ',default-table-name)))))
 
 (defmacro define-makers (specs)
   "Define MX structure makers and helpers with DEFINE-MAKER."

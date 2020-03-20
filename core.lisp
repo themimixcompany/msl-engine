@@ -185,17 +185,26 @@ universe."
 (defun dispatch (expr)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
-  (flet ((fn (path params table)
-           (write-chain (list path params)
-                        (funcall table streams/specials:*mx-universe*))))
+  (flet ((read-fn (path params table)
+           (let ((tab (funcall table streams/specials:*mx-universe*)))
+             (read-chain (list path params) tab)))
+         (write-fn (path params table)
+           (let ((tab (funcall table streams/specials:*mx-universe*)))
+             (write-chain (list path params) tab)
+             (read-chain (list path params) tab))))
     (let ((terms expr))        ;(streams/expr:parse-msl expr)
       (loop :for term :in terms
             :collect
             (destructuring-bind (path &optional &rest params)
                 term
-              (cond ((sub-atom-path-p path)
-                     (fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
-                    ((not (sub-atom-path-p path))
-                     (fn path params #'streams/classes:atom-table))
-                    (t nil)))))))
-
+              (if (null params)
+                  (cond ((sub-atom-path-p path)
+                         (read-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
+                        ((not (sub-atom-path-p path))
+                         (read-fn path params #'streams/classes:atom-table))
+                        (t nil))
+                  (cond ((sub-atom-path-p path)
+                         (write-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
+                        ((not (sub-atom-path-p path))
+                         (write-fn path params #'streams/classes:atom-table))
+                        (t nil))))))))
