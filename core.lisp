@@ -2,7 +2,10 @@
 
 (uiop:define-package #:streams/core
   (:use #:cl)
-  (:export #:store-msl))
+  (:export #:write-chain
+           #:read-chain
+           #:read-path
+           #:dispatch))
 
 (in-package #:streams/core)
 
@@ -67,78 +70,16 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   (let ((pairs (namespace-pairs path)))
     pairs))
 
-(defun on-atom-p (groups)
-  "Return true if GROUPS should be stored locally on the atom."
-  (let ((last (marie:last* groups)))
-    (when (marie:solop last)
-      t)))
-
 (defun sub-namespace-p (ns)
   "Return true if NS is sub-namespace."
   (when (member ns streams/specials:*sub-namespace-aliases* :test #'equal)
     t))
-
-(defun on-universe-p (groups)
-  "Return true if GROUPS should be stored globally on the universe."
-  (let ((last (marie:last* groups)))
-    (or (destructuring-bind (ns &optional key)
-            last
-          (declare (ignore key))
-          (sub-namespace-p ns))
-        (not (on-atom-p groups)))))
 
 (defun recall (key location &optional (universe-table #'streams/classes:atom-table))
   "Retrieve an atom value from the universe as specified by KEY and LOCATION."
   (let* ((table (funcall universe-table streams/specials:*mx-universe*))
          (value (streams/classes:value (gethash key table))))
     (gethash location value)))
-
-(defun dispatch-on-atom (groups &optional params force)
-  "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
-will be reallocated on the universe."
-  (destructuring-bind ((ns key) place)
-      groups
-    (destructuring-bind (&optional params-head &rest params-body)
-        params
-      (declare (ignore params-body))
-      (let ((location (first place)))
-        (cond ((or (null params) (null params-head))
-               (recall key location))
-              (t (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
-                                                              (make-hash-table :test #'equal)
-                                                              force)))
-                   (setf (gethash location (streams/classes:value mx-atom))
-                         params-head))))))))
-
-(defun dispatch-on-universe (groups &optional params force)
-  "Store the value specified in GROUPS and PARAMS. If FORCE is true, a new atom
-will be reallocated on the universe."
-  (destructuring-bind (place (ns key))
-      groups
-    (declare (ignore place))
-    (destructuring-bind (&optional params-head &rest params-body)
-        params
-      (declare (ignore params-body))
-      (cond ((or (null params) (null params-head))
-             ;; recall here
-             nil)
-            (t (let ((mx-atom (streams/classes:make-mx-atom (list ns key)
-                                                            (make-hash-table :test #'equal)
-                                                            force)))
-                 (setf (gethash key (streams/classes:value mx-atom))
-                       params-head)))))))
-
-(defun dispatch-0 (expr &optional force)
-  "Parse EXPR as an MSL expression and store the resulting object in the
-universe."
-  (let ((terms expr))        ;(streams/expr:parse-msl expr)
-    (loop :for term :in terms
-          :collect (destructuring-bind (path &optional &rest params)
-                       term
-                     (let ((groups (path-groups path)))
-                       (cond ((on-atom-p groups) (dispatch-on-atom groups params force))
-                             ((on-universe-p groups) (dispatch-on-universe groups params force))
-                             (t 'else)))))))
 
 (defun sub-atom-path-p (path)
   "Return true if PATH is a sub-atom."
@@ -157,7 +98,7 @@ universe."
       term
     (labels ((fn (args tab)
                (cond ((marie:solop args)
-                      (progn (setf (gethash (marie:stem args) tab) params)
+                      (progn (setf (gethash (marie:stem args) tab) (marie:stem params))
                              destination))
                      (t (fn (cdr args)
                             (if (hash-table-p (gethash (car args) tab))
@@ -168,19 +109,33 @@ universe."
       (fn path destination))))
 
 (defun read-chain (term source)
-  "Return the value specified by PATH starting from SOURCE."
+  "Return the value specified by TERM in SOURCE."
   (destructuring-bind (path &optional &rest params)
       term
     (declare (ignore params))
     (labels ((fn (args tab)
                (cond ((null args) tab)
-                     (t (fn (cdr args)
-                            (gethash (car args) tab))))))
+                     (t (let ((value (gethash (car args) tab)))
+                          (when value
+                            (fn (cdr args)
+                                value)))))))
       (fn path source))))
+
+(defun read-path (path source)
+  "Return the value specified by PATH in SOURCE."
+  (read-chain (list path nil) source))
 
 (defun dump-chain (chain)
   "Print information about SOURCE recursively."
   (marie:dump-table* chain))
+
+(defun empty-chain (chain)
+  "Clear all the contents of CHAIN."
+  (clrhash chain))
+
+(defun empty-params-p (params)
+  "Return true if PARAMS is considered empty."
+  (every #'null params))
 
 (defun dispatch (expr)
   "Parse EXPR as an MSL expression and store the resulting object in the
@@ -197,14 +152,21 @@ universe."
             :collect
             (destructuring-bind (path &optional &rest params)
                 term
-              (if (null params)
-                  (cond ((sub-atom-path-p path)
-                         (read-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
-                        ((not (sub-atom-path-p path))
-                         (read-fn path params #'streams/classes:atom-table))
-                        (t nil))
-                  (cond ((sub-atom-path-p path)
-                         (write-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
-                        ((not (sub-atom-path-p path))
-                         (write-fn path params #'streams/classes:atom-table))
-                        (t nil))))))))
+              (marie:dbg params)
+              (cond ((and (empty-params-p params)
+                          (sub-atom-path-p path))
+                     (marie:dbg "A")
+                     (read-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
+                    ((and (empty-params-p params)
+                          (not (sub-atom-path-p path)))
+                     (marie:dbg "B")
+                     (read-fn path params #'streams/classes:atom-table))
+                    ((and params
+                          (sub-atom-path-p path))
+                     (marie:dbg "C")
+                     (write-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
+                    ((and params
+                          (null (sub-atom-path-p path)))
+                     (marie:dbg "D")
+                     (write-fn path params #'streams/classes:atom-table))
+                    (t nil)))))))

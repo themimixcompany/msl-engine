@@ -119,7 +119,8 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
            (builder-name (make-name "build" mx-name))
            (updater-name (make-name "update" class "counter"))
            (table-name (make-name class "table"))
-           (default-table-name (make-name "default" table-name)))
+           (default-table-name (make-name "default" table-name))
+           (clear-table-name (make-name "clear" table-name)))
       `(progn
          (defun ,maker-name (seq &optional value force)
            (destructuring-bind (ns key)
@@ -136,6 +137,8 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
              (apply #',maker-name args)))
          (defun ,default-table-name ()
            (,table-name streams/specials:*mx-universe*))
+         (defun ,clear-table-name ()
+           (clrhash (,table-name streams/specials:*mx-universe*)))
          ,(when allocate
             `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
                (let ((counter (,updater-name mx-universe)))
