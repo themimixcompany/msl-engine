@@ -20,6 +20,10 @@
   (= (length value) 64))
 ;;
 
+(defun diag (&optional message value)
+  "Print a diagnostic message."
+  (format t "~%~5T>>> ~A ~A~%~%" message value))
+
 
 ;; MSL Explainer System (MSLES)
 
@@ -248,6 +252,12 @@
 
 ;; LIST OF VALUES PARSERS (Return a list.)
 
+;; Syntax Placeholders
+(defun =atom-or-value ()
+  (%or 'nested-@
+       'nested-group
+       'msl-value))
+
 ;; Namespace Sequences
 
 (defun =@-sequence ()
@@ -375,9 +385,7 @@
                                       (=@-sequence)
                                       (lambda (seq)
                                               (setf atom-seq seq)))
-                          (=transform (%any (%or 'nested-@
-                                                 'nested-group
-                                                 'msl-value))
+                          (=transform (%any 'atom-or-value)
                                       (lambda (val)
                                               (cond (val (setf atom-val val))
                                                     (t (setf atom-val NIL)))))
@@ -385,41 +393,41 @@
                                               'atom-mods
                                             (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                           (%maybe (%or
-                                      ;; one or more metadata keys
+                                      ;; one or more metadata keys... each one having:
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
-                                                ;; with values, maybe mods
+                                                ;; a value, maybe mods
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
+                                                                    (diag "META 1" seq)
                                                                     (setf meta-seq seq)))
-                                                       (%some (%or 'nested-@
-                                                                   'nested-group
-                                                                   'msl-value))
+                                                       (%some 'atom-or-value)
                                                        (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            'atom-mods
                                                                            (append (list (list (append atom-seq meta-seq mod-seq) mod-value)) mod-mods mod-meta mod-hash mod-comment))))
-                                                ;; maybe values, all with mods
+                                                ;; no value, with mods
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
+                                                                    (diag "META 2" seq)
                                                                     (setf meta-seq seq)))
-                                                       (%any (%or 'nested-@
-                                                                  'nested-group
-                                                                  'msl-value))
+                                                       (%any 'atom-or-value)
                                                        (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            'atom-mods
                                                                            (append (list (append atom-seq meta-seq mod-seq) mod-value) mod-mods mod-meta mod-hash mod-comment)))))
                                               (append (list (list (append atom-seq meta-seq) meta-value)) meta-mods)))
 
-                                      ;; single metadata key, with value, maybe mods
+                                      ;; single metadata key, no value, maybe mods
                                       (=destructure (meta-seq meta-value meta-mods)
-                                        (=list 'metadata-sequence
+                                        (=list (=transform
+                                                    'metadata-sequence
+                                                    (lambda (seq)
+                                                            (diag "META 3" seq)
+                                                            (setf meta-seq seq)))
                                                (?satisfies (lambda (val)
                                                                    (declare (ignore val)) (unless atom-val t))
-                                                           (%maybe (%or 'nested-@
-                                                                        'nested-group
-                                                                        'msl-value)))
+                                                           (%maybe 'atom-or-value))
                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                    'atom-mods
                                                                    (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
@@ -617,19 +625,6 @@
                    (list atom-seq atom-value atom-mods metadata hash comment))))
 ;;;;
 
-;; SEQUENCE (LIST) PARSERS
-
-(defun =single-setter ()
-  "Reduce a parsed expression to a list of single-setters."
-  (=destructure (atom-seq atom-value atom-mods metadata hash comment)
-    (=list (=element)
-           (=element)
-           (=element)
-           (=element)
-           (=element)
-           (=element))
-    (list (list (nconc atom-seq (list "=")) atom-value)
-          atom-mods)))
 
 ;; Function-namespace definitions (Create closures over let)
 
@@ -639,6 +634,7 @@
       (fdefinition 'hexp) (?hexp)
       (fdefinition 'value-terminator) (?value-terminator)
       (fdefinition 'expression-terminator) (?expression-terminator)
+      (fdefinition 'atom-or-value) (=atom-or-value)
       (fdefinition '@-form) (=@-form)
       (fdefinition 'grouping-form) (=grouping-form)
       (fdefinition 'canon-form) (=canon-form)
