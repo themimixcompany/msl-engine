@@ -2,9 +2,10 @@
 
 (uiop:define-package #:streams/core
   (:use #:cl)
-  (:export #:write-chain
-           #:read-chain
+  (:export #:read-term
            #:read-path
+           #:resolve-path
+           #:write-term
            #:dispatch))
 
 (in-package #:streams/core)
@@ -81,6 +82,65 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
          (value (streams/classes:value (gethash key table))))
     (gethash location value)))
 
+(defun read-term (term source)
+  "Return the value specified by TERM in SOURCE."
+  (block nil
+    (destructuring-bind (path &optional &rest params)
+        term
+      (declare (ignore params))
+      (labels ((fn (args tab)
+                 (cond ((null args) tab)
+                       (t (let ((value (gethash (car args) tab)))
+                            (if value
+                                (fn (cdr args)
+                                    value)
+                                (return nil)))))))
+        (fn path source)))))
+
+(defun write-term (term &optional (destination (make-hash-table :test #'equal)))
+  "Return a hash table containing the embedded value tables as specified in TERM."
+  (destructuring-bind (path &optional &rest params)
+      term
+    (labels ((save (args tab value)
+               (setf (gethash (marie:stem args) tab)
+                     value))
+             (fn (args flag tab)
+               (cond ((marie:solop args)
+                      (cond (flag (save args tab (sub-atom-path path))
+                                  (fn (sub-atom-path path) nil destination)
+                                  destination)
+                            (t (save args tab (marie:stem params))
+                               destination)))
+                     (t (fn (cdr args)
+                            flag
+                            (if (hash-table-p (gethash (car args) tab))
+                                (gethash (car args) tab)
+                                (let ((ht (make-hash-table :test #'equal)))
+                                  (setf (gethash (car args) tab) ht)
+                                  ht)))))))
+      (cond ((sub-atom-path-p path)
+             (fn path t destination))
+            (t (fn path nil destination)))
+      (read-term term destination))))
+
+(defun read-path (path source)
+  "Return the value specified by PATH in SOURCE."
+  (read-term (list path nil) source))
+
+(defun resolve-path (path source)
+  "Return the final value read from PATH in SOURCE."
+  (marie:when-let ((value (read-path path source)))
+    (destructuring-bind (ns &optional &rest body)
+        value
+      (declare (ignore body))
+      (when ns
+        (read-path value source)))))
+
+(defun empty-params-p (params)
+  "Return true if PARAMS is considered empty."
+  (or (null params)
+      (every #'null params)))
+
 (defun sub-atom-path-p (path)
   "Return true if PATH is a sub-atom."
   (destructuring-bind (&optional ns key sub-ns sub-key)
@@ -92,81 +152,22 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   "Return the sub-atom path from PATH."
   (subseq path 2))
 
-(defun write-chain (term &optional (destination (make-hash-table :test #'equal)))
-  "Return a hash table containing the embedded value tables as specified in TERM."
-  (destructuring-bind (path &optional &rest params)
-      term
-    (labels ((fn (args tab)
-               (cond ((marie:solop args)
-                      (progn (setf (gethash (marie:stem args) tab) (marie:stem params))
-                             destination))
-                     (t (fn (cdr args)
-                            (if (hash-table-p (gethash (car args) tab))
-                                (gethash (car args) tab)
-                                (let ((ht (make-hash-table :test #'equal)))
-                                  (setf (gethash (car args) tab) ht)
-                                  ht)))))))
-      (fn path destination))))
-
-(defun read-chain (term source)
-  "Return the value specified by TERM in SOURCE."
-  (destructuring-bind (path &optional &rest params)
-      term
-    (declare (ignore params))
-    (labels ((fn (args tab)
-               (cond ((null args) tab)
-                     (t (let ((value (gethash (car args) tab)))
-                          (when value
-                            (fn (cdr args)
-                                value)))))))
-      (fn path source))))
-
-(defun read-path (path source)
-  "Return the value specified by PATH in SOURCE."
-  (read-chain (list path nil) source))
-
-(defun dump-chain (chain)
-  "Print information about SOURCE recursively."
-  (marie:dump-table* chain))
-
-(defun empty-chain (chain)
-  "Clear all the contents of CHAIN."
-  (clrhash chain))
-
-(defun empty-params-p (params)
-  "Return true if PARAMS is considered empty."
-  (every #'null params))
-
 (defun dispatch (expr)
   "Parse EXPR as an MSL expression and store the resulting object in the
 universe."
   (flet ((read-fn (path params table)
            (let ((tab (funcall table streams/specials:*mx-universe*)))
-             (read-chain (list path params) tab)))
+             (read-term (list path params) tab)))
          (write-fn (path params table)
            (let ((tab (funcall table streams/specials:*mx-universe*)))
-             (write-chain (list path params) tab)
-             (read-chain (list path params) tab))))
+             (write-term (list path params) tab))))
     (let ((terms expr))        ;(streams/expr:parse-msl expr)
       (loop :for term :in terms
             :collect
             (destructuring-bind (path &optional &rest params)
                 term
-              (marie:dbg params)
-              (cond ((and (empty-params-p params)
-                          (sub-atom-path-p path))
-                     (marie:dbg "A")
-                     (read-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
-                    ((and (empty-params-p params)
-                          (not (sub-atom-path-p path)))
-                     (marie:dbg "B")
+              (cond ((empty-params-p params)
                      (read-fn path params #'streams/classes:atom-table))
-                    ((and params
-                          (sub-atom-path-p path))
-                     (marie:dbg "C")
-                     (write-fn (sub-atom-path path) params #'streams/classes:sub-atom-table))
-                    ((and params
-                          (null (sub-atom-path-p path)))
-                     (marie:dbg "D")
+                    (params
                      (write-fn path params #'streams/classes:atom-table))
                     (t nil)))))))
