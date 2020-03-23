@@ -1,0 +1,4 @@
+1.  (("@" "WALT") ("Walt Disney"))
+2.  (("@" "WALT" ":" "wife") ("Lillian"))
+3.  (("@" "WALT" ":" "wife" "/") (("lregex" NIL NIL)))
+4.  (("@" "WALT" ":" "wife" "d" "liltype") NIL)
