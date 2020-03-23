@@ -8,15 +8,12 @@
            #:atom-counter
            #:sub-atom-table
            #:sub-atom-counter
-           #:metadata-table
-           #:metadata-counter
 
            #:mx-base
            #:mx-atom
            #:mx-sub-atom
-           #:mx-metadata
 
-           ;; Think about the irrelevance of some of these symbols
+           ;; Are these symbols still needed?
            #:id
            #:ns
            #:key
@@ -44,15 +41,7 @@
    (sub-atom-table :initarg :sub-atom-table
                    :initform (make-hash-table :test #'equal)
                    :accessor sub-atom-table
-                   :documentation "The table where sub atoms live.")
-   (metadata-counter :initarg :metadata-counter
-                     :initform streams/specials:*metadata-counter*
-                     :accessor metadata-counter
-                     :documentation "The global integer counter for metadata.")
-   (metadata-table :initarg :metadata-table
-                   :initform (make-hash-table :test #'equal)
-                   :accessor metadata-table
-                   :documentation "The table where metadata things live."))
+                   :documentation "The table where sub atoms live."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-base ()
@@ -87,10 +76,6 @@
        :accessor id
        :documentation "The unique integer to identify the mx-sub-atom in the universe."))
   (:documentation "The class for mx-sub-atoms, and instances are allocated on the universe."))
-
-(defclass mx-metadata (mx-base)
-  ()
-  (:documentation "The class for metadata, and instances are not allocated on the universe."))
 
 (defmacro update-counter (mx-universe accessor)
   "Update the counter in MX-UNIVERSE with ACCESSOR."
@@ -163,7 +148,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                      (destructuring-bind (name &optional allocate)
                          spec
                        `(define-maker ,name :allocate ,allocate)))))
-(define-makers ((atom t) (sub-atom t) (metadata)))
+(define-makers ((atom t) (sub-atom t)))
 
 (defun make-mx-universe ()
   "Return an instance of the mx-universe class."
@@ -173,3 +158,9 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
   "Set the canonized flag of MX-ATOM to true, irrespective of its existing value."
   (setf (canonizedp mx-atom) t)
   mx-atom)
+
+(defmethod print-object ((table hash-table) stream)
+  (print-unreadable-object (table stream :type t)
+    (let ((test (hash-table-test table))
+          (count (hash-table-count table)))
+      (format stream "~A ~A" test count))))

@@ -10,11 +10,8 @@
 
            #:*base-namespace-list*
            #:*sub-namespace-list*
-           #:*namespace-list*
-
-           #:*base-namespace-aliases*
-           #:*sub-namespace-aliases*
-           #:*namespace-aliases*))
+           #:*meta-namespace-list*
+           #:*namespace-list*))
 
 (in-package #:streams/specials)
 
@@ -31,34 +28,24 @@
   "The initial metadata counter value.")
 
 (defvar *base-namespace-list*
-  '(("c" "canon" 0)
-    ("m" "machine" 1)
-    ("w" "world" 2)
-    ("s" "stream" 3)
-    ("v" "view" 4)
-    ("@" "atom" 5))
-  "The list of base namespaces, where the individual elements contain the
-namespace alias, full namespace name, and the rank. Table instances will be
-stored on MX-ATOM.")
+  '(("c" . "canon")
+    ("m" . "machine")
+    ("w" . "world")
+    ("s" . "stream")
+    ("v" . "view")
+    ("@" . "atom"))
+  "The list of base namespaces.")
 
 (defvar *sub-namespace-list*
-  '(("d" "datatype" 9)
-    ("f" "format" 9))
-  "The list of sub namespaces, where the individual elements contain the
-namespace alias, full namespace name, and the rank. Table instances will be
-stored on MX-SUB-ATOM.")
+  '(("d" . "datatype")
+    ("f" . "format"))
+  "The list of sub namespaces.")
+
+(defvar *meta-namespace-list*
+  '(":" . "metadata")
+  "The list of metadata namespaces")
 
 (defvar *namespace-list*
   (append *base-namespace-list* *sub-namespace-list*)
   "The full list of namespaces, where the individual elements contain the
-namespace alias, full namespace name, and the rank.")
-
-(defvar *base-namespace-aliases*
-  (mapcar #'first *base-namespace-list*)
-  "The list of base namespaces in simple form.")
-(defvar *sub-namespace-aliases*
-  (mapcar #'first *sub-namespace-list*)
-  "The list of sub namespaces in simple form.")
-(defvar *namespace-aliases*
-  (mapcar #'first *namespace-list*)
-  "The list of namespaces in simple form.")
+namespace alias and full namespace name")
