@@ -393,10 +393,10 @@
                                               'atom-mods
                                             (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                           (%maybe (%or
-                                      ;; one or more metadata keys... each one having:
+                                      ;; one or more metadata keys... each one having...
                                       (%some (=destructure (meta-seq meta-value meta-mods)
                                               (%or
-                                                ;; a value, maybe mods
+                                                ;; a value, maybe mods (META 1, the "value" case.)
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
@@ -404,21 +404,19 @@
                                                                     (setf meta-seq seq)))
                                                        (%some 'atom-or-value)
                                                        (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
-                                                                           'atom-mods
-                                                                           (append (list (list (append atom-seq meta-seq mod-seq) mod-value)) mod-mods mod-meta mod-hash mod-comment))))
-                                                ;; no value, with mods
+                                                                          'atom-mods
+                                                                          (append (list (append atom-seq meta-seq mod-seq)) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                                                ;; no value, with mods (META 2, the "no value" case.)
                                                 (=list (=transform
                                                             'metadata-sequence
                                                             (lambda (seq)
                                                                     (diag "META 2" seq)
                                                                     (setf meta-seq seq)))
                                                        (%any 'atom-or-value)
-                                                       (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
-                                                                           'atom-mods
-                                                                           (append (list (append atom-seq meta-seq mod-seq) mod-value) mod-mods mod-meta mod-hash mod-comment)))))
-                                              (append (list (list (append atom-seq meta-seq) meta-value)) meta-mods)))
+                                                       (%some 'atom-mods)))
+                                              (list (list (append atom-seq meta-seq) meta-value) meta-mods)))
 
-                                      ;; single metadata key, no value, maybe mods
+                                      ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
                                       (=destructure (meta-seq meta-value meta-mods)
                                         (=list (=transform
                                                     'metadata-sequence
