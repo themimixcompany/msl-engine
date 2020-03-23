@@ -106,7 +106,9 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
                      value))
              (fn (args flag tab)
                (cond ((marie:solop args)
-                      (cond (flag (save args tab (sub-atom-path path))
+                      (cond (flag (save args tab
+                                        (cons (sub-atom-path path)
+                                              params))
                                   (fn (sub-atom-path path) nil destination)
                                   destination)
                             (t (save args tab (marie:stem params))
@@ -152,8 +154,8 @@ NAMESPACES. The object returned contains complete namespace traversal informatio
   "Return the sub-atom path from PATH."
   (subseq path 2))
 
-(defun dispatch (expr)
-  "Parse EXPR as an MSL expression and store the resulting object in the
+(defun eval-expr (expr)
+  "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
   (flet ((read-fn (path params table)
            (let ((tab (funcall table streams/specials:*mx-universe*)))
