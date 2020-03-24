@@ -2,7 +2,8 @@
 
 (uiop:define-package #:streams/etc
   (:use #:cl
-        #:streams/specials)
+        #:streams/specials
+        #:streams/classes)
   (:export #:slots
            #:dump-universe
            #:dump-object
@@ -45,7 +46,7 @@
 
 (defun dump-atom (key)
   "Print information about an atom stored in the universe."
-  (marie:when-let* ((obj (gethash key (streams/classes:atom-table *mx-universe*))))
+  (marie:when-let* ((obj (gethash key (atom-table *mx-universe*))))
     (dump-object obj)))
 
 (defun dump-table (table)
