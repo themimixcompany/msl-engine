@@ -1,7 +1,8 @@
 ;;;; classes.lisp
 
 (uiop:define-package #:streams/classes
-  (:use #:cl)
+  (:use #:cl
+        #:streams/specials)
   (:export #:mx-universe
 
            #:atom-table
@@ -27,7 +28,7 @@
 
 (defclass mx-universe ()
   ((atom-counter :initarg :atom-counter
-                 :initform streams/specials:*atom-counter*
+                 :initform *atom-counter*
                  :accessor atom-counter
                  :documentation "The global integer counter for base atoms.")
    (atom-table :initarg :atom-table
@@ -35,7 +36,7 @@
                :accessor atom-table
                :documentation "The table where all base atoms live.")
    (sub-atom-counter :initarg :sub-atom-counter
-                     :initform streams/specials:*sub-atom-counter*
+                     :initform *sub-atom-counter*
                      :accessor sub-atom-counter
                      :documentation "The global integer counter for sub atoms.")
    (sub-atom-table :initarg :sub-atom-table
@@ -110,20 +111,20 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          (defun ,maker-name (seq &optional value force)
            (destructuring-bind (ns key)
                seq
-             (let ((obj (gethash key (,table-name streams/specials:*mx-universe*))))
+             (let ((obj (gethash key (,table-name *mx-universe*))))
                (flet ((fn ()
                         (make-instance ',mx-name :ns ns :key key :value value
                                        ,@(when allocate
-                                           `(:mx-universe streams/specials:*mx-universe*)))))
+                                           `(:mx-universe *mx-universe*)))))
                  (cond (force (fn))
                        (t (or obj (fn))))))))
          (defun ,builder-name (args)
            (when args
              (apply #',maker-name args)))
          (defun ,default-table-name ()
-           (,table-name streams/specials:*mx-universe*))
+           (,table-name *mx-universe*))
          (defun ,clear-table-name ()
-           (clrhash (,table-name streams/specials:*mx-universe*)))
+           (clrhash (,table-name *mx-universe*)))
          ,(when allocate
             `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
                (let ((counter (,updater-name mx-universe)))

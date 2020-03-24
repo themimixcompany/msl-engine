@@ -1,7 +1,8 @@
 ;;;; core.lisp
 
 (uiop:define-package #:streams/core
-  (:use #:cl)
+  (:use #:cl
+        #:streams/specials)
   (:export #:read-term
            #:read-path
            #:resolve-path
@@ -23,7 +24,7 @@
 (defun entity-string (id)
   "Return the corresponding universe name from ID, where ID is either a single
 character or a string to designate an entity."
-  (let ((aliases (mapcar #'car streams/specials:*namespace-list*)))
+  (let ((aliases (mapcar #'car *namespace-list*)))
     (cdr (assoc id aliases :test #'equal))))
 
 (defun table-name (ns &optional package)
@@ -34,7 +35,7 @@ character or a string to designate an entity."
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
   (let* ((function (table-name namespace :streams/classes))
-         (table (funcall function streams/specials:*mx-universe*)))
+         (table (funcall function *mx-universe*)))
     table))
 
 (defun namespace-hash (key namespace)
@@ -58,11 +59,11 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun namespacep (ns)
   "Return true if NS is a namespace indicator."
-  (ns-member-p ns streams/specials:*namespace-list*))
+  (ns-member-p ns *namespace-list*))
 
 (defun sub-namespace-p (ns)
   "Return true if NS is sub-namespace indicator."
-  (ns-member-p ns streams/specials:*sub-namespace-list*))
+  (ns-member-p ns *sub-namespace-list*))
 
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
@@ -82,55 +83,57 @@ the pair is the namespace marker and the second element of the pair is the key"
   (when (sub-atom-index path)
     t))
 
-(defun read-term (term source)
+(defun read-term (term atom-table sub-atom-table)
   "Return the value specified by TERM in SOURCE."
   (block nil
     (destructuring-bind (path &optional &rest params)
         term
       (declare (ignore params))
-      (labels ((fn (args tab)
-                 (cond ((null args) tab)
-                       (t (let ((value (gethash (car args) tab)))
+      (labels ((fn (args atom-tab sub-atom-tab)
+                 (cond ((null args) atom-tab)
+                       (t (let ((value (gethash (car args) atom-tab)))
                             (if value
-                                (fn (cdr args)
-                                    value)
+                                (fn (cdr args) value sub-atom-tab)
                                 (return nil)))))))
-        (fn path source)))))
+        (fn path atom-table sub-atom-table)))))
 
-(defun write-term (term &optional table)
+(defun read-path (path atom-table sub-atom-table)
+  "Return the value specified by PATH in SOURCE."
+  (read-term (list path nil) atom-table sub-atom-table))
+
+(defun resolve-path (path atom-table sub-atom-table)
+  "Return the final value read from PATH in SOURCE."
+  (marie:when-let ((value (read-path path atom-table sub-atom-table)))
+    (destructuring-bind (ns &optional &rest body)
+        value
+      (declare (ignore body))
+      (when ns
+        (read-path value atom-table sub-atom-table)))))
+
+(defun write-term (term atom-table sub-atom-table)
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional &rest params)
       term
     (labels ((save (args tab value)
                (setf (gethash (marie:stem args) tab) value))
-             (fn (args flag tab)
+             ;; should this only be (args flag tab)?
+             (fn (args flag atom-tab sub-atom-tab)
                (cond ((marie:solop args)
-                      (cond (flag (save args tab (cons (sub-atom-path path) params))
-                                  (fn (sub-atom-path path) nil table))
-                            (t (save args tab (marie:stem params)))))
-                     (t (let ((v (if (hash-table-p (gethash (car args) tab))
-                                     (gethash (car args) tab)
+                      (cond (flag
+                             (save args atom-tab (cons (sub-atom-path path) params))
+                             (fn (sub-atom-path path) nil atom-table sub-atom-table))
+                            (t (save args atom-tab (marie:stem params)))))
+                     (t (let ((v (if (hash-table-p (gethash (car args) atom-tab))
+                                     (gethash (car args) atom-tab)
                                      (let ((ht (make-hash-table :test #'equal)))
-                                       (setf (gethash (car args) tab) ht)
+                                       (setf (gethash (car args) atom-tab) ht)
                                        ht))))
-                          (fn (cdr args) flag v))))))
+                          (fn (cdr args) flag v sub-atom-table))))))
+      ;; maybe this should control the table
       (cond ((sub-atom-path-p path)
-             (fn path t table))
-            (t (fn path nil table)))
-      (read-term term table))))
-
-(defun read-path (path source)
-  "Return the value specified by PATH in SOURCE."
-  (read-term (list path nil) source))
-
-(defun resolve-path (path source)
-  "Return the final value read from PATH in SOURCE."
-  (marie:when-let ((value (read-path path source)))
-    (destructuring-bind (ns &optional &rest body)
-        value
-      (declare (ignore body))
-      (when ns
-        (read-path value source)))))
+             (fn path t atom-table sub-atom-table))
+            (t (fn path nil atom-table sub-atom-table)))
+      (read-term term atom-table sub-atom-table))))
 
 (defun empty-params-p (params)
   "Return true if PARAMS is considered empty."
@@ -140,19 +143,19 @@ the pair is the namespace marker and the second element of the pair is the key"
 (defun dispatch (expr)
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
-  (flet ((read-fn (path params table)
-           (let ((tab (funcall table streams/specials:*mx-universe*)))
-             (read-term (list path params) tab)))
-         (write-fn (path params table)
-           (let ((tab (funcall table streams/specials:*mx-universe*)))
-             (write-term (list path params) tab))))
+  (flet ((find-table (tab)
+           (funcall tab *mx-universe*)))
     (let ((terms expr))        ;(streams/expr:parse-msl expr)
       (loop :for term :in terms
             :collect
             (destructuring-bind (path &optional &rest params)
                 term
               (cond ((empty-params-p params)
-                     (read-fn path params #'streams/classes:atom-table))
+                     (read-term (list path params)
+                                (find-table #'streams/classes:atom-table)
+                                (find-table #'streams/classes:sub-atom-table)))
                     (params
-                     (write-fn path params #'streams/classes:atom-table))
+                     (write-term (list path params)
+                                 (find-table #'streams/classes:atom-table)
+                                 (find-table #'streams/classes:sub-atom-table)))
                     (t nil)))))))
