@@ -51,20 +51,36 @@ character or a string to designate an entity."
 the pair is the namespace marker and the second element of the pair is the key"
   (marie:partition chain 2))
 
-(defun sub-namespace-p (ns)
-  "Return true if NS is sub-namespace."
-  (when (member ns streams/specials:*sub-namespace-list* :key #'car :test #'equal)
+(defun ns-member-p (elem ns-list)
+  "Return true if elem is a MEMBER of NS-LIST by CAR."
+  (when (member elem ns-list :key #'car :test #'equal)
     t))
 
-(defun sub-atom-path-p (path)
-  "Return true if PATH is a sub-atom."
-  (let ((elem (elt path 2)))
-    (when (sub-namespace-p elem)
-      t)))
+(defun namespacep (ns)
+  "Return true if NS is a namespace indicator."
+  (ns-member-p ns streams/specials:*namespace-list*))
+
+(defun sub-namespace-p (ns)
+  "Return true if NS is sub-namespace indicator."
+  (ns-member-p ns streams/specials:*sub-namespace-list*))
+
+(defun sub-atom-index (path)
+  "Return true if PATH is a sub-atom path."
+  (destructuring-bind (ns &optional &rest body)
+      path
+    (declare (ignorable body))
+    (when (namespacep ns)
+      (position-if #'sub-namespace-p path :from-end t))))
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
-  (subseq path 2))
+  (marie:when-let ((index (sub-atom-index path)))
+    (subseq path index)))
+
+(defun sub-atom-path-p (path)
+  "Retun true if PATH contains a sub-atom path."
+  (when (sub-atom-index path)
+    t))
 
 (defun read-term (term source)
   "Return the value specified by TERM in SOURCE."
@@ -86,15 +102,12 @@ the pair is the namespace marker and the second element of the pair is the key"
   (destructuring-bind (path &optional &rest params)
       term
     (labels ((save (args tab value)
-               (setf (gethash (marie:stem args) tab)
-                     value))
+               (setf (gethash (marie:stem args) tab) value))
              (fn (args flag tab)
                (cond ((marie:solop args)
                       (cond (flag (save args tab (cons (sub-atom-path path) params))
-                                  (fn (sub-atom-path path) nil table)
-                                  table)
-                            (t (save args tab (marie:stem params))
-                               table)))
+                                  (fn (sub-atom-path path) nil table))
+                            (t (save args tab (marie:stem params)))))
                      (t (let ((v (if (hash-table-p (gethash (car args) tab))
                                      (gethash (car args) tab)
                                      (let ((ht (make-hash-table :test #'equal)))
