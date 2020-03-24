@@ -1,7 +1,7 @@
 ;;;; initialize.lisp
 
 (uiop:define-package #:streams/initialize
-    (:use #:cl))
+  (:use #:cl))
 
 (defun initialize-mx-universe ()
   "Initialize the mx-universe."
