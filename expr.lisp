@@ -448,8 +448,9 @@ body contents of the parser function."
                                    (list (list (append atom-seq hash-seq) hash-value))))
                          (%maybe 'msl-comment)
                          'expression-terminator)
-                  metadata)))
+                  ; metadata)))
                   ; (append (list (list atom-seq atom-value)) atom-mods))))
+                  (append-each (append (list (list atom-seq atom-value)) atom-mods) metadata))))
 ;;;;
 
 (defun append-each (base-list item-list)
