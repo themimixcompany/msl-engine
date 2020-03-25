@@ -133,18 +133,21 @@ the pair is the namespace marker and the second element of the pair is the key"
   (destructuring-bind (path &optional &rest params)
       term
     (labels ((save (args tab value)
-               (setf (gethash (marie:stem args) tab) value))
+               ;; (car value)?
+               (setf (gethash (marie:stem args) tab) (car value)))
              (fn (arg flag atom-tab sub-atom-tab)
+               ;; Work on params
                (cond ((marie:solop arg)
                       (cond (flag
-                             (save arg atom-tab (cons (sub-atom-path path) params))
+                             ;; fix this
+                             (save arg atom-tab params)
                              (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
                             (t (save arg atom-tab (marie:stem params)))))
                      (t (let ((v (if (hash-table-p (gethash (car arg) atom-tab))
-                                       (gethash (car arg) atom-tab)
-                                       (let ((ht (make-hash-table :test #'equal)))
-                                         (setf (gethash (car arg) atom-tab) ht)
-                                         ht))))
+                                     (gethash (car arg) atom-tab)
+                                     (let ((ht (make-hash-table :test #'equal)))
+                                       (setf (gethash (car arg) atom-tab) ht)
+                                       ht))))
                           (fn (cdr arg) flag v sub-atom-tab))))))
       (cond ((sub-atom-path-p path)
              (fn path t atom-table sub-atom-table))
