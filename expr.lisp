@@ -450,7 +450,8 @@ body contents of the parser function."
                          'expression-terminator)
                   ; metadata)))
                   ; (append (list (list atom-seq atom-value)) atom-mods))))
-                  (append-each (append (list (list atom-seq atom-value)) atom-mods) metadata))))
+                  ; hash)))
+                  (append (append-each (append (list (list atom-seq atom-value)) atom-mods) metadata) hash))))
 ;;;;
 
 (defun append-each (base-list item-list)
