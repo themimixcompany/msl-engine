@@ -149,8 +149,10 @@ the new table."
   (destructuring-bind (path &optional &rest params)
       term
     (labels ((fn (location flag atom-tab sub-atom-tab)
-               ;; Maybe test for solop and if the solo is a key indicator
-               (cond ((marie:solop location)
+               (cond ((null location)
+                      (fn '("=") flag atom-tab sub-atom-tab))
+                     ((and (marie:solop location)
+                           (key-indicator-p (marie:stem location)))
                       (save-value location atom-tab (marie:stem params))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
