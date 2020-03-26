@@ -11,7 +11,9 @@
            #:*base-namespace-list*
            #:*sub-namespace-list*
            #:*meta-namespace-list*
-           #:*namespace-list*))
+           #:*namespace-list*
+
+           #:*key-indicators*))
 
 (in-package #:streams/specials)
 
@@ -49,3 +51,7 @@
   (append *base-namespace-list* *sub-namespace-list*)
   "The full list of namespaces, where the individual elements contain the
 namespace alias and full namespace name")
+
+(defvar *key-indicators*
+  '("/" "[]")
+  "The list of strings used for setting end values.")
