@@ -1,0 +1,15 @@
+
+
+((("@" "WALT" "/") (("wregex" NIL NIL) ("wregex2" NIL NIL)) NIL NIL NIL NIL)
+ (("@" "WALT" "d" "wd") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "d" "d2") NIL NIL NIL NIL NIL)
+ (("@" "WALT" "f" "wf") NIL NIL NIL NIL NIL))
+
+
+(   ((("@" "WALT" ":" "wife") ("Lillian"))
+      ((("@" "WALT" ":" "wife" "/") ("lregex" NIL NIL) ("lregex2" NIL NIL))
+      (("@" "WALT" ":" "wife" "d" "ld") "ldvalue")
+      (("@" "WALT" ":" "wife" "d" "ld2") "ld2value")))
+  ((("@" "WALT" ":" "birthday") ("1901"))
+  ((("@" "WALT" ":" "birthday" "d" "bd"))
+  (("@" "WALT" ":" "birthday" "/") ("bregex" NIL NIL)))))

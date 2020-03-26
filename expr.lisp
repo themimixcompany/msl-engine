@@ -428,7 +428,7 @@ body contents of the parser function."
                                                                   (setf meta-seq seq)))
                                                                (%any 'atom-or-value)
                                                                (%some 'atom-mods)))
-                                           (list (list (append atom-seq meta-seq) meta-value) meta-mods)))
+                                           (cons (list (append atom-seq meta-seq) meta-value) meta-mods)))
 
                                   ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
                                   (=destructure (meta-seq meta-value meta-mods)
@@ -449,9 +449,16 @@ body contents of the parser function."
                                    (list (list (append atom-seq hash-seq) hash-value))))
                          (%maybe 'msl-comment)
                          'expression-terminator)
-      (append (list (list atom-seq atom-value)) atom-mods metadata hash))))
+                  ; metadata)))
+                  ; (append (list (list atom-seq atom-value)) atom-mods))))
+                  ; hash)))
+                  (append (append-each (append (list (list atom-seq atom-value)) atom-mods) metadata) hash))))
 ;;;;
 
+(defun append-each (base-list item-list)
+  "Add each item *on each item* of item-list to base-list."
+  (cond ((null item-list) base-list)
+        (t (append-each (append base-list (car item-list)) (cdr item-list)))))
 
 (define-parser =grouping-form ()
    "Match and return an atom in the m w s v namespace."
