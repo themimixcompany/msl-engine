@@ -14,8 +14,7 @@
 
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
-  (when (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)
-    t))
+  (marie:when* (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)))
 
 (defun valid-key-p (key)
   "Return true if KEY is a valid key for an mx-atom."
@@ -55,8 +54,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
-  (when (member elem ns-list :key #'car :test #'equal)
-    t))
+  (marie:when* (member elem ns-list :key #'car :test #'equal)))
 
 (defun base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
@@ -68,9 +66,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun namespacep (ns)
   "Return true if NS is a namespace indicator."
-  (marie:f-or ns
-              #'base-namespace-p
-              #'sub-namespace-p))
+  (marie:rmap-or ns #'base-namespace-p #'sub-namespace-p))
 
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
@@ -86,16 +82,16 @@ the pair is the namespace marker and the second element of the pair is the key"
     (subseq path index)))
 
 (defun sub-atom-path-p (path)
-  "Retun true if PATH contains a sub-atom path."
-  (when (sub-atom-index path)
-    t))
-
-(defun sub-atom-prefixed-p (path)
   "Return true if PATH starts with a sub-atom path."
   (destructuring-bind (ns &optional &rest body)
       path
     (declare (ignore body))
     (sub-namespace-p ns)))
+
+(defun sub-atom-path-p* (path)
+  "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path
+itself."
+  (marie:when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
                          (atom-table (default-atom-table))
@@ -111,7 +107,7 @@ the pair is the namespace marker and the second element of the pair is the key"
                             (if value
                                 (fn (cdr args) value)
                                 (return nil)))))))
-        (cond ((sub-atom-prefixed-p path)
+        (cond ((sub-atom-path-p path)
                (fn path sub-atom-table))
               (t (fn path atom-table)))))))
 
@@ -128,29 +124,38 @@ the pair is the namespace marker and the second element of the pair is the key"
       (when ns
         (read-path value atom-table sub-atom-table)))))
 
+(defun key-indicator-p (key)
+  "Return true if KEY is one of the key indicators for table values."
+  (marie:when* (member key *key-indicators* :test #'equal)))
+
+(defun save-value (location table value)
+  "Store VALUE using LOCATION as key in TABLE."
+  (let ((val (if (sub-atom-path-p* value)
+                 (sub-atom-path value)
+                 (car value))))
+    (setf (gethash (marie:stem location) table) val)))
+
+(defun spawn-table (location table)
+  "Conditionally return a new table for term writing and use location as key for
+the new table."
+  (if (hash-table-p (gethash (car location) table))
+      (gethash (car location) table)
+      (let ((ht (make-hash-table :test #'equal)))
+        (setf (gethash (car location) table) ht)
+        ht)))
+
 (defun write-term (term atom-table sub-atom-table)
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional &rest params)
       term
-    (labels ((save (args tab value)
-               (let ((val (if (sub-atom-path-p value)
-                              (sub-atom-path value)
-                              (car value))))
-                 (setf (gethash (marie:stem args) tab) val)))
-             (fn (arg flag atom-tab sub-atom-tab)
-               (cond ((marie:solop arg)
-                      (cond (flag (save arg atom-tab path)
-                                  (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
-                            (t (save arg atom-tab (marie:stem params)))))
-                     (t (let ((v (if (hash-table-p (gethash (car arg) atom-tab))
-                                     (gethash (car arg) atom-tab)
-                                     (let ((ht (make-hash-table :test #'equal)))
-                                       (setf (gethash (car arg) atom-tab) ht)
-                                       ht))))
-                          (fn (cdr arg) flag v sub-atom-tab))))))
-      (cond ((sub-atom-path-p path)
-             (fn path t atom-table sub-atom-table))
-            (t (fn path nil atom-table sub-atom-table)))
+    (labels ((fn (location flag atom-tab sub-atom-tab)
+               ;; Maybe test for solop and if the solo is a key indicator
+               (cond ((marie:solop location)
+                      (save-value location atom-tab (marie:stem params))
+                      (when flag
+                        (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
+                     (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
+      (fn path (sub-atom-path-p* path) atom-table sub-atom-table)
       (read-term term atom-table sub-atom-table))))
 
 (defun empty-params-p (params)
