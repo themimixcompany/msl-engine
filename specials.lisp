@@ -53,5 +53,5 @@
 namespace alias and full namespace name")
 
 (defvar *key-indicators*
-  '("/" "[]")
+  '("=" "/" "[]")
   "The list of strings used for setting end values.")
