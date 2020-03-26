@@ -175,7 +175,7 @@ the new table."
 (defun dispatch (expr)
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
-  (let ((terms expr) ;; (streams/expr:parse-msl expr)
+  (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
         (atom-tab (find-table #'atom-table))
         (sub-atom-tab (find-table #'sub-atom-table)))
     (loop :for term :in terms
