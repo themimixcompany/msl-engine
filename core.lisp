@@ -101,15 +101,18 @@ itself."
     (destructuring-bind (path &optional &rest params)
         term
       (declare (ignore params))
-      (labels ((fn (args tab)
-                 (cond ((null args) tab)
-                       (t (let ((value (gethash (car args) tab)))
-                            (if value
-                                (fn (cdr args) value)
-                                (return nil)))))))
-        (cond ((sub-atom-path-p path)
-               (fn path sub-atom-table))
-              (t (fn path atom-table)))))))
+      (let ((path (if (key-indicator-p (marie:last* path))
+                      path
+                      (append path '("=")))))
+        (labels ((fn (location value)
+                   (cond ((null location) value)
+                         (t (let ((val (gethash (car location) value)))
+                              (if val
+                                  (fn (cdr location) val)
+                                  (return nil)))))))
+          (if (sub-atom-path-p path)
+              (fn path sub-atom-table)
+              (fn path atom-table)))))))
 
 (defun read-path (path atom-table sub-atom-table)
   "Return the value specified by PATH in SOURCE."
