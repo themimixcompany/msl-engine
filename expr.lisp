@@ -414,7 +414,6 @@ body contents of the parser function."
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'atom-or-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -424,7 +423,6 @@ body contents of the parser function."
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'atom-or-value)
                                                                (%some 'atom-mods)))
@@ -435,7 +433,6 @@ body contents of the parser function."
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
