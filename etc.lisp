@@ -9,6 +9,7 @@
            #:dump-object
            #:dump-atom
            #:dump-table
+           #:dump-path
            #:clear-table
            #:tables))
 
@@ -52,6 +53,17 @@
 (defun dump-table (table)
   "Print information about SOURCE recursively."
   (marie:dump-table* table))
+
+(defun dump-path (path &optional (table (default-atom-table)))
+  "Dump table information from PATH starting with TABLE."
+  (cond ((marie:solop path)
+         (multiple-value-bind (val existsp)
+             (gethash (marie:stem path) table)
+           (when (and (hash-table-p val) existsp)
+             (dump-table val))))
+        ((hash-table-p (gethash (car path) table))
+         (dump-path (cdr path) (gethash (car path) table)))
+        (t nil)))
 
 (defun clear-table (table)
   "Clear all the contents of TABLE."
