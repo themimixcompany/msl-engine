@@ -114,7 +114,9 @@ itself."
               (fn path sub-atom-table)
               (fn path atom-table)))))))
 
-(defun read-path (path atom-table sub-atom-table)
+(defun read-path (path &optional
+                         (atom-table (default-atom-table))
+                         (sub-atom-table (default-sub-atom-table)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
