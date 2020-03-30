@@ -174,6 +174,20 @@ the new table."
   "Return the table from the universe identified by TAB."
   (funcall tab *mx-universe*))
 
+(defun valid-terms-p (form)
+  "Return true if FORM is a valid MSL form."
+  (cond ((stringp form) nil)
+        (t (destructuring-bind (head &optional &rest body)
+               form
+             (declare (ignore body))
+             (marie:when*
+               (consp head)
+               (destructuring-bind (value &rest rest)
+                   head
+                 (declare (ignore rest))
+                 (and (consp value)
+                      (namespacep (first value)))))))))
+
 (defun dispatch (expr)
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
@@ -187,5 +201,8 @@ universe."
             (cond ((empty-params-p params)
                    (read-term (list path params) atom-tab sub-atom-tab))
                   (params
-                   (write-term (list path params) atom-tab sub-atom-tab))
+                   (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                     (loop :for value :in values
+                           :when (valid-terms-p value)
+                             :do (dispatch value))))
                   (t nil))))))
