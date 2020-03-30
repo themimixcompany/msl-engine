@@ -204,5 +204,6 @@ universe."
                    (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
                      (loop :for value :in values
                            :when (valid-terms-p value)
-                             :do (dispatch value))))
+                             :do (dispatch value))
+                     values))
                   (t nil))))))
