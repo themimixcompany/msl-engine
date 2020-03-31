@@ -7,7 +7,8 @@
   (:export #:max-file-size-p
            #:log-file-exists-p
            #:ensure-log-file-exists
-           #:purge-log-file))
+           #:purge-log-file
+           #:log-value))
 
 (in-package #:streams/logging)
 
@@ -58,3 +59,11 @@
   (let ((path (make-log-file-path name)))
     (when (uiop:file-exists-p path)
       (purge-file path))))
+
+(defun log-value (value name)
+  "Write the value VALUE to the log file indicated by NAME."
+  ;; Add size constraints
+  (ensure-log-file-exists name)
+  (let ((path (make-log-file-path name)))
+    (with-open-file (stream path :direction :output :if-exists :append)
+      (format stream "~S" value))))
