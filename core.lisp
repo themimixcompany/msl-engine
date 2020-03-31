@@ -200,10 +200,8 @@ universe."
               term
             (cond ((empty-params-p params)
                    (read-term (list path params) atom-tab sub-atom-tab))
-                  (params
-                   (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                     (loop :for value :in values
-                           :when (valid-terms-p value)
-                             :do (dispatch value))
-                     values))
-                  (t nil))))))
+                  (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                       (loop :for value :in values
+                             :when (valid-terms-p value)
+                               :do (dispatch value))
+                       values)))))))
