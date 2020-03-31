@@ -30,18 +30,22 @@
   (let ((path (make-log-file-path name)))
     (uiop:file-exists-p path)))
 
+(defun create-empty-file (path)
+  "Create an empty file from PATH."
+  (with-open-file (stream path :if-does-not-exist :create)))
+
 (defun ensure-log-file-exists (name)
   "Create the log file indicated by PATH if it does not exist yet."
   (let ((path (make-log-file-path name)))
     (unless (uiop:file-exists-p path)
       (ensure-directories-exist path)
-      (with-open-file (stream path :if-does-not-exist :create)))
+      (create-empty-file path))
     path))
 
 (defun purge-file (path)
   "Zero-out the file indicated by PATH."
   (uiop:delete-file-if-exists path)
-  (with-open-file (stream path :if-does-not-exist :create)))
+  (create-empty-file path))
 
 (defun purge-log-file (name)
   "Zero-out the log file indicated by PATH."
