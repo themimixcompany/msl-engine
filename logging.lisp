@@ -5,9 +5,15 @@
         #:streams/specials
         #:streams/classes)
   (:export #:max-file-size-p
-           #:ensure-log-file-exists))
+           #:log-file-exists-p
+           #:ensure-log-file-exists
+           #:purge-log-file))
 
 (in-package #:streams/logging)
+
+(defvar *log-file-suffix*
+  ".log"
+  "The default file suffix for log files.")
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
@@ -23,7 +29,7 @@
 
 (defun make-log-file-path (path)
   "Return a log file pathname from PATH."
-  (build-path (marie:cat path ".log")))
+  (build-path (marie:cat path *log-file-suffix*)))
 
 (defun log-file-exists-p (name)
   "Return true if the log file indicated by PATH exists under the log directory."
