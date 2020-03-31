@@ -21,8 +21,10 @@
                #:bordeaux-threads
                #:closer-mop
                #:maxpc
+               #:osicat
                "streams/specials"
                "streams/classes"
+               "streams/logging"
                "streams/expr"
                "streams/core"
                "streams/serve"

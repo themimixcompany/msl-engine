@@ -2,20 +2,25 @@
 
 (uiop:define-package #:streams/specials
   (:use #:cl)
-  (:export #:*mx-universe*
-
+  (:export #:*self*
+           #:*mx-universe*
            #:*atom-counter*
            #:*sub-atom-counter*
            #:*metadata-counter*
-
            #:*base-namespace-list*
            #:*sub-namespace-list*
            #:*meta-namespace-list*
            #:*namespace-list*
-
-           #:*key-indicators*))
+           #:*key-indicators*
+           #:*max-file-size*
+           #:*base-directory*
+           #:*default-log-file*))
 
 (in-package #:streams/specials)
+
+(defvar *self*
+  "streams"
+  "The base name of the system.")
 
 (defvar *mx-universe* nil
   "The top-level structure for everything.")
@@ -55,3 +60,17 @@ namespace alias and full namespace name")
 (defvar *key-indicators*
   '("=" "/" "[]")
   "The list of strings used for setting end values.")
+
+(defvar *max-file-size*
+  1572864
+  "The maximum filesize of logging files in bytes.")
+
+(defvar *base-directory*
+  (marie:home (marie:cat *self* "/"))
+  "The path to the default configuration and storage directory.")
+
+(defvar *default-log-file*
+  (flet ((fn (parent path)
+           (uiop:merge-pathnames* parent path)))
+    (fn *base-directory* (fn *self* ".log")))
+  "The path to the default file for logging.")
