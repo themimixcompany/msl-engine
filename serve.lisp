@@ -42,7 +42,6 @@
   "Add a new entry to the connections table, with the connection itself as the key."
   (setf (gethash connection *connections*)
         (format nil "user-~A" (get-new-user-id)))
-  (format-output t "Connection: ~A" connection)
   (websocket-driver:send connection (format-msl "VER" *system-version*)))
 
 (defun echo-message (connection message)
