@@ -24,7 +24,7 @@
 (defun entity-string (id)
   "Return the corresponding universe name from ID, where ID is either a single
 character or a string to designate an entity."
-  (let ((aliases (mapcar #'car *namespace-list*)))
+  (let ((aliases (mapcar #'car +namespace-list+)))
     (cdr (assoc id aliases :test #'equal))))
 
 (defun table-name (ns &optional package)
@@ -58,11 +58,11 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
-  (ns-member-p ns *base-namespace-list*))
+  (ns-member-p ns +base-namespace-list+))
 
 (defun sub-namespace-p (ns)
   "Return true if NS is sub namespace indicator."
-  (ns-member-p ns *sub-namespace-list*))
+  (ns-member-p ns +sub-namespace-list+))
 
 (defun namespacep (ns)
   "Return true if NS is a namespace indicator."
@@ -131,7 +131,7 @@ itself."
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
-  (marie:when* (member key *key-indicators* :test #'equal)))
+  (marie:when* (member key +key-indicators+ :test #'equal)))
 
 (defun save-value (location table value)
   "Store VALUE using LOCATION as key in TABLE."
