@@ -8,17 +8,17 @@
 
 (in-package #:streams/logger)
 
-(marie:define-constant +base-directory+
+(marie:define-constant* +base-directory+
   (marie:home (marie:cat +self+ "/"))
   "The path to the default configuration and storage directory.")
 
-(marie:define-constant +default-log-file+
+(marie:define-constant* +default-log-file+
   (flet ((fn (parent path)
            (uiop:merge-pathnames* parent path)))
     (fn +base-directory+ (fn +self+ ".log")))
   "The path to the default file for logging.")
 
-(marie:define-constant +log-file-suffix+
+(marie:define-constant* +log-file-suffix+
   ".log"
   "The default file suffix for log files.")
 
@@ -70,26 +70,27 @@
     (when (uiop:file-exists-p path)
       (purge-file path))))
 
-(marie:define-constant +day-names+
+(marie:define-constant* +day-names+
     '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
   "The enumeration of week day names.")
 
 (defun current-date ()
   "Return the current date and time in YYYYMMDDHHMM.TZ format."
-  (multiple-value-bind
-        (second minute hour day-of-month month year day-of-week dstp tz)
-      (get-decoded-time)
-    (declare (ignorable day-of-week dstp))
-    (format nil "~d~2,'0d~2,'0d~2,'0d~2,'0d~2,'0d.+~2,'0d"
-            year month day-of-month
-            hour minute second
-            (- tz))))
+  ;; (multiple-value-bind
+  ;;       (second minute hour day-of-month month year day-of-week dstp tz)
+  ;;     (get-decoded-time)
+  ;;   (declare (ignorable day-of-week dstp))
+  ;;   (format nil "~d~2,'0d~2,'0d~2,'0d~2,'0d~2,'0d.+~2,'0d"
+  ;;           year month day-of-month
+  ;;           hour minute second
+  ;;           (- tz)))
+  (local-time:format-timestring nil (local-time:now)))
 
 (defvar *machine-name*
   "my-machine"
   "The default name to use as the machine name.")
 
-(marie:define-constant +default-date+
+(marie:define-constant* +default-date+
     (current-date)
   "The default date and time string used for logging.")
 

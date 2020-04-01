@@ -22,6 +22,7 @@
                #:closer-mop
                #:maxpc
                #:osicat
+               #:local-time
                "streams/specials"
                "streams/classes"
                "streams/logger"
