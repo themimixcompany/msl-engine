@@ -70,11 +70,13 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
-  (destructuring-bind (ns &optional &rest body)
-      path
-    (declare (ignorable body))
-    (when (namespacep ns)
-      (position-if #'sub-namespace-p path :from-end t))))
+  (when (and (consp path)
+             (not (uiop:emptyp path)))
+    (destructuring-bind (ns &optional &rest body)
+        path
+      (declare (ignorable body))
+      (when (namespacep ns)
+        (position-if #'sub-namespace-p path :from-end t)))))
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
@@ -135,9 +137,9 @@ itself."
 
 (defun save-value (location table value)
   "Store VALUE using LOCATION as key in TABLE."
-  (let ((val (if (sub-atom-path-p* value)
-                 (sub-atom-path value)
-                 (car value))))
+  (let ((val (cond ((sub-atom-path-p* value) (sub-atom-path value))
+                   ((consp value) (car value)) ;PARAMS
+                   (t value))))
     (setf (gethash (marie:stem location) table) val)))
 
 (defun spawn-table (location table)
@@ -158,7 +160,7 @@ the new table."
                       (fn '("=") flag atom-tab sub-atom-tab))
                      ((and (marie:solop location)
                            (key-indicator-p (marie:stem location)))
-                      (save-value location atom-tab (marie:stem params))
+                      (save-value location atom-tab (car params))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
@@ -177,7 +179,7 @@ the new table."
 (defun valid-terms-p (form)
   "Return true if FORM is a valid MSL form."
   (cond ((stringp form) nil)
-        (t (destructuring-bind (head &optional &rest body)
+        (t (destructuring-bind (&optional head &rest body)
                form
              (declare (ignore body))
              (marie:when*
@@ -194,6 +196,7 @@ universe."
   (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
         (atom-tab (find-table #'atom-table))
         (sub-atom-tab (find-table #'sub-atom-table)))
+    ;; (streams/logger:log-value expr)
     (loop :for term :in terms
           :collect
           (destructuring-bind (path &optional &rest params)
