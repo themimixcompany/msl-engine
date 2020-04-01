@@ -87,8 +87,9 @@
 
 (defun log-value (value)
   "Write VALUE to the computed log file."
-  (let ((path (make-machine-log-path *machine-name*)))
-    (ensure-file-exists path)
-    (purge-file* path)
-    (with-open-file (stream path :direction :output :if-exists :append)
-      (format stream "~A~%" value))))
+  (when (stringp value)
+    (let ((path (make-machine-log-path *machine-name*)))
+      (ensure-file-exists path)
+      (purge-file* path)
+      (with-open-file (stream path :direction :output :if-exists :append)
+        (format stream "~A~%" value)))))

@@ -10,8 +10,9 @@
            #:dump-atom
            #:dump-table
            #:dump-path
+           #:tables
            #:clear-table
-           #:tables))
+           #:reset-universe))
 
 (in-package #:streams/etc)
 
@@ -65,13 +66,17 @@
          (dump-path (cdr path) (gethash (car path) table)))
         (t nil)))
 
-(defun clear-table (table)
-  "Clear all the contents of TABLE."
-  (clrhash table))
-
 (defun tables (&optional (universe *mx-universe*))
   "Return the list of slots from UNIVERSE that are tables."
   (loop :for slot :in (slots universe)
         :for tab = (funcall slot universe)
         :when (hash-table-p tab)
         :collect tab))
+
+(defun clear-table (table)
+  "Clear all the contents of TABLE."
+  (clrhash table))
+
+(defun reset-universe ()
+  "Set the current universe to an empty state."
+  (loop :for table :in (tables) :do (clear-table table)))
