@@ -138,7 +138,7 @@ itself."
 (defun save-value (location table value)
   "Store VALUE using LOCATION as key in TABLE."
   (let ((val (cond ((sub-atom-path-p* value) (sub-atom-path value))
-                   ((consp value) (car value)) ;PARAMS
+                   ((consp value) (car value)) ;NOTE
                    (t value))))
     (setf (gethash (marie:stem location) table) val)))
 
@@ -160,7 +160,7 @@ the new table."
                       (fn '("=") flag atom-tab sub-atom-tab))
                      ((and (marie:solop location)
                            (key-indicator-p (marie:stem location)))
-                      (save-value location atom-tab (car params))
+                      (save-value location atom-tab (car params)) ;NOTE
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
@@ -205,6 +205,7 @@ universe."
                    (read-term (list path params) atom-tab sub-atom-tab))
                   (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
                        (loop :for value :in values
+                             ;; Check that these conditions are indeed met.
                              :when (valid-terms-p value)
-                               :do (dispatch value))
+                               :do (dispatch value)) ;NOTE
                        values)))))))
