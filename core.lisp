@@ -137,10 +137,9 @@ itself."
 
 (defun save-value (location table value)
   "Store VALUE using LOCATION as key in TABLE."
-  (let ((val (cond ((sub-atom-path-p* value) (sub-atom-path value))
-                   ((consp value) (car value)) ;NOTE
-                   (t value))))
-    (setf (gethash (marie:stem location) table) val)))
+  (let ((v (cond ((sub-atom-path-p* value) (sub-atom-path value))
+                 (t value))))
+    (setf (gethash (marie:stem location) table) v)))
 
 (defun spawn-table (location table)
   "Conditionally return a new table for term writing and use location as key for
@@ -153,14 +152,14 @@ the new table."
 
 (defun write-term (term atom-table sub-atom-table)
   "Return a hash table containing the embedded value tables as specified in TERM."
-  (destructuring-bind (path &optional &rest params)
+  (destructuring-bind (path &optional params)
       term
     (labels ((fn (location flag atom-tab sub-atom-tab)
                (cond ((null location)
                       (fn '("=") flag atom-tab sub-atom-tab))
                      ((and (marie:solop location)
                            (key-indicator-p (marie:stem location)))
-                      (save-value location atom-tab (car params)) ;NOTE
+                      (save-value location atom-tab (car params))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
@@ -172,9 +171,9 @@ the new table."
   (or (null params)
       (every #'null params)))
 
-(defun find-table (tab)
-  "Return the table from the universe identified by TAB."
-  (funcall tab *mx-universe*))
+(defun find-table (table)
+  "Return the table from the universe identified by TABLE."
+  (funcall table *mx-universe*))
 
 (defun valid-terms-p (form)
   "Return true if FORM is a valid MSL form."
@@ -196,7 +195,7 @@ universe."
   (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
         (atom-tab (find-table #'atom-table))
         (sub-atom-tab (find-table #'sub-atom-table)))
-    ;; (streams/logger:log-value expr)
+    (streams/logger:log-value expr)
     (loop :for term :in terms
           :collect
           (destructuring-bind (path &optional &rest params)
@@ -204,8 +203,8 @@ universe."
             (cond ((empty-params-p params)
                    (read-term (list path params) atom-tab sub-atom-tab))
                   (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                       (loop :for value :in values
-                             ;; Check that these conditions are indeed met.
-                             :when (valid-terms-p value)
-                               :do (dispatch value)) ;NOTE
+                       (when (consp values)
+                         (loop :for value :in values
+                               :when (valid-terms-p value)
+                                 :do (dispatch value)))
                        values)))))))

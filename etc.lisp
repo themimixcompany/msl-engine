@@ -12,7 +12,7 @@
            #:dump-path
            #:tables
            #:clear-table
-           #:reset-universe))
+           #:clear-universe))
 
 (in-package #:streams/etc)
 
@@ -77,6 +77,6 @@
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun reset-universe ()
+(defun clear-universe ()
   "Set the current universe to an empty state."
   (loop :for table :in (tables) :do (clear-table table)))

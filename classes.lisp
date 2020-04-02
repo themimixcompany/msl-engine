@@ -9,6 +9,7 @@
            #:atom-counter
            #:sub-atom-table
            #:sub-atom-counter
+           #:log-date
 
            #:mx-base
            #:mx-atom
@@ -42,7 +43,11 @@
    (sub-atom-table :initarg :sub-atom-table
                    :initform (make-hash-table :test #'equal)
                    :accessor sub-atom-table
-                   :documentation "The table where sub atoms live."))
+                   :documentation "The table where sub atoms live.")
+   (log-date :initarg :log-date
+             :initform (local-time:format-timestring nil (local-time:now))
+             :accessor log-date
+             :documentation "The date and time value used for logging."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
 
 (defclass mx-base ()

@@ -36,17 +36,22 @@
     '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
   "The enumeration of week day names.")
 
+(defun current-date ()
+  "Return the current date and time in ISO 8601 format."
+  (local-time:format-timestring nil (local-time:now)))
+
 (marie:define-constant* +default-date+
-    (local-time:format-timestring nil (local-time:now))
+    (current-date)
   "The default date and time string used for logging.")
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
-  (osicat-posix:stat-size (osicat-posix:stat path)))
+  (trivial-file-size:file-size-in-octets path))
 
-(defun max-file-size-p (path)
+(defun maximum-file-size-p (path)
   "Return true if the file indicated in PATH exceeds the maximum allowable size."
-  (> (file-size path) *maximum-file-size*))
+  (when (uiop:file-exists-p path)
+    (> (file-size path) *maximum-file-size*)))
 
 (defun build-path (path)
   "Return a new path based from the base directory."
@@ -78,21 +83,32 @@
 
 (defun purge-file* (path)
   "Zero-out the file indicated by PATH if it exceeds the threshold."
-  (when (max-file-size-p path)
+  (when (maximum-file-size-p path)
     (purge-file path)))
 
 (defun make-machine-log-path (machine &optional (date +default-date+))
-  "Return a log file path using MACHINE and the current date as specifiers."
+  "Return a log file path using MACHINE. Optional parameter DATE is for
+specifying another date value."
   (make-log-file-path (marie:cat machine "." date)))
+
+(defun update-log-date (mx-universe)
+  "Update the log date on MX-UNIVERSE to the current one."
+  (setf (log-date mx-universe)
+        (local-time:format-timestring nil (local-time:now))))
+
+(defun log-file (&optional update)
+  "Return the current log file of the universe."
+  (when update
+    (update-log-date *mx-universe*))
+  (make-machine-log-path *machine-name* (log-date *mx-universe*)))
 
 (defun log-value (value)
   "Write VALUE to the computed log file."
-  (when (stringp value)
-    (let ((path (make-machine-log-path *machine-name*)))
-      (ensure-file-exists path)
-
-      ;; (purge-file* path)
-      ;; create new log path if log file is full
-
-      (with-open-file (stream path :direction :output :if-exists :append)
-        (format stream "~A~%" value)))))
+  (flet ((fn (path)
+           (ensure-file-exists path)
+           (with-open-file (stream path :direction :output :if-exists :append)
+             (format stream "~A~%" value))))
+    (when (stringp value)
+      (cond ((maximum-file-size-p (log-file))
+             (fn (log-file t)))
+            (t (fn (log-file)))))))
