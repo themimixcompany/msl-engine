@@ -4,21 +4,15 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:*machine-name*
-           #:*maximum-file-size*
+  (:export #:*maximum-file-size*
+           #:*machine-name*
            #:log-value))
 
 (in-package #:streams/logger)
 
 (marie:define-constant* +base-directory+
-    (marie:home (marie:cat "." +self+ "/"))
+    (marie:home (marie:cat #\. +self+ #\/))
   "The path to the default configuration and storage directory.")
-
-(marie:define-constant* +default-log-file+
-    (flet ((fn (parent path)
-             (uiop:merge-pathnames* parent path)))
-      (fn +base-directory+ (fn +self+ ".log")))
-  "The path to the default file for logging.")
 
 (marie:define-constant* +log-file-suffix+
   ".msl"
@@ -39,10 +33,6 @@
 (defun current-date ()
   "Return the current date and time in ISO 8601 format."
   (local-time:format-timestring nil (local-time:now)))
-
-(marie:define-constant* +default-date+
-    (current-date)
-  "The default date and time string used for logging.")
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
@@ -89,7 +79,7 @@
 (defun make-machine-log-path (machine &optional (date +default-date+))
   "Return a log file path using MACHINE. Optional parameter DATE is for
 specifying another date value."
-  (make-log-file-path (marie:cat machine "." date)))
+  (make-log-file-path (marie:cat machine #\. date)))
 
 (defun update-log-date (mx-universe)
   "Update the log date on MX-UNIVERSE to the current one."
