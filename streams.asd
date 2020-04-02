@@ -21,7 +21,7 @@
                #:bordeaux-threads
                #:closer-mop
                #:maxpc
-               #:osicat
+               #:trivial-file-size
                #:local-time
                "streams/specials"
                "streams/classes"
