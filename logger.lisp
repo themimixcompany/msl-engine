@@ -21,7 +21,7 @@
   "The path to the default file for logging.")
 
 (marie:define-constant* +log-file-suffix+
-  ".log"
+  ".msl"
   "The default file suffix for log files.")
 
 (defparameter *maximum-file-size*
@@ -90,6 +90,9 @@
   (when (stringp value)
     (let ((path (make-machine-log-path *machine-name*)))
       (ensure-file-exists path)
-      (purge-file* path)
+
+      ;; (purge-file* path)
+      ;; create new log path if log file is full
+
       (with-open-file (stream path :direction :output :if-exists :append)
         (format stream "~A~%" value)))))
