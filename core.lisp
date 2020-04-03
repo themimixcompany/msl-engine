@@ -209,13 +209,3 @@ universe."
                                  :do (dispatch value)))
                        values)))))))
 
-(defun copy-table (table)
-  "Create a new hash table from HASH-TABLE."
-  (let ((table (make-hash-table :test (hash-table-test table)
-                                :rehash-size (hash-table-rehash-size table)
-                                :rehash-threshold (hash-table-rehash-threshold table)
-                                :size (hash-table-size table))))
-    (loop :for key :being :the hash-key :of table
-            :using (hash-value value)
-          :do (setf (gethash key table) value)
-          :finally (return table))))
