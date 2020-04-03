@@ -110,7 +110,6 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
            (builder-name (make-name "build" mx-name))
            (updater-name (make-name "update" class "counter"))
            (table-name (make-name class "table"))
-           (default-table-name (make-name "default" table-name))
            (clear-table-name (make-name "clear" table-name)))
       `(progn
          (defun ,maker-name (seq &optional value force)
@@ -126,8 +125,6 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          (defun ,builder-name (args)
            (when args
              (apply #',maker-name args)))
-         (defun ,default-table-name ()
-           (,table-name *mx-universe*))
          (defun ,clear-table-name ()
            (clrhash (,table-name *mx-universe*)))
          ,(when allocate
@@ -145,8 +142,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                  ,mx-name
                (format stream "~A ~A ~A" id ns key))))
          (export ',maker-name)
-         (export ',builder-name)
-         (export ',default-table-name)))))
+         (export ',builder-name)))))
 
 (defmacro define-makers (specs)
   "Define MX structure makers and helpers with DEFINE-MAKER."
@@ -159,11 +155,6 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
 (defun make-mx-universe ()
   "Return an instance of the mx-universe class."
   (make-instance 'mx-universe))
-
-(defun canonize (mx-atom)
-  "Set the canonized flag of MX-ATOM to true, irrespective of its existing value."
-  (setf (canonizedp mx-atom) t)
-  mx-atom)
 
 (defmethod print-object ((table hash-table) stream)
   (print-unreadable-object (table stream :type t)
