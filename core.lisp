@@ -96,8 +96,8 @@ itself."
   (marie:when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
-                         (atom-table (default-atom-table))
-                         (sub-atom-table (default-sub-atom-table)))
+                         (atom-table (atom-table *mx-universe*))
+                         (sub-atom-table (sub-atom-table *mx-universe*)))
   "Return the value specified by TERM in SOURCE."
   (block nil
     (destructuring-bind (path &optional &rest params)
@@ -117,8 +117,8 @@ itself."
               (fn path atom-table)))))))
 
 (defun read-path (path &optional
-                         (atom-table (default-atom-table))
-                         (sub-atom-table (default-sub-atom-table)))
+                         (atom-table (atom-table *mx-universe*))
+                         (sub-atom-table (sub-atom-table *mx-universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
@@ -150,7 +150,7 @@ the new table."
         (setf (gethash (car location) table) ht)
         ht)))
 
-(defun write-term (term atom-table sub-atom-table)
+(defun write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional params)
       term
@@ -159,7 +159,7 @@ the new table."
                       (fn '("=") flag atom-tab sub-atom-tab))
                      ((and (marie:solop location)
                            (key-indicator-p (marie:stem location)))
-                      (save-value location atom-tab (car params))
+                      (save-value location atom-tab (if whole params (car params)))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
@@ -208,3 +208,14 @@ universe."
                                :when (valid-terms-p value)
                                  :do (dispatch value)))
                        values)))))))
+
+(defun copy-table (table)
+  "Create a new hash table from HASH-TABLE."
+  (let ((table (make-hash-table :test (hash-table-test table)
+                                :rehash-size (hash-table-rehash-size table)
+                                :rehash-threshold (hash-table-rehash-threshold table)
+                                :size (hash-table-size table))))
+    (loop :for key :being :the hash-key :of table
+            :using (hash-value value)
+          :do (setf (gethash key table) value)
+          :finally (return table))))

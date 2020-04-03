@@ -55,7 +55,7 @@
   "Print information about SOURCE recursively."
   (marie:dump-table* table))
 
-(defun dump-path (path &optional (table (default-atom-table)))
+(defun dump-path (path &optional (table (atom-table *mx-universe*)))
   "Dump table information from PATH starting with TABLE."
   (cond ((marie:solop path)
          (multiple-value-bind (val existsp)
