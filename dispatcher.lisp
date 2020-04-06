@@ -14,7 +14,7 @@
 
 (defun valid-key-p (key)
   "Return true if KEY is a valid key for an mx-atom."
-  (let ((v (marie:string-convert key)))
+  (let ((v (marie:string* key)))
     (valid-id-p v)))
 
 (defun entity-string (id)

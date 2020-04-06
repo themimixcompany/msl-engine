@@ -26,13 +26,13 @@
 (defun dump-universe (&optional (universe *universe*))
   "Dump the contents of the universe."
   (let* ((slots (slots universe))
-         (string-slots (mapcar #'marie:string-convert slots))
+         (string-slots (mapcar #'marie:string* slots))
          (table-readers (loop :for item :in string-slots
                               :when (search "TABLE" item)
                               :collect item)))
     (format t "UNIVERSE: ~A~%" universe)
     (loop :for table-reader :in table-readers
-          :for table = (funcall (intern (marie:string-convert table-reader)
+          :for table = (funcall (intern (marie:string* table-reader)
                                         (find-package :streams/classes))
                                 universe)
           :do (progn
@@ -82,7 +82,7 @@
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
 
-(defun copy-table (table &optional params)
+(defun copy-table (table)
   "Create a new hash table from TABLE."
   (let ((ht (make-hash-table :test (hash-table-test table)
                              :rehash-size (hash-table-rehash-size table)
@@ -92,6 +92,18 @@
           :using (hash-value value)
           :do (setf (gethash key ht) value)
           :finally (return ht))))
+
+(defun clear-path (source path &optional (copy t))
+  "Remove the key specified under path in a copy of TABLE."
+  (let ((table (if copy (copy-table source) source)))
+    (labels ((fn (ht location)
+               (cond ((marie:solop location)
+                      (remhash (marie:stem location) ht)
+                      table)
+                     ((hash-table-p (gethash (car location) ht))
+                      (fn (gethash (car location) ht) (cdr location)))
+                     (t nil))))
+      (fn table path))))
 
 (defun copy-universe (universe)
   "Return a copy of the universe UNIVERSE, but with a new log date. The
@@ -104,3 +116,4 @@ copying."
                    :atom-table (copy-table atom-table)
                    :sub-atom-counter sub-atom-counter
                    :sub-atom-table (copy-table sub-atom-table))))
+
