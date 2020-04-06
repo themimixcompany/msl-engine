@@ -15,6 +15,7 @@
            #:clear-universe
            #:copy-table
            #:clear-path
+           #:filter-path
            #:copy-universe))
 
 (in-package #:streams/etc)
@@ -90,7 +91,7 @@
           :finally (return ht))))
 
 (defun clear-path (source path &key (copy t))
-  "Remove the key specified under path in a copy of SOURCE. If COPY is false,
+  "Remove the key specified under PATH in a copy of SOURCE. If COPY is false,
 modify SOURCE in-place."
   (let ((table (if copy (copy-table source) source)))
     (labels ((fn (ht location)
@@ -98,6 +99,28 @@ modify SOURCE in-place."
                       (remhash (marie:stem location) ht)
                       table)
                      ((hash-table-p (gethash (car location) ht))
+                      (fn (gethash (car location) ht) (cdr location)))
+                     (t nil))))
+      (fn table path))))
+
+(defun clear-other (table key)
+  "Remove entries in TABLE that do not match KEY."
+  (let ((keys (loop :for k :being :the :hash-key :of table :collect k)))
+    (loop :for item :in (remove key keys :test #'equal)
+          :do (remhash item table)
+          :finally (return table))))
+
+(defun filter-path (source path &key (copy t))
+  "Return a copy of table SOURCE with only the keys in PATH. If COPY is false,
+modify SOURCE in-place."
+  (let ((table (if copy (copy-table source) source)))
+    (labels ((fn (ht location)
+               (cond ((and (marie:solop location)
+                           (hash-table-p (gethash (car location) ht)))
+                      (clear-other ht (car location))
+                      table)
+                     ((hash-table-p (gethash (car location) ht))
+                      (clear-other ht (car location))
                       (fn (gethash (car location) ht) (cdr location)))
                      (t nil))))
       (fn table path))))

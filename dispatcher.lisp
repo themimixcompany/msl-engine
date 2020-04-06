@@ -193,7 +193,7 @@ universe."
         (sub-atom-tab (find-table #'sub-atom-table)))
     (when terms
       (when (and log (stringp expr))
-        (streams/log-writer:write-log expr))
+        (streams/logger:write-log expr))
       (loop :for term :in terms
             :collect
             (destructuring-bind (path &optional &rest params)

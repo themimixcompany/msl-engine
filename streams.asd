@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "Blue Oak Model License 1.0.0"
-  :version "1.6.1"
+  :version "1.6.2"
   :class :package-inferred-system
   :depends-on (#:marie
                #:cl-ppcre
@@ -26,9 +26,8 @@
                "streams/specials"
                "streams/classes"
                "streams/expr"
-               "streams/log-writer"
+               "streams/logger"
                "streams/dispatcher"
-               "streams/log-reader"
                "streams/server"
                "streams/builder"
                "streams/startup"
