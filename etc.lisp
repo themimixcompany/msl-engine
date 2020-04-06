@@ -4,9 +4,9 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:slots
+  (:export #:dump-object
+           #:slots
            #:dump-universe
-           #:dump-object
            #:dump-atom
            #:dump-table
            #:dump-path
@@ -14,9 +14,18 @@
            #:clear-table
            #:clear-universe
            #:copy-table
+           #:clear-path
            #:copy-universe))
 
 (in-package #:streams/etc)
+
+(defun dump-object (object)
+  "Display the contents of OBJECT."
+  (loop :for slot :in (slots object)
+        :do (let ((v (funcall slot object)))
+              (format t "~S -> ~S~%" slot v)
+              (when (hash-table-p v)
+                (marie:dump-table v)))))
 
 (defun slots (object)
   "Return the slot names of an object."
@@ -38,19 +47,6 @@
           :do (progn
                 (format t "~%~A:~%" table-reader)
                 (marie:dump-table* table)))))
-
-(defun dump-object (object)
-  "Display the contents of OBJECT."
-  (loop :for slot :in (slots object)
-        :do (let ((v (funcall slot object)))
-              (format t "~S -> ~S~%" slot v)
-              (when (hash-table-p v)
-                (marie:dump-table v)))))
-
-(defun dump-atom (key)
-  "Print information about an atom stored in the universe."
-  (marie:when-let* ((obj (gethash key (atom-table *universe*))))
-    (dump-object obj)))
 
 (defun dump-table (table)
   "Print information about SOURCE recursively."
@@ -93,8 +89,9 @@
           :do (setf (gethash key ht) value)
           :finally (return ht))))
 
-(defun clear-path (source path &optional (copy t))
-  "Remove the key specified under path in a copy of TABLE."
+(defun clear-path (source path &key (copy t))
+  "Remove the key specified under path in a copy of SOURCE. If COPY is false,
+modify SOURCE in-place."
   (let ((table (if copy (copy-table source) source)))
     (labels ((fn (ht location)
                (cond ((marie:solop location)
