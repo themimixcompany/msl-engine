@@ -10,13 +10,17 @@
 
 (in-package #:streams/logger)
 
-(marie:define-constant* +base-directory+
+(defvar *base-directory*
     (marie:home (marie:cat #\. +self+ #\/))
   "The path to the default configuration and storage directory.")
 
 (marie:define-constant* +log-file-suffix+
-  ".msl"
+  "msl"
   "The default file suffix for log files.")
+
+(marie:define-constant* +iso-8601-regex+
+  "\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(([+-]\\d\\d:\\d\\d)|Z)?"
+  "The regular expression for ISO 8601 dates.")
 
 (defparameter *maximum-file-size*
   5242880
@@ -45,11 +49,11 @@
 
 (defun build-path (path)
   "Return a new path based from the base directory."
-  (uiop:merge-pathnames* +base-directory+ path))
+  (uiop:merge-pathnames* *base-directory* path))
 
 (defun make-log-file-path (path)
   "Return a log file pathname from PATH."
-  (build-path (marie:cat path +log-file-suffix+)))
+  (build-path (marie:cat path #\. +log-file-suffix+)))
 
 (defun log-file-exists-p (name)
   "Return true if the log file indicated by PATH exists under the log directory."
@@ -92,7 +96,7 @@ specifying another date value."
     (update-log-date *mx-universe*))
   (make-machine-log-path *machine-name* (log-date *mx-universe*)))
 
-(defun log-value (value)
+(defun write-log (value)
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)
@@ -102,3 +106,33 @@ specifying another date value."
       (cond ((maximum-file-size-p (log-file))
              (fn (log-file t)))
             (t (fn (log-file)))))))
+
+;;(uiop:read-file-lines (streams/logger::log-file))
+
+(defun build-alt-case-regex (string)
+  (labels ((fn (args acc)
+             (cond ((null args) acc)
+                   (t (fn (cdr args)
+                          (marie:cat acc "[" (car args) (char-upcase (car args)) "]"))))))
+    (fn (loop :for char :across string :collect char) "")))
+
+(defun log-files (&key (directory *base-directory*) (machine-name *machine-name*) sort)
+  "Return all the log files in DIRECTORY."
+  (let* ((files (uiop:directory-files directory))
+         (entries (remove-if-not #'(lambda (file)
+                                     (let ((name (file-namestring file))
+                                           (suffix (build-alt-case-regex +log-file-suffix+)))
+                                       (cl-ppcre:scan (marie:cat "^" machine-name "\\."
+                                                                 +iso-8601-regex+ "\\."
+                                                                 suffix "$")
+                                                      name)))
+                                 files)))
+    (if sort
+        (mapcar #'(lambda (path)
+                    (uiop:merge-pathnames* *base-directory* path))
+                (sort (mapcar #'file-namestring entries) #'string<))
+        entries)))
+
+(defun last-log-file (&key (directory *base-directory*) (machine-name *machine-name*))
+  "Return the most recent log file path of MACHINE."
+  (marie:last* (log-files :directory directory :machine-name machine-name :sort t)))

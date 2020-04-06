@@ -78,11 +78,11 @@
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun clear-universe ()
+(defun clear-universe (&optional (universe *mx-universe*))
   "Set the current universe to an empty state."
-  (loop :for table :in (tables) :do (clear-table table)))
+  (loop :for table :in (tables universe) :do (clear-table table)))
 
-(defun copy-table (table)
+(defun copy-table (table &optional params)
   "Create a new hash table from TABLE."
   (let ((ht (make-hash-table :test (hash-table-test table)
                              :rehash-size (hash-table-rehash-size table)

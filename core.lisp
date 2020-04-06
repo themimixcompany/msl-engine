@@ -195,17 +195,18 @@ universe."
   (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
         (atom-tab (find-table #'atom-table))
         (sub-atom-tab (find-table #'sub-atom-table)))
-    (streams/logger:log-value expr)
-    (loop :for term :in terms
-          :collect
-          (destructuring-bind (path &optional &rest params)
-              term
-            (cond ((empty-params-p params)
-                   (read-term (list path params) atom-tab sub-atom-tab))
-                  (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                       (when (consp values)
-                         (loop :for value :in values
-                               :when (valid-terms-p value)
-                                 :do (dispatch value)))
-                       values)))))))
+    (when terms
+      (streams/logger:write-log expr)
+      (loop :for term :in terms
+            :collect
+            (destructuring-bind (path &optional &rest params)
+                term
+              (cond ((empty-params-p params)
+                     (read-term (list path params) atom-tab sub-atom-tab))
+                    (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                         (when (consp values)
+                           (loop :for value :in values
+                                 :when (valid-terms-p value)
+                                   :do (dispatch value)))
+                         values))))))))
 
