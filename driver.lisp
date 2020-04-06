@@ -6,9 +6,8 @@
   (:use-reexport #:streams/specials
                  #:streams/classes
                  #:streams/expr
-                 #:streams/log-writer
+                 #:streams/logger
                  #:streams/dispatcher
-                 #:streams/log-reader
                  #:streams/server
                  #:streams/builder
                  #:streams/startup

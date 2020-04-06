@@ -1,13 +1,15 @@
-;;;; log-writer.lisp
+;;;; logger.lisp
 
-(uiop:define-package #:streams/log-writer
+(uiop:define-package #:streams/logger
   (:use #:cl
         #:streams/specials
         #:streams/classes)
   (:export #:log-path
-           #:write-log))
+           #:write-log
+           #:log-paths
+           #:log-path*))
 
-(in-package #:streams/log-writer)
+(in-package #:streams/logger)
 
 (defun current-date ()
   "Return the current date and time in ISO 8601 format."
@@ -64,16 +66,43 @@ specifying another date value."
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
+(defun alt-case-re (string)
+  "Return a regular expression string for downcased and upcased members of string."
+  (labels ((fn (args acc)
+             (cond ((null args) acc)
+                   (t (fn (cdr args)
+                          (marie:cat acc
+                                     "["
+                                     (char-downcase (car args))
+                                     (char-upcase (car args))
+                                     "]"))))))
+    (fn (loop :for char :across string :collect char) "")))
+
+(defun log-paths (&key (directory *log-directory*) (machine *machine*) sort)
+  "Return all the log files in DIRECTORY."
+  (let* ((files (uiop:directory-files directory))
+         (entries (remove-if-not #'(lambda (file)
+                                     (let ((name (file-namestring file))
+                                           (suffix (alt-case-re +log-file-suffix+)))
+                                       (cl-ppcre:scan (marie:cat "^" machine "\\."
+                                                                 +iso-8601-re+ "\\."
+                                                                 suffix "$")
+                                                      name)))
+                                 files)))
+    (if sort
+        (mapcar #'(lambda (path)
+                    (uiop:merge-pathnames* *log-directory* path))
+                (sort (mapcar #'file-namestring entries) #'string<))
+        entries)))
+
+(defun log-path* (&key (directory *log-directory*) (machine *machine*))
+  "Return the most recent log path of MACHINE."
+  (marie:last* (log-paths :directory directory :machine machine :sort t)))
+
 (defun update-log-date (universe)
   "Update the log date on UNIVERSE to the current one."
   (setf (log-date universe)
         (local-time:format-timestring nil (local-time:now))))
-
-(defun log-file (&optional update)
-  "Return the current log file of the universe."
-  (when update
-    (update-log-date *universe*))
-  (make-machine-log-path *machine* (log-date *universe*)))
 
 (defun write-log (value)
   "Write VALUE to the computed log file."
@@ -82,6 +111,6 @@ specifying another date value."
            (with-open-file (stream path :direction :output :if-exists :append)
              (format stream "~A~%" value))))
     (when (stringp value)
-      (cond ((maximum-file-size-p (log-file))
-             (fn (log-file t)))
-            (t (fn (log-file)))))))
+      (cond ((maximum-file-size-p (log-path*))
+             (fn (make-machine-log-path *machine* (log-date *universe*))))
+            (t (fn (log-path*)))))))
