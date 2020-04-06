@@ -46,4 +46,4 @@
 (defun read-log (path)
   "Read the log file specified under PATH."
   (let ((exprs (uiop:read-file-lines path)))
-    (loop :for expr :in exprs :do (streams/dispatcher:dispatch expr))))
+    (loop :for expr :in exprs :do (streams/dispatch expr))))
