@@ -7,10 +7,10 @@
                  #:streams/classes
                  #:streams/expr
                  #:streams/log-writer
-                 #:streams/core
+                 #:streams/dispatcher
                  #:streams/log-reader
-                 #:streams/serve
-                 #:streams/build
+                 #:streams/server
+                 #:streams/builder
                  #:streams/init
                  #:streams/etc))
 

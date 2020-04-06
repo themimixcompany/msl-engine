@@ -1,15 +1,10 @@
-;;;; serve.lisp
+;;;; server.lisp
 
-(uiop:define-package #:streams/serve
+(uiop:define-package #:streams/server
     (:use #:cl)
   (:export #:serve))
 
-(in-package #:streams/serve)
-
-
-;;;-----------------------------------------------------------------------------
-;;; General
-;;;-----------------------------------------------------------------------------
+(in-package #:streams/server)
 
 (defvar *connections* (make-hash-table)
   "The table of connections, where the keys are server instances while the values are the user IDs.")
@@ -63,11 +58,6 @@
   "Stop SERVER."
   (clack:stop server))
 
-
-;;;-----------------------------------------------------------------------------
-;;; MSL interface
-;;;-----------------------------------------------------------------------------
-
 (defvar *msl-start-port* 60000
   "The starting port for (msl) communication.")
 
@@ -102,11 +92,6 @@
   (stop-server *msl-server*)
   (setf *msl-server* nil))
 
-
-;;;-----------------------------------------------------------------------------
-;;; Admin interface
-;;;-----------------------------------------------------------------------------
-
 (defvar *admin-start-port* 60500
   "The starting port for admin access.")
 
@@ -140,11 +125,6 @@
   "Stop the admin websocket server."
   (stop-server *admin-server*)
   (setf *admin-server* nil))
-
-
-;;;-----------------------------------------------------------------------------
-;;; Top-level
-;;;-----------------------------------------------------------------------------
 
 (defun start-websocket-server (server &rest args)
   "Start the designated websocket server."
