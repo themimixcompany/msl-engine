@@ -31,7 +31,7 @@
                "streams/log-reader"
                "streams/server"
                "streams/builder"
-               "streams/init"
+               "streams/startup"
                "streams/etc"
                "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))

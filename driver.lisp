@@ -11,7 +11,7 @@
                  #:streams/log-reader
                  #:streams/server
                  #:streams/builder
-                 #:streams/init
+                 #:streams/startup
                  #:streams/etc))
 
 (provide "streams")
