@@ -1,16 +1,17 @@
-;;;; driver.lisp - re-export all the functionality in STREAMS
+;;;; driver.lisp
 
 (uiop:define-package :streams/driver
   (:nicknames :streams)
   (:use :uiop/common-lisp)
   (:use-reexport #:streams/specials
                  #:streams/classes
-                 #:streams/logger
                  #:streams/expr
+                 #:streams/log-writer
                  #:streams/core
+                 #:streams/log-reader
                  #:streams/serve
                  #:streams/build
-                 #:streams/initialize
+                 #:streams/init
                  #:streams/etc))
 
 (provide "streams")

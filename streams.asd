@@ -11,10 +11,10 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "Blue Oak Model License 1.0.0"
-  :version "1.5.5"
+  :version "1.6.0"
   :class :package-inferred-system
-  :depends-on (#:cl-ppcre
-               #:marie
+  :depends-on (#:marie
+               #:cl-ppcre
                #:clack
                #:clack-handler-hunchentoot
                #:websocket-driver
@@ -25,12 +25,13 @@
                #:local-time
                "streams/specials"
                "streams/classes"
-               "streams/logger"
                "streams/expr"
+               "streams/log-writer"
                "streams/core"
+               "streams/log-reader"
                "streams/serve"
                "streams/build"
-               "streams/initialize"
+               "streams/init"
                "streams/etc"
                "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))

@@ -7,10 +7,18 @@
            #:*atom-counter*
            #:*sub-atom-counter*
            #:*metadata-counter*
+
            #:+base-namespace-list+
            #:+sub-namespace-list+
            #:+namespace-list+
-           #:+key-indicators+))
+           #:+key-indicators+
+
+           #:*log-directory*
+           #:+log-file-suffix+
+           #:+iso-8601-re+
+           #:+day-names+
+           #:*maximum-log-size*
+           #:*machine*))
 
 (in-package #:streams/specials)
 
@@ -52,3 +60,27 @@ namespace alias and full namespace name")
 (marie:define-constant +key-indicators+
   '("=" "/" "[]")
   "The list of strings used for setting end values.")
+
+(defvar *log-directory*
+    (marie:home (marie:cat #\. +self+ #\/))
+  "The path to the default configuration and storage directory.")
+
+(marie:define-constant* +log-file-suffix+
+  "msl"
+  "The default file suffix for log files.")
+
+(marie:define-constant* +iso-8601-re+
+  "\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(([+-]\\d\\d:\\d\\d)|Z)?"
+  "The regular expression for ISO 8601 dates.")
+
+(marie:define-constant* +day-names+
+    '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
+  "The enumeration of week day names.")
+
+(defparameter *maximum-log-size*
+  5242880
+  "The maximum filesize of logging files in bytes.")
+
+(defvar *machine*
+  "my-machine"
+  "The default name to use as the machine name.")
