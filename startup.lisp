@@ -8,11 +8,11 @@
 
 (in-package #:streams/startup)
 
-(defun initialize-mx-universe ()
-  "Initialize the mx-universe."
-  (setf *mx-universe* (make-mx-universe)))
+(defun initialize-universe ()
+  "Initialize the universe."
+  (setf *universe* (make-universe)))
 
-(initialize-mx-universe)
+(initialize-universe)
 
 (defun restore-log (&key (machine *machine*))
   "Re-initialize the universe"

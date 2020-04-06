@@ -31,7 +31,7 @@ character or a string to designate an entity."
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
   (let* ((function (table-name namespace :streams/classes))
-         (table (funcall function *mx-universe*)))
+         (table (funcall function *universe*)))
     table))
 
 (defun namespace-hash (key namespace)
@@ -92,8 +92,8 @@ itself."
   (marie:when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
-                         (atom-table (atom-table *mx-universe*))
-                         (sub-atom-table (sub-atom-table *mx-universe*)))
+                         (atom-table (atom-table *universe*))
+                         (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (block nil
     (destructuring-bind (path &optional &rest params)
@@ -113,8 +113,8 @@ itself."
               (fn path atom-table)))))))
 
 (defun read-path (path &optional
-                         (atom-table (atom-table *mx-universe*))
-                         (sub-atom-table (sub-atom-table *mx-universe*)))
+                         (atom-table (atom-table *universe*))
+                         (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
@@ -169,7 +169,7 @@ the new table."
 
 (defun find-table (table)
   "Return the table from the universe identified by TABLE."
-  (funcall table *mx-universe*))
+  (funcall table *universe*))
 
 (defun valid-terms-p (form)
   "Return true if FORM is a valid MSL form."

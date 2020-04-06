@@ -23,8 +23,8 @@
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun dump-universe (&optional (universe *mx-universe*))
-  "Dump the contents of the mx-universe."
+(defun dump-universe (&optional (universe *universe*))
+  "Dump the contents of the universe."
   (let* ((slots (slots universe))
          (string-slots (mapcar #'marie:string-convert slots))
          (table-readers (loop :for item :in string-slots
@@ -49,14 +49,14 @@
 
 (defun dump-atom (key)
   "Print information about an atom stored in the universe."
-  (marie:when-let* ((obj (gethash key (atom-table *mx-universe*))))
+  (marie:when-let* ((obj (gethash key (atom-table *universe*))))
     (dump-object obj)))
 
 (defun dump-table (table)
   "Print information about SOURCE recursively."
   (marie:dump-table* table))
 
-(defun dump-path (path &optional (table (atom-table *mx-universe*)))
+(defun dump-path (path &optional (table (atom-table *universe*)))
   "Dump table information from PATH starting with TABLE."
   (cond ((marie:solop path)
          (multiple-value-bind (val existsp)
@@ -67,7 +67,7 @@
          (dump-path (cdr path) (gethash (car path) table)))
         (t nil)))
 
-(defun tables (&optional (universe *mx-universe*))
+(defun tables (&optional (universe *universe*))
   "Return the list of slots from UNIVERSE that are tables."
   (loop :for slot :in (slots universe)
         :for tab = (funcall slot universe)
@@ -78,7 +78,7 @@
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun clear-universe (&optional (universe *mx-universe*))
+(defun clear-universe (&optional (universe *universe*))
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
 
@@ -94,12 +94,12 @@
           :finally (return ht))))
 
 (defun copy-universe (universe)
-  "Return a copy of the mx-universe UNIVERSE, but with a new log date. The
+  "Return a copy of the universe UNIVERSE, but with a new log date. The
 tables are copied using an external function to allow selective table information
 copying."
   (with-slots (atom-counter atom-table sub-atom-counter sub-atom-table)
       universe
-    (make-instance 'mx-universe
+    (make-instance 'universe
                    :atom-counter atom-counter
                    :atom-table (copy-table atom-table)
                    :sub-atom-counter sub-atom-counter
