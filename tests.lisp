@@ -1,7 +1,7 @@
 ;;;; tests.lisp
 
 (uiop:define-package #:streams/tests
-    (:use #:cl #:fiveam #:streams/core)
+    (:use #:cl #:fiveam #:streams/dispatcher)
   (:nicknames #:s/tests)
   (:export #:run-tests))
 
@@ -15,11 +15,11 @@
   (run! 'all-tests))
 
 (test eval-expr-tests
-  "Test the values returned by STREAMS/CORE:EVAL-EXPR."
+  "Test the values returned by STREAMS/DISPATCHER:EVAL-EXPR."
   (is (null nil)))
 
 (test show-tests
-  "Test the values returned by STREAMS/CORE:SHOW."
+  "Test the values returned by STREAMS/DISPATCHER:SHOW."
   (is (null nil))
   ;; (is (string= $"(@walt Walt Disney :number 1 2 :species Human :state IL)" "Walt Disney"))
   ;; (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))

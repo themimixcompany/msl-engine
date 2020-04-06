@@ -1,16 +1,12 @@
-;;;; core.lisp
+;;;; dispatcher.lisp
 
-(uiop:define-package #:streams/core
+(uiop:define-package #:streams/dispatcher
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:read-term
-           #:read-path
-           #:resolve-path
-           #:write-term
-           #:dispatch))
+  (:export #:dispatch))
 
-(in-package #:streams/core)
+(in-package #:streams/dispatcher)
 
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
@@ -209,4 +205,3 @@ universe."
                                  :when (valid-terms-p value)
                                    :do (dispatch value)))
                          values))))))))
-
