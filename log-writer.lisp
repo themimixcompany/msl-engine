@@ -60,20 +60,20 @@
 specifying another date value."
   (make-log-file-path (marie:cat machine #\. date)))
 
-(defun log-path (&key (machine *machine*) (date (log-date *mx-universe*)))
+(defun log-path (&key (machine *machine*) (date (log-date *universe*)))
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
-(defun update-log-date (mx-universe)
-  "Update the log date on MX-UNIVERSE to the current one."
-  (setf (log-date mx-universe)
+(defun update-log-date (universe)
+  "Update the log date on UNIVERSE to the current one."
+  (setf (log-date universe)
         (local-time:format-timestring nil (local-time:now))))
 
 (defun log-file (&optional update)
   "Return the current log file of the universe."
   (when update
-    (update-log-date *mx-universe*))
-  (make-machine-log-path *machine* (log-date *mx-universe*)))
+    (update-log-date *universe*))
+  (make-machine-log-path *machine* (log-date *universe*)))
 
 (defun write-log (value)
   "Write VALUE to the computed log file."

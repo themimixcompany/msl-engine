@@ -3,7 +3,7 @@
 (uiop:define-package #:streams/specials
   (:use #:cl)
   (:export #:+self+
-           #:*mx-universe*
+           #:*universe*
            #:*atom-counter*
            #:*sub-atom-counter*
            #:*metadata-counter*
@@ -26,7 +26,7 @@
   "streams"
   "The base name of the system.")
 
-(defvar *mx-universe* nil
+(defvar *universe* nil
   "The top-level structure for everything.")
 
 (defvar *atom-counter* 100

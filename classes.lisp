@@ -3,7 +3,7 @@
 (uiop:define-package #:streams/classes
   (:use #:cl
         #:streams/specials)
-  (:export #:mx-universe
+  (:export #:universe
 
            #:atom-table
            #:atom-counter
@@ -22,12 +22,12 @@
            #:value
            #:canonize
 
-           #:make-mx-universe
+           #:make-universe
            #:canonizedp))
 
 (in-package #:streams/classes)
 
-(defclass mx-universe ()
+(defclass universe ()
   ((atom-counter :initarg :atom-counter
                  :initform *atom-counter*
                  :accessor atom-counter
@@ -83,21 +83,21 @@
        :documentation "The unique integer to identify the mx-sub-atom in the universe."))
   (:documentation "The class for mx-sub-atoms, and instances are allocated on the universe."))
 
-(defmacro update-counter (mx-universe accessor)
-  "Update the counter in MX-UNIVERSE with ACCESSOR."
-  `(progn (incf (,accessor ,mx-universe))
-          (,accessor ,mx-universe)))
+(defmacro update-counter (universe accessor)
+  "Update the counter in UNIVERSE with ACCESSOR."
+  `(progn (incf (,accessor ,universe))
+          (,accessor ,universe)))
 
 (defmacro define-updaters (&rest namespaces)
-  "Define functions for updating the namespace counters in the mx-universe."
+  "Define functions for updating the namespace counters in the universe."
   (flet ((make-name (&rest args)
            (apply #'marie:hyphenate-intern nil args)))
     `(progn
        ,@(loop :for namespace :in namespaces
                :for fname = (make-name "update" namespace "counter")
                :for cname = (make-name namespace "counter")
-               :collect `(defun ,fname (mx-universe)
-                           (update-counter mx-universe ,cname))))))
+               :collect `(defun ,fname (universe)
+                           (update-counter universe ,cname))))))
 (define-updaters atom sub-atom)
 
 (defmacro define-maker (class &key allocate)
@@ -115,26 +115,26 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          (defun ,maker-name (seq &optional value force)
            (destructuring-bind (ns key)
                seq
-             (let ((obj (gethash key (,table-name *mx-universe*))))
+             (let ((obj (gethash key (,table-name *universe*))))
                (flet ((fn ()
                         (make-instance ',mx-name :ns ns :key key :value value
                                        ,@(when allocate
-                                           `(:mx-universe *mx-universe*)))))
+                                           `(:universe *universe*)))))
                  (cond (force (fn))
                        (t (or obj (fn))))))))
          (defun ,builder-name (args)
            (when args
              (apply #',maker-name args)))
          (defun ,clear-table-name ()
-           (clrhash (,table-name *mx-universe*)))
+           (clrhash (,table-name *universe*)))
          ,(when allocate
-            `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key mx-universe)
-               (let ((counter (,updater-name mx-universe)))
+            `(defmethod initialize-instance :after ((,mx-name ,mx-name) &key universe)
+               (let ((counter (,updater-name universe)))
                  (with-slots (id ns key value)
                      ,mx-name
                    (setf id counter)
                    (with-slots (,table-name)
-                       mx-universe
+                       universe
                      (setf (gethash key ,table-name) ,mx-name))))))
          (defmethod print-object ((,mx-name ,mx-name) stream)
            (print-unreadable-object (,mx-name stream :type t)
@@ -152,9 +152,9 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                        `(define-maker ,name :allocate ,allocate)))))
 (define-makers ((atom t) (sub-atom t)))
 
-(defun make-mx-universe ()
-  "Return an instance of the mx-universe class."
-  (make-instance 'mx-universe))
+(defun make-universe ()
+  "Return an instance of the universe class."
+  (make-instance 'universe))
 
 (defmethod print-object ((table hash-table) stream)
   (print-unreadable-object (table stream :type t)
