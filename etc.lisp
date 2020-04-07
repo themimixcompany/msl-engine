@@ -57,8 +57,9 @@
   (cond ((marie:solop path)
          (multiple-value-bind (val existsp)
              (gethash (marie:stem path) table)
-           (when (and (hash-table-p val) existsp)
-             (dump-table val))))
+           (when existsp
+             (cond ((hash-table-p val) (dump-table val))
+                   (t (format t "~S~%" val))))))
         ((hash-table-p (gethash (car path) table))
          (dump-path (gethash (car path) table) (cdr path)))
         (t nil)))

@@ -38,7 +38,7 @@
 (defvar *metadata-counter* 10000
   "The initial metadata counter value.")
 
-(marie:define-constant +base-namespace-list+
+(marie:define-constant* +base-namespace-list+
   '(("c" . "canon")
     ("m" . "machine")
     ("w" . "world")
@@ -47,17 +47,17 @@
     ("@" . "atom"))
   "The list of base namespaces.")
 
-(marie:define-constant +sub-namespace-list+
+(marie:define-constant* +sub-namespace-list+
   '(("d" . "datatype")
     ("f" . "format"))
   "The list of sub namespaces.")
 
-(marie:define-constant +namespace-list+
+(marie:define-constant* +namespace-list+
   (append +base-namespace-list+ +sub-namespace-list+)
   "The full list of namespaces, where the individual elements contain the
 namespace alias and full namespace name")
 
-(marie:define-constant +key-indicators+
+(marie:define-constant* +key-indicators+
   '("=" "/" "[]")
   "The list of strings used for setting end values.")
 
