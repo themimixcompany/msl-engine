@@ -4,7 +4,8 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes
-        #:streams/logger))
+        #:streams/logger)
+  (:export #:read-log))
 
 (in-package #:streams/startup)
 

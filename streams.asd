@@ -26,6 +26,7 @@
                "streams/specials"
                "streams/classes"
                "streams/expr"
+               "streams/unparser"
                "streams/logger"
                "streams/dispatcher"
                "streams/server"
