@@ -42,9 +42,12 @@
                                     (table-keys v)
                                     (list (car keys)))
                                 acc)))
-                     (t (fn tab
-                            (cdr keys)
-                            (cons (car v) (cons (car keys) acc))))))))
+                     (t (let ((c (if (string= "=" (car keys))
+                                     acc
+                                     (cons (car keys) acc))))
+                          (fn tab
+                              (cdr keys)
+                              (cons (car v) c))))))))
     (marie:when-let* ((ht (gethash key table))
                       (value (loop :for v :in (fn ht (table-keys ht) nil)
                                    :collect (cons key v))))
