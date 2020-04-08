@@ -4,20 +4,15 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:stringify
-           #:children
+  (:export #:children
            #:children*
            #:table-keys
            #:table-values
            #:collect
-           #:collect*))
+           #:collect*
+           #:construct))
 
 (in-package #:streams/unparser)
-
-(defun stringify (value)
-  "Return value as a single parenthesized string."
-  (when (consp value)
-    (format nil "(~{~A~^ ~})" value)))
 
 (defun children (table key)
   "Return all items in TABLE using KEY that are also tables."
@@ -53,5 +48,26 @@
                                         (collect (gethash item (gethash key table))))))))
 
 (defun collect* (table)
-  "Return the result of calling COLLECT on table as list of strings."
-  (mapcar #'stringify (collect table)))
+  "Return the result of calling COLLECT on TABLE, as a list of strings."
+  (mapcar #'marie:string* (collect table)))
+
+(defun construct (table key)
+  "Return the original expression in TABLE under KEY."
+  (labels ((fn (tab keys acc)
+             (let ((v (gethash (car keys) tab)))
+               (cond ((null keys) (nreverse acc))
+                     ((hash-table-p v)
+                      (fn tab
+                          (cdr keys)
+                          (cons (fn v
+                                    (table-keys v)
+                                    (list (car keys)))
+                                acc)))
+                     (t (fn tab
+                            (cdr keys)
+                            (cons v (cons (car keys) acc))))))))
+    (multiple-value-bind (value existsp)
+        (gethash key table)
+      (declare (ignore value))
+      (when existsp
+        (fn table (table-keys table) (list key))))))
