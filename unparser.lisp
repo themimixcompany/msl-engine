@@ -7,8 +7,6 @@
   (:export #:children
            #:table-keys
            #:table-values
-           #:collect
-           #:collect*
            #:construct
            #:construct*))
 
@@ -32,7 +30,7 @@
   (when (hash-table-p table)
     (loop :for v :being :the :hash-value :in table :collect v)))
 
-(defun construct (table)
+(defun construct (key table)
   "Return the original expressions in TABLE."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
@@ -47,10 +45,7 @@
                      (t (fn tab
                             (cdr keys)
                             (cons (car v) (cons (car keys) acc))))))))
-    (fn table (table-keys table) nil)))
-
-(defun construct* (table key)
-  "Return the original expressions in TABLE under KEY."
-  (let ((value (loop :for v :in (construct (gethash key table))
-                     :collect (cons key v))))
-    value))
+    (marie:when-let* ((ht (gethash key table))
+                      (value (loop :for v :in (fn ht (table-keys ht) nil)
+                                   :collect (cons key v))))
+      value)))
