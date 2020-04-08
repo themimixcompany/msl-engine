@@ -5,7 +5,6 @@
         #:streams/specials
         #:streams/classes)
   (:export #:children
-           #:children*
            #:table-keys
            #:table-values
            #:collect
@@ -23,13 +22,6 @@
           :when (hash-table-p entry)
           :collect k)))
 
-(defun children* (table key)
-  "Return all items in TABLE using KEY that are also tables."
-  (when (hash-table-p (gethash key table))
-    (loop :for k :being :the :hash-key :of (gethash key table)
-          :for entry = (gethash k (gethash key table))
-          :collect k)))
-
 (defun table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
@@ -39,18 +31,6 @@
   "Return the direct values under TABLE."
   (when (hash-table-p table)
     (loop :for v :being :the :hash-value :in table :collect v)))
-
-(defun collect (table)
-  "Return the original MSL expressions found in TABLE."
-  (let ((keys (table-keys table)))
-    (loop :for key :in keys
-          :nconc (loop :for item :in (table-keys (gethash key table))
-                       :collect (append (list key) (list item)
-                                        (collect (gethash item (gethash key table))))))))
-
-(defun collect* (table)
-  "Return the result of calling COLLECT on TABLE, as a list of strings."
-  (mapcar #'marie:string* (collect table)))
 
 (defun construct0 (table key)
   "Return the original expression in TABLE under KEY."
