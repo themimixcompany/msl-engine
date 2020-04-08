@@ -9,8 +9,8 @@
            #:table-values
            #:collect
            #:collect*
-           #:construct0
-           #:construct))
+           #:construct
+           #:construct*))
 
 (in-package #:streams/unparser)
 
@@ -32,29 +32,8 @@
   (when (hash-table-p table)
     (loop :for v :being :the :hash-value :in table :collect v)))
 
-(defun construct0 (table key)
-  "Return the original expression in TABLE under KEY."
-  (labels ((fn (tab keys acc)
-             (let ((v (gethash (car keys) tab)))
-               (cond ((null keys) (nreverse acc))
-                     ((hash-table-p v)
-                      (fn tab
-                          (cdr keys)
-                          (cons (fn v
-                                    (table-keys v)
-                                    (list (car keys)))
-                                acc)))
-                     (t (fn tab
-                            (cdr keys)
-                            (cons v (cons (car keys) acc))))))))
-    (multiple-value-bind (value existsp)
-        (gethash key table)
-      (declare (ignore value))
-      (when existsp
-        (fn table (table-keys table) (list key))))))
-
 (defun construct (table)
-  "Return the original expression in TABLE under KEY."
+  "Return the original expressions in TABLE."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
                (cond ((null keys) (nreverse acc))
@@ -69,3 +48,9 @@
                             (cdr keys)
                             (cons (car v) (cons (car keys) acc))))))))
     (fn table (table-keys table) nil)))
+
+(defun construct* (table key)
+  "Return the original expressions in TABLE under KEY."
+  (let ((value (loop :for v :in (construct (gethash key table))
+                     :collect (cons key v))))
+    value))
