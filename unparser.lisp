@@ -10,6 +10,7 @@
            #:table-values
            #:collect
            #:collect*
+           #:construct0
            #:construct))
 
 (in-package #:streams/unparser)
@@ -51,7 +52,7 @@
   "Return the result of calling COLLECT on TABLE, as a list of strings."
   (mapcar #'marie:string* (collect table)))
 
-(defun construct (table key)
+(defun construct0 (table key)
   "Return the original expression in TABLE under KEY."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
@@ -71,3 +72,20 @@
       (declare (ignore value))
       (when existsp
         (fn table (table-keys table) (list key))))))
+
+(defun construct (table)
+  "Return the original expression in TABLE under KEY."
+  (labels ((fn (tab keys acc)
+             (let ((v (gethash (car keys) tab)))
+               (cond ((null keys) (nreverse acc))
+                     ((hash-table-p v)
+                      (fn tab
+                          (cdr keys)
+                          (cons (fn v
+                                    (table-keys v)
+                                    (list (car keys)))
+                                acc)))
+                     (t (fn tab
+                            (cdr keys)
+                            (cons (car v) (cons (car keys) acc))))))))
+    (fn table (table-keys table) nil)))
