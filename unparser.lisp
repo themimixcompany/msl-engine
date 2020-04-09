@@ -8,6 +8,8 @@
            #:table-keys
            #:table-values
            #:combine
+           #:combine-list
+           #:accumulator
            #:construct))
 
 (in-package #:streams/unparser)
@@ -39,6 +41,18 @@
     (cond ((consp value) (fn value nil))
           (t value))))
 
+(defun combine-list (list)
+  "Apply COMBINE to LIST."
+  (mapcar #'combine list))
+
+(defun accumulate (value acc)
+  "Return an an accumulator value suitable for CONSTRUCT."
+  (destructuring-bind (v &optional &rest vs)
+      value
+    (declare (ignorable vs))
+    (cond ((string= "=" v) acc)
+          (t (cons v acc)))))
+
 (defun construct (key table)
   "Return the original expressions in TABLE."
   (labels ((fn (tab keys acc)
@@ -51,13 +65,10 @@
                                     (table-keys v)
                                     (list (car keys)))
                                 acc)))
-                     (t (let ((c (if (string= "=" (car keys))
-                                     acc
-                                     (cons (car keys) acc))))
-                          (fn tab
-                              (cdr keys)
-                              (cons v c))))))))
+                     (t (fn tab
+                            (cdr keys)
+                            (cons v (accumulate keys acc))))))))
     (marie:when-let* ((ht (gethash key table))
                       (value (loop :for v :in (fn ht (table-keys ht) nil)
-                                   :collect (cons key v))))
+                                   :collect (combine-list (cons key v)))))
       value)))
