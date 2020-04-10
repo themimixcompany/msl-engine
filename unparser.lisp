@@ -64,12 +64,11 @@
 (defun flatten-1 (list)
   "Return a flattened list on one level from LIST."
   (let ((value (mapcar #'(lambda (item)
-                           (if (consp item)
-                               item
-                               (list item)))
+                           (if (consp item) item (list item)))
                        list)))
     (reduce #'(lambda (x y)
                 (cond ((id-prefixed-p y) (append x (list y)))
+                      ((id-prefixed-p x) (append (list x) y))
                       (t (append x y))))
             value)))
 
@@ -77,11 +76,8 @@
   "Apply additional merging operations to items in LIST."
   (let ((value (mapcar #'combine list)))
     (loop :for v :in value
-          :collect (if (and (consp v)
-                            (or (string= (car v) ":")
-                                ;; (string= (car v) "d")
-                                ))
-                       (cons ":" (flatten-1 (mapcar #'combine (cdr v))))
+          :collect (if (and (consp v) (id-prefixed-p v))
+                       (cons (car v) (flatten-1 (mapcar #'combine (cdr v))))
                        v))))
 
 (defun accumulate (value acc)
@@ -110,7 +106,7 @@
     (marie:when-let* ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
-            :collect (flatten-1 (compose kv))))))
+            :collect (flatten-1 (mapcar #'merge-heads (flatten-1 (compose kv))))))))
 
 (defun collect (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
