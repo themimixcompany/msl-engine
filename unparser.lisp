@@ -5,6 +5,7 @@
         #:streams/specials
         #:streams/classes)
   (:export #:children
+           #:merge-heads
            #:combine
            #:compose
            #:construct
@@ -34,16 +35,27 @@
   "Return true if VALUE is the : namespace."
   (string= (car value) ":"))
 
+(defun id-prefixed-p (value)
+  "Return true if VALUE is prefixed by certain namespaces."
+  (member (car value) '(":" "d" "f") :test #'equal))
+
+(defun merge-heads (value)
+  "Return a list where specific namespace ids are merged with its keys."
+  (labels ((fn (val)
+             (if (id-prefixed-p val)
+                 (cond ((colonp val)
+                        (cons (marie:cat (first val) (second val))
+                              (cddr val)))
+                       (t val))
+                 val)))
+    (cond ((consp value) (fn value))
+          (t value))))
+
 (defun combine (value)
   "Return a single-level flattened, combined list from LIST."
   (labels ((fn (val)
-             (if (member (car val) '(":" "d" "f") :test #'equal)
-                 (let ((base (cons (car val) (cadr val))))
-                   ;; (cond ((colonp val)
-                   ;;        (cons (marie:cat (car base) (cadr  base))
-                   ;;              (cddr base)))
-                   ;;       (t base))
-                   base)
+             (if (id-prefixed-p val)
+                 (cons (car val) (cadr val))
                  val)))
     (cond ((consp value) (fn value))
           (t value))))
@@ -82,7 +94,7 @@
     (marie:when-let* ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
-            :collect (compose kv)))))
+            :collect (mapcar #'merge-heads (compose kv))))))
 
 (defun collect (table)
   "Return the original expressions in TABLE."
