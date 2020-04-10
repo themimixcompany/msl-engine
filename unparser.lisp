@@ -4,13 +4,8 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:children
-           #:merge-heads
-           #:combine
-           #:compose
-           #:construct
-           #:collect
-           #:flatten-1))
+  (:export #:construct
+           #:collect))
 
 (in-package #:streams/unparser)
 
@@ -103,7 +98,7 @@
                      (t (fn tab
                             (cdr keys)
                             (cons v (accumulate keys acc))))))))
-    (marie:when-let* ((ht (gethash key table)))
+    (marie:when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
             :collect (flatten-1 (mapcar #'merge-heads (flatten-1 (compose kv))))))))
