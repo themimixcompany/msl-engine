@@ -9,7 +9,8 @@
            #:combine
            #:compose
            #:construct
-           #:collect))
+           #:collect
+           #:flatten-1))
 
 (in-package #:streams/unparser)
 
@@ -60,12 +61,27 @@
     (cond ((consp value) (fn value))
           (t value))))
 
+(defun flatten-1 (list)
+  "Return a flattened list on one level from LIST."
+  (let ((value (mapcar #'(lambda (item)
+                           (if (consp item)
+                               item
+                               (list item)))
+                       list)))
+    (reduce #'(lambda (x y)
+                (cond ((id-prefixed-p y) (append x (list y)))
+                      (t (append x y))))
+            value)))
+
 (defun compose (list)
   "Apply additional merging operations to items in LIST."
   (let ((value (mapcar #'combine list)))
     (loop :for v :in value
-          :collect (if (and (consp v) (string= (car v) ":"))
-                       (cons ":" (mapcar #'combine (cdr v)))
+          :collect (if (and (consp v)
+                            (or (string= (car v) ":")
+                                ;; (string= (car v) "d")
+                                ))
+                       (cons ":" (flatten-1 (mapcar #'combine (cdr v))))
                        v))))
 
 (defun accumulate (value acc)
@@ -94,9 +110,9 @@
     (marie:when-let* ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
-            :collect (mapcar #'merge-heads (compose kv))))))
+            :collect (flatten-1 (compose kv))))))
 
-(defun collect (table)
+(defun collect (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
   (let ((keys (children table)))
     (loop :for key :in keys :nconc (construct key table))))
