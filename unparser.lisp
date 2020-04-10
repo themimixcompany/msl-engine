@@ -5,22 +5,12 @@
         #:streams/specials
         #:streams/classes)
   (:export #:children
-           #:table-keys
-           #:table-values
            #:combine
-           #:combine-list
-           #:accumulator
-           #:construct))
+           #:compose
+           #:construct
+           #:collect))
 
 (in-package #:streams/unparser)
-
-(defun children (table key)
-  "Return all items in TABLE using KEY that are also tables."
-  (when (hash-table-p (gethash key table))
-    (loop :for k :being :the :hash-key :of (gethash key table)
-          :for entry = (gethash k (gethash key table))
-          :when (hash-table-p entry)
-          :collect k)))
 
 (defun table-keys (table)
   "Return the direct keys under TABLE."
@@ -32,18 +22,39 @@
   (when (hash-table-p table)
     (loop :for v :being :the :hash-value :in table :collect v)))
 
+(defun children (table &optional object)
+  "Return all items in TABLE using KEY that are also tables."
+  (when (hash-table-p table)
+    (let ((keys (table-keys table)))
+      (loop :for key :in keys
+            :when (hash-table-p (gethash key table))
+            :collect (if object (gethash key table) key)))))
+
+(defun colonp (value)
+  "Return true if VALUE is the : namespace."
+  (string= (car value) ":"))
+
 (defun combine (value)
-  "Return a flattened list from LIST containg the CAR + CADR combinations."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   (t (fn (cadr args)
-                          (cons (car args) acc))))))
-    (cond ((consp value) (fn value nil))
+  "Return a single-level flattened, combined list from LIST."
+  (labels ((fn (val)
+             (if (member (car val) '(":" "d" "f") :test #'equal)
+                 (let ((base (cons (car val) (cadr val))))
+                   ;; (cond ((colonp val)
+                   ;;        (cons (marie:cat (car base) (cadr  base))
+                   ;;              (cddr base)))
+                   ;;       (t base))
+                   base)
+                 val)))
+    (cond ((consp value) (fn value))
           (t value))))
 
-(defun combine-list (list)
-  "Apply COMBINE to LIST."
-  (mapcar #'combine list))
+(defun compose (list)
+  "Apply additional merging operations to items in LIST."
+  (let ((value (mapcar #'combine list)))
+    (loop :for v :in value
+          :collect (if (and (consp v) (string= (car v) ":"))
+                       (cons ":" (mapcar #'combine (cdr v)))
+                       v))))
 
 (defun accumulate (value acc)
   "Return an an accumulator value suitable for CONSTRUCT."
@@ -54,7 +65,7 @@
           (t (cons v acc)))))
 
 (defun construct (key table)
-  "Return the original expressions in TABLE."
+  "Return the original expressions in TABLE under KEY."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
                (cond ((null keys) (nreverse acc))
@@ -68,7 +79,12 @@
                      (t (fn tab
                             (cdr keys)
                             (cons v (accumulate keys acc))))))))
-    (marie:when-let* ((ht (gethash key table))
-                      (value (loop :for v :in (fn ht (table-keys ht) nil)
-                                   :collect (combine-list (cons key v)))))
-      value)))
+    (marie:when-let* ((ht (gethash key table)))
+      (loop :for v :in (fn ht (table-keys ht) nil)
+            :for kv = (cons key v)
+            :collect (compose kv)))))
+
+(defun collect (table)
+  "Return the original expressions in TABLE."
+  (let ((keys (children table)))
+    (loop :for key :in keys :nconc (construct key table))))
