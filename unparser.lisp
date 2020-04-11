@@ -4,7 +4,8 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:construct
+  (:export #:flatten-1
+           #:construct
            #:collect))
 
 (in-package #:streams/unparser)
@@ -24,8 +25,9 @@
   (when (hash-table-p table)
     (let ((keys (table-keys table)))
       (loop :for key :in keys
-            :when (hash-table-p (gethash key table))
-            :collect (if object (gethash key table) key)))))
+            :for value = (gethash key table)
+            :when (hash-table-p value)
+            :collect (if object value key)))))
 
 (defun colonp (value)
   "Return true if VALUE is the : namespace."
@@ -33,7 +35,8 @@
 
 (defun id-prefixed-p (value)
   "Return true if VALUE is prefixed by certain namespaces."
-  (member (car value) '(":" "d" "f") :test #'equal))
+  (and (consp value)
+       (member (car value) '(":" "d" "f") :test #'equal)))
 
 (defun merge-heads (value)
   "Return a list where specific namespace ids are merged with its keys."
@@ -48,7 +51,7 @@
           (t value))))
 
 (defun combine (value)
-  "Return a single-level flattened, combined list from LIST."
+  "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
              (if (id-prefixed-p val)
                  (cons (car val) (cadr val))
@@ -71,9 +74,10 @@
   "Apply additional merging operations to items in LIST."
   (let ((value (mapcar #'combine list)))
     (loop :for v :in value
-          :collect (if (and (consp v) (id-prefixed-p v))
-                       (cons (car v) (flatten-1 (mapcar #'combine (cdr v))))
-                       v))))
+          :collect
+             (if (id-prefixed-p v)
+                 (cons (car v) (cdr v))
+                 v))))
 
 (defun accumulate (value acc)
   "Return an an accumulator value suitable for CONSTRUCT."
@@ -101,7 +105,7 @@
     (marie:when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
-            :collect (flatten-1 (mapcar #'merge-heads (flatten-1 (compose kv))))))))
+            :collect kv))))
 
 (defun collect (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
