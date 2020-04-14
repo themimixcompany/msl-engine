@@ -5,11 +5,12 @@
         #:streams/specials
         #:streams/classes)
   (:export #:metadatap
-           #:datatype-format-p
+           #:modsp
            #:prefixedp
            #:wrap
            #:join
            #:stage
+           #:make-regex
            #:normalize
            #:combine
            #:attach
@@ -23,11 +24,6 @@
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (loop :for k :being :the :hash-key :in table :collect k)))
-
-(defun table-values (table)
-  "Return the direct values under TABLE."
-  (when (hash-table-p table)
-    (loop :for v :being :the :hash-value :in table :collect v)))
 
 (defun children (table &optional object)
   "Return all items in TABLE using KEY that are also tables."
@@ -44,7 +40,7 @@
     (consp value)
     (member (car value) '(":") :test #'equal)))
 
-(defun datatype-format-p (value)
+(defun modsp (value)
   "Return true if VALUE is a datatype or format form."
   (marie:when*
     (consp value)
@@ -52,7 +48,7 @@
 
 (defun prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
-  (marie:rmap-or value #'metadatap #'datatype-format-p))
+  (marie:rmap-or value #'metadatap #'modsp))
 
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
@@ -63,16 +59,8 @@
 (defun join (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
-              (cond ((datatype-format-p y) (append x (list y)))
-                    ;;((datatype-format-p x) (append (list x) y))
-                    (t (append x y))))
-          (marshall list)))
-
-(defun flatten-1 (list)
-  "Return a flattened list on one level from LIST."
-  (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
-                    ;;((metadatap x) (append (list x) y))
+                    ((modsp y) (append x (list y)))
                     (t (append x y))))
           (marshall list)))
 
@@ -94,9 +82,9 @@
   "Return a new list from LIST where the items preprocessed for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
-                   ((datatype-format-p (car args))
+                   ((modsp (car args))
                     (fn (cdr args)
-                        (cons (flatten-1 (car args)) acc)))
+                        (cons (join (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
                         (cons (join (wrap (fn (car args) nil)))
@@ -105,7 +93,15 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
-(defun make-regex () nil)
+(defun make-regex (exprs)
+  "Return a list containing raw regex expressions from VALUE."
+  (flet ((fn (expr)
+           (destructuring-bind (regex &optional env val)
+               expr
+             (marie:cat "/" regex "/"
+                        (or env "")
+                        (if val (marie:cat " " val) "")))))
+    (loop :for expr :in exprs :collect (fn expr))))
 
 (defun make-transform () nil)
 
@@ -119,7 +115,7 @@
 (defun attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
-             (cond ((datatype-format-p val) (cons (car val) (cadr val)))
+             (cond ((modsp val) (cons (car val) (cadr val)))
                    (t val))))
     (fn list)))
 
@@ -141,14 +137,16 @@
                                 acc))))))
     (fn items nil)))
 
-(defun accumulate (value acc)
+(defun accumulate (keys acc &optional extra)
   "Return an an accumulator value suitable for CONSTRUCT."
-  (destructuring-bind (v &optional &rest vs)
-      value
-    (declare (ignorable vs))
-    (cond ((string= "=" v) acc)
-          (t (cons v acc)))))
+  (destructuring-bind (key &optional &rest _)
+      keys
+    (declare (ignorable _))
+    (cond ((string= "=" key) acc)
+          ((string= "/" key) (marie:dbg* (key acc extra) (cons key acc)))
+          (t (cons key acc)))))
 
+;;; Should "/" and value be transformed to a list
 (defun construct (key table)
   "Return the original expressions in TABLE under KEY."
   (labels ((fn (tab keys acc)
@@ -163,7 +161,7 @@
                                 acc)))
                      (t (fn tab
                             (cdr keys)
-                            (cons v (accumulate keys acc))))))))
+                            (cons v (accumulate keys acc v))))))))
     (marie:when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
