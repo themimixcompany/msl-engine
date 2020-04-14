@@ -7,7 +7,6 @@
   (:export #:metadatap
            #:datatype-format-p
            #:prefixedp
-           #:flatten-1
            #:wrap
            #:join
            #:stage
@@ -40,34 +39,27 @@
 
 (defun metadatap (value)
   "Return true if VALUE is the : namespace."
-  (when (consp value)
-    (let ((value (car value)))
-      (and (stringp value)
-           (string= value ":")))))
+  (marie:when*
+    (consp value)
+    (member (car value) '(":") :test #'equal)))
 
 (defun datatype-format-p (value)
   "Return true if VALUE is a datatype or format form."
-  (when (consp value)
-    (let ((value (car value)))
-      (and (stringp value)
-           (or (string= value "d")
-               (string= value "f"))))))
+  (marie:when*
+    (consp value)
+    (member (car value) '("d" "f") :test #'equal)))
 
 (defun prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
-  (marie:when*
-    (consp value)
-    (member (car value) '(":" "d" "f") :test #'equal)))
+  (marie:rmap-or value #'metadatap #'datatype-format-p))
 
-(defun flatten-1 (list)
-  "Return a flattened list on one level from LIST."
-  (let ((value (mapcar #'(lambda (item)
-                           (if (consp item) item (list item)))
-                       list)))
-    (reduce #'(lambda (x y)
-                (cond ((prefixedp y) (append x (list y)))
-                      (t (append x y))))
-            value)))
+(defun join (list)
+  "Return a new list where items in LIST are flattened to one level."
+  (reduce #'(lambda (x y)
+              (cond ((datatype-format-p y) (append x (list y)))
+                    ((datatype-format-p x) (append (list x) y))
+                    (t (append x y))))
+          list))
 
 (defun wrap (list)
   "Return a new list where items in LIST are conditionally listified."
@@ -83,13 +75,15 @@
                     (t item)))
           list))
 
-(defun join (list)
-  "Return a new list where items in LIST are flattened to one level."
-  (reduce #'(lambda (x y)
-              (cond ((datatype-format-p y) (append x (list y)))
-                    ((datatype-format-p x) (append (list x) y))
-                    (t (append x y))))
-          list))
+(defun flatten-1 (list)
+  "Return a flattened list on one level from LIST."
+  (let ((value (mapcar #'(lambda (item)
+                           (if (consp item) item (list item)))
+                       list)))
+    (reduce #'(lambda (x y)
+                (cond ((prefixedp y) (append x (list y)))
+                      (t (append x y))))
+            value)))
 
 (defun stage (list)
   "Return a new list from LIST where the items preprocessed for wrapping and joining."
@@ -111,10 +105,8 @@
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
-    (join (wrap (stage (mapcar #'(lambda (item)
-                                   (cond ((consp item) (fn item))
-                                         (t item)))
-                               list))))))
+    ;;(join (wrap (stage (mapcar #'fn list))))
+    (join (wrap (stage (mapcar #'fn list))))))
 
 (defun %combine (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
