@@ -11,6 +11,7 @@
            #:join
            #:stage
            #:make-regex
+           #:make-transform
            #:normalize
            #:combine
            #:attach
@@ -38,13 +39,13 @@
   "Return true if VALUE is the : namespace."
   (marie:when*
     (consp value)
-    (member (car value) '(":") :test #'equal)))
+    (marie:mem (car value) '(":"))))
 
 (defun modsp (value)
   "Return true if VALUE is a datatype or format form."
   (marie:when*
     (consp value)
-    (member (car value) '("d" "f") :test #'equal)))
+    (marie:mem (car value) '("d" "f"))))
 
 (defun prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
@@ -103,14 +104,19 @@
                         (if val (marie:cat " " val) "")))))
     (loop :for expr :in exprs :collect (fn expr))))
 
-(defun make-transform () nil)
+(defun make-transform (exprs)
+  (flet ((fn (expr)
+           (marie:cat "[" expr "]")))
+    (loop :for expr :in exprs :collect (fn expr))))
 
 (defun normalize (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
-    (join (wrap (stage (mapcar #'fn list))))))
+    (join (wrap (stage (mapcar #'fn list))))
+    ;;(mapcar #'fn list)
+    ))
 
 (defun attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
@@ -137,16 +143,26 @@
                                 acc))))))
     (fn items nil)))
 
-(defun accumulate (keys acc &optional extra)
+(defun %accumulate (keys acc &optional data)
   "Return an an accumulator value suitable for CONSTRUCT."
   (destructuring-bind (key &optional &rest _)
       keys
     (declare (ignorable _))
-    (cond ((string= "=" key) acc)
-          ((string= "/" key) (marie:dbg* (key acc extra) (cons key acc)))
+    (cond ((marie:mem key '("=")) acc)
+          ((marie:mem key '("/")) (cons (make-regex data) acc))
+          ((marie:mem key '("[]")) (cons (make-transform data) acc))
           (t (cons key acc)))))
 
-;;; Should "/" and value be transformed to a list
+(defun accumulate (keys acc &optional data)
+  "Return an an accumulator value suitable for CONSTRUCT."
+  (destructuring-bind (key &optional &rest _)
+      keys
+    (declare (ignore _))
+    (let ((value (%accumulate keys acc data)))
+      (cond ((marie:mem key '("/")) value)
+            ((marie:mem key '("[]")) value)
+            (t (cons data value))))))
+
 (defun construct (key table)
   "Return the original expressions in TABLE under KEY."
   (labels ((fn (tab keys acc)
@@ -161,7 +177,7 @@
                                 acc)))
                      (t (fn tab
                             (cdr keys)
-                            (cons v (accumulate keys acc v))))))))
+                            (accumulate keys acc v)))))))
     (marie:when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (cons key v)
