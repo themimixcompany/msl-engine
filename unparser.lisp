@@ -114,9 +114,7 @@
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
-    (join (wrap (stage (mapcar #'fn list))))
-    ;;(mapcar #'fn list)
-    ))
+    (join (wrap (stage (mapcar #'fn list))))))
 
 (defun attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
@@ -159,8 +157,7 @@
       keys
     (declare (ignore _))
     (let ((value (%accumulate keys acc data)))
-      (cond ((marie:mem key '("/")) value)
-            ((marie:mem key '("[]")) value)
+      (cond ((marie:mem key '("/" "[]")) value)
             (t (cons data value))))))
 
 (defun construct (key table)
