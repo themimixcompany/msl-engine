@@ -12,6 +12,7 @@
            #:stage
            #:normalize
            #:combine
+           #:attach
            #:compose
            #:construct
            #:collect))
@@ -53,13 +54,27 @@
   "Return true if VALUE is prefixed by certain namespaces."
   (marie:rmap-or value #'metadatap #'datatype-format-p))
 
+(defun marshall (list)
+  "Return a list where non-cons items are made conses."
+  (mapcar #'(lambda (item)
+              (if (consp item) item (list item)))
+          list))
+
 (defun join (list)
-  "Return a new list where items in LIST are flattened to one level."
+  "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((datatype-format-p y) (append x (list y)))
-                    ((datatype-format-p x) (append (list x) y))
+                    ;;((datatype-format-p x) (append (list x) y))
                     (t (append x y))))
-          list))
+          (marshall list)))
+
+(defun flatten-1 (list)
+  "Return a flattened list on one level from LIST."
+  (reduce #'(lambda (x y)
+              (cond ((metadatap y) (append x (list y)))
+                    ;;((metadatap x) (append (list x) y))
+                    (t (append x y))))
+          (marshall list)))
 
 (defun wrap (list)
   "Return a new list where items in LIST are conditionally listified."
@@ -74,16 +89,6 @@
                            (cddr item)))
                     (t item)))
           list))
-
-(defun flatten-1 (list)
-  "Return a flattened list on one level from LIST."
-  (let ((value (mapcar #'(lambda (item)
-                           (if (consp item) item (list item)))
-                       list)))
-    (reduce #'(lambda (x y)
-                (cond ((prefixedp y) (append x (list y)))
-                      (t (append x y))))
-            value)))
 
 (defun stage (list)
   "Return a new list from LIST where the items preprocessed for wrapping and joining."
@@ -100,25 +105,27 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
+(defun make-regex () nil)
+
+(defun make-transform () nil)
+
 (defun normalize (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
-    ;;(join (wrap (stage (mapcar #'fn list))))
     (join (wrap (stage (mapcar #'fn list))))))
 
-(defun %combine (list)
+(defun attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
-             (cond ((prefixedp val)
-                    (cons (car val) (cadr val)))
+             (cond ((datatype-format-p val) (cons (car val) (cadr val)))
                    (t val))))
     (fn list)))
 
 (defun combine (items)
   "Apply COMBINE on ITEMS."
-  (mapcar #'%combine items))
+  (mapcar #'attach items))
 
 (defun compose (items)
   "Apply additional merging operations to items in LIST."
@@ -130,7 +137,7 @@
                                     (combine (cadr (car args))))
                               acc)))
                    (t (fn (cdr args)
-                          (cons (%combine (car args))
+                          (cons (attach (car args))
                                 acc))))))
     (fn items nil)))
 
