@@ -7,6 +7,7 @@
   (:export #:dump-object
            #:slots
            #:dump-universe
+           #:dump
            #:dump-table
            #:dump-path
            #:clear-table
@@ -47,6 +48,8 @@
           :do (progn
                 (format t "~%~A:~%" table-reader)
                 (marie:dump-table* table)))))
+
+(marie:define-alias dump-universe dump)
 
 (defun dump-table (table)
   "Print information about TABLE recursively."
