@@ -4,20 +4,7 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes)
-  (:export #:metadatap
-           #:modsp
-           #:prefixedp
-           #:wrap
-           #:join
-           #:stage
-           #:make-regex
-           #:make-transform
-           #:normalize
-           #:combine
-           #:attach
-           #:compose
-           #:construct
-           #:collect))
+  (:export #:collect))
 
 (in-package #:streams/unparser)
 
@@ -57,7 +44,7 @@
               (if (consp item) item (list item)))
           list))
 
-(defun join (list)
+(marie:defun+ join (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -65,7 +52,7 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun wrap (list)
+(marie:defun+ wrap (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -79,7 +66,7 @@
                     (t item)))
           list))
 
-(defun stage (list)
+(marie:defun+ stage (list)
   "Return a new list from LIST where the items preprocessed for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -94,40 +81,39 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
-(defun make-regex (exprs)
+(marie:defun+ make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
   (flet ((fn (expr)
            (destructuring-bind (regex &optional env val)
                expr
-             (marie:cat "/" regex "/"
-                        (or env "")
+             (marie:cat "/" regex "/" (or env "")
                         (if val (marie:cat " " val) "")))))
     (loop :for expr :in exprs :collect (fn expr))))
 
-(defun make-transform (exprs)
+(marie:defun+ make-transform (exprs)
   (flet ((fn (expr)
            (marie:cat "[" expr "]")))
     (loop :for expr :in exprs :collect (fn expr))))
 
-(defun normalize (list)
+(marie:defun+ normalize (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
     (join (wrap (stage (mapcar #'fn list))))))
 
-(defun attach (list)
+(marie:defun+ attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
              (cond ((modsp val) (cons (car val) (cadr val)))
                    (t val))))
     (fn list)))
 
-(defun combine (items)
+(marie:defun+ combine (items)
   "Apply COMBINE on ITEMS."
   (mapcar #'attach items))
 
-(defun compose (items)
+(marie:defun+ compose (items)
   "Apply additional merging operations to items in LIST."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -141,24 +127,19 @@
                                 acc))))))
     (fn items nil)))
 
-(defun %accumulate (keys acc &optional data)
+(marie:defun+ accumulate (keys acc &optional data)
   "Return an an accumulator value suitable for CONSTRUCT."
-  (destructuring-bind (key &optional &rest _)
-      keys
-    (declare (ignorable _))
-    (cond ((marie:mem key '("=")) acc)
-          ((marie:mem key '("/")) (cons (make-regex data) acc))
-          ((marie:mem key '("[]")) (cons (make-transform data) acc))
-          (t (cons key acc)))))
-
-(defun accumulate (keys acc &optional data)
-  "Return an an accumulator value suitable for CONSTRUCT."
-  (destructuring-bind (key &optional &rest _)
-      keys
-    (declare (ignore _))
-    (let ((value (%accumulate keys acc data)))
-      (cond ((marie:mem key '("/" "[]")) value)
-            (t (cons data value))))))
+  (flet ((fn (k a d)
+           (cond ((marie:mem k '("=")) a)
+                 ((marie:mem k '("/")) (cons (make-regex d) a))
+                 ((marie:mem k '("[]")) (cons (make-transform d) a))
+                 (t (cons k a)))))
+    (destructuring-bind (key &optional &rest _)
+        keys
+      (declare (ignore _))
+      (let ((value (fn key acc data)))
+        (cond ((marie:mem key '("/" "[]")) value)
+              (t (cons data value)))))))
 
 (defun construct (key table)
   "Return the original expressions in TABLE under KEY."

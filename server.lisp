@@ -74,11 +74,11 @@
                          (lambda (message) (echo-message ws message)))
 
     (websocket-driver:on :close ws
-                         (lambda (&key code reason)
-                           (declare (ignore code reason))
+                         (lambda (&key _ __)
+                           (declare (ignore _ __))
                            (handle-close-connection ws)))
-    (lambda (responder)
-      (declare (ignore responder))
+    (lambda (_)
+      (declare (ignore _))
       (websocket-driver:start-connection ws))))
 
 (defun start-msl-server ()
@@ -108,11 +108,11 @@
                          (lambda (message) (echo-message ws message)))
 
     (websocket-driver:on :close ws
-                         (lambda (&key code reason)
-                           (declare (ignore code reason))
+                         (lambda (&key _ __)
+                           (declare (ignore _ __))
                            (handle-close-connection ws)))
-    (lambda (responder)
-      (declare (ignore responder))
+    (lambda (_)
+      (declare (ignore _))
       (websocket-driver:start-connection ws))))
 
 (defun start-admin-server ()

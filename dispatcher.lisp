@@ -81,9 +81,9 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun sub-atom-path-p (path)
   "Return true if PATH starts with a sub-atom path."
-  (destructuring-bind (ns &optional &rest body)
+  (destructuring-bind (ns &optional &rest _)
       path
-    (declare (ignore body))
+    (declare (ignore _))
     (sub-namespace-p ns)))
 
 (defun sub-atom-path-p* (path)
@@ -96,9 +96,9 @@ itself."
                          (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (block nil
-    (destructuring-bind (path &optional &rest params)
+    (destructuring-bind (path &optional &rest _)
         term
-      (declare (ignore params))
+      (declare (ignore _))
       (let ((path (if (key-indicator-p (marie:last* path))
                       path
                       (append path '("=")))))
@@ -121,9 +121,9 @@ itself."
 (defun resolve-path (path atom-table sub-atom-table)
   "Return the final value read from PATH in SOURCE."
   (marie:when-let ((value (read-path path atom-table sub-atom-table)))
-    (destructuring-bind (ns &optional &rest body)
+    (destructuring-bind (ns &optional &rest _)
         value
-      (declare (ignore body))
+      (declare (ignore _))
       (when ns
         (read-path value atom-table sub-atom-table)))))
 
@@ -174,14 +174,14 @@ the new table."
 (defun valid-terms-p (form)
   "Return true if FORM is a valid MSL form."
   (cond ((stringp form) nil)
-        (t (destructuring-bind (&optional head &rest body)
+        (t (destructuring-bind (&optional head &rest _)
                form
-             (declare (ignore body))
+             (declare (ignore _))
              (marie:when*
                (consp head)
-               (destructuring-bind (value &rest rest)
+               (destructuring-bind (value &rest _)
                    head
-                 (declare (ignore rest))
+                 (declare (ignore _))
                  (and (consp value)
                       (namespacep (first value)))))))))
 
