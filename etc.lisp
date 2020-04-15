@@ -6,13 +6,12 @@
         #:streams/classes)
   (:export #:dump-object
            #:slots
-           #:dump-universe
-           #:dump
+           #:dump-universe #:dump
            #:dump-table
            #:dump-path
            #:clear-table
            #:tables
-           #:clear-universe
+           #:clear-universe #:clear
            #:copy-universe
            #:copy-table
            #:clear-path
@@ -48,7 +47,6 @@
           :do (progn
                 (format t "~%~A:~%" table-reader)
                 (marie:dump-table* table)))))
-
 (marie:define-alias dump-universe dump)
 
 (defun dump-table (table)
@@ -81,6 +79,7 @@
 (defun clear-universe (&optional (universe *universe*))
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
+(marie:define-alias clear-universe clear)
 
 (defun copy-universe (universe)
   "Return a copy of the universe UNIVERSE, but with a new log date. The
