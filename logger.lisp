@@ -3,11 +3,7 @@
 (uiop:define-package #:streams/logger
   (:use #:cl
         #:streams/specials
-        #:streams/classes)
-  (:export #:log-path
-           #:write-log
-           #:log-paths
-           #:log-path*))
+        #:streams/classes))
 
 (in-package #:streams/logger)
 
@@ -62,7 +58,7 @@
 specifying another date value."
   (make-log-file-path (marie:cat machine #\. date)))
 
-(defun log-path (&key (machine *machine*) (date (log-date *universe*)))
+(marie:defun* (log-path t) (&key (machine *machine*) (date (log-date *universe*)))
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
@@ -78,7 +74,7 @@ specifying another date value."
                                      "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
-(defun log-paths (&key (directory *log-directory*) (machine *machine*) sort)
+(marie:defun* (log-paths t) (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (uiop:directory-files directory))
          (entries (remove-if-not #'(lambda (file)
@@ -95,7 +91,7 @@ specifying another date value."
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(defun log-path* (&key (directory *log-directory*) (machine *machine*))
+(marie:defun* (log-path* t) (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (marie:last* (log-paths :directory directory :machine machine :sort t)))
 
@@ -104,7 +100,7 @@ specifying another date value."
   (setf (log-date universe)
         (local-time:format-timestring nil (local-time:now))))
 
-(defun write-log (value)
+(marie:defun* (write-log t) (value)
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)

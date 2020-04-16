@@ -1,8 +1,7 @@
 ;;;; server.lisp
 
 (uiop:define-package #:streams/server
-    (:use #:cl)
-  (:export #:serve))
+    (:use #:cl))
 
 (in-package #:streams/server)
 
@@ -141,7 +140,7 @@
   (setf *servers* nil)
   (uiop:quit))
 
-(defun serve ()
+(marie:defun* (serve t) ()
   "The main entrypoint of the module."
   (start-websocket-server #'start-msl-server)
   (start-websocket-server #'start-admin-server)
