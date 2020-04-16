@@ -3,7 +3,8 @@
 (uiop:define-package #:streams/unparser
   (:use #:cl
         #:streams/specials
-        #:streams/classes))
+        #:streams/classes
+        #:marie))
 
 (in-package #:streams/unparser)
 
@@ -23,19 +24,19 @@
 
 (defun metadatap (value)
   "Return true if VALUE is the : namespace."
-  (marie:when*
+  (when*
     (consp value)
-    (marie:mem (car value) '(":"))))
+    (mem (car value) '(":"))))
 
 (defun modsp (value)
   "Return true if VALUE is a datatype or format form."
-  (marie:when*
+  (when*
     (consp value)
-    (marie:mem (car value) '("d" "f"))))
+    (mem (car value) '("d" "f"))))
 
 (defun prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
-  (marie:rmap-or value #'metadatap #'modsp))
+  (rmap-or value #'metadatap #'modsp))
 
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
@@ -60,7 +61,7 @@
                               (not (stringp (car item)))))
                      (list item))
                     ((metadatap item)
-                     (cons (marie:cat (car item) (cadr item))
+                     (cons (cat (car item) (cadr item))
                            (cddr item)))
                     (t item)))
           list))
@@ -85,13 +86,13 @@
   (flet ((fn (expr)
            (destructuring-bind (regex &optional env val)
                expr
-             (marie:cat "/" regex "/" (or env "")
-                        (if val (marie:cat " " val) "")))))
+             (cat "/" regex "/" (or env "")
+                        (if val (cat " " val) "")))))
     (loop :for expr :in exprs :collect (fn expr))))
 
 (defun make-transform (exprs)
   (flet ((fn (expr)
-           (marie:cat "[" expr "]")))
+           (cat "[" expr "]")))
     (loop :for expr :in exprs :collect (fn expr))))
 
 (defun normalize (list)
@@ -129,15 +130,15 @@
 (defun accumulate (keys acc &optional data)
   "Return an accumulator value suitable for CONSTRUCT."
   (flet ((fn (k a d)
-           (cond ((marie:mem k '("=")) a)
-                 ((marie:mem k '("/")) (cons (make-regex d) a))
-                 ((marie:mem k '("[]")) (cons (make-transform d) a))
+           (cond ((mem k '("=")) a)
+                 ((mem k '("/")) (cons (make-regex d) a))
+                 ((mem k '("[]")) (cons (make-transform d) a))
                  (t (cons k a)))))
     (destructuring-bind (key &optional &rest _)
         keys
       (declare (ignore _))
       (let ((value (fn key acc data)))
-        (cond ((marie:mem key '("/" "[]")) value)
+        (cond ((mem key '("/" "[]")) value)
               (t (cons data value)))))))
 
 (defun make-head (list)
@@ -146,7 +147,7 @@
       list
     (declare (ignore _))
     (cond ((string= ns "@")
-           (cons (marie:cat ns (cadr list))
+           (cons (cat ns (cadr list))
                  (cddr list)))
           (t list))))
 
@@ -165,15 +166,15 @@
                      (t (fn tab
                             (cdr keys)
                             (accumulate keys acc v)))))))
-    (marie:when-let ((ht (gethash key table)))
+    (when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
             :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
-(marie:defun* (collect t) (&optional (table (atom-table *universe*)))
+(defun* (collect t) (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
   (labels ((fn (args &optional acc)
-             (cond ((null args) (marie:string* (nreverse acc)))
+             (cond ((null args) (string* (nreverse acc)))
                    ((consp (car args))
                     (fn (cdr args)
                         (cons (fn (car args) nil)

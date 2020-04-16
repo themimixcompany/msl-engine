@@ -2,7 +2,8 @@
 
 (uiop:define-package #:streams/classes
   (:use #:cl
-        #:streams/specials)
+        #:streams/specials
+        #:marie)
   (:export #:universe
 
            #:atom-table
@@ -88,7 +89,7 @@
 (defmacro define-updaters (&rest namespaces)
   "Define functions for updating the namespace counters in the universe."
   (flet ((make-name (&rest args)
-           (apply #'marie:hyphenate-intern nil args)))
+           (apply #'hyphenate-intern nil args)))
     `(progn
        ,@(loop :for namespace :in namespaces
                :for fname = (make-name "update" namespace "counter")
@@ -101,7 +102,7 @@
   "Define functions for MX classes. CLASS is the name of MX class to be
 instantiated. ALLOCATE is a boolean whether to allocate the instance on the universe."
   (flet ((make-name (&rest args)
-           (apply #'marie:hyphenate-intern nil args)))
+           (apply #'hyphenate-intern nil args)))
     (let* ((mx-name (make-name "mx" class))
            (maker-name (make-name "make" mx-name))
            (builder-name (make-name "build" mx-name))
@@ -149,7 +150,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                        `(define-maker ,name :allocate ,allocate)))))
 (define-makers ((atom t) (sub-atom t)))
 
-(marie:defun* (make-universe t) ()
+(defun* (make-universe t) ()
   "Return an instance of the universe class."
   (make-instance 'universe))
 

@@ -1,7 +1,8 @@
 ;;;; server.lisp
 
 (uiop:define-package #:streams/server
-    (:use #:cl))
+  (:use #:cl
+        #:marie))
 
 (in-package #:streams/server)
 
@@ -134,13 +135,13 @@
 
 (defun stop-websocket-servers ()
   "Stop all the websocket servers."
-  (marie:muffle-debugger)
+  (muffle-debugger)
   (format *error-output* "Aborting.~&")
   (loop :for server :in *servers* :do (clack:stop server))
   (setf *servers* nil)
   (uiop:quit))
 
-(marie:defun* (serve t) ()
+(defun* (serve t) ()
   "The main entrypoint of the module."
   (start-websocket-server #'start-msl-server)
   (start-websocket-server #'start-admin-server)

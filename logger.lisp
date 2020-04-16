@@ -3,7 +3,8 @@
 (uiop:define-package #:streams/logger
   (:use #:cl
         #:streams/specials
-        #:streams/classes))
+        #:streams/classes
+        #:marie))
 
 (in-package #:streams/logger)
 
@@ -26,7 +27,7 @@
 
 (defun make-log-file-path (path)
   "Return a log file pathname from PATH."
-  (build-path (marie:cat path #\. +log-file-suffix+)))
+  (build-path (cat path #\. +log-file-suffix+)))
 
 (defun log-file-exists-p (name)
   "Return true if the log file indicated by PATH exists under the log directory."
@@ -56,9 +57,9 @@
 (defun make-machine-log-path (machine &optional (date +default-date+))
   "Return a log file path using MACHINE. Optional parameter DATE is for
 specifying another date value."
-  (make-log-file-path (marie:cat machine #\. date)))
+  (make-log-file-path (cat machine #\. date)))
 
-(marie:defun* (log-path t) (&key (machine *machine*) (date (log-date *universe*)))
+(defun* (log-path t) (&key (machine *machine*) (date (log-date *universe*)))
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
@@ -67,20 +68,20 @@ specifying another date value."
   (labels ((fn (args acc)
              (cond ((null args) acc)
                    (t (fn (cdr args)
-                          (marie:cat acc
+                          (cat acc
                                      "["
                                      (char-downcase (car args))
                                      (char-upcase (car args))
                                      "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
-(marie:defun* (log-paths t) (&key (directory *log-directory*) (machine *machine*) sort)
+(defun* (log-paths t) (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (uiop:directory-files directory))
          (entries (remove-if-not #'(lambda (file)
                                      (let ((name (file-namestring file))
                                            (suffix (alt-case-re +log-file-suffix+)))
-                                       (cl-ppcre:scan (marie:cat "^" machine "\\."
+                                       (cl-ppcre:scan (cat "^" machine "\\."
                                                                  +iso-8601-re+ "\\."
                                                                  suffix "$")
                                                       name)))
@@ -91,16 +92,16 @@ specifying another date value."
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(marie:defun* (log-path* t) (&key (directory *log-directory*) (machine *machine*))
+(defun* (log-path* t) (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
-  (marie:last* (log-paths :directory directory :machine machine :sort t)))
+  (last* (log-paths :directory directory :machine machine :sort t)))
 
 (defun update-log-date (universe)
   "Update the log date on UNIVERSE to the current one."
   (setf (log-date universe)
         (local-time:format-timestring nil (local-time:now))))
 
-(marie:defun* (write-log t) (value)
+(defun* (write-log t) (value)
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)

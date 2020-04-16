@@ -4,7 +4,8 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes
-        #:streams/logger))
+        #:streams/logger
+        #:marie))
 
 (in-package #:streams/startup)
 
@@ -14,7 +15,7 @@
 
 (initialize-universe)
 
-(marie:defun* (read-log t) (path)
+(defun* (read-log t) (path)
   "Read the log file specified under PATH."
   (let ((exprs (uiop:read-file-lines path)))
     (loop :for expr :in exprs :do (streams/dispatcher:dispatch expr nil))))
