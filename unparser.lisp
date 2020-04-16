@@ -128,7 +128,7 @@
     (fn items nil)))
 
 (defun accumulate (keys acc &optional data)
-  "Return an an accumulator value suitable for CONSTRUCT."
+  "Return an accumulator value suitable for CONSTRUCT."
   (flet ((fn (k a d)
            (cond ((marie:mem k '("=")) a)
                  ((marie:mem k '("/")) (cons (make-regex d) a))
@@ -140,6 +140,13 @@
       (let ((value (fn key acc data)))
         (cond ((marie:mem key '("/" "[]")) value)
               (t (cons data value)))))))
+
+(defun make-head (list)
+  "Return a list with custom head merging."
+  (cond ((string= (car list) "@")
+         (cons (marie:cat (car list) (cadr list))
+               (cddr list)))
+        (t list)))
 
 (defun construct (key table)
   "Return the original expressions in TABLE under KEY."
@@ -158,7 +165,7 @@
                             (accumulate keys acc v)))))))
     (marie:when-let ((ht (gethash key table)))
       (loop :for v :in (fn ht (table-keys ht) nil)
-            :for kv = (cons key v)
+            :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
 (defun collect (&optional (table (atom-table *universe*)))
