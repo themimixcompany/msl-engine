@@ -1,7 +1,8 @@
 ;;;; builder.lisp
 
 (uiop:define-package #:streams/builder
-    (:use #:cl)
+  (:use #:cl
+        #:marie)
   (:export #:build))
 
 (in-package #:streams/builder)
@@ -11,14 +12,14 @@
 
 (defmethod build :before (&optional root)
   (declare (ignorable root))
-  (marie:muffle-debugger))
+  (muffle-debugger))
 
 (defmethod build (&optional (root *default-pathname-defaults*))
   (let ((arch (string (uiop:architecture))))
     (labels ((make-name (name)
-               (let ((suffix (cond ((string= name "windows") (marie:cat name "_" arch ".exe"))
-                                   (t (marie:cat name "_" arch)))))
-                 (marie:cat "streams_" suffix))))
+               (let ((suffix (cond ((string= name "windows") (cat name "_" arch ".exe"))
+                                   (t (cat name "_" arch)))))
+                 (cat "streams_" suffix))))
       (let* ((base-name (cond ((uiop:os-macosx-p) (make-name "macos"))
                               ((uiop:os-windows-p) (make-name "windows"))
                               ((uiop:os-unix-p) (make-name "unix"))

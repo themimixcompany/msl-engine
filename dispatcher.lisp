@@ -3,17 +3,18 @@
 (uiop:define-package #:streams/dispatcher
   (:use #:cl
         #:streams/specials
-        #:streams/classes))
+        #:streams/classes
+        #:marie))
 
 (in-package #:streams/dispatcher)
 
 (defun valid-id-p (key)
   "Return true if KEY is a valid identifier for mx-atoms."
-  (marie:when* (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)))
+  (when* (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)))
 
 (defun valid-key-p (key)
   "Return true if KEY is a valid key for an mx-atom."
-  (let ((v (marie:string* key)))
+  (let ((v (string* key)))
     (valid-id-p v)))
 
 (defun entity-string (id)
@@ -25,7 +26,7 @@ character or a string to designate an entity."
 (defun table-name (ns &optional package)
   "Return the corresponding table of NS from the universe."
   (let ((name (entity-string ns)))
-    (marie:hyphenate-intern package name "table")))
+    (hyphenate-intern package name "table")))
 
 (defun namespace-table (namespace)
   "Return the table indicated by NAMESPACE."
@@ -45,11 +46,11 @@ character or a string to designate an entity."
 (defun namespace-pairs (chain)
   "Return a list of namespace-key pairs from CHAIN, where the first element of
 the pair is the namespace marker and the second element of the pair is the key"
-  (marie:partition chain 2))
+  (partition chain 2))
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
-  (marie:when* (member elem ns-list :key #'car :test #'equal)))
+  (when* (member elem ns-list :key #'car :test #'equal)))
 
 (defun base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
@@ -61,7 +62,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun namespacep (ns)
   "Return true if NS is a namespace indicator."
-  (marie:rmap-or ns #'base-namespace-p #'sub-namespace-p))
+  (rmap-or ns #'base-namespace-p #'sub-namespace-p))
 
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
@@ -75,7 +76,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
-  (marie:when-let ((index (sub-atom-index path)))
+  (when-let ((index (sub-atom-index path)))
     (subseq path index)))
 
 (defun sub-atom-path-p (path)
@@ -88,7 +89,7 @@ the pair is the namespace marker and the second element of the pair is the key"
 (defun sub-atom-path-p* (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path
 itself."
-  (marie:when* (sub-atom-index path) (not (sub-atom-path-p path))))
+  (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
                          (atom-table (atom-table *universe*))
@@ -98,7 +99,7 @@ itself."
     (destructuring-bind (path &optional &rest _)
         term
       (declare (ignore _))
-      (let ((path (if (key-indicator-p (marie:last* path))
+      (let ((path (if (key-indicator-p (last* path))
                       path
                       (append path '("=")))))
         (labels ((fn (location value)
@@ -119,7 +120,7 @@ itself."
 
 (defun resolve-path (path atom-table sub-atom-table)
   "Return the final value read from PATH in SOURCE."
-  (marie:when-let ((value (read-path path atom-table sub-atom-table)))
+  (when-let ((value (read-path path atom-table sub-atom-table)))
     (destructuring-bind (ns &optional &rest _)
         value
       (declare (ignore _))
@@ -128,13 +129,13 @@ itself."
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
-  (marie:when* (member key +key-indicators+ :test #'equal)))
+  (when* (member key +key-indicators+ :test #'equal)))
 
 (defun save-value (location table value)
   "Store VALUE using LOCATION as key in TABLE."
   (let ((v (cond ((sub-atom-path-p* value) (sub-atom-path value))
                  (t value))))
-    (setf (gethash (marie:stem location) table) v)))
+    (setf (gethash (stem location) table) v)))
 
 (defun spawn-table (location table)
   "Conditionally return a new table for term writing and use location as key for
@@ -152,8 +153,8 @@ the new table."
     (labels ((fn (location flag atom-tab sub-atom-tab)
                (cond ((null location)
                       (fn '("=") flag atom-tab sub-atom-tab))
-                     ((and (marie:solop location)
-                           (key-indicator-p (marie:stem location)))
+                     ((and (solop location)
+                           (key-indicator-p (stem location)))
                       (save-value location atom-tab (if whole params (car params)))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
@@ -176,7 +177,7 @@ the new table."
         (t (destructuring-bind (&optional head &rest _)
                form
              (declare (ignore _))
-             (marie:when*
+             (when*
                (consp head)
                (destructuring-bind (value &rest _)
                    head
@@ -184,7 +185,7 @@ the new table."
                  (and (consp value)
                       (namespacep (car value)))))))))
 
-(marie:defun* (dispatch t) (expr &optional (log t))
+(defun* (dispatch t) (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
   (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
