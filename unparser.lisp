@@ -44,7 +44,7 @@
               (if (consp item) item (list item)))
           list))
 
-(marie:defun+ join (list)
+(defun join (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -52,7 +52,7 @@
                     (t (append x y))))
           (marshall list)))
 
-(marie:defun+ wrap (list)
+(defun wrap (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -61,12 +61,12 @@
                               (not (stringp (car item)))))
                      (list item))
                     ((metadatap item)
-                     (cons (marie:cat (first item) (second item))
+                     (cons (marie:cat (car item) (cadr item))
                            (cddr item)))
                     (t item)))
           list))
 
-(marie:defun+ stage (list)
+(defun stage (list)
   "Return a new list from LIST where the items preprocessed for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -81,7 +81,7 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
-(marie:defun+ make-regex (exprs)
+(defun make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
   (flet ((fn (expr)
            (destructuring-bind (regex &optional env val)
@@ -90,30 +90,30 @@
                         (if val (marie:cat " " val) "")))))
     (loop :for expr :in exprs :collect (fn expr))))
 
-(marie:defun+ make-transform (exprs)
+(defun make-transform (exprs)
   (flet ((fn (expr)
            (marie:cat "[" expr "]")))
     (loop :for expr :in exprs :collect (fn expr))))
 
-(marie:defun+ normalize (list)
+(defun normalize (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val) (cons (car val) (cadr val)))
                    (t val))))
     (join (wrap (stage (mapcar #'fn list))))))
 
-(marie:defun+ attach (list)
+(defun attach (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
              (cond ((modsp val) (cons (car val) (cadr val)))
                    (t val))))
     (fn list)))
 
-(marie:defun+ combine (items)
+(defun combine (items)
   "Apply COMBINE on ITEMS."
   (mapcar #'attach items))
 
-(marie:defun+ compose (items)
+(defun compose (items)
   "Apply additional merging operations to items in LIST."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -127,7 +127,7 @@
                                 acc))))))
     (fn items nil)))
 
-(marie:defun+ accumulate (keys acc &optional data)
+(defun accumulate (keys acc &optional data)
   "Return an an accumulator value suitable for CONSTRUCT."
   (flet ((fn (k a d)
            (cond ((marie:mem k '("=")) a)
@@ -163,5 +163,13 @@
 
 (defun collect (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
-  (let ((keys (children table)))
-    (loop :for key :in keys :nconc (construct key table))))
+  (labels ((fn (args &optional acc)
+             (cond ((null args) (marie:string* (nreverse acc)))
+                   ((consp (car args))
+                    (fn (cdr args)
+                        (cons (fn (car args) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (let* ((keys (children table))
+           (value (loop :for key :in keys :nconc (construct key table))))
+      (mapcar #'fn value))))
