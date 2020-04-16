@@ -3,23 +3,11 @@
 (uiop:define-package #:streams/etc
   (:use #:cl
         #:streams/specials
-        #:streams/classes)
-  (:export #:dump-object
-           #:slots
-           #:dump-universe #:dump
-           #:dump-table
-           #:dump-path
-           #:clear-table
-           #:tables
-           #:clear-universe #:clear
-           #:copy-universe
-           #:copy-table
-           #:clear-path
-           #:filter-path))
+        #:streams/classes))
 
 (in-package #:streams/etc)
 
-(defun dump-object (object)
+(marie:defun* (dump-object t) (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (slots object)
         :do (let ((v (funcall slot object)))
@@ -27,12 +15,12 @@
               (when (hash-table-p v)
                 (marie:dump-table v)))))
 
-(defun slots (object)
+(marie:defun* (slots t) (object)
   "Return the slot names of an object."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun dump-universe (&optional (universe *universe*))
+(marie:defun* (dump-universe dump t) (&optional (universe *universe*))
   "Dump the contents of the universe."
   (let* ((slots (slots universe))
          (string-slots (mapcar #'marie:string* slots))
@@ -47,13 +35,12 @@
           :do (progn
                 (format t "~%~A:~%" table-reader)
                 (marie:dump-table* table)))))
-(marie:define-alias dump-universe dump)
 
-(defun dump-table (table)
+(marie:defun* (dump-table t) (table)
   "Print information about TABLE recursively."
   (marie:dump-table* table))
 
-(defun dump-path (table path)
+(marie:defun* (dump-path t) (table path)
   "Print the information in TABLE specified by PATH."
   (cond ((marie:solop path)
          (multiple-value-bind (val existsp)
@@ -65,23 +52,22 @@
          (dump-path (gethash (car path) table) (cdr path)))
         (t nil)))
 
-(defun clear-table (table)
+(marie:defun* (clear-table t) (table)
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun tables (&optional (universe *universe*))
+(marie:defun* (tables t) (&optional (universe *universe*))
   "Return the list of slots from UNIVERSE that are tables."
   (loop :for slot :in (slots universe)
         :for tab = (funcall slot universe)
         :when (hash-table-p tab)
         :collect tab))
 
-(defun clear-universe (&optional (universe *universe*))
+(marie:defun* (clear-universe clear t) (&optional (universe *universe*))
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
-(marie:define-alias clear-universe clear)
 
-(defun copy-universe (universe)
+(marie:defun* (copy-universe t) (universe)
   "Return a copy of the universe UNIVERSE, but with a new log date. The
 tables are copied using an external function to allow selective table information
 copying."
@@ -93,7 +79,7 @@ copying."
                    :sub-atom-counter sub-atom-counter
                    :sub-atom-table (copy-table sub-atom-table))))
 
-(defun copy-table (table)
+(marie:defun* (copy-table t) (table)
   "Create a new hash table from TABLE."
   (let ((ht (make-hash-table :test (hash-table-test table)
                              :rehash-size (hash-table-rehash-size table)
@@ -104,7 +90,7 @@ copying."
           :do (setf (gethash key ht) value)
           :finally (return ht))))
 
-(defun clear-path (table path)
+(marie:defun* (clear-path t) (table path)
   "Remove the specified entry in TABLE that matches PATH."
   (labels ((fn (tab location)
              (cond ((marie:solop location)
@@ -115,14 +101,14 @@ copying."
                    (t nil))))
     (fn table path)))
 
-(defun clear-other (table key)
+(marie:defun* (clear-other t) (table key)
   "Remove entries in TABLE that do not match KEY."
   (let ((keys (loop :for k :being :the :hash-key :of table :collect k)))
     (loop :for item :in (remove key keys :test #'equal)
           :do (remhash item table)
           :finally (return table))))
 
-(defun filter-path (table path)
+(marie:defun* (filter-path t) (table path)
   "Remove all other table entries in SOURCE that do not match PATH."
   (labels ((fn (tab location)
                (cond ((and (marie:solop location)
