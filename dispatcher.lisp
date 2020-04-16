@@ -183,7 +183,7 @@ the new table."
                    head
                  (declare (ignore _))
                  (and (consp value)
-                      (namespacep (first value)))))))))
+                      (namespacep (car value)))))))))
 
 (defun dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the
