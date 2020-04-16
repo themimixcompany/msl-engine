@@ -3,8 +3,7 @@
 (uiop:define-package #:streams/dispatcher
   (:use #:cl
         #:streams/specials
-        #:streams/classes)
-  (:export #:dispatch))
+        #:streams/classes))
 
 (in-package #:streams/dispatcher)
 
@@ -185,7 +184,7 @@ the new table."
                  (and (consp value)
                       (namespacep (car value)))))))))
 
-(defun dispatch (expr &optional (log t))
+(marie:defun* (dispatch t) (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
   (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))

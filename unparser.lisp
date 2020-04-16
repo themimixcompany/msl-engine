@@ -3,8 +3,7 @@
 (uiop:define-package #:streams/unparser
   (:use #:cl
         #:streams/specials
-        #:streams/classes)
-  (:export #:collect))
+        #:streams/classes))
 
 (in-package #:streams/unparser)
 
@@ -143,10 +142,13 @@
 
 (defun make-head (list)
   "Return a list with custom head merging."
-  (cond ((string= (car list) "@")
-         (cons (marie:cat (car list) (cadr list))
-               (cddr list)))
-        (t list)))
+  (destructuring-bind (ns &optional &rest _)
+      list
+    (declare (ignore _))
+    (cond ((string= ns "@")
+           (cons (marie:cat ns (cadr list))
+                 (cddr list)))
+          (t list))))
 
 (defun construct (key table)
   "Return the original expressions in TABLE under KEY."
@@ -168,7 +170,7 @@
             :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
-(defun collect (&optional (table (atom-table *universe*)))
+(marie:defun* (collect t) (&optional (table (atom-table *universe*)))
   "Return the original expressions in TABLE."
   (labels ((fn (args &optional acc)
              (cond ((null args) (marie:string* (nreverse acc)))
