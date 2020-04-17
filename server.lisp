@@ -16,7 +16,7 @@
   "A list of running websocket server instances.")
 
 (defvar *system-version*
-  ; #.(asdf:system-version (asdf:find-system :streams))
+  ;; #.(asdf:system-version (asdf:find-system :streams))
   "1.5.1"
   "The introspected version of this system.")
 

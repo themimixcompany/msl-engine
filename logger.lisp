@@ -69,10 +69,10 @@ specifying another date value."
              (cond ((null args) acc)
                    (t (fn (cdr args)
                           (cat acc
-                                     "["
-                                     (char-downcase (car args))
-                                     (char-upcase (car args))
-                                     "]"))))))
+                               "["
+                               (char-downcase (car args))
+                               (char-upcase (car args))
+                               "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
 (defun* (log-paths t) (&key (directory *log-directory*) (machine *machine*) sort)
@@ -82,8 +82,8 @@ specifying another date value."
                                      (let ((name (file-namestring file))
                                            (suffix (alt-case-re +log-file-suffix+)))
                                        (cl-ppcre:scan (cat "^" machine "\\."
-                                                                 +iso-8601-re+ "\\."
-                                                                 suffix "$")
+                                                           +iso-8601-re+ "\\."
+                                                           suffix "$")
                                                       name)))
                                  files)))
     (if sort

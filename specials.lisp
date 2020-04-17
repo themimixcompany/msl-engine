@@ -23,26 +23,26 @@
   "The initial metadata counter value.")
 
 (define-constant* (+base-namespace-list+ t)
-  '(("c" . "canon")
-    ("m" . "machine")
-    ("w" . "world")
-    ("s" . "stream")
-    ("v" . "view")
-    ("@" . "atom"))
+    '(("c" . "canon")
+      ("m" . "machine")
+      ("w" . "world")
+      ("s" . "stream")
+      ("v" . "view")
+      ("@" . "atom"))
   "The list of base namespaces.")
 
 (define-constant* (+sub-namespace-list+ t)
-  '(("d" . "datatype")
-    ("f" . "format"))
+    '(("d" . "datatype")
+      ("f" . "format"))
   "The list of sub namespaces.")
 
 (define-constant* (+namespace-list+ t)
-  (append +base-namespace-list+ +sub-namespace-list+)
+    (append +base-namespace-list+ +sub-namespace-list+)
   "The full list of namespaces, where the individual elements contain the
 namespace alias and full namespace name")
 
 (define-constant* (+key-indicators+ t)
-  '("=" "/" "[]")
+    '("=" "/" "[]")
   "The list of strings used for setting end values.")
 
 (defvar* (*log-directory* t)
@@ -62,8 +62,8 @@ namespace alias and full namespace name")
   "The enumeration of week day names.")
 
 (defparameter* (*maximum-log-size* t)
-  5242880
-  "The maximum filesize of logging files in bytes.")
+    5242880
+    "The maximum filesize of logging files in bytes.")
 
 (defvar* (*machine* t)
   "my-machine"
