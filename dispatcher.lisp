@@ -92,8 +92,8 @@ itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
-                         (atom-table (atom-table *universe*))
-                         (sub-atom-table (sub-atom-table *universe*)))
+                       (atom-table (atom-table *universe*))
+                       (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (block nil
     (destructuring-bind (path &optional &rest _)
@@ -113,8 +113,8 @@ itself."
               (fn path atom-table)))))))
 
 (defun read-path (path &optional
-                         (atom-table (atom-table *universe*))
-                         (sub-atom-table (sub-atom-table *universe*)))
+                       (atom-table (atom-table *universe*))
+                       (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
@@ -196,13 +196,13 @@ universe."
         (streams/logger:write-log expr))
       (loop :for term :in terms
             :collect
-            (destructuring-bind (path &optional &rest params)
-                term
-              (cond ((empty-params-p params)
-                     (read-term (list path params) atom-tab sub-atom-tab))
-                    (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                         (when (consp values)
-                           (loop :for value :in values
-                                 :when (valid-terms-p value)
-                                   :do (dispatch value)))
-                         values))))))))
+               (destructuring-bind (path &optional &rest params)
+                   term
+                 (cond ((empty-params-p params)
+                        (read-term (list path params) atom-tab sub-atom-tab))
+                       (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                            (when (consp values)
+                              (loop :for value :in values
+                                    :when (valid-terms-p value)
+                                    :do (dispatch value)))
+                            values))))))))

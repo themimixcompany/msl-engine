@@ -8,7 +8,7 @@
 
 (in-package #:streams/unparser)
 
-(defun table-keys (table)
+(defun* (table-keys t) (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (loop :for k :being :the :hash-key :in table :collect k)))
@@ -87,7 +87,7 @@
            (destructuring-bind (regex &optional env val)
                expr
              (cat "/" regex "/" (or env "")
-                        (if val (cat " " val) "")))))
+                  (if val (cat " " val) "")))))
     (loop :for expr :in exprs :collect (fn expr))))
 
 (defun make-transform (exprs)
@@ -151,7 +151,7 @@
                  (cddr list)))
           (t list))))
 
-(defun construct (key table)
+(defun construct (key table &optional keys)
   "Return the original expressions in TABLE under KEY."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
@@ -166,13 +166,15 @@
                      (t (fn tab
                             (cdr keys)
                             (accumulate keys acc v)))))))
-    (when-let ((ht (gethash key table)))
-      (loop :for v :in (fn ht (table-keys ht) nil)
+    (when-let* ((ht (gethash key table))
+                (entries (or keys (table-keys ht))))
+      (loop :for v :in (fn ht entries nil)
             :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
-(defun* (collect t) (&optional (table (atom-table *universe*)))
+(defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
+  (declare (ignorable keys))
   (labels ((fn (args &optional acc)
              (cond ((null args) (string* (nreverse acc)))
                    ((consp (car args))
@@ -180,6 +182,7 @@
                         (cons (fn (car args) nil)
                               acc)))
                    (t (fn (cdr args) (cons (car args) acc))))))
-    (let* ((keys (children table))
-           (value (loop :for key :in keys :nconc (construct key table))))
+    (let* ((table (atom-table *universe*))
+           (children (children table))
+           (value (loop :for child :in children :nconc (construct child table keys))))
       (mapcar #'fn value))))
