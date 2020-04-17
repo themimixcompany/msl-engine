@@ -48,22 +48,6 @@ character or a string to designate an entity."
 the pair is the namespace marker and the second element of the pair is the key"
   (partition chain 2))
 
-(defun ns-member-p (elem ns-list)
-  "Return true if elem is a MEMBER of NS-LIST by CAR."
-  (when* (member elem ns-list :key #'car :test #'equal)))
-
-(defun base-namespace-p (ns)
-  "Return true if NS is a base namespace indicator."
-  (ns-member-p ns +base-namespace-list+))
-
-(defun sub-namespace-p (ns)
-  "Return true if NS is sub namespace indicator."
-  (ns-member-p ns +sub-namespace-list+))
-
-(defun namespacep (ns)
-  "Return true if NS is a namespace indicator."
-  (rmap-or ns #'base-namespace-p #'sub-namespace-p))
-
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
   (when (and (consp path)
@@ -71,8 +55,8 @@ the pair is the namespace marker and the second element of the pair is the key"
     (destructuring-bind (ns &optional &rest body)
         path
       (declare (ignorable body))
-      (when (namespacep ns)
-        (position-if #'sub-namespace-p path :from-end t)))))
+      (when (streams/etc:namespacep ns)
+        (position-if #'streams/etc:sub-namespace-p path :from-end t)))))
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
@@ -84,7 +68,7 @@ the pair is the namespace marker and the second element of the pair is the key"
   (destructuring-bind (ns &optional &rest _)
       path
     (declare (ignore _))
-    (sub-namespace-p ns)))
+    (streams/etc:sub-namespace-p ns)))
 
 (defun sub-atom-path-p* (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path
@@ -183,7 +167,7 @@ the new table."
                    head
                  (declare (ignore _))
                  (and (consp value)
-                      (namespacep (car value)))))))))
+                      (streams/etc:namespacep (car value)))))))))
 
 (defun* (dispatch t) (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the

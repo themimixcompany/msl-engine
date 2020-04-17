@@ -25,6 +25,7 @@
                #:local-time
                "streams/specials"
                "streams/classes"
+               "streams/etc"
                "streams/expr"
                "streams/unparser"
                "streams/logger"
@@ -32,6 +33,5 @@
                "streams/server"
                "streams/builder"
                "streams/startup"
-               "streams/etc"
                "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))

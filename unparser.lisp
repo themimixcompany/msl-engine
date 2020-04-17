@@ -151,7 +151,7 @@
                  (cddr list)))
           (t list))))
 
-(defun construct (key table &optional keys)
+(defun* (construct t) (key table &optional keys)
   "Return the original expressions in TABLE under KEY."
   (labels ((fn (tab keys acc)
              (let ((v (gethash (car keys) tab)))
@@ -172,11 +172,39 @@
             :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
+;; (defun* (collect t) (&rest keys)
+;;   "Return the original expressions in TABLE."
+;;   (declare (ignorable keys))
+;;   (labels ((fn (args &optional acc)
+;;              (cond ((null args) (string* (nreverse acc)))
+;;                    ((consp (car args))
+;;                     (fn (cdr args)
+;;                         (cons (fn (car args) nil)
+;;                               acc)))
+;;                    (t (fn (cdr args) (cons (car args) acc))))))
+;;     (let* ((table (atom-table *universe*))
+;;            (children (children table))
+;;            (value (loop :for child :in children :nconc (construct child table keys))))
+;;       (mapcar #'fn value))))
+
+(defun* (parse-tree-p t) (tree)
+  "Return true if TREE is a valid parse tree."
+  (when (consp tree)
+    (streams/etc:base-namespace-p (caaar tree))))
+
+(defun* (convert t) (tree)
+  "Return the expression from TREE."
+  (when (parse-tree-p tree)
+    (destructuring-bind (((ns key) &rest _) &rest __)
+        tree
+      (declare (ignore _ __))
+      (car (construct ns (atom-table *universe*) (list key))))))
+
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))
   (labels ((fn (args &optional acc)
-             (cond ((null args) (string* (nreverse acc)))
+             (cond ((null args) (nreverse acc))
                    ((consp (car args))
                     (fn (cdr args)
                         (cons (fn (car args) nil)
