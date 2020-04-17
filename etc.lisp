@@ -8,6 +8,22 @@
 
 (in-package #:streams/etc)
 
+(defun ns-member-p (elem ns-list)
+  "Return true if elem is a MEMBER of NS-LIST by CAR."
+  (when* (member elem ns-list :key #'car :test #'equal)))
+
+(defun* (base-namespace-p t) (ns)
+  "Return true if NS is a base namespace indicator."
+  (ns-member-p ns +base-namespace-list+))
+
+(defun* (sub-namespace-p t) (ns)
+  "Return true if NS is sub namespace indicator."
+  (ns-member-p ns +sub-namespace-list+))
+
+(defun* (namespacep t) (ns)
+  "Return true if NS is a namespace indicator."
+  (rmap-or ns #'base-namespace-p #'sub-namespace-p))
+
 (defun* (dump-object t) (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (slots object)

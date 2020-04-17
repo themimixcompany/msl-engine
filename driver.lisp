@@ -5,14 +5,14 @@
   (:use :uiop/common-lisp)
   (:use-reexport #:streams/specials
                  #:streams/classes
+                 #:streams/etc
                  #:streams/expr
                  #:streams/unparser
                  #:streams/logger
                  #:streams/dispatcher
                  #:streams/server
                  #:streams/builder
-                 #:streams/startup
-                 #:streams/etc))
+                 #:streams/startup))
 
 (provide "streams")
 (provide "STREAMS")
