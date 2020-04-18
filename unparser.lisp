@@ -184,6 +184,9 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
+;;; find a way to perform conditional collection
+;;; do not generate the subatom
+;;; convert could happen in construct
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))

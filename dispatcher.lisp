@@ -10,46 +10,6 @@
 
 (in-package #:streams/dispatcher)
 
-(defun valid-id-p (key)
-  "Return true if KEY is a valid identifier for mx-atoms."
-  (when* (cl-ppcre:scan "^([a-zA-Z]+)(-?[a-zA-Z0-9])*$" key)))
-
-(defun valid-key-p (key)
-  "Return true if KEY is a valid key for an mx-atom."
-  (let ((v (string* key)))
-    (valid-id-p v)))
-
-(defun entity-string (id)
-  "Return the corresponding universe name from ID, where ID is either a single
-character or a string to designate an entity."
-  (let ((aliases (mapcar #'car +namespace-list+)))
-    (cdr (assoc id aliases :test #'equal))))
-
-(defun table-name (ns &optional package)
-  "Return the corresponding table of NS from the universe."
-  (let ((name (entity-string ns)))
-    (hyphenate-intern package name "table")))
-
-(defun namespace-table (namespace)
-  "Return the table indicated by NAMESPACE."
-  (let* ((function (table-name namespace :streams/classes))
-         (table (funcall function *universe*)))
-    table))
-
-(defun namespace-hash (key namespace)
-  "Return the value stored in the corresponding table of NAMESPACE under KEY."
-  (gethash key (namespace-table namespace)))
-
-(defun (setf namespace-hash) (value key namespace)
-  "Set the table slot value specified by KEY and NAMESPACE to VALUE."
-  (let ((table (namespace-table namespace)))
-    (setf (gethash key table) value)))
-
-(defun namespace-pairs (chain)
-  "Return a list of namespace-key pairs from CHAIN, where the first element of
-the pair is the namespace marker and the second element of the pair is the key"
-  (partition chain 2))
-
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
   (when (and (consp path)
@@ -103,15 +63,6 @@ itself."
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
-
-(defun resolve-path (path atom-table sub-atom-table)
-  "Return the final value read from PATH in SOURCE."
-  (when-let ((value (read-path path atom-table sub-atom-table)))
-    (destructuring-bind (ns &optional &rest _)
-        value
-      (declare (ignore _))
-      (when ns
-        (read-path value atom-table sub-atom-table)))))
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
