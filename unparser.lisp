@@ -89,12 +89,11 @@
                expr
              (cat "/" regex "/" (or env "")
                   (if val (cat " " val) "")))))
-    (loop :for expr :in exprs :collect (fn expr))))
+    (mapcar #'fn exprs)))
 
 (defun make-transform (exprs)
-  (flet ((fn (expr)
-           (cat "[" expr "]")))
-    (loop :for expr :in exprs :collect (fn expr))))
+  (flet ((fn (expr) (cat "[" expr "]")))
+    (mapcar #'fn exprs)))
 
 (defun normalize (list)
   "Return special merging on items of LIST."
@@ -197,7 +196,9 @@
                    (t (fn (cdr args) (cons (car args) acc))))))
     (let* ((table (atom-table *universe*))
            (children (children table))
-           (value (loop :for child :in children
-                        :nconc (loop :for terms :in (construct child table keys)
-                                     :collect (mapcar #'convert terms)))))
+           (value (mapcan #'(lambda (child)
+                              (mapcar #'(lambda (terms)
+                                          (mapcar #'convert terms))
+                                      (construct child table keys)))
+                          children)))
       (mapcar #'fn value))))
