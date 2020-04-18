@@ -172,39 +172,29 @@
             :for kv = (make-head (cons key v))
             :collect (normalize (compose kv))))))
 
-;; (defun* (collect t) (&rest keys)
-;;   "Return the original expressions in TABLE."
-;;   (declare (ignorable keys))
-;;   (labels ((fn (args &optional acc)
-;;              (cond ((null args) (string* (nreverse acc)))
-;;                    ((consp (car args))
-;;                     (fn (cdr args)
-;;                         (cons (fn (car args) nil)
-;;                               acc)))
-;;                    (t (fn (cdr args) (cons (car args) acc))))))
-;;     (let* ((table (atom-table *universe*))
-;;            (children (children table))
-;;            (value (loop :for child :in children :nconc (construct child table keys))))
-;;       (mapcar #'fn value))))
-
 (defun* (parse-tree-p t) (tree)
   "Return true if TREE is a valid parse tree."
-  (when (consp tree)
+  (when (and (consp tree)
+             (consp (car tree))
+             (consp (caar tree)))
     (streams/etc:base-namespace-p (caaar tree))))
 
-(defun* (convert t) (tree)
-  "Return the expression from TREE."
-  (when (parse-tree-p tree)
-    (destructuring-bind (((ns key) &rest _) &rest __)
-        tree
-      (declare (ignore _ __))
-      (car (construct ns (atom-table *universe*) (list key))))))
+(defun* (convert t) (items)
+  "Return the original expression from TREE."
+  (flet ((fn (v)
+           (destructuring-bind (((ns key) &rest _) &rest __)
+               v
+             (declare (ignore _ __))
+             (car (construct ns (atom-table *universe*) (list key))))))
+    (loop :for tree :in items
+          :collect (cond ((parse-tree-p tree) (fn tree))
+                         (t tree)))))
 
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))
   (labels ((fn (args &optional acc)
-             (cond ((null args) (nreverse acc))
+             (cond ((null args) (string* (nreverse acc)))
                    ((consp (car args))
                     (fn (cdr args)
                         (cons (fn (car args) nil)
@@ -212,5 +202,6 @@
                    (t (fn (cdr args) (cons (car args) acc))))))
     (let* ((table (atom-table *universe*))
            (children (children table))
-           (value (loop :for child :in children :nconc (construct child table keys))))
+           (value (loop :for child :in children
+                        :nconc (mapcar #'convert (construct child table keys)))))
       (mapcar #'fn value))))
