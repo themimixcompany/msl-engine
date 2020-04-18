@@ -1,12 +1,12 @@
-;;;; etc.lisp
+;;;; common.lisp
 
-(uiop:define-package #:streams/etc
+(uiop:define-package #:streams/common
   (:use #:cl
         #:streams/specials
         #:streams/classes
         #:marie))
 
-(in-package #:streams/etc)
+(in-package #:streams/common)
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
@@ -32,7 +32,7 @@
               (when (hash-table-p v)
                 (dump-table v)))))
 
-(defun* (slots t) (object)
+(defun slots (object)
   "Return the slot names of an object."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
@@ -118,7 +118,7 @@ copying."
                    (t nil))))
     (fn table path)))
 
-(defun* (clear-other t) (table key)
+(defun clear-other (table key)
   "Remove entries in TABLE that do not match KEY."
   (let ((keys (loop :for k :being :the :hash-key :of table :collect k)))
     (loop :for item :in (remove key keys :test #'equal)
@@ -137,3 +137,19 @@ copying."
                     (fn (gethash (car location) tab) (cdr location)))
                    (t nil))))
     (fn table path)))
+
+(defun* (valid-terms-p t) (form &optional (predicate #'namespacep))
+  "Return true if FORM is a valid MSL form."
+  (flet ((fn (form)
+           (destructuring-bind (&optional head &rest _)
+               form
+             (declare (ignore _))
+             (when*
+               (consp head)
+               (destructuring-bind (value &rest _)
+                   head
+                 (declare (ignore _))
+                 (and (consp value)
+                      (funcall predicate (car value))))))))
+    (cond ((rmap-or form #'stringp #'numberp) nil)
+          (t (fn form)))))

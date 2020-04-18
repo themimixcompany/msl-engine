@@ -5,7 +5,7 @@
   (:use :uiop/common-lisp)
   (:use-reexport #:streams/specials
                  #:streams/classes
-                 #:streams/etc
+                 #:streams/common
                  #:streams/expr
                  #:streams/unparser
                  #:streams/logger
