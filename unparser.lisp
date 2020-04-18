@@ -4,11 +4,12 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes
+        #:streams/common
         #:marie))
 
 (in-package #:streams/unparser)
 
-(defun* (table-keys t) (table)
+(defun table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (loop :for k :being :the :hash-key :in table :collect k)))
@@ -143,13 +144,14 @@
 
 (defun make-head (list)
   "Return a list with custom head merging."
-  (destructuring-bind (ns &optional &rest _)
-      list
-    (declare (ignore _))
-    (cond ((string= ns "@")
-           (cons (cat ns (cadr list))
-                 (cddr list)))
-          (t list))))
+  (when (consp (cdr list))
+    (destructuring-bind (ns &optional &rest _)
+        list
+      (declare (ignore _))
+      (cond ((string= ns "@")
+             (cons (cat ns (cadr list))
+                   (cddr list)))
+            (t list)))))
 
 (defun* (construct t) (key table &optional keys)
   "Return the original expressions in TABLE under KEY."
@@ -170,25 +172,18 @@
                 (entries (or keys (table-keys ht))))
       (loop :for v :in (fn ht entries nil)
             :for kv = (make-head (cons key v))
+            :when kv
             :collect (normalize (compose kv))))))
 
-(defun* (parse-tree-p t) (tree)
-  "Return true if TREE is a valid parse tree."
-  (when (and (consp tree)
-             (consp (car tree))
-             (consp (caar tree)))
-    (streams/etc:base-namespace-p (caaar tree))))
-
-(defun* (convert t) (items)
+(defun* (convert t) (terms)
   "Return the original expression from TREE."
   (flet ((fn (v)
            (destructuring-bind (((ns key) &rest _) &rest __)
                v
              (declare (ignore _ __))
              (car (construct ns (atom-table *universe*) (list key))))))
-    (loop :for tree :in items
-          :collect (cond ((parse-tree-p tree) (fn tree))
-                         (t tree)))))
+    (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
+          (t terms))))
 
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
@@ -203,5 +198,6 @@
     (let* ((table (atom-table *universe*))
            (children (children table))
            (value (loop :for child :in children
-                        :nconc (mapcar #'convert (construct child table keys)))))
+                        :nconc (loop :for terms :in (construct child table keys)
+                                     :collect (mapcar #'convert terms)))))
       (mapcar #'fn value))))

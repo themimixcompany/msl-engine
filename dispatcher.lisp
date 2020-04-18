@@ -4,6 +4,8 @@
   (:use #:cl
         #:streams/specials
         #:streams/classes
+        #:streams/common
+        #:streams/logger
         #:marie))
 
 (in-package #:streams/dispatcher)
@@ -55,8 +57,8 @@ the pair is the namespace marker and the second element of the pair is the key"
     (destructuring-bind (ns &optional &rest body)
         path
       (declare (ignorable body))
-      (when (streams/etc:namespacep ns)
-        (position-if #'streams/etc:sub-namespace-p path :from-end t)))))
+      (when (namespacep ns)
+        (position-if #'sub-namespace-p path :from-end t)))))
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
@@ -68,7 +70,7 @@ the pair is the namespace marker and the second element of the pair is the key"
   (destructuring-bind (ns &optional &rest _)
       path
     (declare (ignore _))
-    (streams/etc:sub-namespace-p ns)))
+    (sub-namespace-p ns)))
 
 (defun sub-atom-path-p* (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path
@@ -155,38 +157,25 @@ the new table."
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
-(defun valid-terms-p (form)
-  "Return true if FORM is a valid MSL form."
-  (cond ((stringp form) nil)
-        (t (destructuring-bind (&optional head &rest _)
-               form
-             (declare (ignore _))
-             (when*
-               (consp head)
-               (destructuring-bind (value &rest _)
-                   head
-                 (declare (ignore _))
-                 (and (consp value)
-                      (streams/etc:namespacep (car value)))))))))
-
 (defun* (dispatch t) (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the
 universe."
-  (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
-        (atom-tab (find-table #'atom-table))
-        (sub-atom-tab (find-table #'sub-atom-table)))
-    (when terms
-      (when (and log (stringp expr))
-        (streams/logger:write-log expr))
-      (loop :for term :in terms
-            :collect
-               (destructuring-bind (path &optional &rest params)
-                   term
-                 (cond ((empty-params-p params)
-                        (read-term (list path params) atom-tab sub-atom-tab))
-                       (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                            (when (consp values)
-                              (loop :for value :in values
-                                    :when (valid-terms-p value)
-                                    :do (dispatch value)))
-                            values))))))))
+  (flet ((fn (term atom-tab sub-atom-tab)
+           (destructuring-bind (path &optional &rest params)
+               term
+             (cond ((empty-params-p params)
+                    (read-term (list path params) atom-tab sub-atom-tab))
+                   (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                        (when (consp values)
+                          (loop :for value :in values
+                                :when (valid-terms-p value)
+                                :do (dispatch value)))
+                        values))))))
+    (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
+          (atom-tab (find-table #'atom-table))
+          (sub-atom-tab (find-table #'sub-atom-table)))
+      (when terms
+        (when (and log (stringp expr))
+          (write-log expr))
+        (loop :for term :in terms
+              :collect (fn term atom-tab sub-atom-tab))))))

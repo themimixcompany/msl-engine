@@ -25,7 +25,7 @@
                #:local-time
                "streams/specials"
                "streams/classes"
-               "streams/etc"
+               "streams/common"
                "streams/expr"
                "streams/unparser"
                "streams/logger"

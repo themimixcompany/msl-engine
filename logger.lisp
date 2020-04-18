@@ -59,7 +59,7 @@
 specifying another date value."
   (make-log-file-path (cat machine #\. date)))
 
-(defun* (log-path t) (&key (machine *machine*) (date (log-date *universe*)))
+(defun log-path (&key (machine *machine*) (date (log-date *universe*)))
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
@@ -75,7 +75,7 @@ specifying another date value."
                                "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
-(defun* (log-paths t) (&key (directory *log-directory*) (machine *machine*) sort)
+(defun log-paths (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (uiop:directory-files directory))
          (entries (remove-if-not #'(lambda (file)
