@@ -175,7 +175,7 @@
             :collect (normalize (compose kv))))))
 
 (defun* (convert t) (terms)
-  "Return the original expression from TREE."
+  "Return the original expression from TERMS."
   (flet ((fn (v)
            (destructuring-bind (((ns key) &rest _) &rest __)
                v
