@@ -5,23 +5,25 @@
         #:streams/specials
         #:marie)
   (:export #:universe
-
-           #:atom-table
+           
            #:atom-counter
-           #:sub-atom-table
+           #:atom-table
            #:sub-atom-counter
+           #:sub-atom-table
            #:log-date
 
            #:mx-base
            #:mx-atom
            #:mx-sub-atom
-
-           ;; Are these symbols still needed?
+           
            #:id
            #:ns
            #:key
            #:value
-           #:canonize))
+           #:canonizedp
+
+           #:table
+           #:date))
 
 (in-package #:streams/classes)
 
@@ -166,8 +168,8 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
         :accessor id
         :documentation "The unique integer to identify the register.")
    (table :initarg :table
-          :initform nil
-          :reader (make-hash-table :test #'equal)
+          :initform (make-hash-table :test #'equal)
+          :reader table
           :documentation "The hash table for the data store.")
    (date :initarg :date
           :initform (local-time:format-timestring nil (local-time:now))
