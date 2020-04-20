@@ -184,12 +184,8 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
-;;; find a way to perform conditional collection
-;;; do not generate the subatom
-;;; convert could happen in construct
-(defun* (collect t) (&rest keys)
-  "Return the original expressions in TABLE."
-  (declare (ignorable keys))
+(defun* (build-string t) (value)
+  "Return the string version of expression VALUE."
   (labels ((fn (args &optional acc)
              (cond ((null args) (string* (nreverse acc)))
                    ((consp (car args))
@@ -197,11 +193,20 @@
                         (cons (fn (car args) nil)
                               acc)))
                    (t (fn (cdr args) (cons (car args) acc))))))
-    (let* ((table (atom-table *universe*))
-           (children (children table))
-           (value (mapcan #'(lambda (child)
-                              (mapcar #'(lambda (terms)
-                                          (mapcar #'convert terms))
-                                      (construct child table keys)))
-                          children)))
-      (mapcar #'fn value))))
+    (fn value)))
+
+(defun* (collect t) (&rest keys)
+  "Return the original expressions in TABLE."
+  (declare (ignorable keys))
+  (let* ((table (atom-table *universe*))
+         (children (children table)))
+    (mapcar #'build-string
+            (loop :for child :in children
+                  :with cache
+                  :nconc (loop :for terms :in (construct child table keys)
+                               :unless (mem (build-string terms) cache)
+                               :collect (loop :for term :in terms
+                                              :for v = (convert term)
+                                              :when (valid-terms-p term #'base-namespace-p)
+                                              :do (pushnew (build-string v) cache :test #'equal)
+                                              :collect v))))))
