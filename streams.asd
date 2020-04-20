@@ -13,8 +13,7 @@
   :license "Blue Oak Model License 1.0.0"
   :version "1.7.0"
   :class :package-inferred-system
-  :depends-on (#:marie
-               #:cl-ppcre
+  :depends-on (#:cl-ppcre
                #:clack
                #:clack-handler-hunchentoot
                #:websocket-driver
@@ -23,6 +22,7 @@
                #:maxpc
                #:trivial-file-size
                #:local-time
+               #:marie
                "streams/specials"
                "streams/classes"
                "streams/common"

@@ -159,3 +159,18 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
     (let ((test (hash-table-test table))
           (count (hash-table-count table)))
       (format stream "~A ~A" test count))))
+
+(defclass register ()
+  ((id :initarg :id
+        :initform -1
+        :accessor id
+        :documentation "The unique integer to identify the register.")
+   (table :initarg :table
+          :initform nil
+          :reader (make-hash-table :test #'equal)
+          :documentation "The hash table for the data store.")
+   (date :initarg :date
+          :initform (local-time:format-timestring nil (local-time:now))
+          :accessor date
+         :documentation "The date and time associated with a register."))
+  (:documentation "The register class."))
