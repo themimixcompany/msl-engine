@@ -24,22 +24,27 @@
   "Return true if NS is a namespace indicator."
   (rmap-or ns #'base-namespace-p #'sub-namespace-p))
 
+(defun* (object-slots t) (object)
+  "Return the slot names of OBJECT."
+  (mapcar #'closer-mop:slot-definition-name
+          (closer-mop:class-slots (class-of object))))
+
+(defun* (slots t) (class)
+  "Return the slot names of CLASS."
+  (mapcar #'closer-mop:slot-definition-name
+          (closer-mop:class-slots (find-class class))))
+
 (defun* (dump-object t) (object)
   "Display the contents of OBJECT."
-  (loop :for slot :in (slots object)
+  (loop :for slot :in (object-slots object)
         :do (let ((v (funcall slot object)))
               (format t "~S -> ~S~%" slot v)
               (when (hash-table-p v)
                 (dump-table v)))))
 
-(defun slots (object)
-  "Return the slot names of an object."
-  (mapcar #'closer-mop:slot-definition-name
-          (closer-mop:class-slots (class-of object))))
-
 (defun* (dump-universe dump t) (&optional (universe *universe*))
   "Dump the contents of the universe."
-  (let* ((slots (slots universe))
+  (let* ((slots (object-slots universe))
          (string-slots (mapcar #'string* slots))
          (table-readers (loop :for item :in string-slots
                               :when (search "TABLE" item)
@@ -75,7 +80,7 @@
 
 (defun* (tables t) (&optional (universe *universe*))
   "Return the list of slots from UNIVERSE that are tables."
-  (loop :for slot :in (slots universe)
+  (loop :for slot :in (object-slots universe)
         :for tab = (funcall slot universe)
         :when (hash-table-p tab)
         :collect tab))
