@@ -131,3 +131,7 @@ universe."
           (write-log expr))
         (loop :for term :in terms
               :collect (fn term atom-tab sub-atom-tab))))))
+
+(defun* (dispatch* t) (&rest args)
+  "Call DISPATCH with logging disabled."
+  (apply #'(lambda (arg) (dispatch arg nil)) args))

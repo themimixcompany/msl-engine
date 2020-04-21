@@ -9,10 +9,14 @@
 
 (in-package #:streams/unparser)
 
-(defun table-keys (table)
+(defun* (table-keys t) (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
-    (loop :for k :being :the :hash-key :in table :collect k)))
+    (let ((keys (loop :for k :being :the :hash-key :in table :collect k))
+          (ex '(":")))
+      (if (mem* ex keys)
+          (append (remove* ex keys) ex)
+          keys))))
 
 (defun children (table &optional object)
   "Return all items in TABLE using KEY that are also tables."
