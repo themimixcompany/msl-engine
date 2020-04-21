@@ -25,7 +25,7 @@
       (loop :for key :in keys
             :for value = (gethash key table)
             :when (hash-table-p value)
-            :collect (if object value key)))))
+              :collect (if object value key)))))
 
 (defun metadatap (value)
   "Return true if VALUE is the : namespace."
@@ -49,7 +49,7 @@
               (if (consp item) item (list item)))
           list))
 
-(defun join (list)
+(defun* (join t) (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -57,7 +57,11 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun wrap (list)
+(defun* (join-1 t) (list)
+  "Return a list where items in LIST are flattened to one level, regardless of type."
+  (reduce #'append (marshall list)))
+
+(defun* (wrap t) (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -71,8 +75,8 @@
                     (t item)))
           list))
 
-(defun stage (list)
-  "Return a new list from LIST where the items preprocessed for wrapping and joining."
+(defun* (stage t) (list)
+  "Return a new list with preprocessed elements for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
                    ((modsp (car args))
@@ -99,14 +103,23 @@
   (flet ((fn (expr) (cat "[" expr "]")))
     (mapcar #'fn exprs)))
 
-(defun normalize (list)
+;; (defun* (normalize t) (list)
+;;   "Return special merging on items of LIST."
+;;   (labels ((fn (val)
+;;              (cond ((metadatap val)
+;;                     (cons (car val) (cadr val)))
+;;                    (t val))))
+;;     (join (wrap (stage (mapcar #'fn list))))))
+
+(defun* (normalize t) (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
-             (cond ((metadatap val) (cons (car val) (cadr val)))
+             (cond ((metadatap val)
+                    (loop :for v :in (cdr val) :collect (cons (car val) v)))
                    (t val))))
-    (join (wrap (stage (mapcar #'fn list))))))
+    (join-1 (mapcar #'fn list))))
 
-(defun attach (list)
+(defun* (attach t) (list)
   "Return the list (X Y ...) from (X (Y ...)) from LIST."
   (labels ((fn (val)
              (cond ((modsp val) (cons (car val) (cadr val)))
@@ -115,6 +128,7 @@
 
 (defun combine (items)
   "Apply COMBINE on ITEMS."
+  (dbg items)
   (mapcar #'attach items))
 
 (defun compose (items)
@@ -122,9 +136,14 @@
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
                    ((metadatap (car args))
+                    (dbg (car args))
                     (fn (cdr args)
-                        (cons (list (caar args)
-                                    (combine (cadr (car args))))
+                        ;; (cons (list (caar args)
+                        ;;             (combine (cadr (car args))))
+                        ;;       acc)
+                        (cons (loop :for item :in (cdr (car args))
+                                    :collect (combine item) :into final
+                                    :finally (return (cons (caar args) final)))
                               acc)))
                    (t (fn (cdr args)
                           (cons (attach (car args))
@@ -176,7 +195,7 @@
       (loop :for v :in (fn ht entries nil)
             :for kv = (make-head (cons key v))
             :when kv
-            :collect (normalize (compose kv))))))
+              :collect (join (wrap (stage (normalize kv))))))))
 
 (defun* (convert t) (terms)
   "Return the original expression from TERMS."
@@ -209,8 +228,8 @@
                   :with cache
                   :nconc (loop :for terms :in (construct child table keys)
                                :unless (mem (build-string terms) cache)
-                               :collect (loop :for term :in terms
-                                              :for v = (convert term)
-                                              :when (valid-terms-p term #'base-namespace-p)
-                                              :do (pushnew (build-string v) cache :test #'equal)
-                                              :collect v))))))
+                                 :collect (loop :for term :in terms
+                                                :for v = (convert term)
+                                                :when (valid-terms-p term #'base-namespace-p)
+                                                  :do (pushnew (build-string v) cache :test #'equal)
+                                                :collect v))))))
