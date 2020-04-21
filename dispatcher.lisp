@@ -5,6 +5,7 @@
         #:streams/specials
         #:streams/classes
         #:streams/common
+        #:streams/parser
         #:streams/logger
         #:marie))
 
@@ -122,7 +123,7 @@ universe."
                                 :when (valid-terms-p value)
                                 :do (dispatch value)))
                         values))))))
-    (let ((terms (if (consp expr) expr (streams/expr:parse-msl expr)))
+    (let ((terms (if (consp expr) expr (parse-msl expr)))
           (atom-tab (find-table #'atom-table))
           (sub-atom-tab (find-table #'sub-atom-table)))
       (when terms
