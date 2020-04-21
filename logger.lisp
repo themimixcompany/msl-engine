@@ -75,9 +75,18 @@ specifying another date value."
                                "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
+(defun build-paths (directory)
+  "Return a path with corrected string representations."
+  (let ((files (uiop:directory-files directory)))
+    #+ccl (mapcar #'(lambda (entry)
+                      (uiop:ensure-pathname
+                       (cl-ppcre:regex-replace-all "\\\\" (uiop:native-namestring entry) "")))
+                  files)
+    #-(or ccl) files))
+
 (defun log-paths (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
-  (let* ((files (uiop:directory-files directory))
+  (let* ((files (build-paths directory))
          (entries (remove-if-not #'(lambda (file)
                                      (let ((name (file-namestring file))
                                            (suffix (alt-case-re +log-file-suffix+)))
