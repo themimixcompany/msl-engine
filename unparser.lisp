@@ -9,7 +9,7 @@
 
 (in-package #:streams/unparser)
 
-(defun* (table-keys t) (table)
+(defun table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (let ((keys (loop :for k :being :the :hash-key :in table :collect k))
@@ -29,15 +29,11 @@
 
 (defun metadatap (value)
   "Return true if VALUE is the : namespace."
-  (when*
-    (consp value)
-    (mem (car value) '(":"))))
+  (when* (consp value) (mem (car value) '(":"))))
 
 (defun modsp (value)
   "Return true if VALUE is a datatype or format form."
-  (when*
-    (consp value)
-    (mem (car value) '("d" "f"))))
+  (when* (consp value) (mem (car value) '("d" "f"))))
 
 (defun prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
@@ -49,7 +45,7 @@
               (if (consp item) item (list item)))
           list))
 
-(defun* (join t) (list)
+(defun join (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -57,11 +53,7 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun* (join-1 t) (list)
-  "Return a list where items in LIST are flattened to one level, regardless of type."
-  (reduce #'append (marshall list)))
-
-(defun* (wrap t) (list)
+(defun wrap (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -75,13 +67,13 @@
                     (t item)))
           list))
 
-(defun* (stage t) (list)
+(defun stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
                    ((modsp (car args))
                     (fn (cdr args)
-                        (cons (join (car args)) acc)))
+                        (cons (flatten-list (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
                         (cons (join (wrap (fn (car args) nil)))
@@ -89,6 +81,14 @@
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
     (fn list nil)))
+
+(defun normalize (list)
+  "Return special merging on items of LIST."
+  (labels ((fn (val)
+             (cond ((metadatap val)
+                    (loop :for v :in (cdr val) :collect (cons (car val) v)))
+                   (t val))))
+    (join (mapcar #'fn list))))
 
 (defun make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
@@ -102,53 +102,6 @@
 (defun make-transform (exprs)
   (flet ((fn (expr) (cat "[" expr "]")))
     (mapcar #'fn exprs)))
-
-;; (defun* (normalize t) (list)
-;;   "Return special merging on items of LIST."
-;;   (labels ((fn (val)
-;;              (cond ((metadatap val)
-;;                     (cons (car val) (cadr val)))
-;;                    (t val))))
-;;     (join (wrap (stage (mapcar #'fn list))))))
-
-(defun* (normalize t) (list)
-  "Return special merging on items of LIST."
-  (labels ((fn (val)
-             (cond ((metadatap val)
-                    (loop :for v :in (cdr val) :collect (cons (car val) v)))
-                   (t val))))
-    (join-1 (mapcar #'fn list))))
-
-(defun* (attach t) (list)
-  "Return the list (X Y ...) from (X (Y ...)) from LIST."
-  (labels ((fn (val)
-             (cond ((modsp val) (cons (car val) (cadr val)))
-                   (t val))))
-    (fn list)))
-
-(defun combine (items)
-  "Apply COMBINE on ITEMS."
-  (dbg items)
-  (mapcar #'attach items))
-
-(defun compose (items)
-  "Apply additional merging operations to items in LIST."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   ((metadatap (car args))
-                    (dbg (car args))
-                    (fn (cdr args)
-                        ;; (cons (list (caar args)
-                        ;;             (combine (cadr (car args))))
-                        ;;       acc)
-                        (cons (loop :for item :in (cdr (car args))
-                                    :collect (combine item) :into final
-                                    :finally (return (cons (caar args) final)))
-                              acc)))
-                   (t (fn (cdr args)
-                          (cons (attach (car args))
-                                acc))))))
-    (fn items nil)))
 
 (defun accumulate (keys acc &optional data)
   "Return an accumulator value suitable for CONSTRUCT."
@@ -171,8 +124,7 @@
         list
       (declare (ignore _))
       (cond ((string= ns "@")
-             (cons (cat ns (cadr list))
-                   (cddr list)))
+             (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
 (defun* (construct t) (key table &optional keys)
@@ -197,7 +149,7 @@
             :when kv
               :collect (join (wrap (stage (normalize kv))))))))
 
-(defun* (convert t) (terms)
+(defun convert (terms)
   "Return the original expression from TERMS."
   (flet ((fn (v)
            (destructuring-bind (((ns key) &rest _) &rest __)
@@ -207,7 +159,7 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
-(defun* (build-string t) (value)
+(defun build-string (value)
   "Return the string version of expression VALUE."
   (labels ((fn (args &optional acc)
              (cond ((null args) (string* (nreverse acc)))
