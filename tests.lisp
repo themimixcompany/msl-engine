@@ -1,8 +1,12 @@
 ;;;; tests.lisp
 
 (uiop:define-package #:streams/tests
-    (:use #:cl #:fiveam #:streams/dispatcher)
-  (:nicknames #:s/tests)
+  (:use #:cl
+        #:fiveam
+        #:streams/common
+        #:streams/parser
+        #:streams/unparser
+        #:streams/dispatcher)
   (:export #:run-tests))
 
 (in-package #:streams/tests)
@@ -14,35 +18,50 @@
   "Run all the tests defined in the suite."
   (run! 'all-tests))
 
-(test eval-expr-tests
-  "Test the values returned by STREAMS/DISPATCHER:EVAL-EXPR."
-  (is (null nil)))
+(defun extract (expr &optional clear)
+  "Return the string representation of EXPR after dispatching it."
+  (when clear (clear))
+  (dispatch expr)
+  (car (collect)))
 
-(test show-tests
-  "Test the values returned by STREAMS/DISPATCHER:SHOW."
-  (is (null nil))
-  ;; (is (string= $"(@walt Walt Disney :number 1 2 :species Human :state IL)" "Walt Disney"))
-  ;; (is (null $"(@walt Walt Disney :number 1 2 :species (@person) :state IL)"))
-  ;; (is (string= $"(@walt :species)" "Human"))
-  ;; (is (null $"(@walt (@nothing))"))
-  ;; (is (string= $"(@walt)" "Walt Disney"))
-  ;; (is (string= $"(@walt WD :number 0)" "WD"))
-  ;; (is (string= $"(@walt XD :number)" "XD"))
-  ;; (is (string= $"(@walt :number 1 :age 20 :gender m)" "XD"))
-  ;; (is (null $"(@david)"))
-  ;; (is (null $"(@david :number 0 :age 21 :gender m)"))
-  ;; (is (string= $"(@walt :number)" "1"))
-  ;; (is (string= $"(@walt:number)" "1"))
-  ;; (is (string= $"(@walt :number :state)" "XD"))
-  ;; (is (string= $"(@walt :number :state NY)" "XD"))
-  ;; (is (string= $"(@Houston Houston :state TX :nickname H-town)" "Houston"))
-  ;; (is (string= $"(@Houston:state)" "TX"))
-  ;; (is (string= $"(@energy-corridor An area in (@Houston), (@Houston:state) known as (@Houston :nickname The Energy Capital) concerned with petroleum exploration and drilling!)"
-  ;;              "An area in Houston, TX known as The Energy Capital concerned with petroleum exploration and drilling!"))
-  ;; (is (string= $"(@energy-corridor :meta 0)" "0"))
-  ;; (is (string= $"(@energy-corridor:meta)" "0"))
-  ;; (is (null $"(@my-book)"))
-  ;; (is (null $"(@my-book:title)"))
-  ;; (is (string= $"(@my-book Vinyl Leaves)" "Vinyl Leaves"))
-  ;; (is (string= $"(@my-book:title Institutional Structures of Feelings)" "Institutional Structures of Feelings"))
+(defun extract= (expr &optional value)
+  "Return true if EXPR is equivalent to the collected dispatch on itself. If VALUE is present, compare the collected dispatch against it."
+  (string= (extract expr) (or value expr)))
+
+(test parser-tests "Test the values returned by the parser and unparser."
+  (is (null (extract= "(@WALT //key only)")))
+  (is (extract= "(@WALT Walt Disney //key value)" "(@WALT Walt Disney)"))
+  (is (extract= "(@WALT /wregex/wenv wconsume //key regex)" "(@WALT Walt Disney /wregex/wenv wconsume)"))
+  (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume //key value regex)" "(@WALT Walt Disney /wregex/wenv wconsume)"))
+  (is (extract= "(@WALT [wt1] //key transform)" "(@WALT Walt Disney /wregex/wenv wconsume [wt1])"))
+  (is (extract= "(@WALT Walt Disney [wt1] //key value transform)" "(@WALT Walt Disney /wregex/wenv wconsume [wt1])"))
+  ;; (is (extract= "(@WALT (f wformat) //key format)" ...))
+  ;; (is (extract= "(@WALT Walt Disney (f wformat) //key value format)" ...))
+  ;; (is (extract= "(@WALT (d wtype) //key type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney (d wtype) //key value type)" ...))
+  ;; (is (extract= "(@WALT :wife //key meta)" ...))
+  ;; (is (extract= "(@WALT :wife Lillian //key meta value)" ...))
+  ;; (is (extract= "(@WALT Walt Disney :wife Lillian //key value meta value)" ...))
+  ;; (is (extract= "(@WALT (f wformat) //key format)" ...))
+  ;; (is (extract= "(@WALT (d wtype) //key type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney (f wformat) //key value format)" ...))
+  ;; (is (extract= "(@WALT Walt Disney (d wtype) //key value type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney (d wtype) (f wformat) //key value type format)" ...))
+  ;; (is (extract= "(@WALT /wregex/wenv wconsume [wt1] (f wformat) (d wtype) //key regex transform format type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) //key value regex transform format type)" ...))
+  ;; (is (extract= "(@WALT :wife /lregex/lenv lconsume //key meta regex)" ...))
+  ;; (is (extract= "(@WALT :wife [lt1] //key meta transform)" ...))
+  ;; (is (extract= "(@WALT :wife (f lformat) //key meta format)" ...))
+  ;; (is (extract= "(@WALT :wife (d ltype) //key meta type)" ...))
+  ;; (is (extract= "(@WALT :wife (d ltype) (f lformat) //key meta type format)" ...))
+  ;; (is (extract= "(@WALT :wife Lillian (f lformat) (d ltype) //key meta value format type)" ...))
+  ;; (is (extract= "(@WALT :wife /lregex/lenv lconsume [lt1] (f lformat) (d ltype) //key meta regex transform format type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney :wife /lregex/lenv lconsume [lt1] (f lformat) (d ltype) //key value meta regex transform format type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney :wife Lillian /lregex/lenv lconsume [lt1] (f lformat) (d ltype) //key value meta value regex transform format type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife Lillian //key value regex transform format type meta value)" ...))
+  ;; (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife /lregex/lenv lconsume [lt1] (f lformat) (d ltype) //key value regex transform format type meta regex transform format type)" ...))
+  ;; (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife Lillian /lregex/lenv lconsume [lt1] (f lformat) (d ltype) //key value regex transform format type meta value regex transform format type)" ...))
+  ;; (is (extract= "(@WALT :wife Lillian :birthday 1901 //key meta value meta value)" ...))
+  ;; (is (extract= "(@WALT Walt Disney :wife Lillian :birthday 1901 //key value meta value meta value)" ...))
+  ;; (is (extract= "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife Lillian /lregex/lenv lconsume [lt1] (f lformat) (d ltype) :birthday 1901 /bregex/benv bconsume (d btype) (f bformat) //key value regex transform format type meta value regex transform format type meta value regex type format)" ...))
   )
