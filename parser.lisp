@@ -89,7 +89,7 @@ body contents of the parser function."
         (t (format t "~A.~4T~S~%" line-num (car setters)) (explain-lines (cdr setters) (+ line-num 1)) t)))
 
 
-(defun* (explain t) (item-list)
+(defun explain (item-list)
   "Show a printed explainer for a parsed MSL expression."
   (let* ((item (car item-list))
          (item-label (car item))
