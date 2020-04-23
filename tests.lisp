@@ -30,12 +30,12 @@ argument CLEAR is true, clear the universe prior to evaluation."
   (dispatch expr)
   (car (collect)))
 
-(defun expr-equal (expr &optional (clear t))
+(defun expr-equal (expr &optional value)
   "Return true if EXPR is equivalent to the collected dispatch on itself. If
 VALUE is present, compare the collected dispatch against it. The environment is
 cleared prior to the evaluation of EXPR."
   (let ((expr (uncomment expr)))
-    (string= (extract expr clear) expr)))
+    (string= (extract expr t) (or expr value))))
 
 (test parser-tests-1 "Test the values returned by the parser and unparser, without accumulation."
   (is (null (expr-equal "(@WALT //key only)")))
