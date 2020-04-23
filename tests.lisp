@@ -6,7 +6,8 @@
         #:streams/common
         #:streams/parser
         #:streams/unparser
-        #:streams/dispatcher)
+        #:streams/dispatcher
+        #:marie)
   (:export #:run-tests))
 
 (in-package #:streams/tests)
@@ -14,7 +15,7 @@
 (def-suite all-tests)
 (in-suite all-tests)
 
-(defun run-tests ()
+(defun* (run-tests t) ()
   "Run all the tests defined in the suite."
   (run! 'all-tests))
 
@@ -25,22 +26,16 @@
 (defun extract (expr &optional clear)
   "Return the string representation of EXPR after dispatching it. If optional
 argument CLEAR is true, clear the universe prior to evaluation."
-  (let ((expr (uncomment expr)))
-    (when clear (clear))
-    (dispatch expr)
-    (car (collect))))
+  (when clear (clear))
+  (dispatch expr)
+  (car (collect)))
 
-(defun expr-equal (expr &optional value)
+(defun expr-equal (expr &optional (clear t))
   "Return true if EXPR is equivalent to the collected dispatch on itself. If
 VALUE is present, compare the collected dispatch against it. The environment is
 cleared prior to the evaluation of EXPR."
-  (string= (extract expr t) (or value expr)))
-
-(defun expr-equal* (expr &optional value)
-  "Return true if EXPR is equivalent to the collected dispatch on itself. If
-VALUE is present, compare the collected dispatch against it. The environment is
-NOT cleared prior to the evaluation of EXPR."
-  (string= (extract expr) (or value expr)))
+  (let ((expr (uncomment expr)))
+    (string= (extract expr clear) expr)))
 
 (test parser-tests-1 "Test the values returned by the parser and unparser, without accumulation."
   (is (null (expr-equal "(@WALT //key only)")))
