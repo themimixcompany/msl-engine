@@ -54,7 +54,7 @@
   (when (maximum-file-size-p path)
     (purge-file path)))
 
-(defun make-machine-log-path (machine &optional (date +default-date+))
+(defun make-machine-log-path (machine date)
   "Return a log file path using MACHINE. Optional parameter DATE is for
 specifying another date value."
   (make-log-file-path (cat machine #\. date)))

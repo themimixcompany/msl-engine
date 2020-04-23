@@ -45,7 +45,7 @@
               (if (consp item) item (list item)))
           list))
 
-(defun join (list)
+(defun flatten-1 (list)
   "Return a list where items in LIST are flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -76,7 +76,7 @@
                         (cons (flatten-list (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
-                        (cons (join (wrap (fn (car args) nil)))
+                        (cons (flatten-1 (wrap (fn (car args) nil)))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
@@ -88,7 +88,7 @@
              (cond ((metadatap val)
                     (loop :for v :in (cdr val) :collect (cons (car val) v)))
                    (t val))))
-    (join (mapcar #'fn list))))
+    (flatten-1 (mapcar #'fn list))))
 
 (defun make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
@@ -147,7 +147,7 @@
       (loop :for v :in (fn ht entries nil)
             :for kv = (make-head (cons key v))
             :when kv
-              :collect (join (wrap (stage (normalize kv))))))))
+              :collect (flatten-1 (wrap (stage (normalize kv))))))))
 
 (defun convert (terms)
   "Return the original expression from TERMS."
@@ -159,29 +159,18 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
-(defun build-string (value)
-  "Return the string version of expression VALUE."
-  (labels ((fn (args &optional acc)
-             (cond ((null args) (string* (nreverse acc)))
-                   ((consp (car args))
-                    (fn (cdr args)
-                        (cons (fn (car args) nil)
-                              acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn value)))
-
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))
   (let* ((table (atom-table *universe*))
          (children (children table)))
-    (mapcar #'build-string
+    (mapcar #'list-string
             (loop :for child :in children
                   :with cache
                   :nconc (loop :for terms :in (construct child table keys)
-                               :unless (mem (build-string terms) cache)
+                               :unless (mem (list-string terms) cache)
                                  :collect (loop :for term :in terms
                                                 :for v = (convert term)
                                                 :when (valid-terms-p term #'base-namespace-p)
-                                                  :do (pushnew (build-string v) cache :test #'equal)
+                                                  :do (pushnew (list-string v) cache :test #'equal)
                                                 :collect v))))))
