@@ -2,8 +2,10 @@
 
 (uiop:define-package #:streams/parser
   (:use #:cl
-        #:maxpc
-        #:marie))
+        #:maxpc)
+  (:export #:parse-msl
+           #:parse-setters
+           #:parse-explain))
 
 (in-package #:streams/parser)
 
@@ -52,12 +54,12 @@ body contents of the parser function."
        'regex-selector))
 ;;
 
-(defun* (parse-msl t) (expr)
+(defun parse-msl (expr)
   "Parse an MSL expression."
   (parse expr (=msl-expression)))
 ;;
 
-(defun* (parse-explain t) (expr)
+(defun parse-explain (expr)
   "Parse and explain an MSL expression."
   (let ((parsed-atom (parse-msl expr))
         (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
@@ -75,7 +77,7 @@ body contents of the parser function."
 
 ;;
 
-(defun* (parse-setters t) (expr)
+(defun parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
   (format t "~%")
   (let ((parsed-atom (parse-msl expr))
@@ -83,7 +85,7 @@ body contents of the parser function."
     (when (explain-lines parsed-atom) parsed-atom)))
 
 
-(defun* (explain-lines t) (setters &optional (line-num 1))
+(defun explain-lines (setters &optional (line-num 1))
   "Print each setter from a list on a separate line."
   (cond ((not setters) NIL)
         (t (format t "~A.~4T~S~%" line-num (car setters)) (explain-lines (cdr setters) (+ line-num 1)) t)))

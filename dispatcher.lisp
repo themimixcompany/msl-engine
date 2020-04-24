@@ -69,11 +69,15 @@ itself."
   "Return true if KEY is one of the key indicators for table values."
   (when* (member key +key-indicators+ :test #'equal)))
 
-(defun save-value (location table value)
+(defun save-value (term location table value)
   "Store VALUE using LOCATION as key in TABLE."
+  (declare (ignorable term))
   (let ((v (cond ((sub-atom-path-p* value) (sub-atom-path value))
-                 (t value))))
-    (setf (gethash (stem location) table) v)))
+                   (t value))))
+      (when (mem* location '("/" "[]"))
+        ;;(clear-path table head)
+        nil)
+      (setf (gethash (stem location) table) v)))
 
 (defun spawn-table (location table)
   "Conditionally return a new table for term writing and use location as key for
@@ -91,9 +95,8 @@ the new table."
     (labels ((fn (location flag atom-tab sub-atom-tab)
                (cond ((null location)
                       (fn '("=") flag atom-tab sub-atom-tab))
-                     ((and (solop location)
-                           (key-indicator-p (stem location)))
-                      (save-value location atom-tab (if whole params (car params)))
+                     ((and (solop location) (key-indicator-p (stem location)))
+                      (save-value term location atom-tab (if whole params (car params)))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
