@@ -111,7 +111,7 @@
     (websocket-driver:on :open server
                          (lambda () (handle-open-connection server)))
     (websocket-driver:on :message server
-                         (lambda (message) (echo-message server message)))
+                         (lambda (message) (respond-value server message)))
     (websocket-driver:on :close server
                          (lambda (&key _ __)
                            (declare (ignore _ __))
@@ -141,7 +141,7 @@
 (defun stop-websocket-servers ()
   "Stop all the WebSocket servers."
   (muffle-debugger)
-  (format *error-output* "Aborting.~&")
+  (format *error-output* "Aborting...~%")
   (loop :for server :in *servers* :do (clack:stop server))
   (setf *servers* nil)
   (uiop:quit))
