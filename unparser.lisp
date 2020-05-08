@@ -6,6 +6,7 @@
         #:streams/classes
         #:streams/common
         #:streams/parser
+        #:streams/dispatcher
         #:marie))
 
 (in-package #:streams/unparser)

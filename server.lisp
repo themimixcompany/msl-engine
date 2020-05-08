@@ -2,6 +2,10 @@
 
 (uiop:define-package #:streams/server
   (:use #:cl
+        #:streams/specials
+        #:streams/parser
+        #:streams/unparser
+        #:streams/dispatcher
         #:marie))
 
 (in-package #:streams/server)
@@ -13,12 +17,19 @@
   "The base integer user ID for connections.")
 
 (defvar *servers* nil
-  "A list of running websocket server instances.")
+  "A list of running WebSocket server instances.")
 
-(defvar *system-version*
-  ;; #.(asdf:system-version (asdf:find-system :streams))
-  "1.5.1"
-  "The introspected version of this system.")
+(defvar *main-start-port* 60000
+  "The starting port for communication.")
+
+(defvar *main-server* nil
+  "The msl server instance.")
+
+(defvar *admin-start-port* 60500
+  "The starting port for admin access.")
+
+(defvar *admin-server* nil
+  "The admin server instance.")
 
 (defun get-new-user-id ()
   "Return a new fresh user ID."
@@ -43,6 +54,16 @@
   "Echo back MESSAGE to CONNECTION."
   (websocket-driver:send connection message))
 
+(defun respond-expr (connection message)
+  "Return the full MSL expression from MESSAGE."
+  (let ((value (collect-expr message)))
+    (websocket-driver:send connection value)))
+
+(defun respond-value (connection message)
+  "Return the default expression value from MESSAGE."
+  (let ((value (collect-value message)))
+    (websocket-driver:send connection value)))
+
 (defun handle-close-connection (connection)
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *connections*))))
@@ -51,90 +72,74 @@
           :do (websocket-driver:send con message))))
 
 (defun start-server (server port)
-  "Start SERVER using Clack."
+  "Start server SERVER under port PORT."
   (clack:clackup server :port port))
 
 (defun stop-server (server)
-  "Stop SERVER."
+  "Stop server SERVER."
   (clack:stop server))
 
-(defvar *msl-start-port* 60000
-  "The starting port for (msl) communication.")
-
-(defvar *msl-server* nil
-  "The msl server instance.")
-
-(defun msl-server (env)
+(defun main-server (env)
   "Handle requests to the msl server."
-  (let ((ws (websocket-driver:make-server env)))
-    (websocket-driver:on :open ws
-                         (lambda () (handle-open-connection ws)))
-
-    (websocket-driver:on :message ws
-                         (lambda (message) (echo-message ws message)))
-
-    (websocket-driver:on :close ws
+  (let ((server (websocket-driver:make-server env)))
+    (websocket-driver:on :open server
+                         (lambda () (handle-open-connection server)))
+    (websocket-driver:on :message server
+                         (lambda (message) (respond-expr server message)))
+    (websocket-driver:on :close server
                          (lambda (&key _ __)
                            (declare (ignore _ __))
-                           (handle-close-connection ws)))
+                           (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
-      (websocket-driver:start-connection ws))))
+      (websocket-driver:start-connection server))))
 
-(defun start-msl-server ()
-  "Start the msl websocket server."
-  (let ((server (start-server #'msl-server *msl-start-port*)))
-    (setf *msl-server* server)
+(defun start-main-server ()
+  "Start the msl WebSocket server."
+  (let ((server (start-server #'main-server *main-start-port*)))
+    (setf *main-server* server)
     server))
 
-(defun stop-msl-server ()
-  "Stop the msl websocket server."
-  (stop-server *msl-server*)
-  (setf *msl-server* nil))
-
-(defvar *admin-start-port* 60500
-  "The starting port for admin access.")
-
-(defvar *admin-server* nil
-  "The admin server instance.")
+(defun stop-main-server ()
+  "Stop the msl WebSocket server."
+  (stop-server *main-server*)
+  (setf *main-server* nil))
 
 (defun admin-server (env)
   "Handle requests to the admin server."
-  (let ((ws (websocket-driver:make-server env)))
-    (websocket-driver:on :open ws
-                         (lambda () (handle-open-connection ws)))
-
-    (websocket-driver:on :message ws
-                         (lambda (message) (echo-message ws message)))
-
-    (websocket-driver:on :close ws
+  (let ((server (websocket-driver:make-server env)))
+    (websocket-driver:on :open server
+                         (lambda () (handle-open-connection server)))
+    (websocket-driver:on :message server
+                         (lambda (message) (echo-message server message)))
+    (websocket-driver:on :close server
                          (lambda (&key _ __)
                            (declare (ignore _ __))
-                           (handle-close-connection ws)))
+                           (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
-      (websocket-driver:start-connection ws))))
+      (websocket-driver:start-connection server))))
 
 (defun start-admin-server ()
-  "Start the admin websocket server."
+  "Start the admin WebSocket server."
   (let ((server (start-server #'admin-server *admin-start-port*)))
     (setf *admin-server* server)
     server))
 
 (defun stop-admin-server ()
-  "Stop the admin websocket server."
+  "Stop the admin WebSocket server."
   (stop-server *admin-server*)
   (setf *admin-server* nil))
 
 (defun start-websocket-server (server &rest args)
-  "Start the designated websocket server."
-  (format t "Starting websocket server...~%")
+  "Start the designated WebSocket server."
+  (format t "Starting WebSocket server...~%")
   (let ((server (apply server args)))
     (push server *servers*)
     server))
 
 (defun stop-websocket-servers ()
-  "Stop all the websocket servers."
+  "Stop all the WebSocket servers."
   (muffle-debugger)
   (format *error-output* "Aborting.~&")
   (loop :for server :in *servers* :do (clack:stop server))
@@ -142,8 +147,8 @@
   (uiop:quit))
 
 (defun* (serve t) ()
-  "The main entrypoint of the module."
-  (start-websocket-server #'start-msl-server)
+  "The main entrypoint of the server."
+  (start-websocket-server #'start-main-server)
   (start-websocket-server #'start-admin-server)
 
   (handler-case (bt:join-thread (find-if (lambda (thread)
