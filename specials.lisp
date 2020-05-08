@@ -39,8 +39,7 @@
 
   (define-constant* (+namespace-list+ t)
       (append +base-namespace-list+ +sub-namespace-list+)
-    "The full list of namespaces, where the individual elements contain the
-namespace alias and full namespace name"))
+    "The full list of namespaces, where the individual elements contain the namespace alias and full namespace name"))
 
 (define-constant* (+key-indicators+ t)
     '("=" "/" "[]")

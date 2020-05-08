@@ -34,8 +34,7 @@
     (sub-namespace-p ns)))
 
 (defun sub-atom-path-p* (path)
-  "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path
-itself."
+  "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
 (defun read-term (term &optional
@@ -80,8 +79,7 @@ itself."
       (setf (gethash (stem location) table) v)))
 
 (defun spawn-table (location table)
-  "Conditionally return a new table for term writing and use location as key for
-the new table."
+  "Conditionally return a new table for term writing and use location as key for the new table."
   (if (hash-table-p (gethash (car location) table))
       (gethash (car location) table)
       (let ((ht (make-hash-table :test #'equal)))
@@ -113,8 +111,7 @@ the new table."
   (funcall table *universe*))
 
 (defun* (dispatch t) (expr &optional (log t))
-  "Evaluate EXPR as an MSL expression and store the resulting object in the
-universe."
+  "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (flet ((fn (term atom-tab sub-atom-tab)
            (destructuring-bind (path &optional &rest params)
                term
