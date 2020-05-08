@@ -55,8 +55,7 @@
     (purge-file path)))
 
 (defun make-machine-log-path (machine date)
-  "Return a log file path using MACHINE. Optional parameter DATE is for
-specifying another date value."
+  "Return a log file path using MACHINE. Optional parameter DATE is for specifying another date value."
   (make-log-file-path (cat machine #\. date)))
 
 (defun log-path (&key (machine *machine*) (date (log-date *universe*)))

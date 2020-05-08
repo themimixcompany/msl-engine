@@ -90,9 +90,7 @@
   (loop :for table :in (tables universe) :do (clear-table table)))
 
 (defun* (copy-universe t) (universe)
-  "Return a copy of the universe UNIVERSE, but with a new log date. The
-tables are copied using an external function to allow selective table information
-copying."
+  "Return a copy of the universe UNIVERSE, but with a new log date. The tables are copied using an external function to allow selective table information copying."
   (with-slots (atom-counter atom-table sub-atom-counter sub-atom-table)
       universe
     (make-instance 'universe

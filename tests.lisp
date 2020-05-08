@@ -7,8 +7,7 @@
         #:streams/parser
         #:streams/unparser
         #:streams/dispatcher
-        #:marie)
-  (:export #:run-tests))
+        #:marie))
 
 (in-package #:streams/tests)
 

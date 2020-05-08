@@ -5,7 +5,7 @@
         #:streams/specials
         #:marie)
   (:export #:universe
-           
+
            #:atom-counter
            #:atom-table
            #:sub-atom-counter
@@ -15,7 +15,7 @@
            #:mx-base
            #:mx-atom
            #:mx-sub-atom
-           
+
            #:id
            #:ns
            #:key
@@ -164,15 +164,15 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
 
 (defclass register ()
   ((id :initarg :id
-        :initform -1
-        :accessor id
-        :documentation "The unique integer to identify the register.")
+       :initform -1
+       :accessor id
+       :documentation "The unique integer to identify the register.")
    (table :initarg :table
           :initform (make-hash-table :test #'equal)
           :reader table
           :documentation "The hash table for the data store.")
    (date :initarg :date
-          :initform (local-time:format-timestring nil (local-time:now))
-          :accessor date
+         :initform (local-time:format-timestring nil (local-time:now))
+         :accessor date
          :documentation "The date and time associated with a register."))
   (:documentation "The register class."))

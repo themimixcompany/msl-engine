@@ -18,7 +18,7 @@
           (append (remove* ex keys) ex)
           keys))))
 
-(defun children (table &optional object)
+(defun* (children t) (table &optional object)
   "Return all items in TABLE using KEY that are also tables."
   (when (hash-table-p table)
     (let ((keys (table-keys table)))
@@ -159,18 +159,44 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
+(defun* (%collect t) (table children keys)
+  "Return the raw original expressions in TABLE. CHILDREN is a list of top-level keys as strings. KEYS is a list of keys as strings under CHILDREN."
+  (loop :for child :in children
+        :with cache
+        :nconc (loop :for terms :in (construct child table keys)
+                     :unless (mem (list-string terms) cache)
+                       :collect (loop :for term :in terms
+                                      :for v = (convert term)
+                                      :when (valid-terms-p term #'base-namespace-p)
+                                        :do (pushnew (list-string v) cache :test #'equal)
+                                      :collect v))))
+
 (defun* (collect t) (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))
   (let* ((table (atom-table *universe*))
          (children (children table)))
-    (mapcar #'list-string
-            (loop :for child :in children
-                  :with cache
-                  :nconc (loop :for terms :in (construct child table keys)
-                               :unless (mem (list-string terms) cache)
-                                 :collect (loop :for term :in terms
-                                                :for v = (convert term)
-                                                :when (valid-terms-p term #'base-namespace-p)
-                                                  :do (pushnew (list-string v) cache :test #'equal)
-                                                :collect v))))))
+    (mapcar #'list-string (%collect table children keys))))
+
+(defun* (collect-expr t) (spec)
+  "Return the original expressions in TABLE."
+  (destructuring-bind (source &rest keys)
+      spec
+    (declare (ignorable keys))
+    (let* ((table (atom-table *universe*))
+           (children (if source (list source) (children table))))
+      (apply #'values
+             (mapcar #'list-string (%collect table children keys))))))
+
+(defun* (collect-path t) (path)
+  "Return the information in TABLE specified by PATH."
+  (let ((table (atom-table *universe*)))
+    (cond ((solop path)
+           (multiple-value-bind (val existsp)
+               (gethash (stem path) table)
+             (when existsp
+               (cond ((hash-table-p val) (dump-table val))
+                     (t (format nil "~S~%" val))))))
+          ((hash-table-p (gethash (car path) table))
+           (dump-path (gethash (car path) table) (cdr path)))
+          (t nil))))
