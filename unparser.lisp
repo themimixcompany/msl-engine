@@ -179,10 +179,17 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
+(defun* (decompose t) (expr)
+  "Return only the basic namespace/key pair of EXPR."
+  (destructuring-bind (((ns key) &rest _) &rest __)
+      (parse-msl expr)
+    (declare (ignore _ __))
+    (list ns key)))
+
 (defun* (collect-expr t) (spec)
   "Return the original expressions in TABLE."
   (destructuring-bind (source &rest keys)
-      spec
+      (decompose spec)
     (declare (ignorable keys))
     (let* ((table (atom-table *universe*))
            (children (if source (list source) (children table))))
@@ -202,10 +209,3 @@
                     (fn (gethash (car path) table) (cdr path)))
                    (t nil))))
     (fn (atom-table *universe*) path)))
-
-(defun* (decompose t) (expr)
-  "Return only the basic namespace/key pair of EXPR."
-  (destructuring-bind (((ns key) &rest _) &rest __)
-      (parse-msl expr)
-    (declare (ignore _ __))
-    (list ns key)))
