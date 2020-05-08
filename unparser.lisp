@@ -5,6 +5,7 @@
         #:streams/specials
         #:streams/classes
         #:streams/common
+        #:streams/parser
         #:marie))
 
 (in-package #:streams/unparser)
@@ -188,15 +189,23 @@
       (apply #'values
              (mapcar #'list-string (%collect table children keys))))))
 
-(defun* (collect-path t) (path)
-  "Return the information in TABLE specified by PATH."
-  (let ((table (atom-table *universe*)))
-    (cond ((solop path)
-           (multiple-value-bind (val existsp)
-               (gethash (stem path) table)
-             (when existsp
-               (cond ((hash-table-p val) (dump-table val))
-                     (t (format nil "~S~%" val))))))
-          ((hash-table-p (gethash (car path) table))
-           (dump-path (gethash (car path) table) (cdr path)))
-          (t nil))))
+(defun* (collect-value t) (path)
+  "Return the information specified by PATH."
+  (labels ((fn (table path)
+             (cond ((solop path)
+                    (multiple-value-bind (val existsp)
+                        (gethash (car path) table)
+                      (when existsp
+                        (cond ((hash-table-p val) val)
+                              (t (format nil "~A" val))))))
+                   ((hash-table-p (gethash (car path) table))
+                    (fn (gethash (car path) table) (cdr path)))
+                   (t nil))))
+    (fn (atom-table *universe*) path)))
+
+(defun* (decompose t) (expr)
+  "Return only the basic namespace/key pair of EXPR."
+  (destructuring-bind (((ns key) &rest _) &rest __)
+      (parse-msl expr)
+    (declare (ignore _ __))
+    (list ns key)))
