@@ -197,7 +197,7 @@
       (apply #'values
              (mapcar #'list-string (%collect table children keys))))))
 
-(defun* (collect-value t) (path)
+(defun* (extract-value t) (path)
   "Return the information specified by PATH."
   (labels ((fn (table path)
              (cond ((solop path)
@@ -205,8 +205,16 @@
                         (gethash (car path) table)
                       (when existsp
                         (cond ((hash-table-p val) val)
-                              (t (format nil "~A" val))))))
+                              (t (if (listp val) (car val) val))))))
                    ((hash-table-p (gethash (car path) table))
                     (fn (gethash (car path) table) (cdr path)))
                    (t nil))))
     (fn (atom-table *universe*) path)))
+
+(defun* (collect-value t) (spec)
+  "Return the information specified by SPEC stored under the = key."
+  (destructuring-bind (&rest val)
+      (decompose spec)
+    (let* ((path (append val '("=")))
+           (value (extract-value path)))
+      value)))
