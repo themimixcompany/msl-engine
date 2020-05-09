@@ -2,6 +2,7 @@
 
 (uiop:define-package #:streams/server
   (:use #:cl
+        #:websocket-driver
         #:streams/specials
         #:streams/parser
         #:streams/unparser
@@ -45,31 +46,30 @@
   (force-output *standard-output*))
 
 (defun handle-open-connection (connection)
-  "Add a new entry to the connections table, with the connection itself as the key."
-  (setf (gethash connection *connections*)
-        (format nil "user-~A" (get-new-user-id)))
-  (websocket-driver:send connection (format-msl "VER" *system-version*)))
-
-(defun echo-message (connection message)
-  "Echo back MESSAGE to CONNECTION."
-  (websocket-driver:send connection message))
+  "Process incoming connection CONNECTION."
+  (let ((uid (get-new-user-id))
+        (message (format-msl "VER" *system-version*)))
+    (setf (gethash connection *connections*)
+          (format nil "user-~A" uid))
+    (send connection message)))
 
 (defun respond-expr (connection message)
   "Return the full MSL expression from MESSAGE."
   (let ((value (collect-expr message)))
-    (websocket-driver:send connection value)))
+    (send connection value)))
 
 (defun respond-value (connection message)
   "Return the default expression value from MESSAGE."
   (let ((value (collect-value message)))
-    (websocket-driver:send connection value)))
+    (send connection value)))
 
 (defun handle-close-connection (connection)
+  "Process connection CONNECTION when it closes."
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *connections*))))
     (remhash connection *connections*)
     (loop :for con :being :the :hash-key :of *connections*
-          :do (websocket-driver:send con message))))
+          :do (send con message))))
 
 (defun start-server (server port)
   "Start server SERVER under port PORT."
@@ -81,18 +81,18 @@
 
 (defun main-server (env)
   "Handle requests to the MSL server."
-  (let ((server (websocket-driver:make-server env)))
-    (websocket-driver:on :open server
+  (let ((server (make-server env)))
+    (on :open server
                          (lambda () (handle-open-connection server)))
-    (websocket-driver:on :message server
+    (on :message server
                          (lambda (message) (respond-expr server message)))
-    (websocket-driver:on :close server
+    (on :close server
                          (lambda (&key _ __)
                            (declare (ignore _ __))
                            (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
-      (websocket-driver:start-connection server))))
+      (start-connection server))))
 
 (defun start-main-server ()
   "Start the MSL WebSocket server."
@@ -107,18 +107,18 @@
 
 (defun admin-server (env)
   "Handle requests to the admin server."
-  (let ((server (websocket-driver:make-server env)))
-    (websocket-driver:on :open server
+  (let ((server (make-server env)))
+    (on :open server
                          (lambda () (handle-open-connection server)))
-    (websocket-driver:on :message server
+    (on :message server
                          (lambda (message) (respond-value server message)))
-    (websocket-driver:on :close server
+    (on :close server
                          (lambda (&key _ __)
                            (declare (ignore _ __))
                            (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
-      (websocket-driver:start-connection server))))
+      (start-connection server))))
 
 (defun start-admin-server ()
   "Start the admin WebSocket server."
@@ -146,11 +146,17 @@
     (setf *servers* nil)
     (uiop:quit)))
 
-(defun* (serve t) ()
-  "The main entrypoint of the server."
-  (start-websocket-server #'start-main-server)
-  (start-websocket-server #'start-admin-server)
+(defun print-banner ()
+  "Print information about the current instance of Streams."
+  (format t "streams v~A~%" *system-version*))
 
+(defun start-websocket-servers ()
+  "Start all the WebSocket servers."
+  (start-websocket-server #'start-main-server)
+  (start-websocket-server #'start-admin-server))
+
+(defun handle-servers ()
+  "Handle the threads of the servers."
   (handler-case (bt:join-thread (find-if (lambda (thread)
                                            (search "hunchentoot" (bt:thread-name thread)))
                                          (bt:all-threads)))
@@ -163,3 +169,9 @@
      () (stop-websocket-servers))
     (error (c)
       (format t "Oops, an unknown error occured:~&~A~&" c))))
+
+(defun* (serve t) ()
+  "The main entrypoint of the server."
+  (print-banner)
+  (start-websocket-servers)
+  (handle-servers))
