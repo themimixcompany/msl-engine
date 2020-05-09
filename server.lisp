@@ -23,7 +23,7 @@
   "The starting port for communication.")
 
 (defvar *main-server* nil
-  "The msl server instance.")
+  "The MSL server instance.")
 
 (defvar *admin-start-port* 60500
   "The starting port for admin access.")
@@ -80,7 +80,7 @@
   (clack:stop server))
 
 (defun main-server (env)
-  "Handle requests to the msl server."
+  "Handle requests to the MSL server."
   (let ((server (websocket-driver:make-server env)))
     (websocket-driver:on :open server
                          (lambda () (handle-open-connection server)))
@@ -95,13 +95,13 @@
       (websocket-driver:start-connection server))))
 
 (defun start-main-server ()
-  "Start the msl WebSocket server."
+  "Start the MSL WebSocket server."
   (let ((server (start-server #'main-server *main-start-port*)))
     (setf *main-server* server)
     server))
 
 (defun stop-main-server ()
-  "Stop the msl WebSocket server."
+  "Stop the MSL WebSocket server."
   (stop-server *main-server*)
   (setf *main-server* nil))
 
@@ -140,11 +140,11 @@
 
 (defun stop-websocket-servers ()
   "Stop all the WebSocket servers."
-  (muffle-debugger)
-  (format *error-output* "Aborting...~%")
-  (loop :for server :in *servers* :do (clack:stop server))
-  (setf *servers* nil)
-  (uiop:quit))
+  (with-muffled-debugger
+    (format *error-output* "Aborting...~%")
+    (loop :for server :in *servers* :do (clack:stop server))
+    (setf *servers* nil)
+    (uiop:quit)))
 
 (defun* (serve t) ()
   "The main entrypoint of the server."
