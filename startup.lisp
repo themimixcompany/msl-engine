@@ -22,6 +22,8 @@
 
 (defun restore-log (&key (machine *machine*))
   "Re-initialize the universe"
-  (read-log (log-path* :machine machine)))
+  (let ((path (log-path* :machine machine)))
+    (when path
+      (read-log (log-path* :machine machine)))))
 
 (restore-log)
