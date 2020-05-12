@@ -7,6 +7,7 @@
         #:streams/common
         #:streams/parser
         #:streams/dispatcher
+        #:streams/sexp
         #:marie))
 
 (in-package #:streams/unparser)
@@ -185,22 +186,20 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
-(defun* (decompose t) (expr)
-  "Return only the basic namespace/key pair of EXPR."
-  (destructuring-bind (((ns key) &rest _) &rest __)
-      (parse-msl expr)
-    (declare (ignore _ __))
-    (list ns key)))
-
 (defun* (collect-expr t) (spec)
   "Return the original expressions in TABLE."
-  (destructuring-bind (source &rest keys)
-      (decompose spec)
-    (declare (ignorable keys))
-    (let* ((table (atom-table *universe*))
-           (children (if source (list source) (children table))))
-      (apply #'values
-             (mapcar #'list-string (%collect table children keys))))))
+  (flet ((fn (expr)
+           (destructuring-bind (((ns key) &rest _) &rest __)
+               (parse-msl expr)
+             (declare (ignore _ __))
+             (list ns key))))
+    (destructuring-bind (source &rest keys)
+        (fn spec)
+      (declare (ignorable keys))
+      (let* ((table (atom-table *universe*))
+             (children (if source (list source) (children table))))
+        (apply #'values
+               (mapcar #'list-string (%collect table children keys)))))))
 
 (defun* (extract-value t) (path)
   "Return the information specified by PATH."
@@ -263,9 +262,8 @@
     ;;       (t nil))
     stage))
 
-;;; Search matching path
-(defun* (foo t) (table path)
-  ""
+(defun* (decompose t) (table path)
+  "Return the values and metadata for PATH found in TABLE."
   (destructuring-bind (key sub-key &optional &rest constraints)
       path
     (declare (ignorable constraints))
@@ -276,5 +274,8 @@
            (value (car stage))
            (part-1 (cddr (remove-if #'consp value)))
            (part-2 (remove-if-not #'consp value)))
-      ;; handle the constraints here
-      (cons path (cons part-1 part-2)))))
+      (cons part-1 part-2))))
+
+(defun* (sexpify t) (expr)
+  "Return EXPR as tokenized s-expression."
+  (mapcar #'string* (parse expr (=sexp))))

@@ -27,6 +27,7 @@
                "streams/classes"
                "streams/common"
                "streams/parser"
+               "streams/sexp"
                "streams/unparser"
                "streams/logger"
                "streams/dispatcher"
