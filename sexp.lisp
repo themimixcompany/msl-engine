@@ -3,24 +3,20 @@
 (uiop:define-package #:streams/sexp
   (:use #:cl
         #:maxpc
+        #:streams/common
         #:marie)
-  (:export #:parse
-           #:=sexp
-           #:=sexp/parser
-           #:=slist
-           #:=slist/parser))
+  (:export #:parse))
 
 (in-package #:streams/sexp)
 
 (defun not-doublequote (char)
+  "Return true if CHAR is not the doublequote character."
   (not (eql #\" char)))
 
 (defun not-integer (string)
+  "Return true if string is not an integer."
   (when (find-if-not #'digit-char-p string)
     t))
-
-(defun ?alphanumeric ()
-  (?satisfies 'alphanumericp))
 
 (defun inp (integer start &optional end)
   "Return true if INTEGER is within START and END, inclusively."
@@ -45,35 +41,37 @@
   (%or (?satisfies 'alphanumericp)
        (?satisfies 'extra-char-p)))
 
-
 (defun ?string-char ()
+  "Return a parser that checks for string character delimiters."
   (%or (?seq (?eq #\\) (?eq #\"))
        (?satisfies 'not-doublequote)))
 
 (defun =atom ()
+  "Return a parser that checks for an atom."
   (%or (=string) (maxpc.digit:=integer-number) (=symbol)))
 
 (defun =string ()
+  "Return a parser that checks for strings"
   (=destructure (_ s _)
-                (=list (?eq #\")
-                       (=subseq (%any (?string-char)))
-                       (?eq #\"))))
+    (=list (?eq #\")
+           (=subseq (%any (?string-char)))
+           (?eq #\"))))
 
 (defun =symbol ()
-  (=transform (=subseq (?satisfies 'not-integer
-                                   (=subseq (%some (?msl-char-p)))))
+  "Return a parser that checks for accepted symbols."
+  (=transform (=subseq (?satisfies 'not-integer (=subseq (%some (?msl-char-p)))))
               'intern))
 
-(defun =sexp ()
-  (%or '=slist/parser (=atom)))
+(define-parser =sexp ()
+  "Define a parser for the base s-expression."
+  (%or 'slist (=atom)))
 
-(defun =slist ()
+(define-parser =slist ()
+  "Define a parser for the base s-expression lists."
   (=destructure (_ expressions _ _)
-                (=list (?eq #\()
-                       (%any (=destructure (_ expression)
-                                           (=list (%any (maxpc.char:?whitespace)) '=sexp/parser)))
-                       (%any (maxpc.char:?whitespace))
-                       (?eq #\)))))
-
-(setf (fdefinition '=sexp/parser) (=sexp)
-      (fdefinition '=slist/parser) (=slist))
+    (=list (?eq #\()
+           (%any (=destructure (_ expression)
+                   (=list (%any (maxpc.char:?whitespace))
+                          'sexp)))
+           (%any (maxpc.char:?whitespace))
+           (?eq #\)))))
