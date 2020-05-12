@@ -62,8 +62,8 @@
   "The enumeration of week day names.")
 
 (defparameter* (*maximum-log-size* t)
-    5242880
-    "The maximum filesize of logging files in bytes.")
+  5242880
+  "The maximum filesize of logging files in bytes.")
 
 (defvar* (*machine* t)
   "my-machine"

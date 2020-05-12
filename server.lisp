@@ -82,14 +82,14 @@
 (defun main-server (env)
   "Handle requests to the MSL server."
   (let ((server (make-server env)))
-    (on :open server
-                         (lambda () (handle-open-connection server)))
-    (on :message server
-                         (lambda (message) (respond-expr server message)))
-    (on :close server
-                         (lambda (&key _ __)
-                           (declare (ignore _ __))
-                           (handle-close-connection server)))
+    (on :open server (lambda () (handle-open-connection server)))
+    ;; eval
+    ;; review evaluation rules
+    ;; respond to both main and admin ports
+    (on :message server (lambda (message) (respond-expr server message)))
+    (on :close server (lambda (&key _ __)
+                        (declare (ignore _ __))
+                        (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
       (start-connection server))))
@@ -108,14 +108,11 @@
 (defun admin-server (env)
   "Handle requests to the admin server."
   (let ((server (make-server env)))
-    (on :open server
-                         (lambda () (handle-open-connection server)))
-    (on :message server
-                         (lambda (message) (respond-value server message)))
-    (on :close server
-                         (lambda (&key _ __)
-                           (declare (ignore _ __))
-                           (handle-close-connection server)))
+    (on :open server (lambda () (handle-open-connection server)))
+    (on :message server (lambda (message) (respond-value server message)))
+    (on :close server (lambda (&key _ __)
+                        (declare (ignore _ __))
+                        (handle-close-connection server)))
     (lambda (_)
       (declare (ignore _))
       (start-connection server))))
@@ -146,17 +143,11 @@
     (setf *servers* nil)
     (uiop:quit)))
 
-(defun print-banner ()
-  "Print information about the current instance of Streams."
-  (format t "streams v~A~%" *system-version*))
-
-(defun start-websocket-servers ()
-  "Start all the WebSocket servers."
+(defun* (serve t) ()
+  "The main entrypoint of the server."
+  (format t "streams v~A~%" *system-version*)
   (start-websocket-server #'start-main-server)
-  (start-websocket-server #'start-admin-server))
-
-(defun handle-servers ()
-  "Handle the threads of the servers."
+  (start-websocket-server #'start-admin-server)
   (handler-case (bt:join-thread (find-if (lambda (thread)
                                            (search "hunchentoot" (bt:thread-name thread)))
                                          (bt:all-threads)))
@@ -169,9 +160,3 @@
      () (stop-websocket-servers))
     (error (c)
       (format t "Oops, an unknown error occured:~&~A~&" c))))
-
-(defun* (serve t) ()
-  "The main entrypoint of the server."
-  (print-banner)
-  (start-websocket-servers)
-  (handle-servers))

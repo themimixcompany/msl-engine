@@ -64,9 +64,9 @@
 
 (defun* (dump-path t) (table path)
   "Print the information in TABLE specified by PATH."
-  (cond ((solop path)
+  (cond ((singlep path)
          (multiple-value-bind (val existsp)
-             (gethash (stem path) table)
+             (gethash (single path) table)
            (when existsp
              (cond ((hash-table-p val) (dump-table val))
                    (t (format t "~S~%" val))))))
@@ -113,8 +113,8 @@
 (defun* (clear-path t) (table path)
   "Remove the specified entry in TABLE that matches PATH."
   (labels ((fn (tab location)
-             (cond ((solop location)
-                    (remhash (stem location) tab)
+             (cond ((singlep location)
+                    (remhash (single location) tab)
                     table)
                    ((hash-table-p (gethash (car location) tab))
                     (fn (gethash (car location) tab) (cdr location)))
@@ -131,7 +131,7 @@
 (defun* (filter-path t) (table path)
   "Remove all other table entries in SOURCE that do not match PATH."
   (labels ((fn (tab location)
-             (cond ((and (solop location)
+             (cond ((and (singlep location)
                          (hash-table-p (gethash (car location) tab)))
                     (clear-other tab (car location))
                     table)
