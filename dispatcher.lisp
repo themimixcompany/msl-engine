@@ -76,7 +76,7 @@
       (when (mem* location '("/" "[]"))
         ;;(clear-path table head)
         nil)
-      (setf (gethash (stem location) table) v)))
+    (setf (gethash (single location) table) v)))
 
 (defun spawn-table (location table)
   "Conditionally return a new table for term writing and use location as key for the new table."
@@ -93,7 +93,7 @@
     (labels ((fn (location flag atom-tab sub-atom-tab)
                (cond ((null location)
                       (fn '("=") flag atom-tab sub-atom-tab))
-                     ((and (solop location) (key-indicator-p (stem location)))
+                     ((and (singlep location) (key-indicator-p (single location)))
                       (save-value term location atom-tab (if whole params (car params)))
                       (when flag
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))

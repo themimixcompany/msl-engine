@@ -37,7 +37,7 @@
   "Return true if VALUE is a datatype or format form."
   (when* (consp value) (mem (car value) '("d" "f"))))
 
-(defun prefixedp (value)
+(defun* (prefixedp t) (value)
   "Return true if VALUE is prefixed by certain namespaces."
   (rmap-or value #'metadatap #'modsp))
 
@@ -129,27 +129,32 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
-(defun* (construct t) (key table &optional keys)
-  "Return the original expressions in TABLE under KEY."
-  (labels ((fn (tab keys acc)
-             (let ((v (gethash (car keys) tab)))
-               (cond ((null keys) (nreverse acc))
-                     ((hash-table-p v)
-                      (fn tab
+(defun* (%%construct t) (tab keys acc)
+  "Return the original expressions in TABLE under KEYS, without further processing."
+  (let ((v (gethash (car keys) tab)))
+    (cond ((null keys) (nreverse acc))
+          ((hash-table-p v)
+           (%%construct tab
+                        (cdr keys)
+                        (cons (%%construct v
+                                           (table-keys v)
+                                           (list (car keys)))
+                              acc)))
+          (t (%%construct tab
                           (cdr keys)
-                          (cons (fn v
-                                    (table-keys v)
-                                    (list (car keys)))
-                                acc)))
-                     (t (fn tab
-                            (cdr keys)
-                            (accumulate keys acc v)))))))
-    (when-let* ((ht (gethash key table))
-                (entries (or keys (table-keys ht))))
-      (loop :for v :in (fn ht entries nil)
-            :for kv = (make-head (cons key v))
-            :when kv
-              :collect (flatten-1 (wrap (stage (normalize kv))))))))
+                          (accumulate keys acc v))))))
+
+(defun* (%construct t) (table key &optional keys)
+  "Return the original expressions in TABLE under KEYS, without further processing."
+  (when-let* ((ht (gethash key table))
+              (entries (or keys (table-keys ht))))
+    (loop :for v :in (%%construct ht entries nil)
+          :for kv = (make-head (cons key v))
+          :when kv :collect (normalize kv))))
+
+(defun* (construct t) (table key &optional keys)
+  "Return the original expressions in TABLE under KEYS."
+  (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct table key keys)))))
 
 (defun convert (terms)
   "Return the original expression from TERMS."
@@ -157,15 +162,15 @@
            (destructuring-bind (((ns key) &rest _) &rest __)
                v
              (declare (ignore _ __))
-             (car (construct ns (atom-table *universe*) (list key))))))
+             (car (construct (atom-table *universe*) ns (list key))))))
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
 (defun* (%collect t) (table children keys)
-  "Return the raw original expressions in TABLE. CHILDREN is a list of top-level keys as strings. KEYS is a list of keys as strings under CHILDREN."
+  "Return the raw original complete expressions in TABLE that matches CHILDREN and KEYS, where CHILDREN is a list of top-level keys as strings, and KEYS is a list of keys as strings under CHILDREN."
   (loop :for child :in children
         :with cache
-        :nconc (loop :for terms :in (construct child table keys)
+        :nconc (loop :for terms :in (construct table child keys)
                      :unless (mem (list-string terms) cache)
                        :collect (loop :for term :in terms
                                       :for v = (convert term)
@@ -200,7 +205,7 @@
 (defun* (extract-value t) (path)
   "Return the information specified by PATH."
   (labels ((fn (table path)
-             (cond ((solop path)
+             (cond ((singlep path)
                     (multiple-value-bind (val existsp)
                         (gethash (car path) table)
                       (when existsp
@@ -218,3 +223,58 @@
     (let* ((path (append val '("=")))
            (value (extract-value path)))
       value)))
+
+(defun* (one-form-p t) (terms)
+  "Return true if TERMS is in 1-form."
+  (when (length-1 terms)
+    (destructuring-bind (path params)
+        (last* terms)
+      (when*
+        (= (length path) 2)
+        (null params)))))
+
+(defun* (simple-two-form-p t) (terms)
+  "Return true if TERMS is in simple 2-form, that is, only the main value is specified."
+  (when (length-1 terms)
+    (destructuring-bind (path params)
+        (last* terms)
+      (when*
+        (= (length path) 2)
+        params))))
+
+(defun* (recall-value t) (path)
+  "Return the value specified in PATH."
+  (let ((value (append path '("="))))
+    (extract-value value)))
+
+(defun* (strip-lead t) (path)
+  "Return path PATH without the leading primary namespace and key."
+  (cond ((and (= (length path) 4) (prefixedp (cddr path)))
+         (cddr path))
+        (t path)))
+
+(defun* (recall-expr t) (expr)
+  "Return the minimum expression needed to match EXPR with the database."
+  (let* ((value (loop :for val :in (parse-msl expr)
+                      :unless (null (last* (cdr val)))
+                        :collect (car val)))
+         (stage (mapcar #'strip-lead value)))
+    ;; (cond ((null stage) (collect-expr expr))
+    ;;       (t nil))
+    stage))
+
+;;; Search matching path
+(defun* (foo t) (table path)
+  ""
+  (destructuring-bind (key sub-key &optional &rest constraints)
+      path
+    (declare (ignorable constraints))
+    (let* ((stage (loop :with ht = (gethash key table)
+                        :for v :in (%%construct ht (list sub-key) nil)
+                        :for kv = (cons key v)
+                        :when kv :collect (stage (normalize kv))))
+           (value (car stage))
+           (part-1 (cddr (remove-if #'consp value)))
+           (part-2 (remove-if-not #'consp value)))
+      ;; handle the constraints here
+      (cons path (cons part-1 part-2)))))
