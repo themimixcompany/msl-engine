@@ -2,24 +2,13 @@
 
 (uiop:define-package #:streams/parser
   (:use #:cl
+        #:streams/common
         #:maxpc)
   (:export #:parse-msl
            #:parse-setters
            #:parse-explain))
 
 (in-package #:streams/parser)
-
-(defmacro define-parser (name args &body body)
-  "Define a function for defining parsers. NAME is the name of the parser
-function; ARGS are the arguments passed to a parser—usually NIL; and BODY is the
-body contents of the parser function."
-  (let ((fname (string name)))
-    (if (not (some #'(lambda (char) (char= (elt fname 0) char))
-                   '(#\= #\? #\%)))
-        (error "The parser name must start with =, ?, or %.")
-        `(progn
-           (defun ,name ,args ,@body)
-           (setf (fdefinition ',(intern (subseq (string name) 1))) (,name))))))
 
 
 ;; Utility (Non-Parser) Functions
