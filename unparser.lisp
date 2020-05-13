@@ -56,7 +56,7 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun wrap (list)
+(defun* (wrap t) (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -272,10 +272,27 @@
                         :for kv = (cons key v)
                         :when kv :collect (stage (normalize kv))))
            (value (car stage))
-           (part-1 (cddr (remove-if #'consp value)))
-           (part-2 (remove-if-not #'consp value)))
-      (cons part-1 part-2))))
+           (main (cddr (remove-if #'consp value)))
+           (meta (remove-if-not #'consp value)))
+      (cons path (cons main meta)))))
 
-(defun* (sexpify t) (expr)
+(defun* (part t) (value)
+  "Conditionally break down STRING into constituents."
+  (cond ((and (> (length value) 1)
+              (mem (car value) '(#\@ #\:)))
+         (list (string* (car value)) (sequence-string (cdr value))))
+        (t (list (sequence-string value)))))
+
+(defun* (pack t) (list)
+  "Return a new list where the items are parenthesized if they are not already."
+  (mapcar #'(lambda (item)
+              (cond ((consp item) item)
+                    (t (list item))))
+          list))
+
+(defun* (split t) (expr)
   "Return EXPR as tokenized s-expression."
-  (mapcar #'string* (parse expr (=sexp))))
+  (let* ((value (mapcar #'string* (parse expr (=sexp))))
+         ;; (stage (mapcar #'part value))
+         )
+    value))
