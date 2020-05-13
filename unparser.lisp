@@ -246,6 +246,39 @@
   (let ((value (append path '("="))))
     (extract-value value)))
 
+(defun* (tokens t) (expr)
+  "Return a list of basic tokens as read by the parser."
+  (flet ((fn (item)
+           (cond ((and (> (length item) 1)
+                       (member (aref item 0) '(#\@ #\:) :test #'equal))
+                  (list (subseq item 0 1) (subseq item 1)))
+                 (t (list item)))))
+    (reduce #'append
+            (loop :for item :in (mapcar #'string* (parse expr (=sexp)))
+                  :collect (fn item)))))
+
+(defun split-list (list)
+  "Return a new list where items are split by whitespace."
+  (reduce #'append
+          (loop :for item :in list
+                :collect (cl-ppcre:split "\\s+" item))))
+
+(defun* (parts t) (path)
+  "Return the values and metadata for PATH found in TABLE."
+  (let ((table (atom-table *universe*)))
+    (destructuring-bind (key sub-key &optional &rest constraints)
+        path
+      (declare (ignorable constraints))
+      (let* ((stage (loop :with ht = (gethash key table)
+                          :for v :in (%%construct ht (list sub-key) nil)
+                          :for kv = (cons key v)
+                          :when kv :collect (stage (normalize kv))))
+             (value (car stage))
+             (main (cddr (remove-if #'consp value)))
+             (meta (remove-if-not #'consp value))
+             (parts (cons path (cons main meta))))
+        (loop :for part :in parts :collect (split-list part))))))
+
 (defun* (strip-lead t) (path)
   "Return path PATH without the leading primary namespace and key."
   (cond ((and (= (length path) 4) (prefixedp (cddr path)))
@@ -257,42 +290,9 @@
   (let* ((value (loop :for val :in (parse-msl expr)
                       :unless (null (last* (cdr val)))
                         :collect (car val)))
-         (stage (mapcar #'strip-lead value)))
-    ;; (cond ((null stage) (collect-expr expr))
-    ;;       (t nil))
-    stage))
-
-(defun* (decompose t) (table path)
-  "Return the values and metadata for PATH found in TABLE."
-  (destructuring-bind (key sub-key &optional &rest constraints)
-      path
-    (declare (ignorable constraints))
-    (let* ((stage (loop :with ht = (gethash key table)
-                        :for v :in (%%construct ht (list sub-key) nil)
-                        :for kv = (cons key v)
-                        :when kv :collect (stage (normalize kv))))
-           (value (car stage))
-           (main (cddr (remove-if #'consp value)))
-           (meta (remove-if-not #'consp value)))
-      (cons path (cons main meta)))))
-
-(defun* (part t) (value)
-  "Conditionally break down STRING into constituents."
-  (cond ((and (> (length value) 1)
-              (mem (car value) '(#\@ #\:)))
-         (list (string* (car value)) (sequence-string (cdr value))))
-        (t (list (sequence-string value)))))
-
-(defun* (pack t) (list)
-  "Return a new list where the items are parenthesized if they are not already."
-  (mapcar #'(lambda (item)
-              (cond ((consp item) item)
-                    (t (list item))))
-          list))
-
-(defun* (split t) (expr)
-  "Return EXPR as tokenized s-expression."
-  (let* ((value (mapcar #'string* (parse expr (=sexp))))
-         ;; (stage (mapcar #'part value))
-         )
-    value))
+         (stage (mapcar #'strip-lead value))
+         (tokens (tokens expr))
+         (parts (parts (car value))))
+    (cond ((null stage) (collect-expr expr))
+          (t (values tokens
+                     parts)))))
