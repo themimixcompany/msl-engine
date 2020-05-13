@@ -49,7 +49,7 @@
           list))
 
 (defun flatten-1 (list)
-  "Return a list where items in LIST are flattened to one level."
+  "Return a list where items in LIST are conditionally flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
                     ((modsp y) (append x (list y)))
@@ -279,7 +279,7 @@
              (parts (cons path (cons main meta))))
         (loop :for part :in parts :collect (split-list part))))))
 
-(defun* (strip-lead t) (path)
+(defun strip-lead (path)
   "Return path PATH without the leading primary namespace and key."
   (cond ((and (= (length path) 4) (prefixedp (cddr path)))
          (cddr path))
@@ -290,9 +290,7 @@
   (let* ((value (loop :for val :in (parse-msl expr)
                       :unless (null (last* (cdr val)))
                         :collect (car val)))
-         (stage (mapcar #'strip-lead value))
-         (tokens (tokens expr))
-         (parts (parts (car value))))
+         (stage (mapcar #'strip-lead value)))
     (cond ((null stage) (collect-expr expr))
-          (t (values tokens
-                     parts)))))
+          (t (values (tokens expr)
+                     (parts (car value)))))))
