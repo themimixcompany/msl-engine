@@ -278,10 +278,19 @@
   (when (>= (length tokens) 2)
     (subseq tokens 0 2)))
 
+(defun* (value-split t) (list)
+  "Split the string items in LIST."
+  (reduce #'append
+          (loop :for item :in list :collect (cl-ppcre:split "\\s+" item))))
+
 (defun* (recall-expr t) (expr)
   "Return the minimum expression needed to match EXPR from the store."
   (when-let* ((tokens (tokens expr))
               (head (head tokens))
-              (parts (parts head)))
-    (values (strip-head tokens)
-            parts)))
+              (parts (parts head)))     ;conditionally collect these
+    (let ((stage (strip-head tokens)))
+      (cond ((null stage) (collect-expr expr))
+            (t (values stage
+                       (loop :for part :in parts
+                             :for split = (value-split part)
+                             :collect split)))))))
