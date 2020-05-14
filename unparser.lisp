@@ -70,7 +70,7 @@
                     (t item)))
           list))
 
-(defun stage (list)
+(defun* (stage t) (list)
   "Return a new list with preprocessed elements for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -85,7 +85,7 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
-(defun normalize (list)
+(defun* (normalize t) (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val)
@@ -215,6 +215,13 @@
                    (t nil))))
     (fn (atom-table *universe*) path)))
 
+(defun* (decompose t) (expr)
+  "Return only the basic namespace/key pair of EXPR."
+  (destructuring-bind (((ns key) &rest _) &rest __)
+      (parse-msl expr)
+    (declare (ignore _ __))
+    (list ns key)))
+
 (defun* (collect-value t) (spec)
   "Return the information specified by SPEC stored under the = key."
   (destructuring-bind (&rest val)
@@ -263,34 +270,68 @@
           (loop :for item :in list
                 :collect (cl-ppcre:split "\\s+" item))))
 
+;; ;;; Return only the information from the path, for example,
+;; ;;; ("@" "WALT" ":" "wife")
+;; (defun* (parts t) (path)
+;;   "Return the values and metadata for PATH found in TABLE."
+;;   (let ((table (atom-table *universe*)))
+;;     (destructuring-bind (key sub-key &optional &rest constraints)
+;;         path
+;;       (declare (ignorable constraints))
+;;       (let* ((stage (loop :with ht = (gethash key table)
+;;                           :for v :in (%%construct ht (list sub-key) nil)
+;;                           :for kv = (cons key v)
+;;                           :when kv :collect (stage (normalize kv))))
+;;              (value (car stage))
+;;              (main (cddr (remove-if #'consp value)))
+;;              (meta (remove-if-not #'consp value))
+;;              (parts (cons path (cons main meta))))
+;;         (loop :for part :in parts :collect (split-list part))))))
+
 (defun* (parts t) (path)
   "Return the values and metadata for PATH found in TABLE."
   (let ((table (atom-table *universe*)))
-    (destructuring-bind (key sub-key &optional &rest constraints)
+    (destructuring-bind (key sub-key)
         path
-      (declare (ignorable constraints))
-      (let* ((stage (loop :with ht = (gethash key table)
-                          :for v :in (%%construct ht (list sub-key) nil)
+      (let* ((ht (gethash key table))
+             (stage (loop :for v :in (%%construct ht (list sub-key) nil)
                           :for kv = (cons key v)
                           :when kv :collect (stage (normalize kv))))
              (value (car stage))
              (main (cddr (remove-if #'consp value)))
-             (meta (remove-if-not #'consp value))
-             (parts (cons path (cons main meta))))
-        (loop :for part :in parts :collect (split-list part))))))
+             (meta (remove-if-not #'consp value)))
+        (cons main meta)))))
 
-(defun strip-lead (path)
+(defun* (strip-head t) (path)
   "Return path PATH without the leading primary namespace and key."
-  (cond ((and (= (length path) 4) (prefixedp (cddr path)))
-         (cddr path))
-        (t path)))
+  (let ((length (length path)))
+    (cond ((or (and (= length 4) (prefixedp (cddr path)))
+               (and (>= length 2) (base-namespace-p (car path))))
+           (cddr path))
+          (t path))))
+
+;; (defun* (recall-expr t) (expr)
+;;   "Return the minimum expression needed to match EXPR with the database."
+;;   (let* ((value (loop :for val :in (parse-msl expr) ;unusable for invalid expressions
+;;                       :unless (null (last* (cdr val)))
+;;                         :collect (car val)))
+;;          (stage (mapcar #'strip-head value)))
+;;     (cond ((null stage) (collect-expr expr))
+;;           (t (values value
+;;                      stage
+;;                      (tokens expr)
+;;                      (parts (car value)))))))
+
+(defun* (valid-head-p t) (head)
+  "Return true if HEAD is a valid location."
+  (gethash* head (atom-table *universe*)))
 
 (defun* (recall-expr t) (expr)
   "Return the minimum expression needed to match EXPR with the database."
-  (let* ((value (loop :for val :in (parse-msl expr)
-                      :unless (null (last* (cdr val)))
-                        :collect (car val)))
-         (stage (mapcar #'strip-lead value)))
-    (cond ((null stage) (collect-expr expr))
-          (t (values (tokens expr)
-                     (parts (car value)))))))
+  (let* ((tokens (tokens expr))
+         (head (when (>= (length tokens) 2)
+                 (subseq tokens 0 2))))
+    (when (valid-head-p head)
+      (let ((parts (parts head)))
+        (values (strip-head tokens)
+                parts)))))
