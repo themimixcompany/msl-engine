@@ -110,7 +110,7 @@
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
-(defun* (dispatch t) (expr &optional (log t))
+(defun* dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (flet ((fn (term atom-tab sub-atom-tab)
            (destructuring-bind (path &optional &rest params)
@@ -132,6 +132,6 @@
         (loop :for term :in terms
               :collect (fn term atom-tab sub-atom-tab))))))
 
-(defun* (dispatch* t) (&rest args)
+(defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
   (apply #'(lambda (arg) (dispatch arg nil)) args))

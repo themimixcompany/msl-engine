@@ -143,7 +143,7 @@
     (setf *servers* nil)
     (uiop:quit)))
 
-(defun* (serve t) ()
+(defun* serve ()
   "The main entrypoint of the server."
   (format t "streams v~A~%" *system-version*)
   (start-websocket-server #'start-main-server)

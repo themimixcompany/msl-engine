@@ -12,29 +12,29 @@
   "Return true if elem is a MEMBER of NS-LIST by CAR."
   (when* (member elem ns-list :key #'car :test #'equal)))
 
-(defun* (base-namespace-p t) (ns)
+(defun* base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
   (ns-member-p ns +base-namespace-list+))
 
-(defun* (sub-namespace-p t) (ns)
+(defun* sub-namespace-p (ns)
   "Return true if NS is sub namespace indicator."
   (ns-member-p ns +sub-namespace-list+))
 
-(defun* (namespacep t) (ns)
+(defun* namespacep (ns)
   "Return true if NS is a namespace indicator."
   (rmap-or ns #'base-namespace-p #'sub-namespace-p))
 
-(defun* (object-slots t) (object)
+(defun* object-slots (object)
   "Return the slot names of OBJECT."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun* (slots t) (class)
+(defun* slots (class)
   "Return the slot names of CLASS."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (find-class class))))
 
-(defun* (dump-object t) (object)
+(defun* dump-object (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (object-slots object)
         :do (let ((v (funcall slot object)))
@@ -42,7 +42,7 @@
               (when (hash-table-p v)
                 (dump-table v)))))
 
-(defun* (dump-universe dump t) (&optional (universe *universe*))
+(defun* (dump-universe dump) (&optional (universe *universe*))
   "Dump the contents of the universe."
   (let* ((slots (object-slots universe))
          (string-slots (mapcar #'string* slots))
@@ -58,11 +58,11 @@
                 (format t "~%~A:~%" table-reader)
                 (dump-table* table)))))
 
-(defun* (dump-table t) (table)
+(defun* dump-table (table)
   "Print information about TABLE recursively."
   (dump-table* table))
 
-(defun* (dump-path t) (table path)
+(defun* dump-path (table path)
   "Print the information in TABLE specified by PATH."
   (cond ((singlep path)
          (multiple-value-bind (val existsp)
@@ -74,22 +74,22 @@
          (dump-path (gethash (car path) table) (cdr path)))
         (t nil)))
 
-(defun* (clear-table t) (table)
+(defun* clear-table (table)
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun* (tables t) (&optional (universe *universe*))
+(defun* tables (&optional (universe *universe*))
   "Return the list of slots from UNIVERSE that are tables."
   (loop :for slot :in (object-slots universe)
         :for tab = (funcall slot universe)
         :when (hash-table-p tab)
         :collect tab))
 
-(defun* (clear-universe clear t) (&optional (universe *universe*))
+(defun* (clear-universe clear) (&optional (universe *universe*))
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
 
-(defun* (copy-universe t) (universe)
+(defun* copy-universe (universe)
   "Return a copy of the universe UNIVERSE, but with a new log date. The tables are copied using an external function to allow selective table information copying."
   (with-slots (atom-counter atom-table sub-atom-counter sub-atom-table)
       universe
@@ -99,7 +99,7 @@
                    :sub-atom-counter sub-atom-counter
                    :sub-atom-table (copy-table sub-atom-table))))
 
-(defun* (copy-table t) (table)
+(defun* copy-table (table)
   "Create a new hash table from TABLE."
   (let ((ht (make-hash-table :test (hash-table-test table)
                              :rehash-size (hash-table-rehash-size table)
@@ -110,7 +110,7 @@
           :do (setf (gethash key ht) value)
           :finally (return ht))))
 
-(defun* (clear-path t) (table path)
+(defun* clear-path (table path)
   "Remove the specified entry in TABLE that matches PATH."
   (labels ((fn (tab location)
              (cond ((singlep location)
@@ -128,7 +128,7 @@
           :do (remhash item table)
           :finally (return table))))
 
-(defun* (filter-path t) (table path)
+(defun* filter-path (table path)
   "Remove all other table entries in SOURCE that do not match PATH."
   (labels ((fn (tab location)
              (cond ((and (singlep location)
@@ -141,7 +141,7 @@
                    (t nil))))
     (fn table path)))
 
-(defun* (valid-terms-p t) (form &optional (predicate #'namespacep))
+(defun* valid-terms-p (form &optional (predicate #'namespacep))
   "Return true if FORM is a valid MSL form."
   (flet ((fn (form)
            (destructuring-bind (&optional head &rest _)
@@ -157,7 +157,7 @@
     (cond ((rmap-or form #'stringp #'numberp) nil)
           (t (fn form)))))
 
-(defmacro* (define-parser t) (name args &body body)
+(defmacro* define-parser (name args &body body)
   "Define a function for defining parsers. NAME is the name of the parser
 function; ARGS are the arguments passed to a parser—usually NIL; and BODY is the
 body contents of the parser function."

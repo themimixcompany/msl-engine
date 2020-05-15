@@ -152,7 +152,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                        `(define-maker ,name :allocate ,allocate)))))
 (define-makers ((atom t) (sub-atom t)))
 
-(defun* (make-universe t) ()
+(defun* make-universe ()
   "Return an instance of the universe class."
   (make-instance 'universe))
 

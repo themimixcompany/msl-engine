@@ -6,7 +6,7 @@
 
 (in-package #:streams/builder)
 
-(defun* (build t) (&optional (root *default-pathname-defaults*))
+(defun* build (&optional (root *default-pathname-defaults*))
   "Build the executable of streams for different platforms."
   (with-muffled-debugger
     (let ((arch (string (uiop:architecture))))
