@@ -100,7 +100,7 @@
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(defun* (log-path* t) (&key (directory *log-directory*) (machine *machine*))
+(defun* log-path* (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (last* (log-paths :directory directory :machine machine :sort t)))
 
@@ -109,7 +109,7 @@
   (setf (log-date universe)
         (local-time:format-timestring nil (local-time:now))))
 
-(defun* (write-log t) (value)
+(defun* write-log (value)
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)

@@ -14,7 +14,7 @@
 (def-suite all-tests)
 (in-suite all-tests)
 
-(defun* (run-tests t) ()
+(defun* run-tests ()
   "Run all the tests defined in the suite."
   (run! 'all-tests))
 

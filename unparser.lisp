@@ -21,7 +21,7 @@
           (append (remove* ex keys) ex)
           keys))))
 
-(defun* (children t) (table &optional object)
+(defun* children (table &optional object)
   "Return all items in TABLE using KEY that are also tables."
   (when (hash-table-p table)
     (let ((keys (table-keys table)))
@@ -30,15 +30,19 @@
             :when (hash-table-p value)
               :collect (if object value key)))))
 
+(defun basep (value)
+  "Return true if VALUE is in the @ key."
+  (when* (consp value) (mem (car value) '("@"))))
+
 (defun metadatap (value)
-  "Return true if VALUE is the : namespace."
+  "Return true if VALUE is in the : namespace."
   (when* (consp value) (mem (car value) '(":"))))
 
 (defun modsp (value)
   "Return true if VALUE is a datatype or format form."
   (when* (consp value) (mem (car value) '("d" "f"))))
 
-(defun* (prefixedp t) (value)
+(defun* prefixedp (value)
   "Return true if VALUE is prefixed by certain namespaces."
   (rmap-or value #'metadatap #'modsp))
 
@@ -48,7 +52,7 @@
               (if (consp item) item (list item)))
           list))
 
-(defun flatten-1 (list)
+(defun* flatten-1 (list)
   "Return a list where items in LIST are conditionally flattened to one level."
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
@@ -56,7 +60,7 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun* (wrap t) (list)
+(defun* wrap (list)
   "Return a new list where items in LIST are conditionally listified."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
@@ -64,13 +68,14 @@
                               (not (prefixedp item))
                               (not (stringp (car item)))))
                      (list item))
-                    ((metadatap item)
+                    ((or (basep item)   ;note this
+                         (metadatap item))
                      (cons (cat (car item) (cadr item))
                            (cddr item)))
                     (t item)))
           list))
 
-(defun* (stage t) (list)
+(defun* stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -85,7 +90,7 @@
                           (cons (car args) acc))))))
     (fn list nil)))
 
-(defun* (normalize t) (list)
+(defun* normalize (list)
   "Return special merging on items of LIST."
   (labels ((fn (val)
              (cond ((metadatap val)
@@ -130,7 +135,7 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
-(defun* (%%construct t) (tab keys acc)
+(defun* %%construct (tab keys acc)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let ((v (gethash (car keys) tab)))
     (cond ((null keys) (nreverse acc))
@@ -145,7 +150,7 @@
                           (cdr keys)
                           (accumulate keys acc v))))))
 
-(defun* (%construct t) (table key &optional keys)
+(defun* %construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (when-let* ((ht (gethash key table))
               (entries (or keys (table-keys ht))))
@@ -153,7 +158,7 @@
           :for kv = (make-head (cons key v))
           :when kv :collect (normalize kv))))
 
-(defun* (construct t) (table key &optional keys)
+(defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS."
   (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct table key keys)))))
 
@@ -167,7 +172,7 @@
     (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
           (t terms))))
 
-(defun* (%collect t) (table children keys)
+(defun* %collect (table children keys)
   "Return the raw original complete expressions in TABLE that matches CHILDREN and KEYS, where CHILDREN is a list of top-level keys as strings, and KEYS is a list of keys as strings under CHILDREN."
   (loop :for child :in children
         :with cache
@@ -179,14 +184,14 @@
                                         :do (pushnew (list-string v) cache :test #'equal)
                                       :collect v))))
 
-(defun* (collect t) (&rest keys)
+(defun* collect (&rest keys)
   "Return the original expressions in TABLE."
   (declare (ignorable keys))
   (let* ((table (atom-table *universe*))
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
-(defun* (collect-expr t) (spec)
+(defun* collect-expr (spec)
   "Return the original expressions in TABLE."
   (flet ((fn (expr)
            (destructuring-bind (((ns key) &rest _) &rest __)
@@ -201,7 +206,7 @@
         (apply #'values
                (mapcar #'list-string (%collect table children keys)))))))
 
-(defun* (extract-value t) (path)
+(defun* extract-value (path)
   "Return the information specified by PATH."
   (labels ((fn (table path)
              (cond ((singlep path)
@@ -222,7 +227,7 @@
     (declare (ignore _ __))
     (list ns key)))
 
-(defun* (collect-value t) (spec)
+(defun* collect-value (spec)
   "Return the information specified by SPEC stored under the = key."
   (destructuring-bind (&rest val)
       (decompose spec)
@@ -230,12 +235,12 @@
            (value (extract-value path)))
       value)))
 
-(defun* (recall-value t) (path)
+(defun* recall-value (path)
   "Return the value specified in PATH."
   (let ((value (append path '("="))))
     (extract-value value)))
 
-(defun* (tokens t) (expr)
+(defun* tokens (expr)
   "Return a list of basic tokens as read by the parser."
   (flet ((fn (item)
            (cond ((and (> (length item) 1)
@@ -250,7 +255,7 @@
   "Return true if HEAD is a valid location."
   (gethash* head (atom-table *universe*)))
 
-(defun* (parts t) (head)
+(defun* parts (head)
   "Return the values and metadata for PATH found in TABLE."
   (when (valid-head-p head)
     (let ((table (atom-table *universe*)))
@@ -262,35 +267,50 @@
                             :when kv :collect (stage (normalize kv))))
                (value (car stage))
                (main (cddr (remove-if #'consp value)))
-               (meta (remove-if-not #'consp value)))
-          (cons main meta))))))
+               (meta (remove-if-not #'consp value))
+               (lead (if (string= "@" (car head))
+                         (list (reduce #'cat head))
+                         head)))
+          (declare (ignorable lead))
+          (cons (append head main) meta))))))
 
-(defun strip-head (path)
+(defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
     (cond ((or (and (= length 4) (prefixedp (cddr path)))
-               (and (>= length 2) (base-namespace-p (car path))))
+               (and (> length 2) (base-namespace-p (car path))))
            (cddr path))
           (t path))))
 
-(defun head (tokens)
-  "Return the head from TOKENS."
-  (when (>= (length tokens) 2)
-    (subseq tokens 0 2)))
+(defun* collect-requests (parse)
+  "Return terms from PARSE that are valid requests."
+  (flet ((fn (item)
+           (or (mem (last* (first item)) '("/" "[]" "d" "f"))
+               (and (= (length (first item)) 2)
+                    (null (cadr item))))))
+    (cond ((length-1 parse) parse)
+          (t (loop :for value :in (remove-if #'fn parse)
+                   :for stage = (strip-head (first value))
+                   :collect stage)))))
 
-(defun* (value-split t) (list)
-  "Split the string items in LIST."
-  (reduce #'append
-          (loop :for item :in list :collect (cl-ppcre:split "\\s+" item))))
-
-(defun* (recall-expr t) (expr)
+(defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
-  (when-let* ((tokens (tokens expr))
-              (head (head tokens))
-              (parts (parts head)))     ;conditionally collect these
-    (let ((stage (strip-head tokens)))
-      (cond ((null stage) (collect-expr expr))
-            (t (values stage
-                       (loop :for part :in parts
-                             :for split = (value-split part)
-                             :collect split)))))))
+  (flet ((fn (value)
+           (list-string (flatten-1 (wrap value)))))
+    (when-let* ((parse (parse-msl expr))
+                (head (caar parse))
+                (parts (parts head)))
+      (cond ((and (length-1 parse)
+                  (null (cadr (single parse))))
+             (collect-expr expr))
+            (t (let* ((requests (collect-requests parse))
+                      (val (loop :for request :in requests
+                                 :nconc (loop :for part :in parts
+                                              :when (search request part :test #'equal)
+                                                :collect part))))
+                 (if (search head (car val) :test #'equal)
+                     (fn val)
+                     (fn (cons head val)))))))))
+
+;;; dispatch
+;;; recall
