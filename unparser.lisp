@@ -288,7 +288,7 @@
            (or (mem (last* (first item)) '("/" "[]" "d" "f"))
                (and (= (length (first item)) 2)
                     (null (cadr item))))))
-    (cond ((length-1 parse) parse)
+    (cond ((length-1 parse) (butlast (car parse)))
           (t (loop :for value :in (remove-if #'fn parse)
                    :for stage = (strip-head (first value))
                    :collect stage)))))
