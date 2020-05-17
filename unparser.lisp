@@ -251,13 +251,13 @@
             (loop :for item :in (mapcar #'string* (parse expr (=sexp)))
                   :collect (fn item)))))
 
-(defun valid-head-p (head)
-  "Return true if HEAD is a valid location."
+(defun* headp (head)
+  "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
 
 (defun* parts (head)
   "Return the values and metadata for PATH found in TABLE."
-  (when (valid-head-p head)
+  (when (headp head)
     (let ((table (atom-table *universe*)))
       (destructuring-bind (ns key)
           head
@@ -313,6 +313,11 @@
             (values requests
                     val))))))
 
+(defun head (expr)
+  "Return the namespace and key sequence from EXPR."
+  (when-let ((parse (parse-msl expr)))
+    (caar parse)))
+
 (defun* sections (head)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
@@ -333,13 +338,24 @@
 (defun* deconstruct* (expr)
   "Return the sections of EXPR from a new universe."
   (when-let* ((*universe* (make-universe))
-              (parse (parse-msl expr))
-              (head (caar parse)))
+              (head (head expr)))
     (dispatch* expr)
     (sections head)))
 
 (defun* deconstruct (expr)
   "Return the sections of EXPR from the current universe."
-  (when-let* ((parse (parse-msl expr))
-             (head (caar parse)))
+  (when-let* ((head (head expr)))
     (sections head)))
+
+(defun* head-only-p (path)
+  "Return true if PATH is exclusively a head."
+  (and (= (length path) 2)
+       (headp path)))
+
+(defun* recall (expr)
+  "Return the minimum expression needed to match EXPR from the store."
+  (let* ((value (deconstruct* expr))
+         (head (head expr))
+         (sections (sections head)))
+    (values value
+            sections)))
