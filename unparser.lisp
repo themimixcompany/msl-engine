@@ -11,6 +11,11 @@
 
 (in-package #:streams/unparser)
 
+
+;;--------------------------------------------------------------------------------------------------
+;; common
+;;--------------------------------------------------------------------------------------------------
+
 (defun table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
@@ -134,26 +139,31 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
-(defun* %%construct (tab keys acc)
+
+;;--------------------------------------------------------------------------------------------------
+;; recall-expr
+;;--------------------------------------------------------------------------------------------------
+
+(defun* assemble (table keys acc)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (let ((v (gethash (car keys) tab)))
+  (let ((v (gethash (car keys) table)))
     (cond ((null keys) (nreverse acc))
           ((hash-table-p v)
-           (%%construct tab
-                        (cdr keys)
-                        (cons (%%construct v
-                                           (table-keys v)
-                                           (list (car keys)))
-                              acc)))
-          (t (%%construct tab
-                          (cdr keys)
-                          (accumulate keys acc v))))))
+           (assemble table
+             (cdr keys)
+             (cons (assemble v
+                     (table-keys v)
+                     (list (car keys)))
+                   acc)))
+          (t (assemble table
+               (cdr keys)
+               (accumulate keys acc v))))))
 
 (defun* %construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (when-let* ((ht (gethash key table))
               (entries (or keys (table-keys ht))))
-    (loop :for v :in (%%construct ht entries nil)
+    (loop :for v :in (assemble ht entries nil)
           :for kv = (make-head (cons key v))
           :when kv :collect (normalize kv))))
 
@@ -205,39 +215,10 @@
         (apply #'values
                (mapcar #'list-string (%collect table children keys)))))))
 
-(defun* extract-value (path)
-  "Return the information specified by PATH."
-  (labels ((fn (table path)
-             (cond ((singlep path)
-                    (multiple-value-bind (val existsp)
-                        (gethash (car path) table)
-                      (when existsp
-                        (cond ((hash-table-p val) val)
-                              (t (if (listp val) (car val) val))))))
-                   ((hash-table-p (gethash (car path) table))
-                    (fn (gethash (car path) table) (cdr path)))
-                   (t nil))))
-    (fn (atom-table *universe*) path)))
-
-(defun decompose (expr)
-  "Return only the basic namespace/key pair of EXPR."
-  (destructuring-bind (((ns key) &rest _) &rest __)
-      (parse-msl expr)
-    (declare (ignore _ __))
-    (list ns key)))
-
-(defun* collect-value (spec)
-  "Return the information specified by SPEC stored under the = key."
-  (destructuring-bind (&rest val)
-      (decompose spec)
-    (let* ((path (append val '("=")))
-           (value (extract-value path)))
-      value)))
-
-(defun* recall-value (path)
-  "Return the value specified in PATH."
-  (let ((value (append path '("="))))
-    (extract-value value)))
+(defun head (expr)
+  "Return the namespace and key sequence from EXPR."
+  (when-let ((parse (parse-msl expr)))
+    (caar parse)))
 
 (defun headp (head)
   "Return true if HEAD is a valid path.."
@@ -256,18 +237,13 @@
            (cddr path))
           (t path))))
 
-(defun head (expr)
-  "Return the namespace and key sequence from EXPR."
-  (when-let ((parse (parse-msl expr)))
-    (caar parse)))
-
 (defun* sections (head)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
     (when-let* ((ht (gethash key (atom-table *universe*)))
                 (entries (or keys (table-keys ht)))
-                (exprs (loop :for v :in (%%construct ht entries nil)
+                (exprs (loop :for v :in (assemble ht entries nil)
                              :for kv = (cons key v)
                              :when kv :collect (normalize kv)))
                 (stage (stage (car exprs))))
@@ -308,21 +284,75 @@
                      (cons head sections))))
       (list-string (flatten-1 (wrap (stage value)))))))
 
+(defun solop (value)
+  "Return true if VALUE is the only section and that there’s only a head."
+  (head-only-p (and (length-1 value) (car value))))
+
+(defun paths (deconstruct)
+  "Return only sections from DECONSTRUCT that contain valid value information."
+  (if (head-only-p (car deconstruct))
+      (cdr deconstruct)
+      deconstruct))
+
 (defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
-  (flet ((paths (value)
-           (if (head-only-p (car value))
-               (cdr value)
-               value))
-         (solop (value)
-           (head-only-p (and (length-1 value) (car value)))))
-    (let* ((deconstruct (deconstruct expr))
-           (paths (paths deconstruct))
-           (head (head expr))
-           (sections (sections head)))
-      (cond ((solop deconstruct) (process head (sections head)))
-            (t (process head
-                        (loop :for path :in paths
-                              :nconc (loop :for section :in sections
-                                           :when (search path section :test #'equal)
-                                             :collect section))))))))
+  (let* ((deconstruct (deconstruct expr))
+         (paths (paths deconstruct))
+         (head (head expr))
+         (sections (sections head)))
+    (cond ((solop deconstruct) (process head (sections head)))
+          (t (process head
+                      (loop :for path :in paths
+                            :nconc (loop :for section :in sections
+                                         :when (search path section :test #'equal)
+                                           :collect section)))))))
+
+;;--------------------------------------------------------------------------------------------------
+;; recall-value
+;;--------------------------------------------------------------------------------------------------
+
+(defun* extract-value (path)
+  "Return the information specified by PATH."
+  (labels ((fn (table path)
+             (cond ((singlep path)
+                    (multiple-value-bind (val existsp)
+                        (gethash (car path) table)
+                      (when existsp
+                        (cond ((hash-table-p val) val)
+                              (t (if (listp val) (car val) val))))))
+                   ((hash-table-p (gethash (car path) table))
+                    (fn (gethash (car path) table) (cdr path)))
+                   (t nil))))
+    (fn (atom-table *universe*) path)))
+
+(defun decompose (expr)
+  "Return only the basic namespace/key pair of EXPR."
+  (destructuring-bind (((ns key) &rest _) &rest __)
+      (parse-msl expr)
+    (declare (ignore _ __))
+    (list ns key)))
+
+(defun* collect-value (spec)
+  "Return the information specified by SPEC stored under the = key."
+  (destructuring-bind (&rest val)
+      (decompose spec)
+    (let* ((path (append val '("=")))
+           (value (extract-value path)))
+      value)))
+
+(defun* recall-value (path)
+  "Return the value specified in PATH."
+  (let ((value (append path '("="))))
+    (extract-value value)))
+
+(defun* requests (expr)
+  "Return terms from PARSE that are valid requests."
+  (when-let ((parse (parse-msl expr)))
+    (flet ((fn (item)
+             (or (mem (last* (first item)) '("/" "[]" "d" "f"))
+                 (and (= (length (first item)) 2)
+                      (null (cadr item))))))
+      (cond ((length-1 parse) (butlast (car parse)))
+            (t (loop :for value :in (remove-if #'fn parse)
+                     :for stage = (strip-head (first value))
+                     :collect stage))))))
