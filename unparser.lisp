@@ -7,7 +7,6 @@
         #:streams/common
         #:streams/parser
         #:streams/dispatcher
-        #:streams/sexp
         #:marie))
 
 (in-package #:streams/unparser)
@@ -240,39 +239,14 @@
   (let ((value (append path '("="))))
     (extract-value value)))
 
-(defun* tokens (expr)
-  "Return a list of basic tokens as read by the parser."
-  (flet ((fn (item)
-           (cond ((and (> (length item) 1)
-                       (member (aref item 0) '(#\@ #\:) :test #'equal))
-                  (list (subseq item 0 1) (subseq item 1)))
-                 (t (list item)))))
-    (reduce #'append
-            (loop :for item :in (mapcar #'string* (parse expr (=sexp)))
-                  :collect (fn item)))))
-
-(defun* headp (head)
+(defun headp (head)
   "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
 
-(defun* parts (head)
-  "Return the values and metadata for PATH found in TABLE."
-  (when (headp head)
-    (let ((table (atom-table *universe*)))
-      (destructuring-bind (ns key)
-          head
-        (let* ((ht (gethash ns table))
-               (stage (loop :for v :in (%%construct ht (list key) nil)
-                            :for kv = (cons ns v)
-                            :when kv :collect (stage (normalize kv))))
-               (value (car stage))
-               (main (cddr (remove-if #'consp value)))
-               (meta (remove-if-not #'consp value))
-               (lead (if (string= "@" (car head))
-                         (list (reduce #'cat head))
-                         head)))
-          (declare (ignorable lead))
-          (cons (append head main) meta))))))
+(defun head-only-p (path)
+  "Return true if PATH is exclusively a head."
+  (and (= (length path) 2)
+       (headp path)))
 
 (defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
@@ -281,37 +255,6 @@
                (and (> length 2) (base-namespace-p (car path))))
            (cddr path))
           (t path))))
-
-(defun* collect-requests (parse)
-  "Return terms from PARSE that are valid requests."
-  (flet ((fn (item)
-           (or (mem (last* (first item)) '("/" "[]" "d" "f"))
-               (and (= (length (first item)) 2)
-                    (null (cadr item))))))
-    (cond ((length-1 parse) (butlast (car parse)))
-          (t (loop :for value :in (remove-if #'fn parse)
-                   :for stage = (strip-head (first value))
-                   :collect stage)))))
-
-(defun* recall-expr (expr)
-  "Return the minimum expression needed to match EXPR from the store."
-  (flet ((fn (value)
-           (list-string (flatten-1 (wrap value)))))
-    (when-let* ((parse (parse-msl expr))
-                (head (caar parse))
-                (parts (parts head)))
-      (if (and (length-1 parse) (null (cadr (single parse))))
-          (collect-expr expr)
-          (let* ((requests (collect-requests parse))
-                 (val (loop :for request :in requests
-                            :nconc (loop :for part :in parts
-                                         :when (search request part :test #'equal)
-                                           :collect part))))
-            ;; (if (search head (car val) :test #'equal)
-            ;;     (fn val)
-            ;;     (fn (cons head val)))
-            (values requests
-                    val))))))
 
 (defun head (expr)
   "Return the namespace and key sequence from EXPR."
@@ -334,28 +277,52 @@
             :collect item :into items
             :finally (return (cons items (nthcdr limit stage)))))))
 
-;;; The new COLLECT-REQUESTS
-(defun* deconstruct* (expr)
+(defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
   (when-let* ((*universe* (make-universe))
-              (head (head expr)))
-    (dispatch* expr)
-    (sections head)))
+              (head (head expr))
+              (dispatch (dispatch* expr)))
+    (cond ((null* dispatch)
+           (when-let ((parse (parse-msl expr)))
+             (mapcar #'(lambda (item) (strip-head (car item)))
+                     parse)))
+          (t (sections head)))))
 
-(defun* deconstruct (expr)
-  "Return the sections of EXPR from the current universe."
-  (when-let* ((head (head expr)))
-    (sections head)))
+(defun with-head-p (sections)
+  "Return true if SECTIONS contain a head section."
+  (when sections
+    (destructuring-bind (head &optional &rest _)
+        sections
+      (declare (ignore _))
+      (when head
+        (destructuring-bind (ns key &optional &rest _)
+            head
+          (declare (ignore _))
+          (headp (list ns key)))))))
 
-(defun* head-only-p (path)
-  "Return true if PATH is exclusively a head."
-  (and (= (length path) 2)
-       (headp path)))
+(defun process (head sections)
+  "Return a final, processed string value from SECTIONS."
+  (when sections
+    (let ((value (if (with-head-p sections)
+                     sections
+                     (cons head sections))))
+      (list-string (flatten-1 (wrap (stage value)))))))
 
-(defun* recall (expr)
+(defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
-  (let* ((value (deconstruct* expr))
-         (head (head expr))
-         (sections (sections head)))
-    (values value
-            sections)))
+  (flet ((paths (value)
+           (if (head-only-p (car value))
+               (cdr value)
+               value))
+         (solop (value)
+           (head-only-p (and (length-1 value) (car value)))))
+    (let* ((deconstruct (deconstruct expr))
+           (paths (paths deconstruct))
+           (head (head expr))
+           (sections (sections head)))
+      (cond ((solop deconstruct) (process head (sections head)))
+            (t (process head
+                        (loop :for path :in paths
+                              :nconc (loop :for section :in sections
+                                           :when (search path section :test #'equal)
+                                             :collect section))))))))
