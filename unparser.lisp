@@ -300,17 +300,40 @@
     (when-let* ((parse (parse-msl expr))
                 (head (caar parse))
                 (parts (parts head)))
-      (cond ((and (length-1 parse)
-                  (null (cadr (single parse))))
-             (collect-expr expr))
-            (t (let* ((requests (collect-requests parse))
-                      (val (loop :for request :in requests
-                                 :nconc (loop :for part :in parts
-                                              :when (search request part :test #'equal)
-                                                :collect part))))
-                 (if (search head (car val) :test #'equal)
-                     (fn val)
-                     (fn (cons head val)))))))))
+      (if (and (length-1 parse) (null (cadr (single parse))))
+          (collect-expr expr)
+          (let* ((requests (collect-requests parse))
+                 (val (loop :for request :in requests
+                            :nconc (loop :for part :in parts
+                                         :when (search request part :test #'equal)
+                                           :collect part))))
+            ;; (if (search head (car val) :test #'equal)
+            ;;     (fn val)
+            ;;     (fn (cons head val)))
+            (values requests
+                    val))))))
 
-;;; dispatch
-;;; recall
+(defun* sections (head)
+  "Return the original expressions under HEAD according to type."
+  (destructuring-bind (key &rest keys)
+      head
+    (when-let* ((ht (gethash key (atom-table *universe*)))
+                (entries (or keys (table-keys ht)))
+                (exprs (loop :for v :in (%%construct ht entries nil)
+                             :for kv = (cons key v)
+                             :when kv :collect (normalize kv)))
+                (stage (stage (car exprs))))
+      (loop :for item :in stage
+            :with limit = (or (position-if #'consp stage) (length stage))
+            :for count :from 1 :to limit
+            :collect item :into items
+            :finally (return (cons items (nthcdr limit stage)))))))
+
+(defun* deconstruct (expr)
+  "Return the sections of EXPR from a new universe."
+  (when-let* ((*universe* (make-universe))
+              (parse (parse-msl expr))
+              (head (caar parse)))
+    (dispatch* expr)
+    (sections head)))
+
