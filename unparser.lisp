@@ -329,7 +329,8 @@
             :collect item :into items
             :finally (return (cons items (nthcdr limit stage)))))))
 
-(defun* deconstruct (expr)
+;;; The new COLLECT-REQUESTS
+(defun* deconstruct* (expr)
   "Return the sections of EXPR from a new universe."
   (when-let* ((*universe* (make-universe))
               (parse (parse-msl expr))
@@ -337,3 +338,8 @@
     (dispatch* expr)
     (sections head)))
 
+(defun* deconstruct (expr)
+  "Return the sections of EXPR from the current universe."
+  (when-let* ((parse (parse-msl expr))
+             (head (caar parse)))
+    (sections head)))
