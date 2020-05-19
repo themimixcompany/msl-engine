@@ -34,21 +34,21 @@
             :when (hash-table-p value)
               :collect (if object value key)))))
 
-(defun basep (value)
-  "Return true if VALUE is in the @ key."
-  (when* (consp value) (mem (car value) '("@"))))
+(defun basep (path)
+  "Return true if PATH is in the @ key."
+  (when* (consp path) (mem (car path) '("@"))))
 
-(defun metadatap (value)
-  "Return true if VALUE is in the : namespace."
-  (when* (consp value) (mem (car value) '(":"))))
+(defun* metadatap (path)
+  "Return true if PATH is in the : namespace."
+  (when* (consp path) (mem (car path) '(":"))))
 
-(defun modsp (value)
-  "Return true if VALUE is a datatype or format form."
-  (when* (consp value) (mem (car value) '("d" "f"))))
+(defun* modsp (path)
+  "Return true if PATH is a datatype or format form."
+  (when* (consp path) (mem (car path) '("d" "f"))))
 
-(defun* prefixedp (value)
-  "Return true if VALUE is prefixed by certain namespaces."
-  (rmap-or value #'metadatap #'modsp))
+(defun* prefixedp (path)
+  "Return true if PATH is prefixed by certain namespaces."
+  (rmap-or path #'metadatap #'modsp))
 
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
@@ -229,6 +229,22 @@
   (and (= (length path) 2)
        (headp path)))
 
+(defun solop (value)
+  "Return true if VALUE is the only section and that there’s only a head."
+  (head-only-p (and (length-1 value) (car value))))
+
+(defun with-head-p (sections)
+  "Return true if SECTIONS contain a head section."
+  (when sections
+    (destructuring-bind (head &optional &rest _)
+        sections
+      (declare (ignore _))
+      (when head
+        (destructuring-bind (ns key &optional &rest _)
+            head
+          (declare (ignore _))
+          (headp (list ns key)))))))
+
 (defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
@@ -264,18 +280,6 @@
                      parse)))
           (t (sections head)))))
 
-(defun with-head-p (sections)
-  "Return true if SECTIONS contain a head section."
-  (when sections
-    (destructuring-bind (head &optional &rest _)
-        sections
-      (declare (ignore _))
-      (when head
-        (destructuring-bind (ns key &optional &rest _)
-            head
-          (declare (ignore _))
-          (headp (list ns key)))))))
-
 (defun process (head sections)
   "Return a final, processed string value from SECTIONS."
   (when sections
@@ -283,10 +287,6 @@
                      sections
                      (cons head sections))))
       (list-string (flatten-1 (wrap (stage value)))))))
-
-(defun solop (value)
-  "Return true if VALUE is the only section and that there’s only a head."
-  (head-only-p (and (length-1 value) (car value))))
 
 (defun paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -310,21 +310,6 @@
 ;;--------------------------------------------------------------------------------------------------
 ;; recall-value
 ;;--------------------------------------------------------------------------------------------------
-
-;; (defun decompose (expr)
-;;   "Return only the basic namespace/key pair of EXPR."
-;;   (destructuring-bind (((ns key) &rest _) &rest __)
-;;       (parse-msl expr)
-;;     (declare (ignore _ __))
-;;     (list ns key)))
-
-;; (defun* collect-value (spec)
-;;   "Return the information specified by SPEC stored under the = key."
-;;   (destructuring-bind (&rest val)
-;;       (decompose spec)
-;;     (let* ((path (append val '("=")))
-;;            (value (extract-value path)))
-;;       value)))
 
 (defun* %extract-value (path)
   "Return the information specified by PATH."
@@ -357,9 +342,23 @@
                      :for stage = (car value)
                      :collect stage))))))
 
-(defun* recall-value (expr)
-  "Return the value specified in PATH."
-  (let ((requests (requests expr)))
-    (loop :for request :in requests
-          :collect (extract-value request))))
+(defun* with-metadata-p (path)
+  "Return true if PATH contains a metadata subsection."
+  (metadatap (strip-head path)))
 
+(defun* with-mods-p (path)
+  "Return true if PATH contains a mods subsection."
+  (modsp (strip-head path)))
+
+(defun* with-prefixed-p (path)
+  "Return true if PATH is contains metadata or mods."
+  (prefixedp (strip-head path)))
+
+(defun* recall-value (expr)
+  "Return the value specified in EXPR."
+  (flet ((fn (requests)
+           requests))
+    (let ((requests (requests expr)))
+      (cond ((solop requests) (extract-value (car requests)))
+            (t (loop :for request :in requests
+                     :collect (extract-value request)))))))
