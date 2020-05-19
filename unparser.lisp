@@ -311,7 +311,22 @@
 ;; recall-value
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* extract-value (path)
+;; (defun decompose (expr)
+;;   "Return only the basic namespace/key pair of EXPR."
+;;   (destructuring-bind (((ns key) &rest _) &rest __)
+;;       (parse-msl expr)
+;;     (declare (ignore _ __))
+;;     (list ns key)))
+
+;; (defun* collect-value (spec)
+;;   "Return the information specified by SPEC stored under the = key."
+;;   (destructuring-bind (&rest val)
+;;       (decompose spec)
+;;     (let* ((path (append val '("=")))
+;;            (value (extract-value path)))
+;;       value)))
+
+(defun* %extract-value (path)
   "Return the information specified by PATH."
   (labels ((fn (table path)
              (cond ((singlep path)
@@ -325,34 +340,26 @@
                    (t nil))))
     (fn (atom-table *universe*) path)))
 
-(defun decompose (expr)
-  "Return only the basic namespace/key pair of EXPR."
-  (destructuring-bind (((ns key) &rest _) &rest __)
-      (parse-msl expr)
-    (declare (ignore _ __))
-    (list ns key)))
-
-(defun* collect-value (spec)
-  "Return the information specified by SPEC stored under the = key."
-  (destructuring-bind (&rest val)
-      (decompose spec)
-    (let* ((path (append val '("=")))
-           (value (extract-value path)))
-      value)))
-
-(defun* recall-value (path)
+(defun* extract-value (path)
   "Return the value specified in PATH."
   (let ((value (append path '("="))))
-    (extract-value value)))
+    (%extract-value value)))
 
 (defun* requests (expr)
-  "Return terms from PARSE that are valid requests."
+  "Return terms from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
     (flet ((fn (item)
-             (or (mem (last* (first item)) '("/" "[]" "d" "f"))
-                 (and (= (length (first item)) 2)
+             (or (mem (last* (car item)) '("/" "[]" "d" "f"))
+                 (and (= (length (car item)) 2)
                       (null (cadr item))))))
       (cond ((length-1 parse) (butlast (car parse)))
             (t (loop :for value :in (remove-if #'fn parse)
-                     :for stage = (strip-head (first value))
+                     :for stage = (car value)
                      :collect stage))))))
+
+(defun* recall-value (expr)
+  "Return the value specified in PATH."
+  (let ((requests (requests expr)))
+    (loop :for request :in requests
+          :collect (extract-value request))))
+
