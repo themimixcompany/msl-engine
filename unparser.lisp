@@ -46,8 +46,8 @@
   "Return true if PATH is a datatype or format form."
   (when* (consp path) (mem (car path) '("d" "f"))))
 
-(defun* prefixedp (path)
-  "Return true if PATH is prefixed by certain namespaces."
+(defun* metamodsp (path)
+  "Return true if PATH is metamods by certain namespaces."
   (rmap-or path #'metadatap #'modsp))
 
 (defun marshall (list)
@@ -69,7 +69,7 @@
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
                          (and (consp item)
-                              (not (prefixedp item))
+                              (not (metamodsp item))
                               (not (stringp (car item)))))
                      (list item))
                     ((or (basep item)   ;note this
@@ -215,25 +215,25 @@
         (apply #'values
                (mapcar #'list-string (%collect table children keys)))))))
 
-(defun head (expr)
+(defun* head (expr)
   "Return the namespace and key sequence from EXPR."
   (when-let ((parse (parse-msl expr)))
     (caar parse)))
 
-(defun headp (head)
+(defun* headp (head)
   "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
 
-(defun head-only-p (path)
+(defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
   (and (= (length path) 2)
        (headp path)))
 
-(defun solop (value)
+(defun* solop (value)
   "Return true if VALUE is the only section and that there’s only a head."
   (head-only-p (and (length-1 value) (car value))))
 
-(defun with-head-p (sections)
+(defun* with-head-p (sections)
   "Return true if SECTIONS contain a head section."
   (when sections
     (destructuring-bind (head &optional &rest _)
@@ -243,12 +243,12 @@
         (destructuring-bind (ns key &optional &rest _)
             head
           (declare (ignore _))
-          (headp (list ns key)))))))
+          (when* (headp (list ns key))))))))
 
 (defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
-    (cond ((or (and (= length 4) (prefixedp (cddr path)))
+    (cond ((or (and (= length 4) (metamodsp (cddr path)))
                (and (> length 2) (base-namespace-p (car path))))
            (cddr path))
           (t path))))
@@ -350,15 +350,21 @@
   "Return true if PATH contains a mods subsection."
   (modsp (strip-head path)))
 
-(defun* with-prefixed-p (path)
+(defun* with-metamods-p (path)
   "Return true if PATH is contains metadata or mods."
-  (prefixedp (strip-head path)))
+  (metamodsp (strip-head path)))
+
+(defun* metamods-count (path)
+  "Return the number of metamods in PATH."
+  (count-if #'with-metamods-p path))
 
 (defun* recall-value (expr)
   "Return the value specified in EXPR."
-  (flet ((fn (requests)
-           requests))
-    (let ((requests (requests expr)))
-      (cond ((solop requests) (extract-value (car requests)))
-            (t (loop :for request :in requests
-                     :collect (extract-value request)))))))
+  (let* ((requests (requests expr))
+         (with-head-p (with-head-p requests))
+         (metamods-count (metamods-count requests)))
+    (declare (ignorable with-head-p metamods-count))
+    (cond ((solop requests) (extract-value (car requests)))
+            ((> metamods-count 1) (extract-value (head expr)))
+            ((= metamods-count 1) (extract-value (car requests)))
+            (t nil))))
