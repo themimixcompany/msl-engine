@@ -32,7 +32,7 @@
       (loop :for key :in keys
             :for value = (gethash key table)
             :when (hash-table-p value)
-              :collect (if object value key)))))
+            :collect (if object value key)))))
 
 (defun basep (path)
   "Return true if PATH is in the @ key."
@@ -187,11 +187,11 @@
         :with cache
         :nconc (loop :for terms :in (construct table child keys)
                      :unless (mem (list-string terms) cache)
-                       :collect (loop :for term :in terms
-                                      :for v = (convert term)
-                                      :when (valid-terms-p term #'base-namespace-p)
-                                        :do (pushnew (list-string v) cache :test #'equal)
-                                      :collect v))))
+                     :collect (loop :for term :in terms
+                                    :for v = (convert term)
+                                    :when (valid-terms-p term #'base-namespace-p)
+                                    :do (pushnew (list-string v) cache :test #'equal)
+                                    :collect v))))
 
 (defun* collect (&rest keys)
   "Return the original expressions in TABLE."
@@ -305,7 +305,13 @@
                       (loop :for path :in paths
                             :nconc (loop :for section :in sections
                                          :when (search path section :test #'equal)
-                                           :collect section)))))))
+                                         :collect section)))))))
+
+(defun* recall-expr* (expr)
+  "Dispatch EXPR and perform an expression recall."
+  (dispatch* expr)
+  (recall-expr expr))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; recall-value
@@ -361,10 +367,13 @@
 (defun* recall-value (expr)
   "Return the value specified in EXPR."
   (let* ((requests (requests expr))
-         (with-head-p (with-head-p requests))
          (metamods-count (metamods-count requests)))
-    (declare (ignorable with-head-p metamods-count))
     (cond ((solop requests) (extract-value (car requests)))
-            ((> metamods-count 1) (extract-value (head expr)))
-            ((= metamods-count 1) (extract-value (car requests)))
-            (t nil))))
+          ((> metamods-count 1) (extract-value (head expr)))
+          ((= metamods-count 1) (extract-value (car requests)))
+          (t nil))))
+
+(defun* recall-value* (value)
+  "Dispatch VALUE and perform a value recall."
+  (dispatch* value)
+  (recall-value value))
