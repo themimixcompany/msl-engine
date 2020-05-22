@@ -138,8 +138,8 @@
              server))
          (defun ,stop-server-name ()
            (clack-stop ,server-symbol-name)
-           (setf ,server-symbol-name nil)
-           (remove server *servers* :test #'equal))))))
+           (remove ,server-symbol-name *servers* :test #'equal)
+           (setf ,server-symbol-name nil))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -148,7 +148,7 @@
 
 (define-runners "Admin" 'admin 60500
   (lambda () (handle-open server))
-  (lambda (message) (send server message))
+  (lambda (message) (send server message)) ; handle admin commands
   (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
 
 (define-runners "MSL" 'msl 60000
@@ -161,13 +161,16 @@
 
 (defun start-servers ()
   "Start all the servers."
+  (format *error-output* "Loading servers...~%")
   (start-admin-server)
   (start-msl-server))
 
 (defun stop-servers ()
   "Stop all the servers."
+  (format *error-output* "Stopping servers...~%")
   (stop-msl-server)
-  (stop-admin-server))
+  (stop-admin-server)
+  (uiop:quit))
 
 (defun* serve ()
   "The main entrypoint of the server."
