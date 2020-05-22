@@ -97,6 +97,7 @@
           :do (send con message))))
 
 
+
 ;;--------------------------------------------------------------------------------------------------
 ;; main handlers
 ;;--------------------------------------------------------------------------------------------------
@@ -120,11 +121,14 @@
     (let* ((server-name (make-name name "server"))
            (start-server-name (make-name "start" server-name))
            (stop-server-name (make-name "stop" server-name))
-           (server-symbol-name (intern (cat "*" server-name "*"))))
+           (server-symbol-name (cat-intern nil "*" server-name "*"))
+           (wire-symbol-name (cat-intern nil "*" (make-name name "wire") "*")))
       `(progn
          (defvar ,server-symbol-name nil)
+         (defvar ,wire-symbol-name nil) ;is this in another thread?
          (defun ,server-name (env)
            (let ((server (websocket-driver:make-server env)))
+             (setf ,wire-symbol-name server)
              (websocket-driver:on :open server ,open-handler)
              (websocket-driver:on :message server ,message-handler)
              (websocket-driver:on :close server ,close-handler)
@@ -146,17 +150,22 @@
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
+(defun post (wire data)
+  "Send DATA to WIRE if it contains valid information."
+  (when (and wire data)
+    (send wire data)))
+
 (define-runners "Admin" 'admin 60500
   (lambda () (handle-open server))
-  (lambda (message) (send server message)) ; handle admin commands
+  (lambda (message) (post server message)) ; handle admin commands
   (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
 
 (define-runners "MSL" 'msl 60000
   (lambda () (handle-open server))
   (lambda (message)
     (dispatch message)
-    (send *msl-server* (recall-expr message))
-    (send *admin-server* (recall-value message)))
+    (post *msl-wire* (recall-expr message))
+    (post *admin-wire* (recall-value message)))
   (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
 
 (defun start-servers ()
