@@ -12,9 +12,10 @@
 
 (in-package #:streams/server)
 
-(defun echo-message (connection message)
-  "Echo back MESSAGE to CONNECTION."
-  (send connection message))
+
+;;--------------------------------------------------------------------------------------------------
+;; alternative server constructs
+;;--------------------------------------------------------------------------------------------------
 
 (defclass server ()
   ((name :initarg :name
@@ -50,62 +51,10 @@
                          :message-handler message-handler
                          :close-handler close-handler))
 
-(defvar *servers* nil
-  "The list of active servers.")
 
-(defun start-clack (server port)
-  "Start the clack server SERVER under port PORT."
-  (clack:clackup server :port port))
-
-(defun stop-clack (server)
-  "Stop the clack server SERVER."
-  (clack:stop server))
-
-;;; pass to this the results of evaluating a SERVER instance
-(defmacro* define-event-handlers (name form port open-handler message-handler close-handler)
-  ""
-  (declare (ignorable form))
-  (flet ((make-name (&rest args)
-           (apply #'hyphenate-intern nil args)))
-    (let* ((server-name (make-name name "server"))                    ;msl-server
-           (start-server-name (make-name "start" server-name))        ;start-msl-server
-           (stop-server-name (make-name "stop" server-name))          ;stop-msl-server
-           (server-symbol-name (intern (cat "*" server-name "*"))))   ;*msl-server*
-      `(progn
-         (defvar ,server-symbol-name nil)
-         (defun ,server-name (env)
-           (let ((server (websocket-driver:make-server env)))
-             (websocket-driver:on :open server ,open-handler)
-             (websocket-driver:on :message server ,message-handler)
-             (websocket-driver:on :close server ,close-handler)
-             (lambda (_)
-               (declare (ignore _))
-               (websocket-driver:start-connection server))))
-         (defun ,start-server-name ()
-           (let ((server (start-clack #',server-name ,port)))
-             (setf ,server-symbol-name server)
-             server))
-         (defun ,stop-server-name ()
-           (stop-clack ,server-symbol-name)
-           (setf ,server-symbol-name nil))))))
-
-#| this means that prior to opening the msl wire, the admin wire has to be open first because it’s going to use it for sending narrative values
-
-;;; msl
-(lambda () (handle-open-connection server))
-
-(lambda (message) (dispatch message) (send msl-connection (recall-expr message)) (send admin-connection (recall-value message)))
-
-(lambda (&key _ __) (declare (ignore _ __)) (handle-close-connection server))
-
-
-;;; admin
-(lambda () (handle-open-connection ws))
-
-(lambda (message) (send server message))
-
-(lambda (&key _ __) (declare (ignore _ __)) (handle-close-connection server))
-|#
+;;--------------------------------------------------------------------------------------------------
+;; general helpers
+;;--------------------------------------------------------------------------------------------------
 
 (defvar *user-connections* (make-hash-table)
   "The table of connections, where the keys are server instances while the values are the user IDs.")
@@ -122,7 +71,12 @@
   "Return a string formatted for MSL."
   (format nil "(@~A ~A)" type text))
 
-(defun handle-open-connection (connection)
+
+;;--------------------------------------------------------------------------------------------------
+;; generic handlers
+;;--------------------------------------------------------------------------------------------------
+
+(defun handle-open (connection)
   "Process incoming connection CONNECTION."
   (let ((uid (get-new-user-id))
         (message (format-msl "VER" *system-version*)))
@@ -134,17 +88,7 @@
   "Send back MESSAGE to CONNECTION."
   (send connection message))
 
-(defun respond-expr (connection message)
-  "Return the full MSL expression from MESSAGE."
-  (let ((value (recall-expr message)))
-    (send connection value)))
-
-(defun respond-value (connection message)
-  "Return the default expression value from MESSAGE."
-  (let ((value (recall-value message)))
-    (send connection value)))
-
-(defun handle-close-connection (connection)
+(defun handle-close (connection)
   "Process connection CONNECTION when it closes."
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *user-connections*))))
@@ -152,34 +96,93 @@
     (loop :for con :being :the :hash-key :of *user-connections*
           :do (send con message))))
 
-;;; can these be abstacted away?
-;; (defun start-websocket-servers ()
-;;   "Start all the WebSocket servers."
-;;   (loop :for server :in (list #'start-msl-server #'start-admin-server)
-;;         :do (progn (funcall server)
-;;                    (push server *websocket-servers*))))
-;; (defun stop-websocket-servers ()
-;;   "Stop all the WebSocket servers."
-;;   (with-muffled-debugger
-;;     (format *error-output* "Aborting...~%")
-;;     (loop :for server :in *websocket-servers* :do (clack:stop server))
-;;     (setf *websocket-servers* nil)
-;;     (uiop:quit)))
+
+;;--------------------------------------------------------------------------------------------------
+;; main handlers
+;;--------------------------------------------------------------------------------------------------
+
+(defvar *servers* nil
+  "The list of active servers.")
+
+(defun clack-start (server port)
+  "Start the clack server SERVER under port PORT."
+  (clack:clackup server :port port))
+
+(defun clack-stop (server)
+  "Stop the clack server SERVER."
+  (clack:stop server))
+
+(defmacro* define-runners (name form port open-handler message-handler close-handler)
+  "Define functions for executing server operations."
+  (declare (ignorable form))
+  (flet ((make-name (&rest args)
+           (apply #'hyphenate-intern nil args)))
+    (let* ((server-name (make-name name "server"))
+           (start-server-name (make-name "start" server-name))
+           (stop-server-name (make-name "stop" server-name))
+           (server-symbol-name (intern (cat "*" server-name "*"))))
+      `(progn
+         (defvar ,server-symbol-name nil)
+         (defun ,server-name (env)
+           (let ((server (websocket-driver:make-server env)))
+             (websocket-driver:on :open server ,open-handler)
+             (websocket-driver:on :message server ,message-handler)
+             (websocket-driver:on :close server ,close-handler)
+             (lambda (_)
+               (declare (ignore _))
+               (websocket-driver:start-connection server))))
+         (defun ,start-server-name ()
+           (let ((server (clack-start #',server-name ,port)))
+             (setf ,server-symbol-name server)
+             (pushnew server *servers* :test #'equal)
+             server))
+         (defun ,stop-server-name ()
+           (clack-stop ,server-symbol-name)
+           (setf ,server-symbol-name nil)
+           (remove server *servers* :test #'equal))))))
+
+
+;;--------------------------------------------------------------------------------------------------
+;; entrypoints
+;;--------------------------------------------------------------------------------------------------
+
+(define-runners "Admin" 'admin 60500
+  (lambda () (handle-open server))
+  (lambda (message) (send server message))
+  (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
+
+(define-runners "MSL" 'msl 60000
+  (lambda () (handle-open server))
+  (lambda (message)
+    (dispatch message)
+    (send *msl-server* (recall-expr message))
+    (send *admin-server* (recall-value message)))
+  (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
+
+(defun start-servers ()
+  "Start all the servers."
+  (start-admin-server)
+  (start-msl-server))
+
+(defun stop-servers ()
+  "Stop all the servers."
+  (stop-msl-server)
+  (stop-admin-server))
 
 (defun* serve ()
   "The main entrypoint of the server."
   (format t "streams v~A~%" *system-version*)
-  ;; (start-websocket-servers)
-  ;; (handler-case (bt:join-thread (find-if (lambda (thread)
-  ;;                                          (search "hunchentoot" (bt:thread-name thread)))
-  ;;                                        (bt:all-threads)))
-  ;;   (#+sbcl sb-sys:interactive-interrupt
-  ;;    #+ccl ccl:interrupt-signal-condition
-  ;;    #+clisp system::simple-interrupt-condition
-  ;;    #+ecl ext:interactive-interrupt
-  ;;    #+allegro excl:interrupt-signal
-  ;;    #+lispworks mp:process-interrupt
-  ;;    () (stop-websocket-servers))
-  ;;   (error (c)
-  ;;     (format t "Oops, an unknown error occured:~&~A~&" c)))
+  (start-servers)
+  (handler-case (bt:join-thread (find-if (lambda (thread)
+                                           (search "hunchentoot" (bt:thread-name thread)))
+                                         (bt:all-threads)))
+    (#+sbcl sb-sys:interactive-interrupt
+     #+ccl ccl:interrupt-signal-condition
+     #+clisp system::simple-interrupt-condition
+     #+ecl ext:interactive-interrupt
+     #+allegro excl:interrupt-signal
+     #+lispworks mp:process-interrupt
+     () (stop-servers))
+    (error (c)
+      (format t "Oops, an unknown error occured:~&~A~&" c)))
   nil)
