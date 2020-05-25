@@ -8,7 +8,7 @@
         #:streams/parser
         #:streams/unparser
         #:streams/dispatcher
-        ;;#:streams/logger
+        #:streams/aux
         #:marie))
 
 (in-package #:streams/admin-dispatcher)

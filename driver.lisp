@@ -11,6 +11,7 @@
    #:streams/unparser
    #:streams/logger
    #:streams/dispatcher
+   #:streams/aux
    #:streams/admin-dispatcher
    #:streams/server
    #:streams/builder
