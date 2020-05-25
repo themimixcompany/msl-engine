@@ -8,6 +8,7 @@
         #:streams/parser
         #:streams/unparser
         #:streams/dispatcher
+        #:streams/admin-dispatcher
         #:marie)
   (:export #:server))
 
@@ -74,47 +75,6 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; admin commands
-;;--------------------------------------------------------------------------------------------------
-
-;;; what admin values should admin commands, return?
-;;; current iteration accepts value and metadata.
-;;; next iteration will ensure that there the command be strictly 1-form.
-
-(defun* admin-clear ()
-  "Run the admin command CLEAR."
-  (clear)
-  nil)
-
-(defun* admin-version ()
-  "Run the admin command VERSION."
-  *system-version*)
-
-(defparameter* *admin-commands*
-  '((("@" "CLEAR")   . admin-clear)
-    (("@" "VERSION") . admin-version))
-  "The alist of paths and command symbols.")
-
-(defun* admin-command-p (expr)
-  "Return true if EXPR is a valid admin command."
-  (when-let ((head (head expr)))
-    (when* (assoc head *admin-commands* :test #'equal))))
-
-(defun* admin-command (expr)
-  "Return the admin command for EXPR."
-  (when-let* ((head (head expr))
-              (value (assoc-value head *admin-commands* :test #'equal)))
-    value))
-
-(defun* admin-dispatch (expr)
-  "Dispatch an admin command."
-  (let* ((command (admin-command expr))
-         (value (funcall command)))
-    (cond ((null value) expr)
-          (t value))))
-
-
-;;--------------------------------------------------------------------------------------------------
 ;; generic handlers
 ;;--------------------------------------------------------------------------------------------------
 
@@ -166,7 +126,7 @@
            (wire-symbol-name (cat-intern nil "*" (make-name name "wire") "*")))
       `(progn
          (defvar ,server-symbol-name nil)
-         (defvar ,wire-symbol-name nil) ;is this in another thread?
+         (defvar ,wire-symbol-name nil)
          (defun ,server-name (env)
            (let ((server (websocket-driver:make-server env)))
              (setf ,wire-symbol-name server)
@@ -200,8 +160,7 @@
   (lambda ()
     (handle-open server))
   (lambda (message)
-    (let ((value (admin-dispatch message)))
-      (post *admin-wire* message)))
+    (post *admin-wire* (admin-dispatch message)))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server)))
