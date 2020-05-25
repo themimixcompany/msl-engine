@@ -7,6 +7,7 @@
         #:streams/common
         #:streams/parser
         #:streams/unparser
+        #:streams/logger
         #:streams/dispatcher
         #:streams/aux
         #:marie))
@@ -29,13 +30,14 @@
 
 (defun* admin-rotate-log ()
   "Run the admin command RESTORE-LOG."
-  (rotate-log)
+  ;;(rotate-log)
   nil)
 
 (defparameter* *admin-commands*
   '((("@" "VERSION")     . admin-version)
     (("@" "CLEAR")       . admin-clear)
-    (("@" "RESTORE-LOG") . admin-restore-log))
+    (("@" "RESTORE-LOG") . admin-restore-log)
+    (("@" "ROTATE-LOG")  . admin-rotate-log))
   "The alist of paths and command symbols.")
 
 (defun* admin-command-p (expr)

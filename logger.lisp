@@ -54,11 +54,11 @@
   (when (maximum-file-size-p path)
     (purge-file path)))
 
-(defun make-machine-log-path (machine date)
+(defun* make-machine-log-path (machine date)
   "Return a log file path using MACHINE. Optional parameter DATE is for specifying another date value."
   (make-log-file-path (cat machine #\. date)))
 
-(defun log-path (&key (machine *machine*) (date (log-date *universe*)))
+(defun* log-path (&key (machine *machine*) (date (log-date *universe*)))
   "Return a log path for MACHINE under DATE."
   (make-machine-log-path machine date))
 
@@ -119,3 +119,7 @@
       (cond ((maximum-file-size-p (log-path*))
              (fn (make-machine-log-path *machine* (log-date *universe*))))
             (t (fn (log-path*)))))))
+
+(defun* make-log-path ()
+  "Return a new log path from the current date and time."
+  (log-path :date (local-time:format-timestring nil (local-time:now))))
