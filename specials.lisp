@@ -70,5 +70,6 @@
   "The default name to use as the machine name.")
 
 (defvar* *system-version*
-  #.(asdf:system-version (asdf:find-system :streams))
+  ;#.(asdf:system-version (asdf:find-system :streams))
+  "2.2.0"
   "The introspected version of this system.")
