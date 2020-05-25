@@ -45,7 +45,13 @@
                    :accessor sub-atom-table
                    :documentation "The table where sub atoms live.")
    (log-date :initarg :log-date
-             :initform (local-time:format-timestring nil (local-time:now))
+             :initform (local-time:format-timestring
+                        nil (local-time:now)
+                        :format `((:year 4) #\- (:month 2) #\- (:day 2)
+                                  #\@
+                                  (:hour 2) #\- (:min 2) #\- (:sec 2)
+                                  #\.
+                                  (:usec 6) :gmt-offset-hhmm))
              :accessor log-date
              :documentation "The date and time value used for logging."))
   (:documentation "The top-level data structure for mx-atoms including information about the current mx-atom counter and the main table."))
