@@ -8,9 +8,18 @@
 
 (in-package #:streams/logger)
 
-(defun current-date ()
+(defun* current-date ()
   "Return the current date and time in ISO 8601 format."
   (local-time:format-timestring nil (local-time:now)))
+
+(defun* timestamp ()
+  (local-time:format-timestring
+    nil (local-time:now)
+    :format `((:year 4) #\- (:month 2) #\- (:day 2)
+              #\@
+              (:hour 2) #\- (:min 2) #\- (:sec 2)
+              #\.
+              (:usec 6) :gmt-offset-hhmm)))
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
@@ -74,7 +83,7 @@
                                "]"))))))
     (fn (loop :for char :across string :collect char) "")))
 
-(defun build-paths (directory)
+(defun* build-paths (directory)
   "Return a path with corrected string representations."
   (let ((files (uiop:directory-files directory)))
     #+ccl (mapcar #'(lambda (entry)
@@ -83,17 +92,21 @@
                   files)
     #-(or ccl) files))
 
-(defun log-paths (&key (directory *log-directory*) (machine *machine*) sort)
+(defun* filter-paths (machine files)
+  "Return a filtered path for LOG-PATHS."
+  (remove-if-not #'(lambda (file)
+                     (let ((name (file-namestring file))
+                           (suffix (alt-case-re +log-file-suffix+)))
+                       (cl-ppcre:scan (cat "^" machine "\\."
+                                           +mimix-date-re+ "\\."
+                                           suffix "$")
+                                      name)))
+                 files))
+
+(defun* log-paths (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (build-paths directory))
-         (entries (remove-if-not #'(lambda (file)
-                                     (let ((name (file-namestring file))
-                                           (suffix (alt-case-re +log-file-suffix+)))
-                                       (cl-ppcre:scan (cat "^" machine "\\."
-                                                           +iso-8601-re+ "\\."
-                                                           suffix "$")
-                                                      name)))
-                                 files)))
+         (entries (filter-paths machine files)))
     (if sort
         (mapcar #'(lambda (path)
                     (uiop:merge-pathnames* *log-directory* path))
@@ -106,8 +119,7 @@
 
 (defun update-log-date (universe)
   "Update the log date on UNIVERSE to the current one."
-  (setf (log-date universe)
-        (local-time:format-timestring nil (local-time:now))))
+  (setf (log-date universe) (timestamp)))
 
 (defun* write-log (value)
   "Write VALUE to the computed log file."
@@ -122,4 +134,4 @@
 
 (defun* make-log-path ()
   "Return a new log path from the current date and time."
-  (log-path :date (local-time:format-timestring nil (local-time:now))))
+  (log-path :date (timestamp)))
