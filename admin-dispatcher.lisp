@@ -22,21 +22,20 @@
   (clear)
   nil)
 
-;; (defun* admin-restore-log ()
-;;   "Run the admin command RESTORE-LOG."
-;;   (restore-log)
-;;   nil)
+(defun* admin-restore-log ()
+  "Run the admin command RESTORE-LOG."
+  (restore-log)
+  nil)
 
-;; (defun* admin-rotate-log ()
-;;   "Run the admin command RESTORE-LOG."
-;;   (rotate-log)
-;;   nil)
+(defun* admin-rotate-log ()
+  "Run the admin command RESTORE-LOG."
+  (rotate-log)
+  nil)
 
 (defparameter* *admin-commands*
   '((("@" "VERSION")     . admin-version)
     (("@" "CLEAR")       . admin-clear)
-    (("@" "RESTORE-LOG") . admin-restore-log)
-    (("@" "ROTATE-LOG")  . admin-rotate-log))
+    (("@" "RESTORE-LOG") . admin-restore-log))
   "The alist of paths and command symbols.")
 
 (defun* admin-command-p (expr)
