@@ -9,7 +9,7 @@
         #:streams/unparser
         #:streams/logger
         #:streams/dispatcher
-        #:streams/aux
+        #:streams/bridge
         #:marie))
 
 (in-package #:streams/admin-dispatcher)

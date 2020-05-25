@@ -1,6 +1,6 @@
-;;;; aux.lisp
+;;;; bridge.lisp
 
-(uiop:define-package #:streams/aux
+(uiop:define-package #:streams/bridge
   (:use #:cl
         #:streams/specials
         #:streams/classes
@@ -8,7 +8,7 @@
         #:streams/dispatcher
         #:marie))
 
-(in-package #:streams/aux)
+(in-package #:streams/bridge)
 
 (defun* read-log (path)
   "Read the log file specified under PATH."

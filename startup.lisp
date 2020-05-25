@@ -6,7 +6,7 @@
         #:streams/classes
         #:streams/logger
         #:streams/dispatcher
-        #:streams/aux
+        #:streams/bridge
         #:marie))
 
 (in-package #:streams/startup)
