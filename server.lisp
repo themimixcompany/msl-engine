@@ -30,22 +30,22 @@
   (incf *user-base-id*)
   *user-base-id*)
 
-(defun format-msl (type text)
-  "Return a string formatted for MSL."
-  (format nil "(@~A ~A)" type text))
-
 
 ;;--------------------------------------------------------------------------------------------------
 ;; generic handlers
 ;;--------------------------------------------------------------------------------------------------
 
+(defun post (wire data)
+  "Send DATA to WIRE if it contains valid information."
+  (when (and wire data)
+    (send wire data)))
+
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
-  (let ((uid (get-new-user-id))
-        (message (format-msl "VER" *system-version*)))
+  (let ((uid (get-new-user-id)))
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
-    (send connection message)))
+    (post connection (admin-dispatch "(@VERSION)"))))
 
 (defun echo-message (connection message)
   "Send back MESSAGE to CONNECTION."
@@ -111,11 +111,6 @@
 ;;--------------------------------------------------------------------------------------------------
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
-
-(defun post (wire data)
-  "Send DATA to WIRE if it contains valid information."
-  (when (and wire data)
-    (send wire data)))
 
 (define-runners "Admin" 'admin 60500
   (lambda ()

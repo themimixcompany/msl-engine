@@ -35,8 +35,10 @@
 
 (defparameter* *admin-commands*
   '((("@" "VERSION")     . admin-version)
+    (("@" "VER")         . admin-version)
     (("@" "CLEAR")       . admin-clear)
     (("@" "RESTORE-LOG") . admin-restore-log)
+    (("@" "RESTORE")     . admin-restore-log)
     (("@" "ROTATE-LOG")  . admin-rotate-log))
   "The alist of paths and command symbols.")
 
