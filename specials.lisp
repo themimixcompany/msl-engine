@@ -75,5 +75,5 @@
 
 (defvar* *system-version*
   ;#.(asdf:system-version (asdf:find-system :streams))
-  "2.2.0"
+  "2.2.1"
   "The introspected version of this system.")

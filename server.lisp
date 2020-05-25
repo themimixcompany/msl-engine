@@ -40,12 +40,17 @@
   (when (and wire data)
     (send wire data)))
 
+(defun format-msl (type text)
+  "Return a string formatted for MSL."
+  (format nil "(@~A ~A)" type text))
+
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
   (let ((uid (get-new-user-id)))
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
-    (post connection (admin-dispatch "(@VERSION)"))))
+    ;; (post connection (admin-dispatch "(@VERSION)"))
+    (send connection (format-msl "VER" *system-version*))))
 
 (defun echo-message (connection message)
   "Send back MESSAGE to CONNECTION."
