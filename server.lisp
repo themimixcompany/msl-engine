@@ -16,45 +16,6 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; alternative server constructs
-;;--------------------------------------------------------------------------------------------------
-
-(defclass server ()
-  ((name :initarg :name
-         :initform ""
-         :accessor name
-         :documentation "The free-form name of the server.")
-   (form :initarg :form
-         :initform nil
-         :accessor form
-         :documentation "The symbol indicating the form of the server. Valid values are MSL and ADMIN.")
-   (port :initarg :port
-         :initform nil
-         :accessor port
-         :documentation "The communication port for the server.")
-   (open-handler :initarg :open-handler
-                 :initform nil
-                 :accessor open-handler
-                 :documentation "The function for handling open commands.")
-   (message-handler :initarg :message-handler
-                    :initform nil
-                    :accessor message-handler
-                    :documentation "The function for handling message commands.")
-   (close-handler :initarg :close-handler
-                  :initform nil
-                  :accessor close-handler
-                  :documentation "The function for handling close commands."))
-  (:documentation "Class for containing information about a server."))
-
-(defun* make-server-instance (name form port &optional open-handler message-handler close-handler)
-  "Return a new SERVER instance."
-  (make-instance 'server :name name :form form :port port
-                         :open-handler open-handler
-                         :message-handler message-handler
-                         :close-handler close-handler))
-
-
-;;--------------------------------------------------------------------------------------------------
 ;; general helpers
 ;;--------------------------------------------------------------------------------------------------
 
