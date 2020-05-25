@@ -4,6 +4,7 @@
   (:use #:cl
         #:websocket-driver
         #:streams/specials
+        #:streams/common
         #:streams/parser
         #:streams/unparser
         #:streams/dispatcher
@@ -73,6 +74,47 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
+;; admin commands
+;;--------------------------------------------------------------------------------------------------
+
+;;; what admin values should admin commands, return?
+;;; current iteration accepts value and metadata.
+;;; next iteration will ensure that there the command be strictly 1-form.
+
+(defun* admin-clear ()
+  "Run the admin command CLEAR."
+  (clear)
+  nil)
+
+(defun* admin-version ()
+  "Run the admin command VERSION."
+  *system-version*)
+
+(defparameter* *admin-commands*
+  '((("@" "CLEAR")   . admin-clear)
+    (("@" "VERSION") . admin-version))
+  "The alist of paths and command symbols.")
+
+(defun* admin-command-p (expr)
+  "Return true if EXPR is a valid admin command."
+  (when-let ((head (head expr)))
+    (when* (assoc head *admin-commands* :test #'equal))))
+
+(defun* admin-command (expr)
+  "Return the admin command for EXPR."
+  (when-let* ((head (head expr))
+              (value (assoc-value head *admin-commands* :test #'equal)))
+    value))
+
+(defun* admin-dispatch (expr)
+  "Dispatch an admin command."
+  (let* ((command (admin-command expr))
+         (value (funcall command)))
+    (cond ((null value) expr)
+          (t value))))
+
+
+;;--------------------------------------------------------------------------------------------------
 ;; generic handlers
 ;;--------------------------------------------------------------------------------------------------
 
@@ -95,7 +137,6 @@
     (remhash connection *user-connections*)
     (loop :for con :being :the :hash-key :of *user-connections*
           :do (send con message))))
-
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -156,9 +197,14 @@
     (send wire data)))
 
 (define-runners "Admin" 'admin 60500
-  (lambda () (handle-open server))
-  (lambda (message) (post server message)) ; handle admin commands
-  (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
+  (lambda ()
+    (handle-open server))
+  (lambda (message)
+    (let ((value (admin-dispatch message)))
+      (post *admin-wire* message)))
+  (lambda (&key _ __)
+    (declare (ignore _ __))
+    (handle-close server)))
 
 (define-runners "MSL" 'msl 60000
   (lambda () (handle-open server))
@@ -166,7 +212,9 @@
     (dispatch message)
     (post *msl-wire* (recall-expr message))
     (post *admin-wire* (recall-value message)))
-  (lambda (&key _ __) (declare (ignore _ __)) (handle-close server)))
+  (lambda (&key _ __)
+    (declare (ignore _ __))
+    (handle-close server)))
 
 (defun start-servers ()
   "Start all the servers."
