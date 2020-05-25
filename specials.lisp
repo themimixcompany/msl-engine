@@ -57,6 +57,10 @@
   "\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(([+-]\\d\\d:\\d\\d)|Z)?"
   "The regular expression for ISO 8601 dates.")
 
+(defconstant* +mimix-date-re+
+  "\\d{4}-\\d\\d-\\d\\d@\\d\\d-\\d\\d-\\d\\d(\\.\\d+)?(([+-]\\d\\d\\d\\d)|Z)?"
+  "The regular expression for Mimix dates.")
+
 (defconstant* +day-names+
     '("Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday" "Sunday")
   "The enumeration of week day names.")
