@@ -67,9 +67,9 @@
   "Return a log file path using MACHINE. Optional parameter DATE is for specifying another date value."
   (make-log-file-path (cat machine #\. date)))
 
-(defun* log-path (&key (machine *machine*) (date (log-date *universe*)))
-  "Return a log path for MACHINE under DATE."
-  (make-machine-log-path machine date))
+(defun* make-log-path ()
+  "Return a new log path from the current date and time."
+  (make-machine-log-path *machine* (timestamp)))
 
 (defun alt-case-re (string)
   "Return a regular expression string for downcased and upcased members of string."
@@ -113,7 +113,7 @@
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(defun* log-path* (&key (directory *log-directory*) (machine *machine*))
+(defun* log-path (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (last* (log-paths :directory directory :machine machine :sort t)))
 
@@ -128,10 +128,7 @@
            (with-open-file (stream path :direction :output :if-exists :append)
              (format stream "~A~%" value))))
     (when (stringp value)
-      (cond ((maximum-file-size-p (log-path*))
+      (cond ((maximum-file-size-p (log-path))
              (fn (make-machine-log-path *machine* (log-date *universe*))))
             (t (fn (log-path*)))))))
 
-(defun* make-log-path ()
-  "Return a new log path from the current date and time."
-  (log-path :date (timestamp)))
