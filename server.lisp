@@ -49,7 +49,6 @@
   (let ((uid (get-new-user-id)))
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
-    ;; (post connection (admin-dispatch "(@VERSION)"))
     ;;(send connection (format-msl "VER" *system-version*))
     (post connection (admin-dispatch "(@VER)"))))
 
