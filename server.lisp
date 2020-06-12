@@ -144,7 +144,8 @@
     (handle-close server)))
 
 (define-runners "MSL" 'msl 60000
-  (lambda () (handle-open server))
+  (lambda ()
+    (handle-open server))
   (lambda (message)
     (print-debug (fmt "Received on MSL wire: ~A" message))
     (dispatch message)

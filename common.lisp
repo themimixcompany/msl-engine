@@ -170,11 +170,12 @@ body contents of the parser function."
            (defun ,name ,args ,@body)
            (setf (fdefinition ',(intern (subseq (string name) 1))) (,name))))))
 
-(defun* current-date ()
+(defun* current-date-iso-8601 ()
   "Return the current date and time in ISO 8601 format."
   (local-time:format-timestring nil (local-time:now)))
 
-(defun* timestamp ()
+(defun* current-date-mimix ()
+  "Return the current date and time in Mimix format."
   (local-time:format-timestring
     nil (local-time:now)
     :format `((:year 4) #\- (:month 2) #\- (:day 2)
@@ -185,5 +186,5 @@ body contents of the parser function."
 
 (defun* print-debug (text &optional (stream *standard-output*))
   "Display TEXT to STREAM prefixing it with the the current date and time."
-  (format stream "[~A] ~A~%" (current-date) text)
+  (format stream "[~A] ~A~%" (current-date-iso-8601) text)
   (force-output stream))
