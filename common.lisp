@@ -186,5 +186,5 @@ body contents of the parser function."
 
 (defun* print-debug (text &optional (stream *standard-output*))
   "Display TEXT to STREAM prefixing it with the the current date and time."
-  (format stream "[~A] ~A~%" (current-date-iso-8601) text)
+  (format stream "[~A] ~A~%" (current-date-mimix) text)
   (force-output stream))
