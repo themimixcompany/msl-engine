@@ -57,7 +57,7 @@
 
 (defun* make-log-path ()
   "Return a new log path from the current date and time."
-  (make-machine-log-path *machine* (timestamp)))
+  (make-machine-log-path *machine* (current-date-mimix)))
 
 (defun alt-case-re (string)
   "Return a regular expression string for downcased and upcased members of string."
@@ -107,7 +107,7 @@
 
 (defun update-log-date (universe)
   "Update the log date on UNIVERSE to the current one."
-  (setf (log-date universe) (timestamp)))
+  (setf (log-date universe) (current-date-mimix)))
 
 (defun* write-log (value)
   "Write VALUE to the computed log file."
