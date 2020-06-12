@@ -20,5 +20,7 @@
 (defun* restore-log (&key (machine *machine*))
   "Re-initialize the universe"
   (let* ((path (log-path :machine machine))
-         (exprs (read-log path)))
-    (print-debug (fmt "Log: read ~A expressions" (length exprs)))))
+         (exprs (read-log path))
+         (length (length exprs)))
+    (terpri)
+    (print-debug (fmt "Read ~A expressions from history" length))))

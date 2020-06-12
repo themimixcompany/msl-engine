@@ -184,6 +184,6 @@ body contents of the parser function."
               (:usec 6) :gmt-offset-hhmm)))
 
 (defun* print-debug (text &optional (stream *standard-output*))
-  "Display TEXT to STREAM."
-  (format stream "~%[~A] ~A" (current-date) text)
+  "Display TEXT to STREAM prefixing it with the the current date and time."
+  (format stream "[~A] ~A~%" (current-date) text)
   (force-output stream))
