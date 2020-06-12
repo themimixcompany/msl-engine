@@ -169,3 +169,21 @@ body contents of the parser function."
            (export ',name)
            (defun ,name ,args ,@body)
            (setf (fdefinition ',(intern (subseq (string name) 1))) (,name))))))
+
+(defun* current-date ()
+  "Return the current date and time in ISO 8601 format."
+  (local-time:format-timestring nil (local-time:now)))
+
+(defun* timestamp ()
+  (local-time:format-timestring
+    nil (local-time:now)
+    :format `((:year 4) #\- (:month 2) #\- (:day 2)
+              #\@
+              (:hour 2) #\- (:min 2) #\- (:sec 2)
+              #\.
+              (:usec 6) :gmt-offset-hhmm)))
+
+(defun* print-debug (text &optional (stream *standard-output*))
+  "Display TEXT to STREAM."
+  (format stream "~%[~A] ~A" (current-date) text)
+  (force-output stream))

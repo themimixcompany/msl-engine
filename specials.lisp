@@ -71,9 +71,10 @@
 
 (defvar* *machine*
   "my-machine"
+  ;;(uiop:hostname)
   "The default name to use as the machine name.")
 
 (defvar* *system-version*
   ;;#.(asdf:system-version (asdf:find-system :streams))
-  "2.2.1"
+  "2.2.2"
   "The introspected version of this system.")

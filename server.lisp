@@ -4,6 +4,7 @@
   (:use #:cl
         #:websocket-driver
         #:streams/specials
+        #:streams/classes
         #:streams/common
         #:streams/parser
         #:streams/unparser
@@ -50,6 +51,8 @@
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
     ;;(send connection (format-msl "VER" *system-version*))
+    (print-debug (fmt "Open: ~A" connection))
+    (print-debug (fmt "Threads: ~A" (length (bt:all-threads))))
     (post connection (admin-dispatch "(@VER)"))))
 
 (defun echo-message (connection message)
@@ -60,6 +63,8 @@
   "Process connection CONNECTION when it closes."
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *user-connections*))))
+    (print-debug (fmt "Close: ~A" connection))
+    (print-debug (fmt "Threads: ~A" (length (bt:all-threads))))
     (remhash connection *user-connections*)
     (loop :for con :being :the :hash-key :of *user-connections*
           :do (send con message))))
@@ -121,7 +126,10 @@
   (lambda ()
     (handle-open server))
   (lambda (message)
-    (post *admin-wire* (admin-dispatch message)))
+    (print-debug (fmt "Received (Admin): ~A" message))
+    (let ((value (admin-dispatch message)))
+      (post *admin-wire* value)
+      (print-debug (fmt "Sent (Admin): ~A" value))))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server)))
@@ -129,9 +137,14 @@
 (define-runners "MSL" 'msl 60000
   (lambda () (handle-open server))
   (lambda (message)
+    (print-debug (fmt "Received (MSL): ~A" message))
     (dispatch message)
-    (post *msl-wire* (recall-expr message))
-    (post *admin-wire* (recall-value message)))
+    (let ((recall-expr-value (recall-expr message))
+          (recall-value-value (recall-value message)))
+      (post *msl-wire* recall-expr-value)
+      (print-debug (fmt "Sent (MSL): ~A" recall-expr-value))
+      (post *admin-wire* recall-value-value)
+      (print-debug (fmt "Sent (Admin): ~A" recall-value-value))))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server)))

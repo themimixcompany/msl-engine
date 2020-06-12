@@ -2,24 +2,12 @@
 
 (uiop:define-package #:streams/logger
   (:use #:cl
+        #:streams/common
         #:streams/specials
         #:streams/classes
         #:marie))
 
 (in-package #:streams/logger)
-
-(defun* current-date ()
-  "Return the current date and time in ISO 8601 format."
-  (local-time:format-timestring nil (local-time:now)))
-
-(defun* timestamp ()
-  (local-time:format-timestring
-    nil (local-time:now)
-    :format `((:year 4) #\- (:month 2) #\- (:day 2)
-              #\@
-              (:hour 2) #\- (:min 2) #\- (:sec 2)
-              #\.
-              (:usec 6) :gmt-offset-hhmm)))
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
@@ -130,5 +118,4 @@
     (when (stringp value)
       (cond ((maximum-file-size-p (log-path))
              (fn (make-machine-log-path *machine* (log-date *universe*))))
-            (t (fn (log-path*)))))))
-
+            (t (fn (log-path)))))))
