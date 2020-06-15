@@ -15,10 +15,18 @@
   "Initialize the universe."
   (setf *universe* (make-universe)))
 
-(initialize-universe)
-
 (defun* restore-log-data ()
   "Restore the most recent log log file."
   (restore-log))
 
-(restore-log-data)
+(defun* start-slynk-server ()
+  "Start a slynk server."
+  (slynk:create-server :port *slynk-port* :dont-close t))
+
+(defun main ()
+  "Run the module."
+  (initialize-universe)
+  (restore-log-data)
+  (start-slynk-server))
+
+(main)

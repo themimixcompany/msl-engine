@@ -11,7 +11,7 @@
   :description "streams"
   :author "The Mimix Company <code@mimix.io>"
   :license "Blue Oak Model License 1.0.0"
-  :version "2.2.3"
+  :version "2.2.4"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:clack
@@ -22,6 +22,7 @@
                #:maxpc
                #:trivial-file-size
                #:local-time
+               #:slynk
                #:marie
                "streams/specials"
                "streams/classes"

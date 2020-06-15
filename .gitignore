@@ -32,9 +32,3 @@ extras.lisp
 notes.lisp
 *.msl
 test.lisp
-
-david-expr-old.lisp
-david-expr.lisp
-rom-expr.lisp
-tmp/repl.lisp-repl
-'setter output examples.txt'
