@@ -80,5 +80,5 @@
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
-  5000
+  4005
   "The default slynk communication port.")

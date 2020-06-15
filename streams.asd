@@ -23,6 +23,7 @@
                #:trivial-file-size
                #:local-time
                #:slynk
+               #:find-port
                #:marie
                "streams/specials"
                "streams/classes"
