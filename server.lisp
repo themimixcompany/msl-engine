@@ -63,15 +63,17 @@
         (table (connection-headers connection)))
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
-    ;;(send connection (format-msl "VER" *system-version*))
-
-    ;; (dump-headers connection)
     (debug-print (fmt "Connection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
     (debug-print (fmt "~A" (gethash "user-agent" table)))
     (dump-thread-count)
-    (post connection (admin-dispatch "(@VER)"))))
+
+    (send connection (format-msl "VER" *system-version*))
+
+    ;; NOTE:
+    ;;(post connection (admin-dispatch "(@VER)"))
+    ))
 
 (defun echo-message (connection message)
   "Send back MESSAGE to CONNECTION."
