@@ -190,7 +190,19 @@
   (stop-admin-server)
   (uiop:quit))
 
-(defun* serve ()
+(defun find-open-port ()
+  "Return an open for slynk."
+  (find-port:find-port :min 40000 :max 50000))
+
+(defun* start-slynk-server ()
+  "Start a slynk server."
+  (let ((port (find-open-port))
+        (*slynk-debug-p* nil))
+    (when port
+      (slynk:create-server :port port :dont-close t)
+      (print-debug (fmt "Slynk open at ~A." port)))))
+
+(defun* serve (&key slynk)
   "The main entrypoint of the server."
   (flet ((find-threads (query)
            (bt:join-thread (find-if #'(lambda (thread)
@@ -209,5 +221,6 @@
                      #'(lambda (c)
                          (format t "Oops, an unknown error occured: ~A~%" c))))
       (format t "streams v~A~%" *system-version*)
+      (when slynk (start-slynk-server))
       (start-servers)
       (find-threads "hunchentoot"))))

@@ -39,3 +39,6 @@
                "streams/startup"
                "streams/driver")
   :in-order-to ((test-op (test-op "streams-tests"))))
+
+(defmethod perform :after ((o load-op) (c (eql (find-system :slynk))))
+  (funcall (read-from-string "slynk::init")))
