@@ -20,22 +20,9 @@
   "Restore the most recent log log file."
   (restore-log))
 
-(defun find-open-port ()
-  "Return an open for slynk."
-  (find-port:find-port :min 40000 :max 50000))
-
-(defun* start-slynk-server ()
-  "Start a slynk server."
-  (let ((port (find-open-port))
-        (*slynk-debug-p* nil))
-    (when port
-      (slynk:create-server :port port :dont-close t)
-      (print-debug (fmt "Slynk port opened at ~A" port)))))
-
 (defun main ()
   "Run the module."
   (initialize-universe)
-  (restore-log-data)
-  (start-slynk-server))
+  (restore-log-data))
 
 (main)
