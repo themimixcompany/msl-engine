@@ -53,6 +53,10 @@
   "Print the headers information from CONNECTION."
   (dump-table (connection-headers connection)))
 
+(defun dump-thread-count ()
+  "Print the current thread count information."
+  (print-debug (fmt "Thread count: ~A" (length (bt:all-threads)))))
+
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
   (let ((uid (get-new-user-id))
@@ -62,12 +66,11 @@
     ;;(send connection (format-msl "VER" *system-version*))
 
     ;; (dump-headers connection)
-    (print-debug (fmt "Connection request received from ~A to ~A"
+    (print-debug (fmt "Connection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
     (print-debug (fmt "~A" (gethash "user-agent" table)))
-
-    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads))))
+    (dump-thread-count)
     (post connection (admin-dispatch "(@VER)"))))
 
 (defun echo-message (connection message)
@@ -79,10 +82,10 @@
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *user-connections*)))
         (table (connection-headers connection)))
-    (print-debug (fmt "Disconnection request received from ~A to"
+    (print-debug (fmt "Disconnection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
-    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads))))
+    (dump-thread-count)
     (remhash connection *user-connections*)
     (loop :for con :being :the :hash-key :of *user-connections*
           :do (send con message))))
@@ -151,7 +154,7 @@
     (let ((value (admin-dispatch message)))
       (post *admin-wire* value)
       (print-debug (fmt "Sent on admin wire: ~A" value)))
-    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads)))))
+    (dump-thread-count))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server))
@@ -170,7 +173,7 @@
       (print-debug (fmt "Sent on MSL wire: ~A" recall-expr-value))
       (post *admin-wire* recall-value-value)
       (print-debug (fmt "Sent on admin wire: ~A" recall-value-value)))
-    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads)))))
+    (dump-thread-count))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server))
@@ -201,6 +204,16 @@
     (when port
       (slynk:create-server :port port :dont-close t)
       (print-debug (fmt "Slynk open at ~A." port)))))
+
+(defun* dump-threads ()
+  "Print a list of running threads."
+  (loop :for thread :in (bt:all-threads)
+        :do (format t "~A~%" thread)))
+
+(defun* dump-thread-names ()
+  "Print a list of the names of the running threads."
+  (loop :for thread :in (bt:all-threads)
+        :do (format t "~A~%" (bt:thread-name thread))))
 
 (defun* serve (&key slynk)
   "The main entrypoint of the server."
