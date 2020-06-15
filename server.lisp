@@ -179,13 +179,13 @@
 
 (defun start-servers ()
   "Start all the servers."
-  (format *error-output* "Loading servers...~%")
+  (print-debug "Loading servers...")
   (start-admin-server)
   (start-msl-server))
 
 (defun stop-servers ()
   "Stop all the servers."
-  (format *error-output* "Stopping servers...~%")
+  (print-debug "Stopping servers...")
   (stop-msl-server)
   (stop-admin-server)
   (uiop:quit))
