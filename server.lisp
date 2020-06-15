@@ -55,7 +55,7 @@
 
 (defun dump-thread-count ()
   "Print the current thread count information."
-  (print-debug (fmt "Thread count: ~A" (length (bt:all-threads)))))
+  (debug-print (fmt "Thread count: ~A" (length (bt:all-threads)))))
 
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
@@ -66,10 +66,10 @@
     ;;(send connection (format-msl "VER" *system-version*))
 
     ;; (dump-headers connection)
-    (print-debug (fmt "Connection request received from ~A to ~A."
+    (debug-print (fmt "Connection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
-    (print-debug (fmt "~A" (gethash "user-agent" table)))
+    (debug-print (fmt "~A" (gethash "user-agent" table)))
     (dump-thread-count)
     (post connection (admin-dispatch "(@VER)"))))
 
@@ -82,7 +82,7 @@
   (let ((message (format nil " ... ~A has left."
                          (gethash connection *user-connections*)))
         (table (connection-headers connection)))
-    (print-debug (fmt "Disconnection request received from ~A to ~A."
+    (debug-print (fmt "Disconnection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
     (dump-thread-count)
@@ -107,7 +107,7 @@
   (clack:stop server))
 
 (defmacro* define-runners (name form port open-handler
-                           message-handler close-handler error-handler)
+                                message-handler close-handler error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -130,7 +130,7 @@
              (lambda (_)
                (declare (ignore _))
                (handler-case (websocket-driver:start-connection server)
-                 (error (c) (print-debug (fmt "Caught error: ~A" c)))))))
+                 (error (c) (format t "Caught error: ~A" c))))))
          (defun ,start-server-name ()
            (let ((server (clack-start #',server-name ,port)))
              (setf ,server-symbol-name server)
@@ -150,45 +150,45 @@
   (lambda ()
     (handle-open server))
   (lambda (message)
-    (print-debug (fmt "Received on admin wire: ~A" message))
+    (debug-print (fmt "Received on admin wire: ~A" message))
     (let ((value (admin-dispatch message)))
       (post *admin-wire* value)
-      (print-debug (fmt "Sent on admin wire: ~A" value)))
+      (debug-print (fmt "Sent on admin wire: ~A" value)))
     (dump-thread-count))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server))
   (lambda (error)
-    (format t "Got an error: ~A~%" error)))
+    (debug-print (fmt "Got an error: ~A" error))))
 
 (define-runners "MSL" 'msl 60000
   (lambda ()
     (handle-open server))
   (lambda (message)
-    (print-debug (fmt "Received on MSL wire: ~A" message))
+    (debug-print (fmt "Received on MSL wire: ~A" message))
     (dispatch message)
     (let ((recall-expr-value (recall-expr message))
           (recall-value-value (recall-value message)))
       (post *msl-wire* recall-expr-value)
-      (print-debug (fmt "Sent on MSL wire: ~A" recall-expr-value))
+      (debug-print (fmt "Sent on MSL wire: ~A" recall-expr-value))
       (post *admin-wire* recall-value-value)
-      (print-debug (fmt "Sent on admin wire: ~A" recall-value-value)))
+      (debug-print (fmt "Sent on admin wire: ~A" recall-value-value)))
     (dump-thread-count))
   (lambda (&key _ __)
     (declare (ignore _ __))
     (handle-close server))
   (lambda (error)
-    (format t "Got an error: ~A~%" error)))
+    (debug-print (fmt "Got an error: ~A" error))))
 
 (defun start-servers ()
   "Start all the servers."
-  (print-debug "Loading servers...")
+  (debug-print "Loading servers...")
   (start-admin-server)
   (start-msl-server))
 
 (defun stop-servers ()
   "Stop all the servers."
-  (print-debug "Stopping servers...")
+  (debug-print "Stopping servers...")
   (stop-msl-server)
   (stop-admin-server)
   (uiop:quit))
@@ -203,7 +203,7 @@
         (*slynk-debug-p* nil))
     (when port
       (slynk:create-server :port port :dont-close t)
-      (print-debug (fmt "Slynk open at ~A." port)))))
+      (debug-print (fmt "Slynk open at ~A." port)))))
 
 (defun* dump-threads ()
   "Print a list of running threads."
@@ -219,7 +219,7 @@
   "The main entrypoint of the server."
   (flet ((find-threads (query)
            (bt:join-thread (find-if #'(lambda (thread)
-                                      (search query (bt:thread-name thread)))
+                                        (search query (bt:thread-name thread)))
                                     (bt:all-threads)))))
     (handler-bind ((#+sbcl sb-sys:interactive-interrupt
                     #+ccl ccl:interrupt-signal-condition

@@ -76,9 +76,13 @@
 
 (defvar* *system-version*
   ;;#.(asdf:system-version (asdf:find-system :streams))
-  "2.2.3"
+  "2.2.4"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
   4005
   "The default slynk communication port.")
+
+(defvar* *debug-print*
+  t
+  "Whether to print debugging information using a dedicated outputter.")

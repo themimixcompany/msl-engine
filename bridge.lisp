@@ -23,4 +23,4 @@
          (exprs (read-log path))
          (length (length exprs)))
     (terpri)
-    (print-debug (fmt "Read ~A expressions from history" length))))
+    (debug-print (fmt "Read ~A expressions from history" length))))
