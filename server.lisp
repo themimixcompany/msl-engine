@@ -45,15 +45,23 @@
   "Return a string formatted for MSL."
   (format nil "(@~A ~A)" type text))
 
+(defun* connection-headers (connection)
+  "Return the header table from CONNECTION."
+  (websocket-driver.ws.server::headers connection))
+
+(defun* dump-headers (connection)
+  "Print the headers information from CONNECTION."
+  (dump-table (connection-headers connection)))
+
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
   (let ((uid (get-new-user-id))
-        (table (websocket-driver.ws.server::headers connection)))
+        (table (connection-headers connection)))
     (setf (gethash connection *user-connections*)
           (format nil "~A" uid))
     ;;(send connection (format-msl "VER" *system-version*))
 
-    ;;(dump-table (websocket-driver.ws.server::headers connection))
+    ;; (dump-headers connection)
     (print-debug (fmt "Connection request received from ~A to ~A"
                       (gethash "origin" table)
                       (gethash "host" table)))
@@ -69,7 +77,8 @@
 (defun handle-close (connection)
   "Process connection CONNECTION when it closes."
   (let ((message (format nil " ... ~A has left."
-                         (gethash connection *user-connections*))))
+                         (gethash connection *user-connections*)))
+        (table (connection-headers connection)))
     (print-debug (fmt "Disconnection request received from ~A to"
                       (gethash "origin" table)
                       (gethash "host" table)))
@@ -94,7 +103,8 @@
   "Stop the clack server SERVER."
   (clack:stop server))
 
-(defmacro* define-runners (name form port open-handler message-handler close-handler)
+(defmacro* define-runners (name form port open-handler
+                           message-handler close-handler error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -113,9 +123,11 @@
              (websocket-driver:on :open server ,open-handler)
              (websocket-driver:on :message server ,message-handler)
              (websocket-driver:on :close server ,close-handler)
+             (websocket-driver:on :error server ,error-handler)
              (lambda (_)
                (declare (ignore _))
-               (websocket-driver:start-connection server))))
+               (handler-case (websocket-driver:start-connection server)
+                 (error (c) (print-debug (fmt "Caught error: ~A" c)))))))
          (defun ,start-server-name ()
            (let ((server (clack-start #',server-name ,port)))
              (setf ,server-symbol-name server)
@@ -138,10 +150,13 @@
     (print-debug (fmt "Received on admin wire: ~A" message))
     (let ((value (admin-dispatch message)))
       (post *admin-wire* value)
-      (print-debug (fmt "Sent on admin wire: ~A" value))))
+      (print-debug (fmt "Sent on admin wire: ~A" value)))
+    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads)))))
   (lambda (&key _ __)
     (declare (ignore _ __))
-    (handle-close server)))
+    (handle-close server))
+  (lambda (error)
+    (format t "Got an error: ~A~%" error)))
 
 (define-runners "MSL" 'msl 60000
   (lambda ()
@@ -154,10 +169,13 @@
       (post *msl-wire* recall-expr-value)
       (print-debug (fmt "Sent on MSL wire: ~A" recall-expr-value))
       (post *admin-wire* recall-value-value)
-      (print-debug (fmt "Sent on admin wire: ~A" recall-value-value))))
+      (print-debug (fmt "Sent on admin wire: ~A" recall-value-value)))
+    (print-debug (fmt "Current thread count is ~A" (length (bt:all-threads)))))
   (lambda (&key _ __)
     (declare (ignore _ __))
-    (handle-close server)))
+    (handle-close server))
+  (lambda (error)
+    (format t "Got an error: ~A~%" error)))
 
 (defun start-servers ()
   "Start all the servers."
@@ -174,18 +192,22 @@
 
 (defun* serve ()
   "The main entrypoint of the server."
-  (format t "streams v~A~%" *system-version*)
-  (start-servers)
-  (handler-case (bt:join-thread (find-if (lambda (thread)
-                                           (search "hunchentoot" (bt:thread-name thread)))
-                                         (bt:all-threads)))
-    (#+sbcl sb-sys:interactive-interrupt
-     #+ccl ccl:interrupt-signal-condition
-     #+clisp system::simple-interrupt-condition
-     #+ecl ext:interactive-interrupt
-     #+allegro excl:interrupt-signal
-     #+lispworks mp:process-interrupt
-     () (stop-servers))
-    (error (c)
-      (format t "Oops, an unknown error occured:~&~A~&" c)))
-  nil)
+  (flet ((find-threads (query)
+           (bt:join-thread (find-if #'(lambda (thread)
+                                      (search query (bt:thread-name thread)))
+                                    (bt:all-threads)))))
+    (handler-bind ((#+sbcl sb-sys:interactive-interrupt
+                    #+ccl ccl:interrupt-signal-condition
+                    #+clisp system::simple-interrupt-condition
+                    #+ecl ext:interactive-interrupt
+                    #+allegro excl:interrupt-signal
+                    #+lispworks mp:process-interrupt
+                    #'(lambda (c)
+                        (declare (ignore c))
+                        (stop-servers)))
+                   (error
+                     #'(lambda (c)
+                         (format t "Oops, an unknown error occured: ~A~%" c))))
+      (format t "streams v~A~%" *system-version*)
+      (start-servers)
+      (find-threads "hunchentoot"))))
