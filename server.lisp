@@ -20,16 +20,16 @@
 ;; general helpers
 ;;--------------------------------------------------------------------------------------------------
 
-(defvar *user-connections* (make-hash-table)
-  "The table of connections, where the keys are server instances while the values are the user IDs.")
+(defvar *connections* (make-hash-table)
+  "The table of connections, where the keys are server instances while the values are the connection IDs.")
 
-(defvar *user-base-id* 1000
-  "The base integer user ID for connections.")
+(defvar *base-connection-id* 1000
+  "The base integer connection ID for connections.")
 
-(defun get-new-user-id ()
-  "Return a new fresh user ID."
-  (incf *user-base-id*)
-  *user-base-id*)
+(defun new-connection-id ()
+  "Return a new fresh connection ID."
+  (incf *base-connection-id*)
+  *base-connection-id*)
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -40,10 +40,6 @@
   "Send DATA to WIRE if it contains valid information."
   (when (and wire data)
     (send wire data)))
-
-(defun format-msl (type text)
-  "Return a string formatted for MSL."
-  (format nil "(@~A ~A)" type text))
 
 (defun* connection-headers (connection)
   "Return the header table from CONNECTION."
@@ -59,21 +55,16 @@
 
 (defun handle-open (connection)
   "Process incoming connection CONNECTION."
-  (let ((uid (get-new-user-id))
+  (let ((uid (new-connection-id))
         (table (connection-headers connection)))
-    (setf (gethash connection *user-connections*)
-          (format nil "~A" uid))
+    (setf (gethash connection *connections*)
+          (fmt "~A" uid))
     (debug-print (fmt "Connection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
     (debug-print (fmt "~A" (gethash "user-agent" table)))
     (dump-thread-count)
-
-    (send connection (format-msl "VER" *system-version*))
-
-    ;; NOTE:
-    ;;(post connection (admin-dispatch "(@VER)"))
-    ))
+    (post connection (admin-dispatch "(@VER)"))))
 
 (defun echo-message (connection message)
   "Send back MESSAGE to CONNECTION."
@@ -81,16 +72,12 @@
 
 (defun handle-close (connection)
   "Process connection CONNECTION when it closes."
-  (let ((message (format nil " ... ~A has left."
-                         (gethash connection *user-connections*)))
-        (table (connection-headers connection)))
+  (let ((table (connection-headers connection)))
     (debug-print (fmt "Disconnection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
     (dump-thread-count)
-    (remhash connection *user-connections*)
-    (loop :for con :being :the :hash-key :of *user-connections*
-          :do (send con message))))
+    (remhash connection *connections*)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -109,7 +96,8 @@
   (clack:stop server))
 
 (defmacro* define-runners (name form port open-handler
-                                message-handler close-handler error-handler)
+                                message-handler close-handler
+                                error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -129,10 +117,12 @@
              (websocket-driver:on :message server ,message-handler)
              (websocket-driver:on :close server ,close-handler)
              (websocket-driver:on :error server ,error-handler)
-             (lambda (_)
-               (declare (ignore _))
-               (handler-case (websocket-driver:start-connection server)
-                 (error (c) (format t "Caught error: ~A" c))))))
+             (lambda (x)
+               ;;(declare (ignore _))
+               ;; NOTE:
+               ;; (handler-case (websocket-driver:start-connection server)
+               ;;   (error (c) (format t "Caught error: ~A" c)))
+               (websocket-driver:start-connection server))))
          (defun ,start-server-name ()
            (let ((server (clack-start #',server-name ,port)))
              (setf ,server-symbol-name server)
@@ -157,8 +147,9 @@
       (post *admin-wire* value)
       (debug-print (fmt "Sent on admin wire: ~A" value)))
     (dump-thread-count))
-  (lambda (&key _ __)
-    (declare (ignore _ __))
+  (lambda (&key code reason)
+    (debug-print (fmt "Code: ~A" code))
+    (debug-print (fmt "Reason: ~A" reason))
     (handle-close server))
   (lambda (error)
     (debug-print (fmt "Got an error: ~A" error))))
@@ -176,8 +167,9 @@
       (post *admin-wire* recall-value-value)
       (debug-print (fmt "Sent on admin wire: ~A" recall-value-value)))
     (dump-thread-count))
-  (lambda (&key _ __)
-    (declare (ignore _ __))
+  (lambda (&key code reason)
+    (debug-print (fmt "Code: ~A" code))
+    (debug-print (fmt "Reason: ~A" reason))
     (handle-close server))
   (lambda (error)
     (debug-print (fmt "Got an error: ~A" error))))
