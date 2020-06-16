@@ -16,7 +16,7 @@
 
 (defun* admin-version ()
   "Run the admin command VERSION."
-  *system-version*)
+  (format-parens "@VER" *system-version*))
 
 (defun* admin-clear ()
   "Run the admin command CLEAR."

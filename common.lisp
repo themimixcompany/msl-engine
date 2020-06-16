@@ -189,3 +189,7 @@ body contents of the parser function."
   (when *debug-print*
     (format stream "[~A] ~A~%" (current-date-mimix) text)
     (force-output stream)))
+
+(defun* format-parens (&rest args)
+  "Return a string formatted for MSL."
+  (fmt "(~{~A~^ ~})" args))
