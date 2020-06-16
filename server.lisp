@@ -13,6 +13,19 @@
         #:marie)
   (:export #:server))
 
+
+(in-package #:hunchentoot)
+
+(defmethod process-connection :around ((*acceptor* acceptor) (socket t))
+  (handler-case (progn
+                  (format t "~A~%" (usocket:socket-stream socket))
+                  (force-output *standard-output*)
+                  (with-mapped-conditions ()
+                    (call-next-method)))
+    (error (c)
+      (values nil c))))
+
+
 (in-package #:streams/server)
 
 
@@ -63,7 +76,7 @@
                       (gethash "origin" table)
                       (gethash "host" table)))
     (debug-print (fmt "~A" (gethash "user-agent" table)))
-    (dump-thread-count)
+    ;;(dump-thread-count)
     (post connection (admin-dispatch "(@VER)"))))
 
 (defun echo-message (connection message)
@@ -79,7 +92,7 @@
       (debug-print (fmt "Disconnection request received from ~A to ~A."
                         (gethash "origin" table)
                         (gethash "host" table)))
-      (dump-thread-count)
+      ;;(dump-thread-count)
       (remhash connection *connections*))))
 
 
@@ -156,7 +169,8 @@
     (let ((value (admin-dispatch message)))
       (post *admin-wire* value)
       (debug-print (fmt "Sent on admin wire: ~A" value)))
-    (dump-thread-count))
+    ;;(dump-thread-count)
+    )
   (lambda (&key code reason)
     (declare (ignore code reason))
     (handle-close server))
@@ -175,7 +189,8 @@
       (debug-print (fmt "Sent on MSL wire: ~A" recall-expr-value))
       (post *admin-wire* recall-value-value)
       (debug-print (fmt "Sent on admin wire: ~A" recall-value-value)))
-    (dump-thread-count))
+    ;;(dump-thread-count)
+    )
   (lambda (&key code reason)
     (declare (ignore code reason))
     (handle-close server))
