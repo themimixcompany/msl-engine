@@ -72,12 +72,15 @@
 
 (defun handle-close (connection)
   "Process connection CONNECTION when it closes."
-  (let ((table (connection-headers connection)))
-    (debug-print (fmt "Disconnection request received from ~A to ~A."
-                      (gethash "origin" table)
-                      (gethash "host" table)))
-    (dump-thread-count)
-    (remhash connection *connections*)))
+  (handler-bind ((usocket:unknown-error
+                   (lambda (c)
+                     (format t "Caught condition ~A" c))))
+    (let ((table (connection-headers connection)))
+      (debug-print (fmt "Disconnection request received from ~A to ~A."
+                        (gethash "origin" table)
+                        (gethash "host" table)))
+      (dump-thread-count)
+      (remhash connection *connections*))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -87,9 +90,17 @@
 (defvar *servers* nil
   "The list of active servers.")
 
-(defun clack-start (server port)
+(defun clack-start (server-name port)
   "Start the clack server SERVER under port PORT."
-  (clack:clackup server :port port))
+  (let* ((server :hunchentoot)
+         (address "127.0.0.1")
+         (port port)
+         (debug nil)
+         (value (clack:clackup server-name :server server :address address :port port :silent t)))
+    (when value
+      (debug-print (fmt "~A server is started." (string-capitalize (string* server))))
+      (debug-print (fmt "Listening on ~A:~A." address port))
+      value)))
 
 (defun clack-stop (server)
   "Stop the clack server SERVER."
@@ -117,9 +128,8 @@
              (websocket-driver:on :message server ,message-handler)
              (websocket-driver:on :close server ,close-handler)
              (websocket-driver:on :error server ,error-handler)
-             (lambda (x)
-               ;;(declare (ignore _))
-               ;; NOTE:
+             (lambda (arg)
+               (declare (ignore arg))
                ;; (handler-case (websocket-driver:start-connection server)
                ;;   (error (c) (format t "Caught error: ~A" c)))
                (websocket-driver:start-connection server))))
@@ -148,8 +158,7 @@
       (debug-print (fmt "Sent on admin wire: ~A" value)))
     (dump-thread-count))
   (lambda (&key code reason)
-    (debug-print (fmt "Code: ~A" code))
-    (debug-print (fmt "Reason: ~A" reason))
+    (declare (ignore code reason))
     (handle-close server))
   (lambda (error)
     (debug-print (fmt "Got an error: ~A" error))))
@@ -168,8 +177,7 @@
       (debug-print (fmt "Sent on admin wire: ~A" recall-value-value)))
     (dump-thread-count))
   (lambda (&key code reason)
-    (debug-print (fmt "Code: ~A" code))
-    (debug-print (fmt "Reason: ~A" reason))
+    (declare (ignore code reason))
     (handle-close server))
   (lambda (error)
     (debug-print (fmt "Got an error: ~A" error))))
@@ -227,7 +235,6 @@
                    (error
                      #'(lambda (c)
                          (format t "Oops, an unknown error occured: ~A~%" c))))
-      (format t "streams v~A~%" *system-version*)
       (when slynk (start-slynk-server))
       (start-servers)
       (find-threads "hunchentoot"))))

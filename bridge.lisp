@@ -22,5 +22,4 @@
   (let* ((path (log-path :machine machine))
          (exprs (read-log path))
          (length (length exprs)))
-    (terpri)
-    (debug-print (fmt "Read ~A expressions from history" length))))
+    (debug-print (fmt "Read ~A expressions from history." length))))

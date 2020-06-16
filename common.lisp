@@ -193,3 +193,10 @@ body contents of the parser function."
 (defun* format-parens (&rest args)
   "Return a string formatted for MSL."
   (fmt "(~{~A~^ ~})" args))
+
+(in-package #:hunchentoot)
+
+(defmethod process-connection :around ((*acceptor* acceptor) (socket t))
+  (ignore-errors
+   (with-mapped-conditions ()
+     (call-next-method))))
