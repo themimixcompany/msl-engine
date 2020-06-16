@@ -16,6 +16,10 @@
   "Initialize the universe."
   (setf *universe* (make-universe)))
 
+(defun* print-banner ()
+  "Print information about the software."
+  (debug-print (fmt "streams v~A" *system-version*)))
+
 (defun* restore-log-data ()
   "Restore the most recent log log file."
   (restore-log))
@@ -23,6 +27,7 @@
 (defun main ()
   "Run the module."
   (initialize-universe)
+  (print-banner)
   (restore-log-data))
 
 (main)
