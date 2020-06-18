@@ -75,8 +75,7 @@
     (debug-print (fmt "Connection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
-    (debug-print (fmt "~A" (gethash "user-agent" table)))
-    ;;(dump-thread-count)
+    ;;(debug-print (fmt "~A" (gethash "user-agent" table)))
     (post connection (admin-dispatch "(@VER)"))))
 
 (defun echo-message (connection message)
@@ -85,15 +84,12 @@
 
 (defun handle-close (connection)
   "Process connection CONNECTION when it closes."
-  (handler-bind ((usocket:unknown-error
-                   (lambda (c)
-                     (format t "Caught condition ~A" c))))
-    (let ((table (connection-headers connection)))
-      (debug-print (fmt "Disconnection request received from ~A to ~A."
-                        (gethash "origin" table)
-                        (gethash "host" table)))
-      ;;(dump-thread-count)
-      (remhash connection *connections*))))
+  (let ((table (connection-headers connection)))
+    (debug-print (fmt "Disconnection request received from ~A to ~A."
+                      (gethash "origin" table)
+                      (gethash "host" table)))
+    (dump-headers connection)
+    (remhash connection *connections*)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -168,9 +164,7 @@
     (debug-print (fmt "Received on admin wire: ~A" message))
     (let ((value (admin-dispatch message)))
       (post *admin-wire* value)
-      (debug-print (fmt "Sent on admin wire: ~A" value)))
-    ;;(dump-thread-count)
-    )
+      (debug-print (fmt "Sent on admin wire: ~A" value))))
   (lambda (&key code reason)
     (declare (ignore code reason))
     (handle-close server))
@@ -188,9 +182,7 @@
       (post *msl-wire* recall-expr-value)
       (debug-print (fmt "Sent on MSL wire: ~A" recall-expr-value))
       (post *admin-wire* recall-value-value)
-      (debug-print (fmt "Sent on admin wire: ~A" recall-value-value)))
-    ;;(dump-thread-count)
-    )
+      (debug-print (fmt "Sent on admin wire: ~A" recall-value-value))))
   (lambda (&key code reason)
     (declare (ignore code reason))
     (handle-close server))
