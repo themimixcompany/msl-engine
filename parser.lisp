@@ -119,17 +119,17 @@
    'format-form
    'msl-hash
    'msl-comment
-   (?seq (?eq #\)) 'metadata-sequence)
-   (?seq (?eq #\)) 'datatype-form)
-   (?seq (?eq #\)) 'format-form)
-   (?seq (?eq #\)) (?eq #\)))
-   (?seq (?eq #\)) (?end))))
+   (?seq (?eq #\right_parenthesis) 'metadata-sequence)
+   (?seq (?eq #\right_parenthesis) 'datatype-form)
+   (?seq (?eq #\right_parenthesis) 'format-form)
+   (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
+   (?seq (?eq #\right_parenthesis) (?end))))
 ;;
 
 (define-parser ?expression-terminator ()
   "Match the end of an expression."
   (?seq
-   (?eq #\))))
+   (?eq #\right_parenthesis)))
 ;;
 
 ;; SINGLE VALUE PARSERS (Return one value.)
@@ -407,7 +407,7 @@
   "Match and return an atom in the @ namespace."
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ atom-seq atom-value atom-mods metadata hash _ _)
-                  (=list (?eq #\()
+                  (=list (?eq #\left_parenthesis)
                          (=transform
                           (=@-sequence)
                           (lambda (seq)
@@ -428,7 +428,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some '@-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -439,7 +439,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any '@-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -453,7 +453,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
@@ -474,7 +474,7 @@
   "Match and return an atom in the c namespace."
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ atom-seq atom-value atom-mods metadata hash _ _)
-                  (=list (?eq #\()
+                  (=list (?eq #\left_parenthesis)
                          (=transform
                           (=canon-sequence)
                           (lambda (seq)
@@ -495,7 +495,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'c-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -506,7 +506,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'c-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -520,7 +520,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
@@ -541,7 +541,7 @@
   "Match and return an atom in the m w s v namespace."
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ atom-seq atom-value atom-mods metadata hash _ _)
-                  (=list (?eq #\()
+                  (=list (?eq #\left_parenthesis)
                          (=transform
                           (=grouping-sequence)
                           (lambda (seq)
@@ -562,7 +562,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'group-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -573,7 +573,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'group-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -587,7 +587,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
@@ -609,12 +609,12 @@
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ _ atom-sequence atom-value atom-mods metadata _ _)
                   (=list 'whitespace
-                         (?eq #\()
+                         (?eq #\left_parenthesis)
                          (=transform
                           'format-sequence
                           (lambda (seq)
-                            ;;(diag "ATOM-SEQ" atom-seq)
-                            ;;(diag "SEQ" seq)
+                            (diag "ATOM-SEQ" atom-seq)
+                            (diag "SEQ" seq)
                             (setf atom-seq seq)))
                          (=transform (%any 'msl-value)
                                      (lambda (val)
@@ -623,7 +623,7 @@
                          (%any (=destructure (mod-seq &optional mod-value mod-mods mod-meta mod-hash mod-comment)
                                              (=transform 'format-form
                                                          (lambda (val)
-                                                           ;;(diag "ATOM MODS" val)
+                                                           (diag "ATOM MODS" val)
                                                            val))
                                  (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                          (%maybe (%or
@@ -635,13 +635,13 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'msl-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                                    (=transform 'format-mods
                                                                                                (lambda (val)
-                                                                                                 ;;(diag "META 1 MODS")
+                                                                                                 (diag "META 1 MODS")
                                                                                                  val))
                                                                        (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
                                                         ;; no value, with mods (META 2, the "no value" case.)
@@ -649,13 +649,13 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'msl-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                                     (=transform 'format-mods
                                                                                                 (lambda (val)
-                                                                                                  ;;(diag "META 2 MODS")
+                                                                                                  (diag "META 2 MODS")
                                                                                                   val))
                                                                         (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))))
                                            (cons (list (append atom-seq meta-seq) meta-value) meta-mods)))
@@ -666,7 +666,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
@@ -674,7 +674,7 @@
                                                        (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
                                                                            (=transform 'format-mods
                                                                                        (lambda (val)
-                                                                                         ;;(diag "META 3 MODS")
+                                                                                         (diag "META 3 MODS")
                                                                                          val))
                                                                (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
                                     (list (cons (list (append atom-seq meta-seq) meta-value) meta-mods)))))
@@ -688,7 +688,7 @@
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ _ atom-seq atom-value atom-mods metadata _ _)
                   (=list 'whitespace
-                         (?eq #\()
+                         (?eq #\left_parenthesis)
                          (=transform
                           (=datatype-sequence)
                           (lambda (seq)
@@ -709,7 +709,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'msl-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -720,7 +720,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'msl-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -734,7 +734,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
@@ -752,7 +752,7 @@
   "Match and return an atom in the msl namespace."
   (let ((atom-val) (atom-seq) (meta-seq))
     (=destructure (_ atom-seq atom-value atom-mods metadata hash _ _)
-                  (=list (?eq #\()
+                  (=list (?eq #\left_parenthesis)
                          (=transform
                           (=prelude-sequence)
                           (lambda (seq)
@@ -773,7 +773,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 1" seq)
+                                                                  (diag "META 1" seq)
                                                                   (setf meta-seq seq)))
                                                                (%some 'msl-value)
                                                                (%any (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -784,7 +784,7 @@
                                                         (=list (=transform
                                                                 'metadata-sequence
                                                                 (lambda (seq)
-                                                                  ;;(diag "META 2" seq)
+                                                                  (diag "META 2" seq)
                                                                   (setf meta-seq seq)))
                                                                (%any 'msl-value)
                                                                (%some (=destructure (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -798,7 +798,7 @@
                                                 (=list (=transform
                                                         'metadata-sequence
                                                         (lambda (seq)
-                                                          ;;(diag "META 3" seq)
+                                                          (diag "META 3" seq)
                                                           (setf meta-seq seq)))
                                                        (?satisfies (lambda (val)
                                                                      (declare (ignore val)) (unless atom-val t))
