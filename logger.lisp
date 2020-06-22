@@ -119,3 +119,16 @@
       (cond ((maximum-file-size-p (log-path))
              (fn (make-machine-log-path *machine* (log-date *universe*))))
             (t (fn (log-path)))))))
+
+(defun* ensure-log-directory-exists ()
+  "Create the log directory if it doesn’t exist, yet."
+  (uiop:ensure-all-directories-exist (list *log-directory*)))
+
+(defun* ensure-log-file-exists ()
+  "Create a base log file if none exists."
+  (ensure-log-directory-exists)
+  (let ((paths (log-paths))
+        (path (make-log-path)))
+    (unless paths
+      (with-open-file (stream path :direction :output :if-does-not-exist :create)
+        path))))
