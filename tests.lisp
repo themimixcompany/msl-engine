@@ -29,17 +29,18 @@ argument CLEAR is true, clear the universe prior to evaluation."
   (dispatch expr nil)
   (car (collect)))
 
-(defun eqv (expr &optional value)
-  "Return true if EXPR is equivalent to the collected dispatch on itself. If
-VALUE is present, compare the collected dispatch against it. The environment is
-cleared prior to the evaluation of EXPR."
+(defun %eqv (expr value flag)
+  "Return true if EXPR is equivalent to the collected dispatch on itself. If VALUE is present, compare the collected dispatch against it. If FLAG is true, the universe is cleared prior to the evaluation of EXPR."
   (let ((expr (uncomment expr)))
-    (string= (extract expr t) (or expr value))))
+    (string= (extract expr flag) (or expr value))))
+
+(defun eqv (expr &optional value)
+  "Call %EQV without value accumulation"
+  (%eqv expr value t))
 
 (defun eqv* (expr &optional value)
-  "Behave like EQV but with value accumulation."
-  (let ((expr (uncomment expr)))
-    (string= (extract expr nil) (or expr value))))
+  "Call %EQV with value accumulation"
+  (%eqv expr value nil))
 
 (test parser-tests-1 "Test the values returned by the parser and unparser, without value accumulation."
   (is (eqv "(@WALT //key only)"))
