@@ -47,10 +47,7 @@ cleared prior to the evaluation of EXPR."
   (is (expr-equal "(@WALT Walt Disney (f wformat) //key value format)"))
   (is (expr-equal "(@WALT (d wtype) //key type)"))
   (is (expr-equal "(@WALT Walt Disney (d wtype) //key value type)"))
-
-  ;; bug?
-  ;;(is (null (expr-equal "(@WALT :wife //key meta)")))
-
+  ;;(is (null (expr-equal "(@WALT :wife //key meta)"))) ;bug?
   (is (expr-equal "(@WALT :wife Lillian //key meta value)"))
   (is (expr-equal "(@WALT Walt Disney :wife Lillian //key value meta value)"))
   (is (expr-equal "(@WALT (f wformat) //key format)"))
@@ -75,3 +72,6 @@ cleared prior to the evaluation of EXPR."
   (is (expr-equal "(@WALT :wife Lillian :birthday 1901 //key meta value meta value)"))
   (is (expr-equal "(@WALT Walt Disney :wife Lillian :birthday 1901 //key value meta value meta value)"))
   (is (expr-equal "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife Lillian /lregex/lenv lconsume [lt1] (f lformat) (d ltype) :birthday 1901 /bregex/benv bconsume (d btype) (f bformat) //key value regex transform format type meta value regex transform format type meta value regex type format)")))
+
+(test parser-tests-2 "Test the values returned by the parser and unparser, with accumulation."
+  (is (null nil)))
