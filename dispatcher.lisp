@@ -51,7 +51,7 @@
   (or (null params)
       (every #'null params)))
 
-(defun find-table (table)
+(defun* find-table (table)
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
@@ -60,26 +60,62 @@
 ;; readers
 ;;--------------------------------------------------------------------------------------------------
 
+;; (defun* read-term (term &optional
+;;                        (atom-table (atom-table *universe*))
+;;                        (sub-atom-table (sub-atom-table *universe*)))
+;;   "Return the value specified by TERM in SOURCE."
+;;   (block nil
+;;     (destructuring-bind (path &optional &rest _)
+;;         term
+;;       (declare (ignore _))
+;;       (let ((path (if (key-indicator-p (last* path))
+;;                       path
+;;                       (append path '("=")))))
+;;         (labels ((fn (location value)
+;;                    (cond ((null location) value)
+;;                          (t (let ((val (gethash (car location) value)))
+;;                               (if val
+;;                                   (fn (cdr location) val)
+;;                                   (return nil)))))))
+;;           (if (sub-atom-path-p path)
+;;               (fn path sub-atom-table)
+;;               (fn path atom-table)))))))
+
+;;(empty-key-p (marie:gethash* '("@" "WALT" "d" "type") (find-table #'atom-table)))
+(defun* empty-key-p (value)
+  "Return true if VALUE contains an empty hash table. The second value is true if the path to the table exists."
+  (if (hash-table-p value)
+      (values (zerop (hash-table-count value))
+              t)
+      (values nil
+              nil)))
+
 (defun* read-term (term &optional
                        (atom-table (atom-table *universe*))
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
-  (block nil
-    (destructuring-bind (path &optional &rest _)
+  (flet ((fn (path table)
+           (multiple-value-bind (emptyp existsp)
+               (empty-table-p (gethash* path table))
+             emptyp
+             existsp
+             (cond ((and (null emptyp) (null existsp))
+                    (format t "Path does not exist.~%"))
+                   ((and (null emptyp) existsp)
+                    (gethash* (append path '("=")) table))
+                   ;;((and emptyp existsp) '(""))
+                   (t '(""))))))
+    (destructuring-bind (path &optional &rest params)
         term
-      (declare (ignore _))
-      (let ((path (if (key-indicator-p (last* path))
-                      path
-                      (append path '("=")))))
-        (labels ((fn (location value)
-                   (cond ((null location) value)
-                         (t (let ((val (gethash (car location) value)))
-                              (if val
-                                  (fn (cdr location) val)
-                                  (return nil)))))))
-          (if (sub-atom-path-p path)
-              (fn path sub-atom-table)
-              (fn path atom-table)))))))
+      (declare (ignorable params))
+      (let* ((table (if (sub-atom-path-p path) sub-atom-table atom-table))
+             (value (if (key-indicator-p (last* path))
+                        (gethash* path table)
+                        (fn path table))))
+        ;; (if (sub-atom-path-p path)
+        ;;     (gethash* path sub-atom-table)
+        ;;     (gethash* path atom-table))
+        value))))
 
 (defun read-path (path &optional
                        (atom-table (atom-table *universe*))
@@ -122,22 +158,17 @@
       (labels ((fn (location flag atom-tab sub-atom-tab)
                  (cond ((and (null location) flag (null parameters))
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
-
                        ((and (null location) flag parameters)
                         (fn '("=") nil atom-tab sub-atom-tab)
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
-
                        ((and (null location) (not flag) (null parameters))
                         nil)
-
                        ((and (null location) (not flag) parameters)
                         (fn '("=") flag atom-tab sub-atom-tab))
-
                        ((and (singlep location) (key-indicator-p (single location)))
                         (save-value term location atom-tab parameters)
                         (when flag
                           (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
-
                        (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
