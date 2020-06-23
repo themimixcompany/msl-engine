@@ -193,3 +193,8 @@ body contents of the parser function."
 (defun* format-parens (&rest args)
   "Return a string formatted for MSL."
   (fmt "(~{~A~^ ~})" args))
+
+(defun* clear-dump ()
+  "Call CLEAR and DUMP."
+  (clear)
+  (dump))

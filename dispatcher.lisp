@@ -88,7 +88,6 @@
 
 (defun* write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
-  (dbg term)
   (destructuring-bind (path &optional params)
       term
     (let ((opt (with-sub-atom-path-p path))
@@ -155,22 +154,14 @@
   (flet ((fn (term atom-tab sub-atom-tab)
            (destructuring-bind (path &optional &rest params)
                term
-             (let ((opt (with-sub-atom-path-p path)))
+             (let ((opt (with-sub-atom-path-p path))
+                   (values (write-term (list path params) atom-tab sub-atom-tab)))
                (declare (ignorable opt))
-               (cond ;; ((and (empty-params-p params) opt)
-                     ;;  (dbg "X")
-                     ;;  ;; (read-term (list path params) atom-tab sub-atom-tab)
-                     ;;  )
-                     ;; ((and (empty-params-p params) (not opt))
-                     ;;  (dbg "Y")
-                     ;;  ;; (read-term (list path params) atom-tab sub-atom-tab)
-                     ;;  )
-                     (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                          (when (consp values)
-                            (loop :for value :in values
-                                  :when (valid-terms-p value)
-                                  :do (dispatch value)))
-                          values)))))))
+               (when (consp values)
+                 (loop :for value :in values
+                       :when (valid-terms-p value)
+                       :do (dispatch value)))
+               values))))
     (let ((terms (if (consp expr) expr (parse-msl expr)))
           (atom-tab (find-table #'atom-table))
           (sub-atom-tab (find-table #'sub-atom-table)))
