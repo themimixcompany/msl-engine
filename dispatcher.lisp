@@ -60,28 +60,6 @@
 ;; readers
 ;;--------------------------------------------------------------------------------------------------
 
-;; (defun* read-term (term &optional
-;;                        (atom-table (atom-table *universe*))
-;;                        (sub-atom-table (sub-atom-table *universe*)))
-;;   "Return the value specified by TERM in SOURCE."
-;;   (block nil
-;;     (destructuring-bind (path &optional &rest _)
-;;         term
-;;       (declare (ignore _))
-;;       (let ((path (if (key-indicator-p (last* path))
-;;                       path
-;;                       (append path '("=")))))
-;;         (labels ((fn (location value)
-;;                    (cond ((null location) value)
-;;                          (t (let ((val (gethash (car location) value)))
-;;                               (if val
-;;                                   (fn (cdr location) val)
-;;                                   (return nil)))))))
-;;           (if (sub-atom-path-p path)
-;;               (fn path sub-atom-table)
-;;               (fn path atom-table)))))))
-
-;;(empty-key-p (marie:gethash* '("@" "WALT" "d" "type") (find-table #'atom-table)))
 (defun* empty-key-p (value)
   "Return true if VALUE contains an empty hash table. The second value is true if the path to the table exists."
   (if (hash-table-p value)
@@ -94,28 +72,21 @@
                        (atom-table (atom-table *universe*))
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
-  (flet ((fn (path table)
-           (multiple-value-bind (emptyp existsp)
-               (empty-table-p (gethash* path table))
-             emptyp
-             existsp
-             (cond ((and (null emptyp) (null existsp))
-                    (format t "Path does not exist.~%"))
-                   ((and (null emptyp) existsp)
-                    (gethash* (append path '("=")) table))
-                   ;;((and emptyp existsp) '(""))
-                   (t '(""))))))
-    (destructuring-bind (path &optional &rest params)
-        term
-      (declare (ignorable params))
-      (let* ((table (if (sub-atom-path-p path) sub-atom-table atom-table))
-             (value (if (key-indicator-p (last* path))
-                        (gethash* path table)
-                        (fn path table))))
-        ;; (if (sub-atom-path-p path)
-        ;;     (gethash* path sub-atom-table)
-        ;;     (gethash* path atom-table))
-        value))))
+  (let ((dummy '("")))
+    (flet ((fn (path table)
+             (multiple-value-bind (emptyp existsp)
+                 (empty-key-p (gethash* path table))
+               (cond ((and (null emptyp) (null existsp))
+                      (error "The path ~S in ~S does not exist.~%" path table))
+                     ((and (null emptyp) existsp)
+                      (gethash* (append path '("=")) table))
+                     (t dummy)))))
+      (destructuring-bind (path &optional &rest params)
+          term
+        (declare (ignorable params))
+        (let ((table (if (sub-atom-path-p path) sub-atom-table atom-table)))
+          (cond ((key-indicator-p (last* path)) (gethash* path table))
+                (t (fn path table))))))))
 
 (defun read-path (path &optional
                        (atom-table (atom-table *universe*))

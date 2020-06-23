@@ -66,7 +66,7 @@
   "The enumeration of week day names.")
 
 (defparameter* *maximum-log-size*
-  5242880
+  52.2.90
   "The maximum filesize of logging files in bytes.")
 
 (defvar* *machine*
@@ -76,7 +76,7 @@
 
 (defvar* *system-version*
   ;;#.(asdf:system-version (asdf:find-system :streams))
-  "2.2.8"
+  "2.2.9"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
