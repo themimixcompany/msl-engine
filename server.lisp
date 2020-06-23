@@ -88,7 +88,7 @@
     (debug-print (fmt "Disconnection request received from ~A to ~A."
                       (gethash "origin" table)
                       (gethash "host" table)))
-    (dump-headers connection)
+    ;;(dump-headers connection)
     (remhash connection *connections*)))
 
 
