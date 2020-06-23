@@ -26,7 +26,7 @@
   "Return the string representation of EXPR after dispatching it. If optional
 argument CLEAR is true, clear the universe prior to evaluation."
   (when clear (clear))
-  (dispatch expr)
+  (dispatch expr nil)
   (car (collect)))
 
 (defun expr-equal (expr &optional value)
