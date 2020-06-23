@@ -53,7 +53,7 @@ argument CLEAR is true, clear the universe prior to evaluation."
   (is (eqv "(@WALT Walt Disney (f wformat) //key value format)"))
   (is (eqv "(@WALT (d wtype) //key type)"))
   (is (eqv "(@WALT Walt Disney (d wtype) //key value type)"))
-  ;;(is (null (eqv "(@WALT :wife //key meta)"))) ;bug?
+  ;;(is (null (eqv "(@WALT :wife //key meta)")))
   (is (eqv "(@WALT :wife Lillian //key meta value)"))
   (is (eqv "(@WALT Walt Disney :wife Lillian //key value meta value)"))
   (is (eqv "(@WALT (f wformat) //key format)"))
