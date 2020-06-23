@@ -103,40 +103,39 @@
 
 (defun* write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
-  (dbg term)
   (destructuring-bind (path &optional &rest params)
       term
     (let ((opt (with-sub-atom-path-p path))
           (parameters (if whole params (car params))))
       (labels ((fn (location flag atom-tab sub-atom-tab)
+                 (dbg location flag parameters)
                  (cond ((and (null location) flag (null parameters))
                         (dbg "1a")
-                        (values atom-tab
-                                sub-atom-tab))
+                        (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
                        ((and (null location) flag parameters)
                         (dbg "1b")
-                        (fn '("=") nil atom-tab sub-atom-tab))
+                        (fn '("=") nil atom-tab sub-atom-tab)
+                        (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
-                       ;; the normal case
-                       ((and (null location) (not flag))
-                        (dbg "2")
+                       ((and (null location) (not flag) (null parameters))
+                        (dbg "2a")
+                        nil)
+
+                       ((and (null location) (not flag) parameters)
+                        (dbg "2b")
                         (fn '("=") flag atom-tab sub-atom-tab))
 
-                       ;; the setter
+                       ;; setter
                        ((and (singlep location)
                              (key-indicator-p (single location)))
                         (dbg "3")
                         (save-value term location atom-tab parameters)
                         (when flag
-                          (fn (sub-atom-path path) nil sub-atom-tab
-                              ;; maybe pass nil as the second table
-                              sub-atom-tab)))
+                          (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
 
-                       ;; the looper
-                       (t
-                        (dbg "4")
-                        (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
+                       ;; looper
+                       (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
 
         ;; update READ-TERM to reflect =-less entries
