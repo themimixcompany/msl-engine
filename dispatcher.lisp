@@ -68,15 +68,18 @@
   "Return true if KEY is one of the key indicators for table values."
   (when* (member key +key-indicators+ :test #'equal)))
 
-(defun save-value (term location table value)
+(defun save-value (term location table value &optional clear-path)
   "Store VALUE using LOCATION as key in TABLE."
-  (declare (ignorable term))
-  (let ((v (if (with-sub-atom-path-p value)
-               (sub-atom-path value)
-               value)))
-    ;; (when (mem* location '("/" "[]"))
-    ;;   (clear-path table head))
-    (setf (gethash (single location) table) v)))
+  (destructuring-bind (path &optional &rest params)
+      term
+    (declare (ignorable params))
+    (let ((v (if (with-sub-atom-path-p value)
+                 (sub-atom-path value)
+                 value)))
+      (when clear-path (clear-path table)
+        (when (mem* location '("/" "[]"))
+          (clear-path table path)))
+      (setf (gethash (single location) table) v))))
 
 (defun spawn-table (location table)
   "Conditionally return a new table for term writing and use location as key for the new table."
