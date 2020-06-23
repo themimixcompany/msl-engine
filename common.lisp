@@ -197,4 +197,4 @@ body contents of the parser function."
 (defun* clear-dump ()
   "Call CLEAR and DUMP."
   (clear-universe)
-  (dump-table))
+  (dump-universe))

@@ -140,10 +140,7 @@
 
                        (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
-
-        ;; update READ-TERM to reflect =-less entries
-        ;; (read-term term atom-table sub-atom-table)
-        (values)))))
+        (read-term term atom-table sub-atom-table)))))
 
 (defun* dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
@@ -165,8 +162,7 @@
         (when (and log (stringp expr))
           (write-log expr))
         (loop :for term :in terms
-              ;;:collect (fn term atom-tab sub-atom-tab)
-              :do (fn term atom-tab sub-atom-tab))))))
+              :collect (fn term atom-tab sub-atom-tab))))))
 
 (defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
