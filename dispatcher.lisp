@@ -37,7 +37,7 @@
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
-(defun read-term (term &optional
+(defun* read-term (term &optional
                        (atom-table (atom-table *universe*))
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
@@ -86,55 +86,32 @@
         (setf (gethash (car location) table) ht)
         ht)))
 
-;; (defun write-term (term atom-table sub-atom-table &key whole)
-;;   "Return a hash table containing the embedded value tables as specified in TERM."
-;;   (destructuring-bind (path &optional params)
-;;       term
-;;     (labels ((fn (location flag atom-tab sub-atom-tab)
-;;                (cond ((null location)
-;;                       (fn '("=") flag atom-tab sub-atom-tab))
-;;                      ((and (singlep location) (key-indicator-p (single location)))
-;;                       (save-value term location atom-tab (if whole params (car params)))
-;;                       (when flag
-;;                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
-;;                      (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
-;;       (fn path (with-sub-atom-path-p path) atom-table sub-atom-table)
-;;       (read-term term atom-table sub-atom-table))))
-
 (defun* write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
-  (destructuring-bind (path &optional &rest params)
+  (dbg term)
+  (destructuring-bind (path &optional params)
       term
     (let ((opt (with-sub-atom-path-p path))
           (parameters (if whole params (car params))))
       (labels ((fn (location flag atom-tab sub-atom-tab)
-                 (dbg location flag parameters)
                  (cond ((and (null location) flag (null parameters))
-                        (dbg "1a")
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
                        ((and (null location) flag parameters)
-                        (dbg "1b")
                         (fn '("=") nil atom-tab sub-atom-tab)
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
                        ((and (null location) (not flag) (null parameters))
-                        (dbg "2a")
                         nil)
 
                        ((and (null location) (not flag) parameters)
-                        (dbg "2b")
                         (fn '("=") flag atom-tab sub-atom-tab))
 
-                       ;; setter
-                       ((and (singlep location)
-                             (key-indicator-p (single location)))
-                        (dbg "3")
+                       ((and (singlep location) (key-indicator-p (single location)))
                         (save-value term location atom-tab parameters)
                         (when flag
                           (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
 
-                       ;; looper
                        (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
 
@@ -178,22 +155,22 @@
   (flet ((fn (term atom-tab sub-atom-tab)
            (destructuring-bind (path &optional &rest params)
                term
-             (cond ((and (empty-params-p params)
-                         (with-sub-atom-path-p path))
-                    (dbg "X")
-                    ;; (read-term (list path params) atom-tab sub-atom-tab)
-                    )
-                   ((and (empty-params-p params)
-                         (not (with-sub-atom-path-p path)))
-                    (dbg "Y")
-                    ;; (read-term (list path params) atom-tab sub-atom-tab)
-                    )
-                   (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                        (when (consp values)
-                          (loop :for value :in values
-                                :when (valid-terms-p value)
-                                :do (dispatch value)))
-                        values))))))
+             (let ((opt (with-sub-atom-path-p path)))
+               (declare (ignorable opt))
+               (cond ;; ((and (empty-params-p params) opt)
+                     ;;  (dbg "X")
+                     ;;  ;; (read-term (list path params) atom-tab sub-atom-tab)
+                     ;;  )
+                     ;; ((and (empty-params-p params) (not opt))
+                     ;;  (dbg "Y")
+                     ;;  ;; (read-term (list path params) atom-tab sub-atom-tab)
+                     ;;  )
+                     (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+                          (when (consp values)
+                            (loop :for value :in values
+                                  :when (valid-terms-p value)
+                                  :do (dispatch value)))
+                          values)))))))
     (let ((terms (if (consp expr) expr (parse-msl expr)))
           (atom-tab (find-table #'atom-table))
           (sub-atom-tab (find-table #'sub-atom-table)))
