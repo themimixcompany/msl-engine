@@ -11,6 +11,11 @@
 
 (in-package #:streams/dispatcher)
 
+
+;;--------------------------------------------------------------------------------------------------
+;; general helpers
+;;--------------------------------------------------------------------------------------------------
+
 (defun sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
   (when (and (consp path)
@@ -36,6 +41,24 @@
 (defun* with-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
+
+(defun key-indicator-p (key)
+  "Return true if KEY is one of the key indicators for table values."
+  (when* (member key +key-indicators+ :test #'equal)))
+
+(defun empty-params-p (params)
+  "Return true if PARAMS is considered empty."
+  (or (null params)
+      (every #'null params)))
+
+(defun find-table (table)
+  "Return the table from the universe identified by TABLE."
+  (funcall table *universe*))
+
+
+;;--------------------------------------------------------------------------------------------------
+;; readers
+;;--------------------------------------------------------------------------------------------------
 
 (defun* read-term (term &optional
                        (atom-table (atom-table *universe*))
@@ -64,9 +87,10 @@
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
-(defun key-indicator-p (key)
-  "Return true if KEY is one of the key indicators for table values."
-  (when* (member key +key-indicators+ :test #'equal)))
+
+;;--------------------------------------------------------------------------------------------------
+;; writers
+;;--------------------------------------------------------------------------------------------------
 
 (defun save-value (term location table value &optional clear-path)
   "Store VALUE using LOCATION as key in TABLE."
@@ -120,15 +144,6 @@
         ;; update READ-TERM to reflect =-less entries
         ;; (read-term term atom-table sub-atom-table)
         (values)))))
-
-(defun empty-params-p (params)
-  "Return true if PARAMS is considered empty."
-  (or (null params)
-      (every #'null params)))
-
-(defun* find-table (table)
-  "Return the table from the universe identified by TABLE."
-  (funcall table *universe*))
 
 (defun* dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
