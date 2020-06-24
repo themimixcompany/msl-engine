@@ -145,6 +145,28 @@
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
+;; (defun* dispatch (expr &optional (log t))
+;;   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
+;;   (flet ((fn (term atom-tab sub-atom-tab)
+;;            (destructuring-bind (path &optional &rest params)
+;;                term
+;;              (cond ((empty-params-p params)
+;;                     (read-term (list path params) atom-tab sub-atom-tab))
+;;                    (t (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
+;;                         (when (consp values)
+;;                           (loop :for value :in values
+;;                                 :when (valid-terms-p value)
+;;                                 :do (dispatch value)))
+;;                         values))))))
+;;     (let ((terms (if (consp expr) expr (parse-msl expr)))
+;;           (atom-tab (find-table #'atom-table))
+;;           (sub-atom-tab (find-table #'sub-atom-table)))
+;;       (when terms
+;;         (when (and log (stringp expr))
+;;           (write-log expr))
+;;         (loop :for term :in terms
+;;               :collect (fn term atom-tab sub-atom-tab))))))
+
 (defun* dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (let ((terms (if (consp expr) expr (parse-msl expr)))
