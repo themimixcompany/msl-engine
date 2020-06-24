@@ -108,9 +108,11 @@
     (let ((v (if (with-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path (clear-path table)
-        (when (mem* location '("/" "[]"))
-          (clear-path table path)))
+      (when clear-path
+        (clear-path table path)
+        ;; (when (mem* location '("/" "[]"))
+        ;;   (clear-path table path))
+        )
       (setf (gethash (single location) table) v))))
 
 (defun spawn-table (location table)
@@ -175,14 +177,16 @@
     (flet ((fn (term atom-tab sub-atom-tab)
              (destructuring-bind (path &optional &rest params)
                  term
-               (let ((opt (with-sub-atom-path-p path))
-                     (values (write-term (list path params) atom-tab sub-atom-tab)))
-                 (declare (ignorable opt))
-                 (when (consp values)
-                   (loop :for value :in values
-                         :when (valid-terms-p value)
-                         :do (dispatch value)))
-                 values))))
+               (cond ;; ((empty-params-p params)
+                     ;;  (read-term (list path params) atom-tab sub-atom-tab))
+                     (t (let ((opt (with-sub-atom-path-p path))
+                              (values (write-term (list path params) atom-tab sub-atom-tab)))
+                          (declare (ignorable opt))
+                          (when (consp values)
+                            (loop :for value :in values
+                                  :when (valid-terms-p value)
+                                  :do (dispatch value)))
+                          values))))))
       (when terms
         (when (and log (stringp expr))
           (write-log expr))
