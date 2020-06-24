@@ -43,7 +43,7 @@ argument CLEAR is true, clear the universe prior to evaluation."
          (v (extract e nil)))
     (string= v value)))
 
-(test parser-tests-1 "Test the values returned by the parser and unparser, without value accumulation."
+(test parser-tests-1 "Test the system without value accumulation."
   (is (eqv "(@WALT //key only)"))
   (is (eqv "(@WALT Walt Disney //key value)"))
   (is (eqv "(@WALT /wregex/wenv wconsume //key regex)"))
@@ -80,7 +80,7 @@ argument CLEAR is true, clear the universe prior to evaluation."
   (is (eqv "(@WALT Walt Disney :wife Lillian :birthday 1901 //key value meta value meta value)"))
   (is (eqv "(@WALT Walt Disney /wregex/wenv wconsume [wt1] (f wformat) (d wtype) :wife Lillian /lregex/lenv lconsume [lt1] (f lformat) (d ltype) :birthday 1901 /bregex/benv bconsume (d btype) (f bformat) //key value regex transform format type meta value regex transform format type meta value regex type format)")))
 
-(test parser-tests-2 "Test the values returned by the parser and unparser, with value accumulation."
+(test parser-tests-2 "Test the system with value accumulation."
   ;;(is (eqv "(@WALT //key only)"))
 
   (is (eqv* "(@WALT Walt Disney //key value)"
