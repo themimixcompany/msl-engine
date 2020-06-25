@@ -71,13 +71,33 @@
 
 (defun* wrap (list)
   "Return a new list where items in LIST are conditionally listified."
+  (dbg list)
   (mapcar #'(lambda (item)
+              ;;(dbg item)
               (cond ((or (atom item)
                          (and (consp item)
                               (not (metamodsp item))
                               (not (stringp (car item)))))
                      (list item))
                     ((or (basep item)   ;note this
+                         (metadatap item))
+                     (cons (cat (car item) (cadr item))
+                           (cddr item)))
+                    (t item)))
+          list))
+
+
+(defun* wrap-2 (list)
+  "Return a new list where items in LIST are conditionally listified."
+  (dbg list)
+  (mapcar #'(lambda (item)
+              ;;(dbg item)
+              (cond ((or (atom item)
+                         (and (consp item)
+                              (not (metamodsp item))
+                              (not (stringp (car item)))))
+                     (list item))
+                    ((or (basep item)
                          (metadatap item))
                      (cons (cat (car item) (cadr item))
                            (cddr item)))
@@ -94,6 +114,21 @@
                    ((metadatap (car args))
                     (fn (cdr args)
                         (cons (flatten-1 (wrap (fn (car args) nil)))
+                              acc)))
+                   (t (fn (cdr args)
+                          (cons (car args) acc))))))
+    (fn list nil)))
+
+(defun* stage-2 (list)
+  "Return a new list with preprocessed elements for wrapping and joining."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((modsp (car args))
+                    (fn (cdr args)
+                        (cons (flatten-list (car args)) acc)))
+                   ((metadatap (car args))
+                    (fn (cdr args)
+                        (cons (flatten-1 (wrap-2 (fn (car args) nil)))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
@@ -201,11 +236,32 @@
                    :else
                    :collect val)))
     (loop :for raw-expr :in (fn table key keys)
-          :collect (flatten* (expand raw-expr)))))
+          ;;:collect (flatten* (expand raw-expr))
+          :collect (flatten-1 (expand raw-expr))
+          ;; :collect (expand raw-expr)
+          )))
+
+(defun* join (list)
+  "Join the the items in LIST that should be together."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((or (base-namespace-p (car args))
+                        (colon-namespace-p (car args)))
+                    (fn (cddr args)
+                        (cons (cat (car args) (cadr args))
+                              acc)))
+                   ((consp (car args))
+                    (fn (cdr args)
+                        (cons (fn (car args) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn list nil)))
 
 (defun* construct-2 (table key &optional keys)
   "Return the original expressions in TABLE under KEYS."
-  (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct-2 table key keys)))))
+  ;; (mapcar #'flatten-1 (mapcar #'wrap-2 (mapcar #'join (mapcar #'stage-2 (%construct-2 table key keys)))))
+  (loop :for value :in (%construct-2 table key keys)
+        :collect (flatten-1 (wrap-2 (join (stage-2 value))))))
 
 ;;--------------------------------------------------------------------------------------------------
 
