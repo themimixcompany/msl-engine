@@ -37,6 +37,10 @@
         ("f" . "format"))
     "The list of sub namespaces.")
 
+  (defconstant* +colon-namespace-list+
+      '((":" . "colon"))
+    "The list of colon namespaces.")
+
   (defconstant* +namespace-list+
       (append +base-namespace-list+ +sub-namespace-list+)
     "The full list of namespaces, where the individual elements contain the namespace alias and full namespace name"))

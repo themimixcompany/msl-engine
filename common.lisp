@@ -17,8 +17,12 @@
   (ns-member-p ns +base-namespace-list+))
 
 (defun* sub-namespace-p (ns)
-  "Return true if NS is sub namespace indicator."
+  "Return true if NS is a sub namespace indicator."
   (ns-member-p ns +sub-namespace-list+))
+
+(defun* colon-namespace-p (ns)
+  "Return true if NS is a colon namespace indicator."
+  (ns-member-p ns +colon-namespace-list+))
 
 (defun* namespacep (ns)
   "Return true if NS is a namespace indicator."
