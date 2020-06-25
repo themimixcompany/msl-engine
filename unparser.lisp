@@ -57,11 +57,16 @@
           list))
 
 (defun* flatten-1 (list)
-  "Return a list where items in LIST are conditionally flattened to one level."
+  "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
               (cond ((metadatap y) (append x (list y)))
                     ((modsp y) (append x (list y)))
                     (t (append x y))))
+          (marshall list)))
+
+(defun* flatten* (list)
+  "Return a list where items in LIST are flattened to one level only."
+  (reduce #'(lambda (x y) (append x y))
           (marshall list)))
 
 (defun* wrap (list)
@@ -179,36 +184,28 @@
   (when (base-namespace-p (car value))
     (subseq value 0 2)))
 
-(defun* expand-sub-atoms (value)
-  "Expand the sub atom lists in VALUE."
-  (when-let ((key-sequence (base-namespace-key-sequence value)))
-    (mapcar #'(lambda (item)
-                (if (sub-namespace-p (car item))
-                    ))
-            value)))
-
 (defun* %construct-2 (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (flet ((fn (h k ks)
-           (let* ((ht (gethash k h))
-                  (es (or ks (table-keys ht))))
-             (loop :for v :in (assemble ht es nil)
-                   :for kv = (cons k v)
-                   :when kv :collect (normalize kv)))))
+  (labels ((fn (h k ks)
+             (let* ((ht (gethash k h))
+                    (es (or ks (table-keys ht))))
+               (loop :for v :in (assemble ht es nil)
+                     :for kv = (cons k v)
+                     :when kv :collect (normalize kv))))
+           (expand (re)
+             (loop :for val :in re
+                   :if (and (consp val) (sub-namespace-p (car val)))
+                   :collect (fn (gethash* (base-namespace-key-sequence re) table)
+                                (car val)
+                                nil)
+                   :else
+                   :collect val)))
     (loop :for raw-expr :in (fn table key keys)
-          :collect (mapcar #'(lambda (v)
-                               (if (and (consp v) (sub-namespace-p (car v)))
-                                   (fn (gethash* (base-namespace-key-sequence raw-expr)
-                                                 table)
-                                       (car v)
-                                       nil)
-                                   v))
-                           raw-expr))))
+          :collect (flatten* (expand raw-expr)))))
 
 (defun* construct-2 (table key &optional keys)
   "Return the original expressions in TABLE under KEYS."
   (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct-2 table key keys)))))
-
 
 ;;--------------------------------------------------------------------------------------------------
 
