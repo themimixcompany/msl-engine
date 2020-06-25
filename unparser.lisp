@@ -200,6 +200,13 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
+(defun* collect-2 (&rest keys)
+  "Return the original expressions in TABLE."
+  (declare (ignorable keys))
+  (let* ((table (sub-atom-table *universe*))
+         (children (children table)))
+    (mapcar #'list-string (%collect table children keys))))
+
 (defun* collect-expr (spec)
   "Return the original expressions in TABLE."
   (flet ((fn (expr)
