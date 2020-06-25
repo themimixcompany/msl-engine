@@ -73,7 +73,8 @@
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (let ((default-key '("="))
-        (dummy-value '("")))
+        ;;(dummy-value '(""))
+        (dummy-value nil))
     (flet ((fn (path table)
              (multiple-value-bind (emptyp existsp)
                  (empty-key-p (gethash* path table))
@@ -196,3 +197,8 @@
 (defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
   (apply #'(lambda (arg) (dispatch arg nil)) args))
+
+(defun* dispatch! (&rest args)
+  "Clear the universe prior to calling DISPATCH*."
+  (clear-universe)
+  (apply #'dispatch* args))
