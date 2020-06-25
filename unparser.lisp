@@ -71,27 +71,7 @@
 
 (defun* wrap (list)
   "Return a new list where items in LIST are conditionally listified."
-  (dbg list)
   (mapcar #'(lambda (item)
-              ;;(dbg item)
-              (cond ((or (atom item)
-                         (and (consp item)
-                              (not (metamodsp item))
-                              (not (stringp (car item)))))
-                     (list item))
-                    ((or (basep item)   ;note this
-                         (metadatap item))
-                     (cons (cat (car item) (cadr item))
-                           (cddr item)))
-                    (t item)))
-          list))
-
-
-(defun* wrap-2 (list)
-  "Return a new list where items in LIST are conditionally listified."
-  (dbg list)
-  (mapcar #'(lambda (item)
-              ;;(dbg item)
               (cond ((or (atom item)
                          (and (consp item)
                               (not (metamodsp item))
@@ -114,21 +94,6 @@
                    ((metadatap (car args))
                     (fn (cdr args)
                         (cons (flatten-1 (wrap (fn (car args) nil)))
-                              acc)))
-                   (t (fn (cdr args)
-                          (cons (car args) acc))))))
-    (fn list nil)))
-
-(defun* stage-2 (list)
-  "Return a new list with preprocessed elements for wrapping and joining."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   ((modsp (car args))
-                    (fn (cdr args)
-                        (cons (flatten-list (car args)) acc)))
-                   ((metadatap (car args))
-                    (fn (cdr args)
-                        (cons (flatten-1 (wrap-2 (fn (car args) nil)))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
@@ -199,27 +164,12 @@
                (cdr keys)
                (accumulate keys acc v))))))
 
-;;--------------------------------------------------------------------------------------------------
-;;; here!
-
-(defun* %construct (table key &optional keys)
-  "Return the original expressions in TABLE under KEYS, without further processing."
-  (when-let* ((ht (gethash key table))
-              (entries (or keys (table-keys ht))))
-    (loop :for v :in (assemble ht entries nil)
-          :for kv = (make-head (cons key v))
-          :when kv :collect (normalize kv))))
-
-(defun* construct (table key &optional keys)
-  "Return the original expressions in TABLE under KEYS."
-  (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct table key keys)))))
-
 (defun* base-namespace-key-sequence (value)
   "Return the key sequence from value."
   (when (base-namespace-p (car value))
     (subseq value 0 2)))
 
-(defun* %construct-2 (table key &optional keys)
+(defun* %construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (labels ((fn (h k ks)
              (let* ((ht (gethash k h))
@@ -236,10 +186,7 @@
                    :else
                    :collect val)))
     (loop :for raw-expr :in (fn table key keys)
-          ;;:collect (flatten* (expand raw-expr))
-          :collect (flatten-1 (expand raw-expr))
-          ;; :collect (expand raw-expr)
-          )))
+          :collect (flatten-1 (expand raw-expr)))))
 
 (defun* join (list)
   "Join the the items in LIST that should be together."
@@ -257,13 +204,10 @@
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn list nil)))
 
-(defun* construct-2 (table key &optional keys)
+(defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS."
-  ;; (mapcar #'flatten-1 (mapcar #'wrap-2 (mapcar #'join (mapcar #'stage-2 (%construct-2 table key keys)))))
-  (loop :for value :in (%construct-2 table key keys)
-        :collect (flatten-1 (wrap-2 (join (stage-2 value))))))
-
-;;--------------------------------------------------------------------------------------------------
+  (loop :for value :in (%construct table key keys)
+        :collect (flatten-1 (wrap (join (stage value))))))
 
 (defun* convert (terms)
   "Return the original expression from TERMS."
