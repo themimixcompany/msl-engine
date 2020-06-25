@@ -159,6 +159,9 @@
                (cdr keys)
                (accumulate keys acc v))))))
 
+;;--------------------------------------------------------------------------------------------------
+;;; here!
+
 (defun* %construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (when-let* ((ht (gethash key table))
@@ -171,7 +174,45 @@
   "Return the original expressions in TABLE under KEYS."
   (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct table key keys)))))
 
-(defun convert (terms)
+(defun* base-namespace-key-sequence (value)
+  "Return the key sequence from value."
+  (when (base-namespace-p (car value))
+    (subseq value 0 2)))
+
+(defun* expand-sub-atoms (value)
+  "Expand the sub atom lists in VALUE."
+  (when-let ((key-sequence (base-namespace-key-sequence value)))
+    (mapcar #'(lambda (item)
+                (if (sub-namespace-p (car item))
+                    ))
+            value)))
+
+(defun* %construct-2 (table key &optional keys)
+  "Return the original expressions in TABLE under KEYS, without further processing."
+  (flet ((fn (h k ks)
+           (let* ((ht (gethash k h))
+                  (es (or ks (table-keys ht))))
+             (loop :for v :in (assemble ht es nil)
+                   :for kv = (cons k v)
+                   :when kv :collect (normalize kv)))))
+    (loop :for raw-expr :in (fn table key keys)
+          :collect (mapcar #'(lambda (v)
+                               (if (and (consp v) (sub-namespace-p (car v)))
+                                   (fn (gethash* (base-namespace-key-sequence raw-expr)
+                                                 table)
+                                       (car v)
+                                       nil)
+                                   v))
+                           raw-expr))))
+
+(defun* construct-2 (table key &optional keys)
+  "Return the original expressions in TABLE under KEYS."
+  (mapcar #'flatten-1 (mapcar #'wrap (mapcar #'stage (%construct-2 table key keys)))))
+
+
+;;--------------------------------------------------------------------------------------------------
+
+(defun* convert (terms)
   "Return the original expression from TERMS."
   (flet ((fn (v)
            (destructuring-bind (((ns key) &rest _) &rest __)
@@ -200,12 +241,10 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
-(defun* collect-2 (&rest keys)
+(defun* collect* (table)
   "Return the original expressions in TABLE."
-  (declare (ignorable keys))
-  (let* ((table (sub-atom-table *universe*))
-         (children (children table)))
-    (mapcar #'list-string (%collect table children keys))))
+  (let ((children (children table)))
+    (mapcar #'list-string (%collect table children nil))))
 
 (defun* collect-expr (spec)
   "Return the original expressions in TABLE."
