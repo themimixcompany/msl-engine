@@ -413,3 +413,13 @@
   (dispatch expr log)
   (values (recall-expr expr)
           (recall-value expr)))
+
+(defun* recall* (expr &optional log)
+  "Return the results of expression and value recalls."
+  (dispatch expr log)
+  (let ((value (recall-value expr)))
+    (if (null value)
+        (values nil
+                nil)
+        (values (recall-expr expr)
+                value))))
