@@ -169,7 +169,7 @@
   (when (base-namespace-p (car value))
     (subseq value 0 2)))
 
-(defun* %construct (table key &optional keys)
+(defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (labels ((fn (h k ks)
              (let* ((ht (gethash k h))
@@ -185,8 +185,10 @@
                                 nil)
                    :else
                    :collect val)))
-    (loop :for raw-expr :in (fn table key keys)
-          :collect (flatten-1 (expand raw-expr)))))
+    (let ((result (loop :for raw-expr :in (fn table key keys)
+                        :collect (flatten-1 (expand raw-expr)))))
+      (loop :for value :in result
+            :collect (flatten-1 (wrap (join (stage value))))))))
 
 (defun* join (list)
   "Join the the items in LIST that should be together."
@@ -203,11 +205,6 @@
                               acc)))
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn list nil)))
-
-(defun* construct (table key &optional keys)
-  "Return the original expressions in TABLE under KEYS."
-  (loop :for value :in (%construct table key keys)
-        :collect (flatten-1 (wrap (join (stage value))))))
 
 (defun* convert (terms)
   "Return the original expression from TERMS."
@@ -242,21 +239,6 @@
   "Return the original expressions in TABLE."
   (let ((children (children table)))
     (mapcar #'list-string (%collect table children nil))))
-
-(defun* collect-expr (spec)
-  "Return the original expressions in TABLE."
-  (flet ((fn (expr)
-           (destructuring-bind (((ns key) &rest _) &rest __)
-               (parse-msl expr)
-             (declare (ignore _ __))
-             (list ns key))))
-    (destructuring-bind (source &rest keys)
-        (fn spec)
-      (declare (ignorable keys))
-      (let* ((table (atom-table *universe*))
-             (children (if source (list source) (children table))))
-        (apply #'values
-               (mapcar #'list-string (%collect table children keys)))))))
 
 (defun* head (expr)
   "Return the namespace and key sequence from EXPR."
@@ -416,7 +398,18 @@
           ((= metamods-count 1) (extract-value (car requests)))
           (t nil))))
 
-(defun* recall-value* (value)
+(defun* recall-value* (expr)
   "Dispatch VALUE and perform a value recall."
-  (dispatch* value)
-  (recall-value value))
+  (dispatch* expr)
+  (recall-value expr))
+
+
+;;--------------------------------------------------------------------------------------------------
+;; entrypoint
+;;--------------------------------------------------------------------------------------------------
+
+(defun* recall (expr &optional log)
+  "Return the results of expression and value recalls."
+  (dispatch expr log)
+  (values (recall-expr expr)
+          (recall-value expr)))
