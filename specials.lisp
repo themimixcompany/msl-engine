@@ -80,7 +80,7 @@
 
 (defvar* *system-version*
   ;;#.(asdf:system-version (asdf:find-system :streams))
-  "2.2.10"
+  "2.2.11"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
