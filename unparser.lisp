@@ -422,7 +422,6 @@
         (destructuring-bind (re flag consume)
             regex
           (declare (ignorable flag))
-          ;; implement flag processing
           (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                 (t (values (cl-ppcre:scan-to-strings re value)))))
         value)))
