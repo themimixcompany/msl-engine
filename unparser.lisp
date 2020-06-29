@@ -339,6 +339,42 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
+;; regex
+;;--------------------------------------------------------------------------------------------------
+
+(defun* source-path (expr)
+  "Return the path implied by EXPR."
+  (when-let ((value (recall-value* expr))
+             (path (car (last* (parse-msl expr)))))
+    path))
+
+(defun* regex-present-p (expr)
+  "Return true if a regex mod is present in EXPR."
+  (when-let* ((path (source-path expr))
+              (regex-path (append path '("/"))))
+    (when* (gethash* regex-path (atom-table *universe*)))))
+
+(defun* expr-regex (expr)
+  "Return the regex mod of the implied path in EXPR."
+  (when (regex-present-p expr)
+    (let* ((regex-path (append (source-path expr) '("/")))
+           (value (gethash* regex-path (atom-table *universe*))))
+      (car value))))
+
+;;(cl-ppcre:regex-replace (car '("19" "g" "20")) (recall-value "(@WALT :birthday)") (marie:last* '("19" "g" "20")))
+
+(defun* foo (expr)
+  "Apply mods if there are any to EXPR."
+  (let* ((value (recall-value expr))
+         (regex (expr-regex expr)))
+    (when regex
+      (destructuring-bind (re flag consume)
+          regex
+        (declare (ignorable flag))
+        (cl-ppcre:regex-replace re value consume)))))
+
+
+;;--------------------------------------------------------------------------------------------------
 ;; recall-value
 ;;--------------------------------------------------------------------------------------------------
 
