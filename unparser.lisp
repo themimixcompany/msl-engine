@@ -169,24 +169,26 @@
   (when (base-namespace-p (car value))
     (subseq value 0 2)))
 
+(defun* %construct (table key &optional keys)
+  "Return the original expressions in TABLE under KEYS, without further processing."
+  (let* ((tab (gethash key table))
+         (entries (or keys (table-keys tab))))
+    (loop :for v :in (assemble tab entries nil)
+          :for kv = (cons key v)
+          :when kv :collect (normalize kv))))
+
 (defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (labels ((fn (h k ks)
-             (let* ((ht (gethash k h))
-                    (es (or ks (table-keys ht))))
-               (loop :for v :in (assemble ht es nil)
-                     :for kv = (cons k v)
-                     :when kv :collect (normalize kv))))
-           (expand (re)
-             (loop :for val :in re
-                   :if (and (consp val) (sub-namespace-p (car val)))
-                   :collect (fn (gethash* (base-namespace-key-sequence re) table)
-                                (car val)
-                                nil)
-                   :else
-                   :collect val)))
-    (let ((result (loop :for raw-expr :in (fn table key keys)
-                        :collect (flatten-1 (expand raw-expr)))))
+  (flet ((fn (re)
+           (loop :for val :in re
+                 :if (and (consp val) (sub-namespace-p (car val)))
+                 :collect (%construct (gethash* (base-namespace-key-sequence re) table)
+                                      (car val)
+                                      nil)
+                 :else
+                 :collect val)))
+    (let ((result (loop :for raw-expr :in (%construct table key keys)
+                        :collect (flatten-1 (fn raw-expr)))))
       (loop :for value :in result
             :collect (flatten-1 (wrap (join (stage value))))))))
 
@@ -235,11 +237,6 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
-(defun* collect* (table)
-  "Return the original expressions in TABLE."
-  (let ((children (children table)))
-    (mapcar #'list-string (%collect table children nil))))
-
 (defun* head (expr)
   "Return the namespace and key sequence from EXPR."
   (when-let ((parse (parse-msl expr)))
@@ -278,16 +275,28 @@
            (cddr path))
           (t path))))
 
+;; (defun* sections (head)
+;;   "Return the original expressions under HEAD according to type."
+;;   (destructuring-bind (key &rest keys)
+;;       head
+;;     (when-let* ((tab (gethash key (atom-table *universe*)))
+;;                 (entries (or keys (table-keys tab)))
+;;                 (exprs (loop :for v :in (assemble tab entries nil)
+;;                              :for kv = (cons key v)
+;;                              :when kv :collect (normalize kv)))
+;;                 (stage (stage (car exprs))))
+;;       (loop :for item :in stage
+;;             :with limit = (or (position-if #'consp stage) (length stage))
+;;             :for count :from 1 :to limit
+;;             :collect item :into items
+;;             :finally (return (cons items (nthcdr limit stage)))))))
+
 (defun* sections (head)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
-    (when-let* ((ht (gethash key (atom-table *universe*)))
-                (entries (or keys (table-keys ht)))
-                (exprs (loop :for v :in (assemble ht entries nil)
-                             :for kv = (cons key v)
-                             :when kv :collect (normalize kv)))
-                (stage (stage (car exprs))))
+    (let* ((construct (%construct (atom-table *universe*) key keys))
+           (stage (stage (car construct))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
@@ -305,7 +314,7 @@
                      parse)))
           (t (sections head)))))
 
-(defun process (head sections)
+(defun* process (head sections)
   "Return a final, processed string value from SECTIONS."
   (when sections
     (let ((value (if (with-head-p sections)
@@ -313,7 +322,7 @@
                      (cons head sections))))
       (list-string (flatten-1 (wrap (stage value)))))))
 
-(defun paths (deconstruct)
+(defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (head-only-p (car deconstruct))
       (cdr deconstruct)
@@ -418,13 +427,12 @@
   "Apply mods if there are any to EXPR."
   (let* ((value (%recall-value expr))
          (regex (expr-regex expr)))
-    (if regex
-        (destructuring-bind (re flag consume)
-            regex
-          (declare (ignorable flag))
-          (cond (consume (values (cl-ppcre:regex-replace re value consume)))
-                (t (values (cl-ppcre:scan-to-strings re value)))))
-        value)))
+    (cond (regex (destructuring-bind (re flag consume)
+                     regex
+                   (declare (ignorable flag))
+                   (cond (consume (values (cl-ppcre:regex-replace re value consume)))
+                         (t (values (cl-ppcre:scan-to-strings re value))))))
+          (t value))))
 
 
 ;;--------------------------------------------------------------------------------------------------
