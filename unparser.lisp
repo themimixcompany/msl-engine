@@ -190,8 +190,9 @@
 
 (defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (let ((result (loop :for root :in (roots table key keys)
-                      :collect (flatten-1 (gird table root)))))
+  (let ((result (mapcar #'(lambda (root)
+                            (flatten-1 (gird table root)))
+                        (roots table key keys))))
     (loop :for value :in result
           :collect (flatten-1 (wrap (join (stage value)))))))
 
@@ -282,8 +283,10 @@
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
-    (let* ((roots (roots (atom-table *universe*) key keys))
-           (stage (stage (car roots))))
+    (let* ((table (atom-table *universe*))
+           (roots (roots table key keys))
+           ;; NOTE
+           (stage (stage (flatten-1 (gird table (car roots))))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
