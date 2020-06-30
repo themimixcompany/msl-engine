@@ -169,7 +169,7 @@
   (when (base-namespace-p (car value))
     (subseq value 0 2)))
 
-(defun* %construct (table key &optional keys)
+(defun* roots (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let* ((tab (gethash key table))
          (entries (or keys (table-keys tab))))
@@ -177,20 +177,23 @@
           :for kv = (cons key v)
           :when kv :collect (normalize kv))))
 
+(defun* gird (table root)
+  "Return a new root from TABLE and ROOT with proper distribution of sub namespaces."
+  (flet ((fn (table root item)
+           (roots (gethash* (base-namespace-key-sequence root) table)
+                  (car item))))
+    (mapcar #'(lambda (item)
+                (if (and (consp item) (sub-namespace-p (car item)))
+                    (fn table root item)
+                    item))
+            root)))
+
 (defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (flet ((fn (re)
-           (loop :for val :in re
-                 :if (and (consp val) (sub-namespace-p (car val)))
-                 :collect (%construct (gethash* (base-namespace-key-sequence re) table)
-                                      (car val)
-                                      nil)
-                 :else
-                 :collect val)))
-    (let ((result (loop :for raw-expr :in (%construct table key keys)
-                        :collect (flatten-1 (fn raw-expr)))))
-      (loop :for value :in result
-            :collect (flatten-1 (wrap (join (stage value))))))))
+  (let ((result (loop :for root :in (roots table key keys)
+                      :collect (flatten-1 (gird table root)))))
+    (loop :for value :in result
+          :collect (flatten-1 (wrap (join (stage value)))))))
 
 (defun* join (list)
   "Join the the items in LIST that should be together."
@@ -275,28 +278,12 @@
            (cddr path))
           (t path))))
 
-;; (defun* sections (head)
-;;   "Return the original expressions under HEAD according to type."
-;;   (destructuring-bind (key &rest keys)
-;;       head
-;;     (when-let* ((tab (gethash key (atom-table *universe*)))
-;;                 (entries (or keys (table-keys tab)))
-;;                 (exprs (loop :for v :in (assemble tab entries nil)
-;;                              :for kv = (cons key v)
-;;                              :when kv :collect (normalize kv)))
-;;                 (stage (stage (car exprs))))
-;;       (loop :for item :in stage
-;;             :with limit = (or (position-if #'consp stage) (length stage))
-;;             :for count :from 1 :to limit
-;;             :collect item :into items
-;;             :finally (return (cons items (nthcdr limit stage)))))))
-
 (defun* sections (head)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
-    (let* ((construct (%construct (atom-table *universe*) key keys))
-           (stage (stage (car construct))))
+    (let* ((roots (roots (atom-table *universe*) key keys))
+           (stage (stage (car roots))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
