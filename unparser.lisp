@@ -318,13 +318,22 @@
       (cdr deconstruct)
       deconstruct))
 
+(defun* post-sections (sections)
+  "Return more surgical operations on the result of sectioning."
+  (let* ((rest (remove-if-not #'metadatap sections))
+         (start (remove-if #'metadatap sections))
+         (lead (list (append (car start) (cdr start)))))
+    (append lead rest)))
+
 (defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
   (let* ((deconstruct (deconstruct expr))
          (paths (paths deconstruct))
          (head (head expr))
-         (sections (sections head)))
-    (cond ((solop deconstruct) (process head (sections head)))
+         (sections (post-sections (sections head))))
+    (cond ((solop deconstruct)
+           (dbg sections)
+           (process head sections))
           (t (process head
                       (loop :for path :in paths
                             :nconc (loop :for section :in sections
