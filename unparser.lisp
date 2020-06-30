@@ -246,14 +246,14 @@
   (when-let ((parse (parse-msl expr)))
     (caar parse)))
 
-(defun* headp (head)
+(defun* head-exists-p (head)
   "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
 
 (defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
   (and (= (length path) 2)
-       (headp path)))
+       (head-exists-p path)))
 
 (defun* solop (value)
   "Return true if VALUE is the only section and that there’s only a head."
@@ -269,7 +269,7 @@
         (destructuring-bind (ns key &optional &rest _)
             head
           (declare (ignore _))
-          (when* (headp (list ns key))))))))
+          (when* (head-exists-p (list ns key))))))))
 
 (defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
@@ -327,18 +327,19 @@
 
 (defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
-  (let* ((deconstruct (deconstruct expr))
-         (paths (paths deconstruct))
-         (head (head expr))
-         (sections (post-sections (sections head))))
-    (cond ((solop deconstruct)
-           (dbg sections)
-           (process head sections))
-          (t (process head
-                      (loop :for path :in paths
-                            :nconc (loop :for section :in sections
-                                         :when (search path section :test #'equal)
-                                         :collect section)))))))
+  (let ((head (head expr)))
+    (when (head-exists-p head)
+      (let* ((deconstruct (deconstruct expr))
+             (paths (paths deconstruct))
+             (sections (post-sections (sections head))))
+        (flet ((fn (paths sections)
+                 (loop :for path :in paths
+                       :nconc (loop :for section :in sections
+                                    :when (search path section :test #'equal)
+                                    :collect section))))
+          (cond ((solop deconstruct)
+                 (process head sections))
+                (t (process head (fn paths sections)))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
