@@ -177,7 +177,7 @@
                      values)))))
       (when-let ((value (mapcar #'fn terms)))
         (when (and log
-                   (not (every #'null value))
+                   (not (null* value))
                    (stringp expr))
           (write-log expr))
         value))))
@@ -191,6 +191,3 @@
   (clear-universe)
   (apply #'dispatch* args))
 
-(defmacro* with-fresh-universe (&body body)
-  `(let ((streams/specials:*universe* (streams/classes:make-universe)))
-     ,@body))

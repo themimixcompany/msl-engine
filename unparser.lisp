@@ -295,14 +295,14 @@
 
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
-  (when-let* ((*universe* (make-universe))
-              (head (head expr))
-              (dispatch (dispatch* expr)))
-    (cond ((null* dispatch)
-           (when-let ((parse (parse-msl expr)))
-             (mapcar #'(lambda (item) (strip-head (car item)))
-                     parse)))
-          (t (sections head)))))
+  (with-fresh-universe
+    (when-let ((head (head expr))
+               (dispatch (dispatch* expr)))
+      (cond ((null* dispatch)
+             (when-let ((parse (parse-msl expr)))
+               (mapcar #'(lambda (item) (strip-head (car item)))
+                       parse)))
+            (t (sections head))))))
 
 (defun* process (head sections)
   "Return a final, processed string value from SECTIONS."

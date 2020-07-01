@@ -202,3 +202,7 @@ body contents of the parser function."
   "Call CLEAR and DUMP."
   (clear-universe)
   (dump-universe))
+
+(defmacro* with-fresh-universe (&body body)
+  `(let ((streams/specials:*universe* (streams/classes:make-universe)))
+     ,@body))
