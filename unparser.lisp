@@ -235,7 +235,7 @@
                                     :collect v))))
 
 (defun* collect (&rest keys)
-  "Return the original expressions in TABLE."
+  "Return the original expressions in TABLE. This is mostly a user function to check if the expressions can be read from the store."
   (declare (ignorable keys))
   (let* ((table (atom-table *universe*))
          (children (children table)))

@@ -51,6 +51,14 @@
   (or (null params)
       (every #'null params)))
 
+(defun* empty-term-p (term)
+  "Return true if TERM is considered empty."
+  (destructuring-bind (path &optional &rest params)
+      term
+    (when*
+      (empty-params-p params)
+      (not (with-sub-atom-path-p path)))))
+
 (defun* find-table (table)
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
@@ -172,72 +180,28 @@
 ;;         (loop :for term :in terms
 ;;               :collect (fn term atom-tab sub-atom-tab))))))
 
-;; (defun* dispatch (expr &optional (log t))
-;;   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-;;   (let ((parse (parse-msl expr)))
-;;     (if (and (= (length parse) 1)
-;;              (= (length (caar parse)) 2)
-;;              (null (cadar parse))
-;;              (null (gethash* (caar parse) (atom-table *universe*))))
-;;         nil
-;;         (let ((terms (if (consp expr) expr (parse-msl expr)))
-;;               (atom-tab (find-table #'atom-table))
-;;               (sub-atom-tab (find-table #'sub-atom-table)))
-;;           (flet ((fn (term atom-tab sub-atom-tab)
-;;                    (destructuring-bind (path &optional &rest params)
-;;                        term
-;;                      (cond ;; ((empty-params-p params)
-;;                        ;;  (read-term (list path params) atom-tab sub-atom-tab))
-;;                        (t (let ((opt (with-sub-atom-path-p path))
-;;                                 (values (write-term (list path params) atom-tab sub-atom-tab)))
-;;                             (declare (ignorable opt))
-;;                             (when (consp values)
-;;                               (loop :for value :in values
-;;                                     :when (valid-terms-p value)
-;;                                     :do (dispatch value)))
-;;                             values))))))
-;;             (when terms
-;;               (when (and log (stringp expr))
-;;                 (write-log expr))
-;;               (loop :for term :in terms
-;;                     :collect (fn term atom-tab sub-atom-tab))))))))
-
-;; (defun* valid-request-p (expr)
-;;   "Return true if EXPR is a valid value for dispatching."
-;;   expr
-;;   ;; use PATHS
-;;   (let* ((parse (parse-msl expr))
-;;          (deconstruct (deconstruct)))))
-
 (defun* dispatch (expr &optional (log t))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (let ((parse (parse-msl expr)))
-    (if (and (= (length parse) 1)
-             (= (length (caar parse)) 2)
-             (null (cadar parse))
-             (null (gethash* (caar parse) (atom-table *universe*))))
-        nil
-        (let ((terms (if (consp expr) expr (parse-msl expr)))
-              (atom-tab (find-table #'atom-table))
-              (sub-atom-tab (find-table #'sub-atom-table)))
-          (flet ((fn (term atom-tab sub-atom-tab)
-                   (destructuring-bind (path &optional &rest params)
-                       term
-                     (cond ;; ((empty-params-p params)
-                       ;;  (read-term (list path params) atom-tab sub-atom-tab))
-                       (t (let ((opt (with-sub-atom-path-p path))
-                                (values (write-term (list path params) atom-tab sub-atom-tab)))
-                            (declare (ignorable opt))
-                            (when (consp values)
-                              (loop :for value :in values
-                                    :when (valid-terms-p value)
-                                    :do (dispatch value)))
-                            values))))))
-            (when terms
-              (when (and log (stringp expr))
-                (write-log expr))
-              (loop :for term :in terms
-                    :collect (fn term atom-tab sub-atom-tab))))))))
+  (let ((terms (if (consp expr)
+                   expr
+                   (parse-msl expr))))
+    (flet ((fn (term &optional (atom-tab (atom-table *universe*))
+                               (sub-atom-tab (sub-atom-table *universe*)))
+             (if (empty-term-p term)
+                 (dbg term)
+                 (destructuring-bind (path &optional &rest params)
+                     term
+                   (let ((opt (with-sub-atom-path-p path))
+                         (values (write-term (list path params) atom-tab sub-atom-tab)))
+                     (declare (ignorable opt))
+                     (when (consp values)
+                       (loop :for value :in values
+                             :when (valid-terms-p value)
+                             :do (dispatch value)))
+                     values)))))
+      (when terms
+        (when (and log (stringp expr)) (write-log expr))
+        (mapcar #'fn terms)))))
 
 (defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
