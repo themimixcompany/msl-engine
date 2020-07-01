@@ -188,7 +188,7 @@
     (flet ((fn (term &optional (atom-tab (atom-table *universe*))
                                (sub-atom-tab (sub-atom-table *universe*)))
              (if (empty-term-p term)
-                 (dbg term)
+                 nil
                  (destructuring-bind (path &optional &rest params)
                      term
                    (let ((opt (with-sub-atom-path-p path))
@@ -211,3 +211,7 @@
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
   (apply #'dispatch* args))
+
+(defmacro* with-fresh-universe (&body body)
+  `(let ((streams/specials:*universe* (streams/classes:make-universe)))
+     ,@body))
