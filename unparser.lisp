@@ -410,16 +410,23 @@
              (path (car (last* (parse-msl expr)))))
     path))
 
+(defun regex-path (path)
+  "Return a path with regex from PATH."
+  (if (string= (last* path) "/")
+      path
+      (append path '("/"))))
+
 (defun* regex-present-p (expr)
   "Return true if a regex mod is present in EXPR."
   (when-let* ((path (source-path expr))
-              (regex-path (append path '("/"))))
+              (regex-path (regex-path path)))
     (when* (gethash* regex-path (atom-table *universe*)))))
 
 (defun* expr-regex (expr)
   "Return the regex mod of the implied path in EXPR."
   (when (regex-present-p expr)
-    (let* ((regex-path (append (source-path expr) '("/")))
+    (let* ((path (source-path expr))
+           (regex-path (regex-path path))
            (value (gethash* regex-path (atom-table *universe*))))
       (car value))))
 
