@@ -3,7 +3,8 @@
 (uiop:define-package #:streams/parser
   (:use #:cl
         #:streams/common
-        #:maxpc)
+        #:maxpc
+        #:marie)
   (:export #:parse-msl
            #:parse-setters
            #:parse-explain))
@@ -24,6 +25,13 @@
   "Return true if VALUE is 64 characters long."
   (= (length value) 64))
 ;;
+
+(defun regex-char-p (char)
+  "Return true if CHAR is a valid regex character."
+  (or (alphanumericp char)
+      (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
+                  #\left_parenthesis #\right_parenthesis
+                  #\[ #\] #\{ #\}))))
 
 (defun diag (&optional message value)
   "Print a diagnostic message."
@@ -335,7 +343,7 @@
                   (=destructure (_ _ regex _ env value)
                                 (=list 'whitespace
                                        (=regex-namespace)
-                                       (=subseq (%some (?satisfies 'alphanumericp)))
+                                       (=subseq (%some (?satisfies 'regex-char-p)))
                                        (=regex-namespace)
                                        (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
                                        (%maybe 'msl-value))
