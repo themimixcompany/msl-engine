@@ -175,9 +175,12 @@
                              :when (valid-terms-p value)
                              :do (dispatch value)))
                      values)))))
-      (when terms
-        (when (and log (stringp expr)) (write-log expr))
-        (mapcar #'fn terms)))))
+      (when-let ((value (mapcar #'fn terms)))
+        (when (and log
+                   (not (every #'null value))
+                   (stringp expr))
+          (write-log expr))
+        value))))
 
 (defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
