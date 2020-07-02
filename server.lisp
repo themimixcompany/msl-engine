@@ -65,6 +65,7 @@
 
 (defun message-data (message)
   "Return the appropriate data type from MESSAGE."
+  (debug-print (fmt "message: ~A" message))
   (flet ((fn (v)
            (if (stringp v) (list v) v)))
     (if (json-object-p message)
