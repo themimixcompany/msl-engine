@@ -255,6 +255,12 @@
   (and (= (length path) 2)
        (head-exists-p path)))
 
+(defun* clear-expr (expr)
+  "Remove the expression under EXPR."
+  (let ((head (head expr)))
+    (when head
+      (clear-path (atom-table *universe*) head))))
+
 (defun* solop (value)
   "Return true if VALUE is the only section and that there’s only a head."
   (head-only-p (and (length-1 value) (car value))))
