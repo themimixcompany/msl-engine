@@ -291,7 +291,6 @@
       head
     (let* ((table (atom-table *universe*))
            (roots (roots table key keys))
-           ;; NOTE
            (stage (stage (flatten-1 (gird table (car roots))))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
@@ -303,7 +302,7 @@
   "Return the sections of EXPR from a new universe."
   (with-fresh-universe
     (when-let ((head (head expr))
-               (dispatch (dispatch* expr)))
+               (dispatch (dispatch expr :log nil :force t)))
       (cond ((null* dispatch)
              (when-let ((parse (parse-msl expr)))
                (mapcar #'(lambda (item) (strip-head (car item)))
@@ -331,7 +330,7 @@
          (lead (list (append (car start) (cdr start)))))
     (append lead rest)))
 
-(defun* recall-expr (expr)
+(defun* (recall-expr r-e) (expr)
   "Return the minimum expression needed to match EXPR from the store."
   (let ((head (head expr)))
     (when (head-exists-p head)
@@ -416,7 +415,7 @@
 
 (defun* source-path (expr)
   "Return the path implied by EXPR."
-  (when-let ((value (progn (dispatch* expr) (%recall-value expr)))
+  (when-let ((value (progn (dispatch expr :log nil) (%recall-value expr)))
              (path (car (last* (parse-msl expr)))))
     path))
 
@@ -440,7 +439,7 @@
            (value (gethash* regex-path (atom-table *universe*))))
       (car value))))
 
-(defun* recall-value (expr)
+(defun* (recall-value r-v) (expr)
   "Apply mods if there are any to EXPR."
   (let* ((value (%recall-value expr))
          (regex (expr-regex expr)))
