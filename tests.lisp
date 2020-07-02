@@ -22,7 +22,7 @@
 (defun extract (expr &optional clear)
   "Return the string representation of EXPR after dispatching it. If optional argument CLEAR is true, clear the universe prior to evaluation."
   (when clear (clear))
-  (dispatch expr nil)
+  (dispatch expr :log nil)
   (recall-expr expr))
 
 (defun eqv (expr)

@@ -156,14 +156,15 @@
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
-(defun* dispatch (expr &optional (log t))
+(defun* dispatch (expr &key (log t) (force nil))
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (let ((terms (if (consp expr)
                    expr
                    (parse-msl expr))))
     (flet ((fn (term &optional (atom-tab (atom-table *universe*))
                                (sub-atom-tab (sub-atom-table *universe*)))
-             (if (empty-term-p term)
+             (if (and (empty-term-p term)
+                      (not force))
                  nil
                  (destructuring-bind (path &optional &rest params)
                      term
@@ -184,7 +185,7 @@
 
 (defun* dispatch* (&rest args)
   "Call DISPATCH with logging disabled."
-  (apply #'(lambda (arg) (dispatch arg nil)) args))
+  (apply #'(lambda (arg) (dispatch arg :log nil)) args))
 
 (defun* dispatch! (&rest args)
   "Clear the universe prior to calling DISPATCH*."
