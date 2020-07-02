@@ -183,12 +183,7 @@
           (write-log expr))
         value))))
 
-(defun* dispatch* (&rest args)
-  "Call DISPATCH with logging disabled."
-  (apply #'(lambda (arg) (dispatch arg :log nil)) args))
-
 (defun* dispatch! (&rest args)
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
-  (apply #'dispatch* args))
-
+  (apply #'dispatch (append args `(:log nil :force nil))))
