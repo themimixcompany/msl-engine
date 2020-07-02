@@ -252,7 +252,7 @@
 
 (defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
-  (and (= (length path) 2)
+  (and (length= path 2)
        (head-exists-p path)))
 
 (defun* clear-expr (expr)
@@ -263,7 +263,7 @@
 
 (defun* solop (value)
   "Return true if VALUE is the only section and that there’s only a head."
-  (head-only-p (and (length-1 value) (car value))))
+  (head-only-p (and (length= value 1) (car value))))
 
 (defun* with-head-p (sections)
   "Return true if SECTIONS contain a head section."
@@ -376,12 +376,18 @@
   (when-let ((parse (parse-msl expr)))
     (flet ((fn (item)
              (or (mem (last* (car item)) '("/" "[]" "d" "f"))
-                 (and (= (length (car item)) 2)
+                 (and (length= (car item) 2)
                       (null (cadr item))))))
-      (cond ((length-1 parse) (butlast (car parse)))
-            (t (loop :for value :in (remove-if #'fn parse)
-                     :for stage = (car value)
-                     :collect stage))))))
+      (cond ;;((length= parse 1) (butlast (car parse)))
+
+            ((or (length= parse 1)
+                 (and (length= parse 2)
+                      (null* (cdar parse))
+                      (mem (last* (caadr parse)) '("/"))))
+             (butlast (car parse)))
+
+            (t (mapcar #'(lambda (value) (car value))
+                       (remove-if #'fn parse)))))))
 
 (defun* with-metadata-p (path)
   "Return true if PATH contains a metadata subsection."
@@ -401,14 +407,12 @@
 
 (defun* %recall-value (expr)
   "Return the value specified in EXPR."
-  (flet ((fn (expr)
-           (let* ((requests (requests expr))
-                  (metamods-count (metamods-count requests)))
-             (cond ((solop requests) (extract-value (car requests)))
-                   ((> metamods-count 1) (extract-value (head expr)))
-                   ((= metamods-count 1) (extract-value (car requests)))
-                   (t nil)))))
-    (fn expr)))
+  (let* ((requests (requests expr))
+         (metamods-count (metamods-count requests)))
+    (cond ((solop requests) (extract-value (car requests)))
+          ((> metamods-count 1) (extract-value (head expr)))
+          ((= metamods-count 1) (extract-value (car requests)))
+          (t nil))))
 
 (defun* source-path (expr)
   "Return the path implied by EXPR."

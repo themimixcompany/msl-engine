@@ -23,7 +23,7 @@
 
 (defun length-64-p (value)
   "Return true if VALUE is 64 characters long."
-  (= (length value) 64))
+  (length= value 64))
 ;;
 
 (defun regex-char-p (char)
