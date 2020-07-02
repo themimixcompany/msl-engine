@@ -176,7 +176,7 @@
     (handle-open server))
   (lambda (message)
     (debug-print (fmt "Received on MSL wire: ~A" message))
-    (dispatch message)
+    (dispatch message :log t)
     (let ((recall-expr-value (recall-expr message))
           (recall-value-value (recall-value message)))
       (post *msl-wire* recall-expr-value)
