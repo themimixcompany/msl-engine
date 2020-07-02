@@ -415,7 +415,9 @@
 
 (defun* source-path (expr)
   "Return the path implied by EXPR."
-  (when-let ((value (progn (dispatch expr :log nil) (%recall-value expr)))
+  ;;(dispatch expr :log nil :force t)     ;NOTE
+  (dispatch expr :log nil :force nil)
+  (when-let ((value (%recall-value expr))
              (path (car (last* (parse-msl expr)))))
     path))
 

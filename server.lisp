@@ -46,6 +46,25 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
+;; json
+;;--------------------------------------------------------------------------------------------------
+
+(defun* json-to-lisp (string)
+  "Return a lisp representation of STRING."
+  (json:decode-json-from-string string))
+
+(defun* lisp-to-json (string)
+  "Return a json representation of STRING."
+  (json:encode-json-to-string string))
+
+(defun* json-object-p (string)
+  "Return true if STRING is a JSON object."
+  (when*
+    (handler-case (json:decode-json-from-string string)
+      (json:json-syntax-error nil))))
+
+
+;;--------------------------------------------------------------------------------------------------
 ;; generic handlers
 ;;--------------------------------------------------------------------------------------------------
 
@@ -174,15 +193,24 @@
 (define-runners "MSL" 'msl 60000
   (lambda ()
     (handle-open server))
-  (lambda (message)
-    (debug-print (fmt "Received on MSL wire: ~A" message))
-    (dispatch message :log t)
-    (let ((recall-expr-value (recall-expr message))
-          (recall-value-value (recall-value message)))
-      (post *msl-wire* recall-expr-value)
-      (debug-print (fmt "Sent on MSL wire: ~A" recall-expr-value))
-      (post *admin-wire* recall-value-value)
-      (debug-print (fmt "Sent on admin wire: ~A" recall-value-value))))
+  (lambda (data)
+    (let* ((result (if (json-object-p data) (json-to-lisp data) data))
+           (value (if (stringp result) (list result) result)))
+      (destructuring-bind (expr &optional js-data)
+          value
+        (debug-print (fmt "Received on MSL wire: ~A" data))
+        (dispatch expr :log t)
+        (flet ((fn (val)
+                 (cond ((json-object-p data) (lisp-to-json (list val js-data)))
+                       (t val))))
+          (let* ((recall-expr-value (recall-expr expr))
+                 (recall-value-value (recall-value expr))
+                 (expr-value (fn recall-expr-value))
+                 (value-value (fn recall-value-value)))
+            (post *msl-wire* expr-value)
+            (debug-print (fmt "Sent on MSL wire: ~A" expr-value))
+            (post *admin-wire* value-value)
+            (debug-print (fmt "Sent on admin wire: ~A" value-value)))))))
   (lambda (&key code reason)
     (declare (ignore code reason))
     (handle-close server))
