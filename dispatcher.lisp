@@ -174,7 +174,7 @@
                      (when (consp values)
                        (loop :for value :in values
                              :when (valid-terms-p value)
-                             :do (dispatch value)))
+                             :do (dispatch value :log t)))
                      values)))))
       (when-let ((value (mapcar #'fn terms)))
         (when (and log
