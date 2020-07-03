@@ -330,8 +330,10 @@
          (lead (list (append (car start) (cdr start)))))
     (append lead rest)))
 
-(defun* (recall-expr r-e) (expr)
+(defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
+  ;; NOTE: fully understand the consequences of this.
+  (dispatch expr :log t)
   (let ((head (head expr)))
     (when (head-exists-p head)
       (let* ((deconstruct (deconstruct expr))
@@ -415,7 +417,6 @@
 
 (defun* source-path (expr)
   "Return the path implied by EXPR."
-  ;;(dispatch expr :log nil :force t)     ;NOTE
   (dispatch expr :log nil :force nil)
   (when-let ((value (%recall-value expr))
              (path (car (last* (parse-msl expr)))))
@@ -441,7 +442,7 @@
            (value (gethash* regex-path (atom-table *universe*))))
       (car value))))
 
-(defun* (recall-value r-v) (expr)
+(defun* recall-value (expr)
   "Apply mods if there are any to EXPR."
   (let* ((value (%recall-value expr))
          (regex (expr-regex expr)))
