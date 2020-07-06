@@ -435,7 +435,7 @@
 
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  (when dispatch (dispatch expr :log nil :force t))
+  (when dispatch (dispatch expr :log t :force t))
   (let* ((value (%recall-value expr))
          (parse (parse-msl expr))
          (source-path (car (last* parse)))

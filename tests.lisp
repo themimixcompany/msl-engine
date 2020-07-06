@@ -29,7 +29,6 @@
   "Test equivalence without value accumulation"
   (when-let* ((e (uncomment expr))
               (v (extract e t)))
-    ;;(dbg expr e v)
     (string= v e)))
 
 (defun eqv* (expr value)
