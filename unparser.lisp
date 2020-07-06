@@ -316,11 +316,13 @@
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
   (with-fresh-universe
-    (when-let ((head (head expr))
-               (dispatch (dispatch expr :log nil :force t)))
-      (cond ((null* dispatch)
-             (when-let ((parse (parse-msl expr)))
-               (strip-heads parse)))
+    (when-let* ((parse (parse-msl expr))
+                (strip (strip-heads parse))
+                (head (head expr))
+                (dispatch (dispatch expr :log nil :force t)))
+      (cond ((and (null* dispatch)
+                  (null (find-if #'modsp strip)))
+             strip)
             (t (post-sections (sections head)))))))
 
 (defun* process (head sections)
@@ -447,3 +449,24 @@
                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                          (t (values (cl-ppcre:scan-to-strings re value))))))
           (t value))))
+
+
+;;--------------------------------------------------------------------------------------------------
+;; entrypoints
+;;--------------------------------------------------------------------------------------------------
+
+(defun* recall (expr &optional log)
+  "Return the results of expression and value recalls."
+  (dispatch expr :log log)
+  (values (recall-expr expr :dispatch nil)
+          (recall-value expr :dispatch nil)))
+
+(defun* recall* (expr &optional log)
+  "Return the results of expression and value recalls."
+  (dispatch expr :log log)
+  (let ((value (recall-value expr :dispatch nil)))
+    (if (null value)
+        (values nil
+                nil)
+        (values (recall-expr expr :dispatch nil)
+                value))))
