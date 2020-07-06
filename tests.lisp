@@ -29,6 +29,7 @@
   "Test equivalence without value accumulation"
   (when-let* ((e (uncomment expr))
               (v (extract e t)))
+    ;;(dbg expr e v)
     (string= v e)))
 
 (defun eqv* (expr value)
@@ -76,6 +77,6 @@
 (defun* run-tests ()
   "Run all the tests defined in the suite."
   ;; (run! 'all-tests)
-  (with-fresh-universe
+  (with-fresh-universe                  ;this may affect cumulative tests
     (run! 'parser-tests-1)
     (clear-universe)))

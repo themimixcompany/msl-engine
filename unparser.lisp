@@ -307,8 +307,11 @@
 
 (defun* strip-heads (parse)
   "Remove the heads from a parse."
-  (mapcar #'(lambda (item) (strip-head (car item)))
-          parse))
+  (remove-if-not #'(lambda (item)
+                     (length= item 2))
+                 (mapcar #'(lambda (item)
+                             (strip-head (car item)))
+                         parse)))
 
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
@@ -347,6 +350,7 @@
                        :nconc (loop :for section :in sections
                                     ;; NOTE: match only the head
                                     ;; NOTE: there may be a need to do stronger matching
+                                    ;;:when (search path section :test #'equal)
                                     :when (search (subseq path 0 2) section :test #'equal)
                                     :collect section))))
           (cond ((solop deconstruct)
@@ -422,7 +426,7 @@
 
 (defun* source-path (expr)
   "Return the path implied by EXPR."
-  (dispatch expr :log nil :force nil)
+  (dispatch expr :log nil :force t)
   (when-let ((value (%recall-value expr))
              (path (car (last* (parse-msl expr)))))
     path))
