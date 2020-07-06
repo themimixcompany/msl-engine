@@ -447,24 +447,3 @@
                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                          (t (values (cl-ppcre:scan-to-strings re value))))))
           (t value))))
-
-
-;;--------------------------------------------------------------------------------------------------
-;; entrypoints
-;;--------------------------------------------------------------------------------------------------
-
-;; (defun* recall (expr &optional log)
-;;   "Return the results of expression and value recalls."
-;;   (dispatch expr :log log)
-;;   (values (recall-expr expr :dispatch nil)
-;;           (recall-value expr :dispatch nil)))
-
-;; (defun* recall* (expr &optional log)
-;;   "Return the results of expression and value recalls."
-;;   (dispatch expr :log log)
-;;   (let ((value (recall-value expr :dispatch nil)))
-;;     (if (null value)
-;;         (values nil
-;;                 nil)
-;;         (values (recall-expr expr :dispatch nil)
-;;                 value))))
