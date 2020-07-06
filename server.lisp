@@ -82,9 +82,8 @@
 (defun make-return-data (message lisp-data js-data)
   "Return an appropriate return data."
   (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
-        (t (if (null lisp-data)
-               "NIL"
-               lisp-data))))
+        ((null lisp-data) "NIL")
+        (t lisp-data)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -226,7 +225,6 @@
           (message-data message)
         (when expr
           (dispatch expr :log t)
-          ;; NOTE: send the string "NIL" on NIL return values
           (flet ((fn (val)
                    (make-return-data message val js-data)))
             (let* ((expr-value (fn (recall-expr expr)))
