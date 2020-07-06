@@ -298,6 +298,18 @@
             :collect item :into items
             :finally (return (cons items (nthcdr limit stage)))))))
 
+(defun* post-sections (sections)
+  "Return more surgical operations on the result of sectioning."
+  (let* ((rest (remove-if-not #'metadatap sections))
+         (start (remove-if #'metadatap sections))
+         (lead (list (append (car start) (cdr start)))))
+    (append lead rest)))
+
+(defun* strip-heads (parse)
+  "Remove the heads from a parse."
+  (mapcar #'(lambda (item) (strip-head (car item)))
+          parse))
+
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
   (with-fresh-universe
@@ -305,9 +317,8 @@
                (dispatch (dispatch expr :log nil :force t)))
       (cond ((null* dispatch)
              (when-let ((parse (parse-msl expr)))
-               (mapcar #'(lambda (item) (strip-head (car item)))
-                       parse)))
-            (t (sections head))))))
+               (strip-heads parse)))
+            (t (post-sections (sections head)))))))
 
 (defun* process (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -323,16 +334,8 @@
       (cdr deconstruct)
       deconstruct))
 
-(defun* post-sections (sections)
-  "Return more surgical operations on the result of sectioning."
-  (let* ((rest (remove-if-not #'metadatap sections))
-         (start (remove-if #'metadatap sections))
-         (lead (list (append (car start) (cdr start)))))
-    (append lead rest)))
-
 (defun* recall-expr (expr)
   "Return the minimum expression needed to match EXPR from the store."
-  ;; NOTE: fully understand the consequences of this.
   (dispatch expr :log t)
   (let ((head (head expr)))
     (when (head-exists-p head)
@@ -342,7 +345,9 @@
         (flet ((fn (paths sections)
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
-                                    :when (search path section :test #'equal)
+                                    ;; NOTE: match only the head
+                                    ;; NOTE: there may be a need to do stronger matching
+                                    :when (search (subseq path 0 2) section :test #'equal)
                                     :collect section))))
           (cond ((solop deconstruct)
                  (process head sections))
