@@ -340,7 +340,7 @@
 (defun* recall-expr (expr &key (dispatch t))
   "Return the minimum expression needed to match EXPR from the store."
   (declare (ignorable dispatch))
-  (dispatch expr :log t :force nil)
+  (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (head-exists-p head)
       (let* ((deconstruct (deconstruct expr))
@@ -349,9 +349,6 @@
         (flet ((fn (paths sections)
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
-                                    ;; NOTE: match only the head
-                                    ;; NOTE: there may be a need to do stronger matching
-                                    ;;:when (search path section :test #'equal)
                                     :when (search (subseq path 0 2) section :test #'equal)
                                     :collect section))))
           (cond ((solop deconstruct)
@@ -425,52 +422,20 @@
           ((= metamods-count 1) (extract-value (car requests)))
           (t nil))))
 
-;; (defun source-path (expr)
-;;   "Return the path implied by EXPR."
-;;   (dispatch expr :log nil :force t)
-;;   (when-let ((value (%recall-value expr))
-;;              (path (car (last* (parse-msl expr)))))
-;;     path))
-
 (defun ensure-regex-path (path)
   "Return a path with regex from PATH."
   (if (string= (last* path) "/")
       path
       (append path '("/"))))
 
-;; (defun regex-present-p (regex-path expr)
-;;   "Return true if a regex mod is present in EXPR."
-;;   (when* (gethash* regex-path (atom-table *universe*))))
-
-;; (defun expr-regex (expr)
-;;   "Return the regex mod of the implied path in EXPR."
-;;   (when (regex-present-p expr)
-;;     (let* ((path (source-path expr))
-;;            (regex-path (regex-path path))
-;;            (value (gethash* regex-path (atom-table *universe*))))
-;;       (car value))))
-
 (defun regex-path-regex (regex-path)
   "Return the regex mod of the implied path in EXPR."
   (when-let ((value (gethash* regex-path (atom-table *universe*))))
     (car value)))
 
-;; (defun* recall-value (expr &key (dispatch t))
-;;   "Return the value implied by EXPR."
-;;   (declare (ignorable dispatch))
-;;   (let* ((value (%recall-value expr))
-;;          (regex (expr-regex expr)))
-;;     (cond (regex (destructuring-bind (re flag consume)
-;;                      regex
-;;                    (declare (ignorable flag))
-;;                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
-;;                          (t (values (cl-ppcre:scan-to-strings re value))))))
-;;           (t value))))
-
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  (declare (ignorable dispatch))
-  (dispatch expr :log nil :force t)
+  (when dispatch (dispatch expr :log nil :force t))
   (let* ((value (%recall-value expr))
          (parse (parse-msl expr))
          (source-path (car (last* parse)))
@@ -484,23 +449,22 @@
           (t value))))
 
 
-
 ;;--------------------------------------------------------------------------------------------------
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* recall (expr &optional log)
-  "Return the results of expression and value recalls."
-  (dispatch expr :log log)
-  (values (recall-expr expr :dispatch nil)
-          (recall-value expr :dispatch nil)))
+;; (defun* recall (expr &optional log)
+;;   "Return the results of expression and value recalls."
+;;   (dispatch expr :log log)
+;;   (values (recall-expr expr :dispatch nil)
+;;           (recall-value expr :dispatch nil)))
 
-(defun* recall* (expr &optional log)
-  "Return the results of expression and value recalls."
-  (dispatch expr :log log)
-  (let ((value (recall-value expr :dispatch nil)))
-    (if (null value)
-        (values nil
-                nil)
-        (values (recall-expr expr :dispatch nil)
-                value))))
+;; (defun* recall* (expr &optional log)
+;;   "Return the results of expression and value recalls."
+;;   (dispatch expr :log log)
+;;   (let ((value (recall-value expr :dispatch nil)))
+;;     (if (null value)
+;;         (values nil
+;;                 nil)
+;;         (values (recall-expr expr :dispatch nil)
+;;                 value))))
