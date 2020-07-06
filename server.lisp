@@ -82,7 +82,9 @@
 (defun make-return-data (message lisp-data js-data)
   "Return an appropriate return data."
   (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
-        (t lisp-data)))
+        (t (if (null lisp-data)
+               "NIL"
+               lisp-data))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -208,7 +210,7 @@
             (let ((value (fn (admin-dispatch expr))))
               (debug-print (fmt "value: ~A" value))
               (post *admin-wire* value)
-              (debug-print (fmt "Sent on admin wire: ~A" value)))))))
+              (debug-print (fmt "Sent on admin wire: ~S" value)))))))
   #'(lambda (&key code reason)
       (declare (ignore code reason))
       (handle-close server))
@@ -224,14 +226,15 @@
           (message-data message)
         (when expr
           (dispatch expr :log t)
+          ;; NOTE: send the string "NIL" on NIL return values
           (flet ((fn (val)
                    (make-return-data message val js-data)))
             (let* ((expr-value (fn (recall-expr expr)))
                    (value-value (fn (recall-value expr))))
               (post *msl-wire* expr-value)
-              (debug-print (fmt "Sent on MSL wire: ~A" expr-value))
+              (debug-print (fmt "Sent on MSL wire: ~S" expr-value))
               (post *admin-wire* value-value)
-              (debug-print (fmt "Sent on admin wire: ~A" value-value)))))))
+              (debug-print (fmt "Sent on admin wire: ~S" value-value)))))))
   #'(lambda (&key code reason)
       (declare (ignore code reason))
       (handle-close server))
