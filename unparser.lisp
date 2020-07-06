@@ -425,45 +425,64 @@
           ((= metamods-count 1) (extract-value (car requests)))
           (t nil))))
 
-(defun source-path (expr)
-  "Return the path implied by EXPR."
-  (dispatch expr :log nil :force t)
-  (when-let ((value (%recall-value expr))
-             (path (car (last* (parse-msl expr)))))
-    path))
+;; (defun source-path (expr)
+;;   "Return the path implied by EXPR."
+;;   (dispatch expr :log nil :force t)
+;;   (when-let ((value (%recall-value expr))
+;;              (path (car (last* (parse-msl expr)))))
+;;     path))
 
-(defun regex-path (path)
+(defun ensure-regex-path (path)
   "Return a path with regex from PATH."
   (if (string= (last* path) "/")
       path
       (append path '("/"))))
 
-;;; SOURCE-PATH should only be called once
-(defun regex-present-p (expr)
-  "Return true if a regex mod is present in EXPR."
-  (when-let* ((path (source-path expr))
-              (regex-path (regex-path path)))
-    (when* (gethash* regex-path (atom-table *universe*)))))
+;; (defun regex-present-p (regex-path expr)
+;;   "Return true if a regex mod is present in EXPR."
+;;   (when* (gethash* regex-path (atom-table *universe*))))
 
-(defun expr-regex (expr)
+;; (defun expr-regex (expr)
+;;   "Return the regex mod of the implied path in EXPR."
+;;   (when (regex-present-p expr)
+;;     (let* ((path (source-path expr))
+;;            (regex-path (regex-path path))
+;;            (value (gethash* regex-path (atom-table *universe*))))
+;;       (car value))))
+
+(defun regex-path-regex (regex-path)
   "Return the regex mod of the implied path in EXPR."
-  (when (regex-present-p expr)
-    (let* ((path (source-path expr))
-           (regex-path (regex-path path))
-           (value (gethash* regex-path (atom-table *universe*))))
-      (car value))))
+  (when-let ((value (gethash* regex-path (atom-table *universe*))))
+    (car value)))
+
+;; (defun* recall-value (expr &key (dispatch t))
+;;   "Return the value implied by EXPR."
+;;   (declare (ignorable dispatch))
+;;   (let* ((value (%recall-value expr))
+;;          (regex (expr-regex expr)))
+;;     (cond (regex (destructuring-bind (re flag consume)
+;;                      regex
+;;                    (declare (ignorable flag))
+;;                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
+;;                          (t (values (cl-ppcre:scan-to-strings re value))))))
+;;           (t value))))
 
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (declare (ignorable dispatch))
+  (dispatch expr :log nil :force t)
   (let* ((value (%recall-value expr))
-         (regex (expr-regex expr)))
+         (parse (parse-msl expr))
+         (source-path (car (last* parse)))
+         (regex-path (ensure-regex-path source-path))
+         (regex (regex-path-regex regex-path)))
     (cond (regex (destructuring-bind (re flag consume)
                      regex
                    (declare (ignorable flag))
                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                          (t (values (cl-ppcre:scan-to-strings re value))))))
           (t value))))
+
 
 
 ;;--------------------------------------------------------------------------------------------------
