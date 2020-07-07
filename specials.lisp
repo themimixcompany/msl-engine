@@ -78,9 +78,32 @@
   ;;(uiop:hostname)
   "The default name to use as the machine name.")
 
+(defun* system-object (name)
+  "Return the system object for the current system."
+  (asdf:find-system (intern name (find-package :keyword))))
+
+(defun* self-asdf ()
+  "Return the ASDF file path for the current system."
+  (uiop:merge-pathnames* (cat +self+ ".asd")
+                         (asdf:system-source-directory (system-object +self+))))
+
+(defun* read-self-asdf ()
+  "Return the system ASDF file as s-expressions."
+  (uiop:read-file-forms (self-asdf)))
+
+(defun* asdf-version (name)
+  "Return the version number extracted from the system resources."
+  (let* ((system (system-object name))
+         (asdf-base-name (cat name ".asd"))
+         (source-directory (asdf:system-source-directory system))
+         (forms (uiop:read-file-forms (uiop:merge-pathnames* asdf-base-name source-directory))))
+    (getf (assoc 'defsystem forms :test #'equal) :version)))
+
 (defvar* *system-version*
-  ;;(asdf:system-version (asdf:find-system (intern +self+ (find-package :keyword))))
-  "2.2.27"
+    (uiop:os-cond
+     ((uiop:os-windows-p) (asdf-version +self+))
+     (t (asdf:system-version (system-object +self+))))
+  ;;"2.2.27"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
