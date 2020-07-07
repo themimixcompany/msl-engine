@@ -89,6 +89,10 @@
   `(when-let ((value (read-path '(,type ,operation) ,set)))
      value))
 
+(defun* control-test-number (set)
+  "Return the control test number."
+  (make-request :control :test-number set))
+
 (defun* msl-send (set)
   "Return the msl send expression from set."
   (make-request :msl :send set))
