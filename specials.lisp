@@ -80,7 +80,7 @@
 
 (defvar* *system-version*
   ;;(asdf:system-version (asdf:find-system (intern +self+ (find-package :keyword))))
-  "2.2.26"
+  "2.2.27"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
