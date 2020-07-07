@@ -320,6 +320,7 @@
                 (strip (strip-heads parse))
                 (head (head expr))
                 (dispatch (dispatch expr :log nil :force t)))
+      ;; NOTE: examine this carefully
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
@@ -339,6 +340,10 @@
       (cdr deconstruct)
       deconstruct))
 
+(defun section-match-p (path section)
+  "Return true if path matches section."
+  (search (subseq path 0 2) section :test #'equal))
+
 (defun* recall-expr (expr &key (dispatch t))
   "Return the minimum expression needed to match EXPR from the store."
   (declare (ignorable dispatch))
@@ -351,7 +356,8 @@
         (flet ((fn (paths sections)
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
-                                    :when (search (subseq path 0 2) section :test #'equal)
+                                    ;; NOTE: examine this carefully
+                                    :when (section-match-p path section)
                                     :collect section))))
           (cond ((solop deconstruct)
                  (process head sections))
