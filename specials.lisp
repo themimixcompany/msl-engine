@@ -79,8 +79,8 @@
   "The default name to use as the machine name.")
 
 (defvar* *system-version*
-    (asdf:system-version (asdf:find-system (intern +self+ (find-package :keyword))))
-  ;;"2.2.26"
+  ;;(asdf:system-version (asdf:find-system (intern +self+ (find-package :keyword))))
+  "2.2.26"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
