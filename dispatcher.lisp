@@ -156,7 +156,7 @@
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
-(defun* dispatch (expr &key (log t) (force nil))
+(defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (let ((terms (if (consp expr)
                    expr
@@ -174,7 +174,7 @@
                      (when (consp values)
                        (loop :for value :in values
                              :when (valid-terms-p value)
-                             :do (dispatch value :log log)))
+                             :do (dispatch value :log log :force force)))
                      values)))))
       (when-let ((value (mapcar #'fn terms)))
         (when (and log

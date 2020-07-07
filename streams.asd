@@ -35,6 +35,7 @@
                "streams/unparser"
                "streams/bridge"
                "streams/admin-dispatcher"
+               "streams/json"
                "streams/server"
                "streams/builder"
                "streams/startup"
