@@ -10,6 +10,7 @@
         #:streams/unparser
         #:streams/dispatcher
         #:streams/admin-dispatcher
+        #:streams/json
         #:marie)
   (:export #:server))
 
@@ -43,47 +44,6 @@
   "Return a new fresh connection ID."
   (incf *base-connection-id*)
   *base-connection-id*)
-
-
-;;--------------------------------------------------------------------------------------------------
-;; json
-;;--------------------------------------------------------------------------------------------------
-
-(defun* json-to-lisp (string)
-  "Return a lisp representation of STRING."
-  (json:decode-json-from-string string))
-
-(defun* lisp-to-json (string)
-  "Return a json representation of STRING."
-  (json:encode-json-to-string string))
-
-(defun* json-object-p (string)
-  "Return true if STRING is a JSON object."
-  (when*
-    (handler-case (json:decode-json-from-string string)
-      (json:json-syntax-error nil))))
-
-(define-condition message-error (error)
-  ((text :initarg :text
-         :reader text)))
-
-(defun message-data (message)
-  "Return the appropriate data type from MESSAGE."
-  (flet ((fn (v)
-           (let ((value (if (stringp v) (list v) v)))
-             (if (or (length= value 1)
-                     (length= value 2))
-                 value
-                 nil))))
-    (if (json-object-p message)
-        (fn (json-to-lisp message))
-        (fn message))))
-
-(defun make-return-data (message lisp-data js-data)
-  "Return an appropriate return data."
-  (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
-        ((null lisp-data) "NIL")
-        (t lisp-data)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -223,7 +183,7 @@
       (destructuring-bind (&optional expr js-data)
           (message-data message)
         (when expr
-          (dispatch expr :log t)
+          (dispatch expr :log t :force nil)
           (flet ((fn (val)
                    (make-return-data message val js-data)))
             (let* ((expr-value (fn (recall-expr expr)))

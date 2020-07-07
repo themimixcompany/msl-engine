@@ -341,12 +341,11 @@
       deconstruct))
 
 (defun section-match-p (path section)
-  "Return true if path matches section."
+  "Return true if PATH matches SECTION."
   (search (subseq path 0 2) section :test #'equal))
 
 (defun* recall-expr (expr &key (dispatch t))
-  "Return the minimum expression needed to match EXPR from the store."
-  (declare (ignorable dispatch))
+  "Return the matching expression from the store with EXPR."
   (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (head-exists-p head)
@@ -396,14 +395,14 @@
                       (null (cadr item))))))
       (cond ;;((length= parse 1) (butlast (car parse)))
 
-            ((or (length= parse 1)
-                 (and (length= parse 2)
-                      (null* (cdar parse))
-                      (mem (last* (caadr parse)) '("/"))))
-             (butlast (car parse)))
+        ((or (length= parse 1)
+             (and (length= parse 2)
+                  (null* (cdar parse))
+                  (mem (last* (caadr parse)) '("/"))))
+         (butlast (car parse)))
 
-            (t (mapcar #'(lambda (value) (car value))
-                       (remove-if #'fn parse)))))))
+        (t (mapcar #'(lambda (value) (car value))
+                   (remove-if #'fn parse)))))))
 
 (defun* with-metadata-p (path)
   "Return true if PATH contains a metadata subsection."
@@ -461,15 +460,15 @@
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* recall (expr &optional log)
+(defun* recall (expr &key log)
   "Return the results of expression and value recalls."
-  (dispatch expr :log log)
+  (dispatch expr :log log :force nil)
   (values (recall-expr expr :dispatch nil)
           (recall-value expr :dispatch nil)))
 
-(defun* recall* (expr &optional log)
+(defun* recall* (expr &key log)
   "Return the results of expression and value recalls."
-  (dispatch expr :log log)
+  (dispatch expr :log log :force nil)
   (let ((value (recall-value expr :dispatch nil)))
     (if (null value)
         (values nil

@@ -1,0 +1,28 @@
+[
+  {
+    "control": {
+      "testNumber": "8031-2002",
+      "notes": "Needs regex example.",
+      "chain": "true"
+    },
+    "msl": {
+      "send": "(@WALT)",
+      "expect": "NIL",
+      "received": "NIL"
+    },
+    "admin": {
+      "expect": "Walt Disney",
+      "received": "W"
+    }
+  },
+  {
+    "control": {
+      "testNumber": "AAAA-AAAA",
+      "notes": "Admin wire send"
+    },
+    "admin": {
+      "send": "(@CLEAR)",
+      "expect": "(@CLEAR)"
+    }
+  }
+]

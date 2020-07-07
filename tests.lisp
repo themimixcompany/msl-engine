@@ -8,6 +8,7 @@
         #:streams/parser
         #:streams/unparser
         #:streams/dispatcher
+        #:streams/json
         #:marie))
 
 (in-package #:streams/tests)
