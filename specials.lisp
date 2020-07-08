@@ -91,7 +91,7 @@
   "Return the system ASDF file as s-expressions."
   (uiop:read-file-forms (self-asdf)))
 
-(defun* asdf-version (name)
+(defun* system-version (name)
   "Return the version number extracted from the system resources."
   (let* ((system (system-object name))
          (asdf-base-name (cat name ".asd"))
@@ -101,9 +101,8 @@
 
 (defvar* *system-version*
     (uiop:os-cond
-     ((uiop:os-windows-p) (asdf-version +self+))
+     ((uiop:os-windows-p) (system-version +self+))
      (t (asdf:system-version (system-object +self+))))
-  ;;"2.2.27"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*

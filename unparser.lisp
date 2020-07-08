@@ -355,7 +355,6 @@
         (flet ((fn (paths sections)
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
-                                    ;; NOTE: examine this carefully
                                     :when (section-match-p path section)
                                     :collect section))))
           (cond ((solop deconstruct)
