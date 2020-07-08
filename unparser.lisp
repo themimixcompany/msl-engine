@@ -16,11 +16,11 @@
 ;; common
 ;;--------------------------------------------------------------------------------------------------
 
-(defun table-keys (table)
+(defun* table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (let ((keys (loop :for k :being :the :hash-key :in table :collect k))
-          (ex '(":")))
+          (ex '(":" "#")))
       (if (mem* ex keys)
           (append (remove* ex keys) ex)
           keys))))
@@ -34,21 +34,29 @@
             :when (hash-table-p value)
             :collect (if object value key)))))
 
-(defun basep (path)
+(defun key-member-p (keys path)
+  "Return true if KEYS is part of PATH."
+  (when* (consp path) (mem (car path) (uiop:ensure-list keys))))
+
+(defun* basep (path)
   "Return true if PATH is in the @ key."
-  (when* (consp path) (mem (car path) '("@"))))
+  (key-member-p "@" path))
 
 (defun* metadatap (path)
   "Return true if PATH is in the : namespace."
-  (when* (consp path) (mem (car path) '(":"))))
+  (key-member-p ":" path))
 
 (defun* modsp (path)
   "Return true if PATH is a datatype or format form."
-  (when* (consp path) (mem (car path) '("d" "f"))))
+  (key-member-p '("d" "f") path))
 
 (defun* metamodsp (path)
-  "Return true if PATH is metamods by certain namespaces."
+  "Return true if PATH is in the metadata or mods namespaces."
   (rmap-or path #'metadatap #'modsp))
+
+(defun* hashp (path)
+  "Return true if PATH is in the # namespace."
+  (key-member-p "#" path))
 
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
@@ -101,10 +109,15 @@
 
 (defun* normalize (list)
   "Return special merging on items of LIST."
-  (labels ((fn (val)
-             (cond ((metadatap val)
-                    (loop :for v :in (cdr val) :collect (cons (car val) v)))
-                   (t val))))
+  (labels ((fn (value)
+             (cond ((metadatap value)
+                    (loop :for v :in (cdr value) :collect (cons (car value) v)))
+
+                   ;; NOTE: should this be here?
+                   ((hashp value)
+                    (list (list (reduce #'cat (flatten-1 value)))))
+
+                   (t value))))
     (flatten-1 (mapcar #'fn list))))
 
 (defun make-regex (exprs)
@@ -149,17 +162,16 @@
 ;; recall-expr
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* assemble (table keys acc)
+(defun* assemble (table keys &optional acc)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let ((v (gethash (car keys) table)))
     (cond ((null keys) (nreverse acc))
-          ((hash-table-p v)
-           (assemble table
-             (cdr keys)
-             (cons (assemble v
-                     (table-keys v)
-                     (list (car keys)))
-                   acc)))
+          ((hash-table-p v) (assemble table
+                              (cdr keys)
+                              (cons (assemble v
+                                      (table-keys v)
+                                      (list (car keys)))
+                                    acc)))
           (t (assemble table
                (cdr keys)
                (accumulate keys acc v))))))
@@ -173,7 +185,7 @@
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let* ((tab (gethash key table))
          (entries (or keys (table-keys tab))))
-    (loop :for v :in (assemble tab entries nil)
+    (loop :for v :in (assemble tab entries)
           :for kv = (cons key v)
           :when kv :collect (normalize kv))))
 

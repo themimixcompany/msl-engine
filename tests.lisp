@@ -16,10 +16,6 @@
 (def-suite all-tests)
 (in-suite all-tests)
 
-(defun uncomment (expr)
-  "Return a new string from EXPR without the comment."
-  (cl-ppcre:regex-replace-all " ?//.*[^)]" expr ""))
-
 (defun extract (expr &optional clear)
   "Return the string representation of EXPR after dispatching it. If optional argument CLEAR is true, clear the universe prior to evaluation."
   (when clear (clear))
