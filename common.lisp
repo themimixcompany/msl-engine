@@ -204,5 +204,10 @@ body contents of the parser function."
   (dump-universe))
 
 (defmacro* with-fresh-universe (&body body)
+  "Evaluate BODY in a separate universe."
   `(let ((streams/specials:*universe* (streams/classes:make-universe)))
      ,@body))
+
+(defun* uncomment (expr)
+  "Return a new string from EXPR without the comment."
+  (cl-ppcre:regex-replace-all " ?//.*[^)]" expr ""))
