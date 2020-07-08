@@ -183,6 +183,10 @@
           (write-log expr))
         value))))
 
+(defun* dispatch* (&rest args)
+  "Apply DISPATCH without logging."
+  (apply #'dispatch (append args `(:log nil))))
+
 (defun* dispatch! (&rest args)
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
