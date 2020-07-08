@@ -168,9 +168,7 @@
                  nil
                  (destructuring-bind (path &optional &rest params)
                      term
-                   (let ((opt (with-sub-atom-path-p path))
-                         (values (write-term (list path params) atom-tab sub-atom-tab)))
-                     (declare (ignorable opt))
+                   (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
                      (when (consp values)
                        (loop :for value :in values
                              :when (valid-terms-p value)
@@ -185,9 +183,9 @@
 
 (defun* dispatch* (&rest args)
   "Apply DISPATCH without logging."
-  (apply #'dispatch (append args `(:log nil))))
+  (apply #'dispatch (append args '(:log nil))))
 
 (defun* dispatch! (&rest args)
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
-  (apply #'dispatch (append args `(:log nil :force nil))))
+  (apply #'dispatch (append args '(:log nil :force nil))))
