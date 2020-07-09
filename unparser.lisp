@@ -67,14 +67,10 @@
 (defun* flatten-1 (list)
   "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
-              (cond ((metadatap y) (append x (list y)))
-                    ((modsp y) (append x (list y)))
+              (cond ((or (metadatap y)
+                         (modsp y))
+                     (append x (list y)))
                     (t (append x y))))
-          (marshall list)))
-
-(defun* flatten* (list)
-  "Return a list where items in LIST are flattened to one level only."
-  (reduce #'(lambda (x y) (append x y))
           (marshall list)))
 
 (defun* wrap (list)
@@ -112,11 +108,8 @@
   (labels ((fn (value)
              (cond ((metadatap value)
                     (loop :for v :in (cdr value) :collect (cons (car value) v)))
-
-                   ;; NOTE: should this be here?
                    ((hashp value)
-                    (list (list (reduce #'cat (flatten-1 value)))))
-
+                    (apply #'cat (car value) (cadr value)))
                    (t value))))
     (flatten-1 (mapcar #'fn list))))
 
@@ -178,7 +171,8 @@
 
 (defun* base-namespace-key-sequence (value)
   "Return the key sequence from value."
-  (when (base-namespace-p (car value))
+  (when (and (base-namespace-p (car value))
+             (consp value))
     (subseq value 0 2)))
 
 (defun* roots (table key &optional keys)
@@ -297,7 +291,24 @@
            (cddr path))
           (t path))))
 
-(defun* sections (head)
+(defun* string-hash-p (string)
+  "Return true if string is a hash."
+  (when (and (stringp string)
+             (not (empty-string-p string)))
+    (char= (aref string 0) #\#)))
+
+(defun* post-sections (sections)
+  "Return more surgical operations on the result of sectioning."
+  (let* ((metadata (remove-if-not #'metadatap sections))
+         (hash (remove-if-not #'string-hash-p sections))
+         (start (remove-if #'(lambda (section)
+                               (or (metadatap section)
+                                   (string-hash-p section)))
+                           sections))
+         (lead (list (append (car start) (cdr start)))))
+    (append lead metadata (list hash))))
+
+(defun* sections (head &key post)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
@@ -308,22 +319,18 @@
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
             :collect item :into items
-            :finally (return (cons items (nthcdr limit stage)))))))
-
-(defun* post-sections (sections)
-  "Return more surgical operations on the result of sectioning."
-  (let* ((rest (remove-if-not #'metadatap sections))
-         (start (remove-if #'metadatap sections))
-         (lead (list (append (car start) (cdr start)))))
-    (append lead rest)))
+            :finally (let ((value (cons items (nthcdr limit stage))))
+                       (return (if post
+                                   (post-sections value)
+                                   value)))))))
 
 (defun* strip-heads (parse)
-  "Remove the heads from a parse."
-  (remove-if-not #'(lambda (item)
-                     (length= item 2))
-                 (mapcar #'(lambda (item)
-                             (strip-head (car item)))
-                         parse)))
+    "Remove the heads from a parse."
+    (remove-if-not #'(lambda (item)
+                       (length= item 2))
+                   (mapcar #'(lambda (item)
+                               (strip-head (car item)))
+                           parse)))
 
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
@@ -332,11 +339,10 @@
                 (strip (strip-heads parse))
                 (head (head expr))
                 (dispatch (dispatch expr :log nil :force t)))
-      ;; NOTE: examine this carefully
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
-            (t (post-sections (sections head)))))))
+            (t (sections head :post t))))))
 
 (defun* process (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -348,13 +354,15 @@
 
 (defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
-  (if (head-only-p (car deconstruct))
+  (if (and (head-only-p (car deconstruct))
+           (> (length deconstruct) 1))
       (cdr deconstruct)
       deconstruct))
 
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
-  (search (subseq path 0 2) section :test #'equal))
+  (when (consp path)
+    (search (subseq path 0 2) section :test #'equal)))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -363,7 +371,7 @@
     (when (head-exists-p head)
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
-             (sections (post-sections (sections head))))
+             (sections (sections head :post t)))
         (flet ((fn (paths sections)
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
