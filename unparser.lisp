@@ -271,7 +271,7 @@
   "Return true if VALUE is the only section and that there’s only a head."
   (head-only-p (and (length= value 1) (car value))))
 
-(defun* with-head-p (sections)
+(defun* has-head-p (sections)
   "Return true if SECTIONS contain a head section."
   (when sections
     (destructuring-bind (head &optional &rest _)
@@ -347,7 +347,7 @@
 (defun* process (head sections)
   "Return a final, processed string value from SECTIONS."
   (when sections
-    (let ((value (if (with-head-p sections)
+    (let ((value (if (has-head-p sections)
                      sections
                      (cons head sections))))
       (list-string (flatten-1 (wrap (stage value)))))))
@@ -408,44 +408,48 @@
 (defun* requests (expr)
   "Return terms from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
-    (flet ((fn (item)
-             (or (mem (last* (car item)) '("/" "[]" "d" "f"))
-                 (and (length= (car item) 2)
-                      (null (cadr item))))))
-      (cond ;;((length= parse 1) (butlast (car parse)))
+    (flet ((fn (term)
+             (or (mem (last* (car term)) '("/" "[]" "d" "f"))
+                 (and (length= (car term) 2)
+                      (null (cadr term))))))
+      (cond ((or (length= parse 1)
+                 (and (null* (cdar parse))
+                      (mem (last* (caadr parse)) '("/")))
+                 (and (null* (cdar parse))
+                      (find-if-not #'has-metadata-p parse :key #'car)
+                      (find-if #'has-mods-p parse :key #'car)))
+             (butlast (car parse)))
+            (t (mapcar #'(lambda (value) (car value))
+                       (remove-if #'fn parse)))))))
 
-        ((or (length= parse 1)
-             (and (length= parse 2)
-                  (null* (cdar parse))
-                  (mem (last* (caadr parse)) '("/"))))
-         (butlast (car parse)))
-
-        (t (mapcar #'(lambda (value) (car value))
-                   (remove-if #'fn parse)))))))
-
-(defun* with-metadata-p (path)
+(defun* has-metadata-p (path)
   "Return true if PATH contains a metadata subsection."
   (metadatap (strip-head path)))
 
-(defun* with-mods-p (path)
+(defun* has-mods-p (path)
   "Return true if PATH contains a mods subsection."
   (modsp (strip-head path)))
 
-(defun* with-metamods-p (path)
+(defun* has-metamods-p (path)
   "Return true if PATH is contains metadata or mods."
   (metamodsp (strip-head path)))
 
 (defun* metamods-count (path)
   "Return the number of metamods in PATH."
-  (count-if #'with-metamods-p path))
+  (count-if #'has-metamods-p path))
 
 (defun* %recall-value (expr)
   "Return the value specified in EXPR."
-  (let* ((requests (requests expr))
-         (metamods-count (metamods-count requests)))
-    (cond ((solop requests) (extract-value (car requests)))
-          ((> metamods-count 1) (extract-value (head expr)))
-          ((= metamods-count 1) (extract-value (car requests)))
+  (let* ((paths (requests expr))
+         (metamods-count (metamods-count paths)))
+    (cond ((or (solop paths)
+               (and (> metamods-count 1)
+                    (every #'has-metadata-p paths)))
+           (extract-value (car paths)))
+          ((and (> metamods-count 1)
+                (notevery #'has-metadata-p paths))
+           (extract-value (head expr)))
+          ((= metamods-count 1) (extract-value (car paths)))
           (t nil))))
 
 (defun ensure-regex-path (path)
