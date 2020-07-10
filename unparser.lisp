@@ -258,8 +258,8 @@
 
 (defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
-  (and (length= path 2)
-       (head-exists-p path)))
+  (when* (and (length= path 2)
+              (head-exists-p path))))
 
 (defun* clear-expr (expr)
   "Remove the expression under EXPR."
@@ -409,18 +409,26 @@
   "Return terms from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
     (flet ((fn (term)
-             (or (mem (last* (car term)) '("/" "[]" "d" "f"))
+             (or (mem (last* (car term)) '("/" "[]"))
+                 (has-mods-p (car term))
                  (and (length= (car term) 2)
-                      (null (cadr term))))))
+                      (null* (cadr term))))))
+      (dbg parse)
       (cond ((or (length= parse 1)
                  (and (null* (cdar parse))
                       (mem (last* (caadr parse)) '("/")))
                  (and (null* (cdar parse))
                       (find-if-not #'has-metadata-p parse :key #'car)
                       (find-if #'has-mods-p parse :key #'car)))
+             (dbg 1)
              (butlast (car parse)))
-            (t (mapcar #'(lambda (value) (car value))
-                       (remove-if #'fn parse)))))))
+
+            ;; ((or (length= parse 1))
+            ;;  (dbg 1)
+            ;;  (butlast (car parse)))
+
+            (t (dbg 2)
+               (mapcar #'car (remove-if #'fn parse)))))))
 
 (defun* has-metadata-p (path)
   "Return true if PATH contains a metadata subsection."
@@ -428,7 +436,8 @@
 
 (defun* has-mods-p (path)
   "Return true if PATH contains a mods subsection."
-  (modsp (strip-head path)))
+  (or (modsp (strip-head path))
+      (modsp (strip-head (strip-head path)))))
 
 (defun* has-metamods-p (path)
   "Return true if PATH is contains metadata or mods."
@@ -441,15 +450,18 @@
 (defun* %recall-value (expr)
   "Return the value specified in EXPR."
   (let* ((paths (requests expr))
-         (metamods-count (metamods-count paths)))
-    (cond ((or (solop paths)
-               (and (> metamods-count 1)
-                    (every #'has-metadata-p paths)))
+         (metamods-count (metamods-count paths))
+         (head (head expr)))
+    (cond ((solop paths)
            (extract-value (car paths)))
           ((and (> metamods-count 1)
+                (every #'has-metadata-p paths))
+           (extract-value head))
+          ((and (> metamods-count 1)
                 (notevery #'has-metadata-p paths))
-           (extract-value (head expr)))
-          ((= metamods-count 1) (extract-value (car paths)))
+           (extract-value head))
+          ((= metamods-count 1)
+           (extract-value (car paths)))
           (t nil))))
 
 (defun ensure-regex-path (path)
