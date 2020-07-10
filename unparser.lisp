@@ -58,6 +58,10 @@
   "Return true if PATH is in the # namespace."
   (key-member-p "#" path))
 
+(defun* transformp (path)
+  "Return true if PATH is in the [] namespace."
+  (key-member-p "[]" path))
+
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
   (mapcar #'(lambda (item)
@@ -405,30 +409,69 @@
   (let ((value (append path '("="))))
     (%extract-value value)))
 
+(defun* car-only (sequence)
+  "Return a new sequence with only the first element in SEQUENCE."
+  (subseq sequence 0 1))
+
 (defun* requests (expr)
   "Return terms from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
+    (dbg parse)
     (flet ((fn (term)
+             (dbg term)
              (or (mem (last* (car term)) '("/" "[]"))
-                 (has-mods-p (car term))
+                 ;;(has-mods-p (car term))
                  (and (length= (car term) 2)
                       (null* (cadr term))))))
-      (dbg parse)
-      (cond ((or (length= parse 1)
-                 (and (null* (cdar parse))
-                      (mem (last* (caadr parse)) '("/")))
-                 (and (null* (cdar parse))
-                      (find-if-not #'has-metadata-p parse :key #'car)
-                      (find-if #'has-mods-p parse :key #'car)))
-             (dbg 1)
-             (butlast (car parse)))
-
-            ;; ((or (length= parse 1))
-            ;;  (dbg 1)
+      (cond ;; ((or (length= parse 1)
+            ;;      (and (null* (cdar parse))
+            ;;           (mem (last* (caadr parse)) '("/")))
+            ;;      (and (null* (cdar parse))
+            ;;           (find-if-not #'has-metadata-p parse :key #'car)
+            ;;           (find-if #'has-mods-p parse :key #'car)))
+            ;;  (dbg "1")
             ;;  (butlast (car parse)))
 
-            (t (dbg 2)
-               (mapcar #'car (remove-if #'fn parse)))))))
+            ((length= parse 1)
+             (dbg "1")
+             (car-only (car parse)))
+
+            ((and (null* (cdar parse))
+                  (mem (last* (caadr parse)) '("/")))
+             (dbg "2")
+             (car-only (car parse)))
+
+            ;; test SOME
+
+            ;; ((and (null* (cdar parse))
+            ;;       (every #'(lambda (term) (has-mods-p (car term)))
+            ;;              (cdr parse)))
+            ;;  (dbg "3a")
+            ;;  (car-only (car parse)))
+
+            ;; ((and (null* (cdar parse))
+            ;;       (every #'(lambda (term) (has-transform-p (car term)))
+            ;;              (cdr parse)))
+            ;;  (dbg "3b")
+            ;;  (car-only (car parse)))
+
+            ((and (null* (cdar parse))
+                  (every #'(lambda (term)
+                             (rmap-or (car term) #'has-mods-p #'has-transform-p))
+                         (cdr parse)))
+             (dbg "3ab")
+             (car-only (car parse)))
+
+            ((and (null* (cdar parse))
+                  (find-if-not #'has-metadata-p parse :key #'car)
+                  (find-if #'has-mods-p parse :key #'car))
+             (dbg "3c")
+             (car-only (cadr parse)))
+
+            (t (dbg "0")
+               (let ((value (remove-if #'fn parse)))
+                 (dbg value)
+                 (mapcar #'car value)))))))
 
 (defun* has-metadata-p (path)
   "Return true if PATH contains a metadata subsection."
@@ -438,6 +481,10 @@
   "Return true if PATH contains a mods subsection."
   (or (modsp (strip-head path))
       (modsp (strip-head (strip-head path)))))
+
+(defun* has-transform-p (path)
+  "Return true if PATH contains a transform subsection."
+  (transformp (strip-head path)))
 
 (defun* has-metamods-p (path)
   "Return true if PATH is contains metadata or mods."
