@@ -416,61 +416,29 @@
 (defun* requests (expr)
   "Return terms from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
-    (dbg parse)
     (flet ((fn (term)
-             (dbg term)
              (or (mem (last* (car term)) '("/" "[]"))
-                 ;;(has-mods-p (car term))
                  (and (length= (car term) 2)
                       (null* (cadr term))))))
-      (cond ;; ((or (length= parse 1)
-            ;;      (and (null* (cdar parse))
-            ;;           (mem (last* (caadr parse)) '("/")))
-            ;;      (and (null* (cdar parse))
-            ;;           (find-if-not #'has-metadata-p parse :key #'car)
-            ;;           (find-if #'has-mods-p parse :key #'car)))
-            ;;  (dbg "1")
-            ;;  (butlast (car parse)))
-
-            ((length= parse 1)
-             (dbg "1")
+      (cond ((length= parse 1)
              (car-only (car parse)))
 
             ((and (null* (cdar parse))
                   (mem (last* (caadr parse)) '("/")))
-             (dbg "2")
              (car-only (car parse)))
-
-            ;; test SOME
-
-            ;; ((and (null* (cdar parse))
-            ;;       (every #'(lambda (term) (has-mods-p (car term)))
-            ;;              (cdr parse)))
-            ;;  (dbg "3a")
-            ;;  (car-only (car parse)))
-
-            ;; ((and (null* (cdar parse))
-            ;;       (every #'(lambda (term) (has-transform-p (car term)))
-            ;;              (cdr parse)))
-            ;;  (dbg "3b")
-            ;;  (car-only (car parse)))
 
             ((and (null* (cdar parse))
                   (every #'(lambda (term)
                              (rmap-or (car term) #'has-mods-p #'has-transform-p))
                          (cdr parse)))
-             (dbg "3ab")
              (car-only (car parse)))
 
             ((and (null* (cdar parse))
                   (find-if-not #'has-metadata-p parse :key #'car)
                   (find-if #'has-mods-p parse :key #'car))
-             (dbg "3c")
              (car-only (cadr parse)))
 
-            (t (dbg "0")
-               (let ((value (remove-if #'fn parse)))
-                 (dbg value)
+            (t (let ((value (remove-if #'fn parse)))
                  (mapcar #'car value)))))))
 
 (defun* has-metadata-p (path)
