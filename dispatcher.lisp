@@ -38,7 +38,7 @@
     (declare (ignore _))
     (sub-namespace-p ns)))
 
-(defun* with-sub-atom-path-p (path)
+(defun* has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
@@ -57,7 +57,7 @@
       term
     (when*
       (empty-params-p params)
-      (not (with-sub-atom-path-p path)))))
+      (not (has-sub-atom-path-p path)))))
 
 (defun* find-table (table)
   "Return the table from the universe identified by TABLE."
@@ -114,7 +114,7 @@
   (destructuring-bind (path &optional &rest params)
       term
     (declare (ignorable params))
-    (let ((v (if (with-sub-atom-path-p value)
+    (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
       (when clear-path
@@ -136,7 +136,7 @@
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional params)
       term
-    (let ((opt (with-sub-atom-path-p path))
+    (let ((opt (has-sub-atom-path-p path))
           (parameters (if whole params (car params))))
       (labels ((fn (location flag atom-tab sub-atom-tab)
                  (cond ((and (null location) flag (null parameters))
