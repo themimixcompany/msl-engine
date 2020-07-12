@@ -58,6 +58,10 @@
   "Return true if PATH is in the # namespace."
   (key-member-p "#" path))
 
+(defun* regexp (path)
+  "Return true if PATH is in the / namespace."
+  (key-member-p "/" path))
+
 (defun* transformp (path)
   "Return true if PATH is in the [] namespace."
   (key-member-p "[]" path))
@@ -305,12 +309,14 @@
   "Return more surgical operations on the result of sectioning."
   (let* ((metadata (remove-if-not #'metadatap sections))
          (hash (remove-if-not #'string-hash-p sections))
+         (hash-value (if hash (list hash)))
          (start (remove-if #'(lambda (section)
                                (or (metadatap section)
                                    (string-hash-p section)))
                            sections))
          (lead (list (append (car start) (cdr start)))))
-    (append lead metadata (list hash))))
+    (dbg metadata hash start lead)
+    (append lead metadata hash-value)))
 
 (defun* sections (head &key post)
   "Return the original expressions under HEAD according to type."
@@ -411,7 +417,30 @@
 
 (defun* car-only (sequence)
   "Return a new sequence with only the first element in SEQUENCE."
-  (subseq sequence 0 1))
+  (when (length>= sequence 1)
+    (subseq sequence 0 1)))
+
+(defun* has-metadata-p (path)
+  "Return true if PATH contains a metadata subsection."
+  (metadatap (strip-head path)))
+
+(defun* has-mods-p (path)
+  "Return true if PATH contains a mods subsection."
+  (or (modsp (strip-head path))
+      (modsp (strip-head (strip-head path)))))
+
+(defun* has-metamods-p (path)
+  "Return true if PATH contains metadata or mods."
+  (metamodsp (strip-head path)))
+
+(defun* has-regex-p (path)
+  "Return true if PATH contains a regex subsection."
+  (or (regexp (strip-head path))
+      (regexp (strip-head (strip-head path)))))
+
+(defun* has-transform-p (path)
+  "Return true if PATH contains a transform subsection."
+  (transformp (strip-head path)))
 
 (defun* requests (expr)
   "Return terms from EXPR that are valid requests."
@@ -429,7 +458,8 @@
 
             ((and (null* (cdar parse))
                   (every #'(lambda (term)
-                             (rmap-or (car term) #'has-mods-p #'has-transform-p))
+                             (rmap-or (car term)
+                                      #'has-mods-p #'has-transform-p))
                          (cdr parse)))
              (car-only (car parse)))
 
@@ -440,23 +470,6 @@
 
             (t (let ((value (remove-if #'fn parse)))
                  (mapcar #'car value)))))))
-
-(defun* has-metadata-p (path)
-  "Return true if PATH contains a metadata subsection."
-  (metadatap (strip-head path)))
-
-(defun* has-mods-p (path)
-  "Return true if PATH contains a mods subsection."
-  (or (modsp (strip-head path))
-      (modsp (strip-head (strip-head path)))))
-
-(defun* has-transform-p (path)
-  "Return true if PATH contains a transform subsection."
-  (transformp (strip-head path)))
-
-(defun* has-metamods-p (path)
-  "Return true if PATH is contains metadata or mods."
-  (metamodsp (strip-head path)))
 
 (defun* metamods-count (path)
   "Return the number of metamods in PATH."
