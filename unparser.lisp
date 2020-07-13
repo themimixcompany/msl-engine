@@ -309,13 +309,12 @@
   "Return more surgical operations on the result of sectioning."
   (let* ((metadata (remove-if-not #'metadatap sections))
          (hash (remove-if-not #'string-hash-p sections))
-         (hash-value (if hash (list hash)))
+         (hash-value (when hash (list hash)))
          (start (remove-if #'(lambda (section)
                                (or (metadatap section)
                                    (string-hash-p section)))
                            sections))
          (lead (list (append (car start) (cdr start)))))
-    (dbg metadata hash start lead)
     (append lead metadata hash-value)))
 
 (defun* sections (head &key post)
@@ -528,6 +527,11 @@
   (dispatch expr :log log :force nil)
   (values (recall-expr expr :dispatch nil)
           (recall-value expr :dispatch nil)))
+
+(defun* recall! (expr)
+  "Return the results of expression and value recalls using default options"
+  (values (recall-expr expr)
+          (recall-value expr)))
 
 (defun* recall* (expr &key log)
   "Return the results of expression and value recalls."
