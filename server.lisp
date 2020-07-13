@@ -105,7 +105,6 @@
   (let* ((server :hunchentoot)
          (address "127.0.0.1")
          (port port)
-         (debug nil)
          (value (clack:clackup server-name :server server :address address :port port :silent t)))
     (when value
       (debug-print (fmt "~A server is started." (string-capitalize (string* server))))
