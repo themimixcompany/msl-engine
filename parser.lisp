@@ -470,7 +470,7 @@
                          (%any (=destructure (mod-seq &optional mod-value mod-mods mod-meta mod-hash mod-comment)
                                              'atom-mods
                                  ;; why is MOD-SEQ (("d" "type") ("value"))
-                                 (dbg atom-seq mod-seq mod-value)
+                                 ;;(dbg atom-seq mod-seq mod-value)
                                  (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
                          (%maybe (%or
                                   ;; one or more metadata keys... each one having:
