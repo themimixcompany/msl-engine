@@ -100,9 +100,10 @@
     (getf (assoc 'defsystem forms :test #'equal) :version)))
 
 (defvar* *system-version*
-    (uiop:os-cond
-     ((uiop:os-windows-p) (system-version +self+))
-     (t (asdf:system-version (system-object +self+))))
+    ;; (uiop:os-cond
+    ;;  ((uiop:os-windows-p) (system-version +self+))
+    ;;  (t (asdf:system-version (system-object +self+))))
+  "2.2.31"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
