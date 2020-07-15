@@ -109,28 +109,24 @@
 ;; writers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun save-value (term location table value &optional clear-path)
-  "Store VALUE using LOCATION as key in TABLE."
+(defun save-value (term line table value &optional clear-path)
+  "Store VALUE using LINE as key in TABLE."
   (destructuring-bind (path &optional &rest params)
       term
     (declare (ignorable params))
     (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path
-        (clear-path table path)
-        ;; (when (mem* location '("/" "[]"))
-        ;;   (clear-path table path))
-        )
-      (setf (gethash (single location) table) v))))
+      (when clear-path (clear-path table path))
+      (setf (gethash (single line) table) v))))
 
-(defun spawn-table (location table)
-  "Conditionally return a new table for term writing and use location as key for the new table."
-  (if (hash-table-p (gethash (car location) table))
-      (gethash (car location) table)
-      (let ((ht (make-hash-table :test #'equal)))
-        (setf (gethash (car location) table) ht)
-        ht)))
+(defun spawn-table (path table)
+  "Conditionally return a new table for term writing and use path as key for the new table."
+  (if (hash-table-p (gethash (car path) table))
+      (gethash (car path) table)
+      (let ((tab (make-hash-table :test #'equal)))
+        (setf (gethash (car path) table) tab)
+        tab)))
 
 (defun* write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
@@ -138,21 +134,30 @@
       term
     (let ((opt (has-sub-atom-path-p path))
           (parameters (if whole params (car params))))
-      (labels ((fn (location flag atom-tab sub-atom-tab)
-                 (cond ((and (null location) flag (null parameters))
+      (labels ((fn (line flag atom-tab sub-atom-tab)
+                 (cond ((and (null line)
+                             flag
+                             (null parameters))
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
-                       ((and (null location) flag parameters)
+                       ((and (null line)
+                             flag
+                             parameters)
                         (fn '("=") nil atom-tab sub-atom-tab)
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
-                       ((and (null location) (not flag) (null parameters))
+                       ((and (null line)
+                             (not flag)
+                             (null parameters))
                         nil)
-                       ((and (null location) (not flag) parameters)
+                       ((and (null line)
+                             (not flag)
+                             parameters)
                         (fn '("=") flag atom-tab sub-atom-tab))
-                       ((and (singlep location) (key-indicator-p (single location)))
-                        (save-value term location atom-tab parameters)
+                       ((and (singlep line)
+                             (key-indicator-p (single line)))
+                        (save-value term line atom-tab parameters)
                         (when flag
                           (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
-                       (t (fn (cdr location) flag (spawn-table location atom-tab) sub-atom-tab)))))
+                       (t (fn (cdr line) flag (spawn-table line atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
