@@ -158,6 +158,11 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
+(defun* terms-base (terms)
+  "Return the base expression that constitutes TERMS."
+  (when (valid-terms-p terms)
+    (format-parens (reduce #'cat (caar terms)))))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; recall-expr
@@ -515,6 +520,8 @@
                    (declare (ignorable flag))
                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                          (t (values (cl-ppcre:scan-to-strings re value))))))
+          ((valid-terms-p value)
+           (recall-value (terms-base value)))
           (t value))))
 
 
