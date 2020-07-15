@@ -53,7 +53,7 @@
   "Return an appropriate return data."
   (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
         ((null lisp-data) "NIL")
-        (t lisp-data)))
+        (t (string* lisp-data))))
 
 (defvar* *json-tests*
   "tests.json"

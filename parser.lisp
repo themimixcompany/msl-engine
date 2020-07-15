@@ -857,7 +857,3 @@
   (let ((parsed-atom (parse-msl expr))
         (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
     (when (explain-lines parsed-atom) parsed-atom)))
-
-(defun collate (&rest lists)
-  "Combine the first item of each list, second item, etc."
-  (apply #'mapcar #'list lists))
