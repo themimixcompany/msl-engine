@@ -209,9 +209,10 @@
 (defun* head-value* (terms)
   "Return the value specified in the head of TERMS, from the store."
   (when-let ((head (find-head terms)))
-    ;; NOTE: should a simpler reader be used?
     (handler-case (read-term head)
-      (error (c) (declare (ignore c)) nil))))
+      (error (c)
+        (declare (ignore c))
+        nil))))
 
 (defun* clear-regex (terms)
   "Remove the regex found in TERMS."
@@ -220,8 +221,6 @@
 
 (defun* %dispatch (term &key log force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (dbg "* %DISPATCH: start of body")
-  (dump)
   (if (and (empty-term-p term)
            (not force))
       nil
@@ -233,14 +232,8 @@
           (when (consp values)
             (loop :for value :in values
                   :when (valid-terms-p value)
-                  :do (progn (dbg "* %DISPATCH: call DISPATCH") (dispatch value :log log :force force)))
-            (dbg "* %DISPATCH: after loop")
-            (dump))
+                  :do (dispatch value :log log :force force)))
           values))))
-
-;;; NOTE
-;;; There should be a terms clean-up function that does something with the clearing
-;;; and updates the terms
 
 (defun* process-terms (terms)
   "Do some processing with TERMS, including invoking destructive functions, then return a new value."
@@ -257,42 +250,13 @@
 (defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (when-let* ((expressions (if (consp expr) expr (parse-msl expr)))
-              (terms (process-terms expressions)))
-    (dbg "* DISPATCH: start of body")
-    (dump)
-
-    ;; should this happen, after %DISPATCH
-    ;; test for comparison with NIL
-    ;; HEAD-VALUE* returns NIL when there are no values, yet
-    ;; (when (and (rmap-and terms #'terms-has-value-p #'terms-has-regex-p)
-    ;;            (not (null* (head-value* terms)))
-    ;;            (not (equal (head-value* terms) (head-value terms))))
-    ;;   (dbg "* DISPATCH: pre clearing")
-    ;;   (dump)
-    ;;   (dbg (head-value* terms)
-    ;;        (head-value terms))
-    ;;   (clear-regex terms)
-
-    ;;   (dbg "* DISPATCH: post clearing")
-    ;;   (dump))
-
-    ;; NOTE:
-    ;; If regex nuking is accepted, update TERMS
-
-    (when-let ((value (mapcar #'(lambda (term)
-                                  (%dispatch term :log log :force force))
-                              terms)))
-      ;; NOTE: regex comes back here
-      (dbg "* DISPATCH: start of main")
-      (dump)
-
-      ;; NOTE: should there be another clearing
-      ;;(clear-regex terms)
-      ;;(dump)
-
-      (when (and log (not (null* value)) (stringp expr))
-        (write-log expr))
-      value)))
+              (terms (process-terms expressions))
+              (value (mapcar #'(lambda (term)
+                                 (%dispatch term :log log :force force))
+                             terms)))
+    (when (and log (not (null* value)) (stringp expr))
+      (write-log expr))
+    value))
 
 (defun* dispatch* (&rest args)
   "Apply DISPATCH without logging."

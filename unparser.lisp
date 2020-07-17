@@ -348,7 +348,7 @@
     (when-let* ((parse (parse-msl expr))
                 (strip (strip-heads parse))
                 (head (head expr))
-                (dispatch (progn (dbg "* DECONSTRUCT: call DISPATCH") (dispatch expr :log nil :force t))))
+                (dispatch (dispatch expr :log nil :force t)))
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
@@ -376,7 +376,7 @@
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
-  (when dispatch (progn (dbg "* RECALL-EXPR: call DISPATCH") (dispatch expr :log t :force nil)))
+  (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (path-exists-p head)
       (let* ((deconstruct (deconstruct expr))
@@ -505,8 +505,7 @@
 
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  ;; NOTE: force was t
-  (when dispatch (progn (dbg "* RECALL-VALUE: call DISPATCH") (dispatch expr :log t :force nil)))
+  (when dispatch (dispatch expr :log t :force t))
   (let* ((value (%recall-value expr))
          (parse (parse-msl expr))
          (source-path (car (last* parse)))
@@ -530,7 +529,7 @@
 
 (defun* recall (expr &key log)
   "Return the results of expression and value recalls."
-  (progn (dbg "* RECALL: call DISPATCH") (dispatch expr :log log :force nil))
+  (dispatch expr :log log :force nil)
   (values (recall-expr expr :dispatch nil)
           (recall-value expr :dispatch nil)))
 
@@ -541,7 +540,7 @@
 
 (defun* recall* (expr &key log)
   "Return the results of expression and value recalls."
-  (progn (dbg "* RECALL*: call dispatch") (dispatch expr :log log :force nil))
+  (dispatch expr :log log :force nil)
   (let ((value (recall-value expr :dispatch nil)))
     (if (null value)
         (values nil
