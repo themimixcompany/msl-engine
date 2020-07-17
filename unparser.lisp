@@ -461,7 +461,8 @@
             ((and (null* (cdar parse))
                   (every #'(lambda (term)
                              (rmap-or (car term)
-                                      #'has-mods-p #'has-transform-p))
+                                      #'has-mods-p
+                                      #'has-transform-p))
                          (cdr parse)))
              (car-only (car parse)))
 
@@ -484,14 +485,18 @@
          (head (head expr)))
     (cond ((solop paths)
            (extract-value (car paths)))
+
           ((and (> metamods-count 1)
                 (every #'has-metadata-p paths))
            (extract-value head))
+
           ((and (> metamods-count 1)
                 (notevery #'has-metadata-p paths))
            (extract-value head))
+
           ((= metamods-count 1)
            (extract-value (car paths)))
+
           (t nil))))
 
 (defun ensure-regex-path (path)
