@@ -498,15 +498,12 @@
       path
       (append path '("/"))))
 
-(defun regex-path-regex (regex-path)
-  "Return the regex mod of the implied path in EXPR."
+(defun regex-path-regexes (regex-path)
+  "Return the regex mods of the implied path in EXPR."
   (when-let ((value (gethash* regex-path (atom-table *universe*))))
-    ;; NOTE: this only returns the first regex
-    (car value)))
+    value))
 
-;;; Write separate regex processors
-
-(defun* process-regex (regex-set value)
+(defun* apply-regex-set (regex-set value)
   "Apply the regexes from REGEX-SET to VALUE."
   (destructuring-bind (re flag consume)
       regex-set
@@ -514,15 +511,22 @@
     (cond (consume (values (cl-ppcre:regex-replace re value consume)))
           (t (values (cl-ppcre:scan-to-strings re value))))))
 
+(defun* apply-regex-sets (regex-sets value)
+  "Apply the regex sets from REGEX-SETS with value as the starting point."
+  (labels ((fn (args val)
+             (cond ((null args) val)
+                   (t (fn (cdr args)
+                          (apply-regex-set (car args) val))))))
+    (fn regex-sets value)))
+
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
   (let* ((value (%recall-value expr))
          (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
-         (regex-set (regex-path-regex regex-path)))
-    (cond (regex-set
-           (process-regex regex-set value))
+         (regex-sets (regex-path-regexes regex-path)))
+    (cond (regex-sets (apply-regex-sets regex-sets value))
 
           ;; NOTE: embedded atom support
           ;; NOTE: trace when using this
