@@ -52,7 +52,6 @@
 (defun* make-return-data (message lisp-data js-data)
   "Return an appropriate return data."
   (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
-        ((null lisp-data) "NIL")
         (t (string* lisp-data))))
 
 (defvar* *json-tests*
@@ -73,7 +72,7 @@
               (value (uiop:read-file-string path)))
     (json-to-lisp value)))
 
-(defun* read-path (path set)
+(defun* read-location (path set)
   "Return the value specified by PATH in SET."
   (labels ((fn (path value)
              (cond ((or (and (null path) (atom value) (stringp value))
@@ -86,7 +85,7 @@
 
 (defmacro* make-request (type operation set)
   "Return a request for querying SET."
-  `(when-let ((value (read-path '(,type ,operation) ,set)))
+  `(when-let ((value (read-location '(,type ,operation) ,set)))
      value))
 
 (defun* control-test-number (set)

@@ -148,6 +148,16 @@
         (cond ((mem key '("/" "[]")) value)
               (t (cons data value)))))))
 
+(defun* head (expr)
+  "Return the namespace and key sequence from EXPR."
+  (when-let ((parse (parse-msl expr)))
+    (caar parse)))
+
+(defun* head-only-p (path)
+  "Return true if PATH is exclusively a head."
+  (when* (and (length= path 2)
+              (path-exists-p path))))
+
 (defun make-head (list)
   "Return a list with custom head merging."
   (when (consp (cdr list))
@@ -260,20 +270,6 @@
          (children (children table)))
     (mapcar #'list-string (%collect table children keys))))
 
-(defun* head (expr)
-  "Return the namespace and key sequence from EXPR."
-  (when-let ((parse (parse-msl expr)))
-    (caar parse)))
-
-(defun* head-exists-p (head)
-  "Return true if HEAD is a valid path.."
-  (gethash* head (atom-table *universe*)))
-
-(defun* head-only-p (path)
-  "Return true if PATH is exclusively a head."
-  (when* (and (length= path 2)
-              (head-exists-p path))))
-
 (defun* clear-expr (expr)
   "Remove the expression under EXPR."
   (let ((head (head expr)))
@@ -294,7 +290,7 @@
         (destructuring-bind (ns key &optional &rest _)
             head
           (declare (ignore _))
-          (when* (head-exists-p (list ns key))))))))
+          (when* (path-exists-p (list ns key))))))))
 
 (defun* strip-head (path)
   "Return path PATH without the leading primary namespace and key."
@@ -352,7 +348,7 @@
     (when-let* ((parse (parse-msl expr))
                 (strip (strip-heads parse))
                 (head (head expr))
-                (dispatch (dispatch expr :log nil :force t)))
+                (dispatch (progn (dbg "* DECONSTRUCT: call DISPATCH") (dispatch expr :log nil :force t))))
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
@@ -380,9 +376,9 @@
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
-  (when dispatch (dispatch expr :log t :force nil))
+  (when dispatch (progn (dbg "* RECALL-EXPR: call DISPATCH") (dispatch expr :log t :force nil)))
   (let ((head (head expr)))
-    (when (head-exists-p head)
+    (when (path-exists-p head)
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
              (sections (sections head :post t)))
@@ -509,7 +505,8 @@
 
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  (when dispatch (dispatch expr :log t :force t))
+  ;; NOTE: force was t
+  (when dispatch (progn (dbg "* RECALL-VALUE: call DISPATCH") (dispatch expr :log t :force nil)))
   (let* ((value (%recall-value expr))
          (parse (parse-msl expr))
          (source-path (car (last* parse)))
@@ -520,6 +517,8 @@
                    (declare (ignorable flag))
                    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
                          (t (values (cl-ppcre:scan-to-strings re value))))))
+          ;; NOTE: currently, this will return only the top-level value, ignoring the metadata
+          ;; NOTE: re-examine this prior to putting the same feature to RECALL-EXPR.
           ((valid-terms-p value)
            (recall-value (terms-base value)))
           (t value))))
@@ -531,7 +530,7 @@
 
 (defun* recall (expr &key log)
   "Return the results of expression and value recalls."
-  (dispatch expr :log log :force nil)
+  (progn (dbg "* RECALL: call DISPATCH") (dispatch expr :log log :force nil))
   (values (recall-expr expr :dispatch nil)
           (recall-value expr :dispatch nil)))
 
@@ -542,7 +541,7 @@
 
 (defun* recall* (expr &key log)
   "Return the results of expression and value recalls."
-  (dispatch expr :log log :force nil)
+  (progn (dbg "* RECALL*: call dispatch") (dispatch expr :log log :force nil))
   (let ((value (recall-value expr :dispatch nil)))
     (if (null value)
         (values nil
