@@ -23,15 +23,15 @@
 ;; main definitions
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* json-to-lisp (string)
+(defun json-to-lisp (string)
   "Return a lisp representation of STRING."
   (json:decode-json-from-string string))
 
-(defun* lisp-to-json (string)
+(defun lisp-to-json (string)
   "Return a json representation of STRING."
   (json:encode-json-to-string string))
 
-(defun* json-object-p (string)
+(defun json-object-p (string)
   "Return true if STRING is a JSON object."
   (when*
     (handler-case (json:decode-json-from-string string)
@@ -72,7 +72,7 @@
               (value (uiop:read-file-string path)))
     (json-to-lisp value)))
 
-(defun* read-location (path set)
+(defun read-location (path set)
   "Return the value specified by PATH in SET."
   (labels ((fn (path value)
              (cond ((or (and (null path) (atom value) (stringp value))
