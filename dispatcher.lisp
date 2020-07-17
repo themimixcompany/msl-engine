@@ -38,7 +38,7 @@
     (declare (ignore _))
     (sub-namespace-p ns)))
 
-(defun* has-sub-atom-path-p (path)
+(defun has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when* (sub-atom-index path) (not (sub-atom-path-p path))))
 
@@ -51,7 +51,7 @@
   (or (null params)
       (every #'null params)))
 
-(defun* empty-term-p (term)
+(defun empty-term-p (term)
   "Return true if TERM is considered empty."
   (destructuring-bind (path &optional &rest params)
       term
@@ -59,11 +59,11 @@
       (empty-params-p params)
       (not (has-sub-atom-path-p path)))))
 
-(defun* find-table (table)
+(defun find-table (table)
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
-(defun* head-term-p (term)
+(defun head-term-p (term)
   "Return true if TERM is the main term."
   (destructuring-bind (path value)
       term
@@ -72,7 +72,7 @@
       (length= path 2)
       (base-namespace-p (car path)))))
 
-(defun* regex-term-p (term)
+(defun regex-term-p (term)
   "Return true if TERM is a regex term."
   (destructuring-bind (path &optional &rest value)
       term
@@ -126,7 +126,8 @@
 ;;--------------------------------------------------------------------------------------------------
 ;; writers
 ;;--------------------------------------------------------------------------------------------------
-(defun* save-value (term location table value &optional clear-path)
+
+(defun save-value (term location table value &optional clear-path)
   "Store VALUE using LOCATION as specifier in TABLE."
   (destructuring-bind (path &optional &rest params)
       term
@@ -134,11 +135,7 @@
     (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path
-        (clear-path table path)
-        ;; (when (mem* location '("/" "[]"))
-        ;;   (clear-path table path))
-        )
+      (when clear-path (clear-path table path))
       (setf (gethash (single location) table) v))))
 
 (defun spawn-table (path table)
@@ -149,7 +146,7 @@
         (setf (gethash (car path) table) tab)
         tab)))
 
-(defun* write-term (term atom-table sub-atom-table &key whole)
+(defun write-term (term atom-table sub-atom-table &key whole)
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional params)
       term
@@ -182,31 +179,31 @@
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
-(defun* find-head (terms)
+(defun find-head (terms)
   "Return the head term from TERMS."
   (find-if #'head-term-p terms))
 
-(defun* find-regex (terms)
+(defun find-regex (terms)
   "Return the regex term from TERMS."
   (find-if #'regex-term-p terms))
 
-(defun* terms-has-value-p (terms)
+(defun terms-has-value-p (terms)
   "Return true if the head in TERMS has a value."
   (when-let ((head (find-head terms)))
     (not (null* (cdr head)))))
 
-(defun* terms-has-regex-p (terms)
+(defun terms-has-regex-p (terms)
   "Return true if TERMS has regex."
   (when* (find-regex terms)))
 
-(defun* head-value (terms)
+(defun head-value (terms)
   "Return the value specified in the head of TERMS."
   (when-let* ((head (find-head terms))
               (value (cadr head)))
     (when (not (null* value))
       value)))
 
-(defun* head-value* (terms)
+(defun head-value* (terms)
   "Return the value specified in the head of TERMS, from the store."
   (when-let ((head (find-head terms)))
     (handler-case (read-term head)
@@ -214,12 +211,12 @@
         (declare (ignore c))
         nil))))
 
-(defun* clear-regex (terms)
+(defun clear-regex (terms)
   "Remove the regex found in TERMS."
   (when-let ((term (find-regex terms)))
     (clear-path (atom-table *universe*) (car term))))
 
-(defun* %dispatch (term &key log force)
+(defun %dispatch (term &key log force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (if (and (empty-term-p term)
            (not force))
@@ -244,7 +241,7 @@
        (not (equal (head-value* terms)
                    (head-value terms)))))
 
-(defun* process-terms (terms)
+(defun process-terms (terms)
   "Do some processing with TERMS, including invoking destructive functions, then return a new value."
   (cond ((clear-regex-p terms)
          (clear-regex terms)

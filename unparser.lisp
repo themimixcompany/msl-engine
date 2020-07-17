@@ -16,7 +16,7 @@
 ;; common
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* table-keys (table)
+(defun table-keys (table)
   "Return the direct keys under TABLE."
   (when (hash-table-p table)
     (let ((keys (loop :for k :being :the :hash-key :in table :collect k))
@@ -25,7 +25,7 @@
           (append (remove* ex keys) ex)
           keys))))
 
-(defun* children (table &optional object)
+(defun children (table &optional object)
   "Return all items in TABLE using KEY that are also tables."
   (when (hash-table-p table)
     (let ((keys (table-keys table)))
@@ -168,7 +168,7 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
-(defun* terms-base (terms)
+(defun terms-base (terms)
   "Return the base expression that constitutes TERMS."
   (when (valid-terms-p terms)
     (format-parens (reduce #'cat (caar terms)))))
@@ -178,7 +178,7 @@
 ;; recall-expr
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* assemble (table keys &optional acc)
+(defun assemble (table keys &optional acc)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let ((v (gethash (car keys) table)))
     (cond ((null keys) (nreverse acc))
@@ -192,7 +192,7 @@
                (cdr keys)
                (accumulate keys acc v))))))
 
-(defun* base-namespace-key-sequence (value)
+(defun base-namespace-key-sequence (value)
   "Return the key sequence from value."
   (when (and (base-namespace-p (car value))
              (consp value))
@@ -276,11 +276,11 @@
     (when head
       (clear-path (atom-table *universe*) head))))
 
-(defun* solop (value)
+(defun solop (value)
   "Return true if VALUE is the only section and that there’s only a head."
   (head-only-p (and (length= value 1) (car value))))
 
-(defun* has-head-p (sections)
+(defun has-head-p (sections)
   "Return true if SECTIONS contain a head section."
   (when sections
     (destructuring-bind (head &optional &rest _)
@@ -292,7 +292,7 @@
           (declare (ignore _))
           (when* (path-exists-p (list ns key))))))))
 
-(defun* strip-head (path)
+(defun strip-head (path)
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
     (cond ((or (and (= length 4) (metamodsp (cddr path)))
@@ -300,13 +300,13 @@
            (cddr path))
           (t path))))
 
-(defun* string-hash-p (string)
+(defun string-hash-p (string)
   "Return true if string is a hash."
   (when (and (stringp string)
              (not (empty-string-p string)))
     (char= (aref string 0) #\#)))
 
-(defun* post-sections (sections)
+(defun post-sections (sections)
   "Return more surgical operations on the result of sectioning."
   (let* ((metadata (remove-if-not #'metadatap sections))
          (hash (remove-if-not #'string-hash-p sections))
@@ -334,7 +334,7 @@
                                    (post-sections value)
                                    value)))))))
 
-(defun* strip-heads (parse)
+(defun strip-heads (parse)
     "Remove the heads from a parse."
     (remove-if-not #'(lambda (item)
                        (length= item 2))
@@ -354,15 +354,17 @@
              strip)
             (t (sections head :post t))))))
 
-(defun* process (head sections)
+(defun distill (head sections)
   "Return a final, processed string value from SECTIONS."
-  (when sections
-    (let ((value (if (has-head-p sections)
-                     sections
-                     (cons head sections))))
-      (list-string (flatten-1 (wrap (stage value)))))))
+  (flet ((fn (head sections)
+           (if (has-head-p sections)
+               sections
+               (cons head sections))))
+    (when sections
+      (let ((value (fn head sections)))
+        (list-string (flatten-1 (wrap (stage value))))))))
 
-(defun* paths (deconstruct)
+(defun paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (and (head-only-p (car deconstruct))
            (> (length deconstruct) 1))
@@ -388,8 +390,8 @@
                                     :when (section-match-p path section)
                                     :collect section))))
           (cond ((solop deconstruct)
-                 (process head sections))
-                (t (process head (fn paths sections)))))))))
+                 (distill head sections))
+                (t (distill head (fn paths sections)))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -471,7 +473,7 @@
             (t (let ((value (remove-if #'fn parse)))
                  (mapcar #'car value)))))))
 
-(defun* metamods-count (path)
+(defun metamods-count (path)
   "Return the number of metamods in PATH."
   (count-if #'has-metamods-p path))
 
@@ -492,7 +494,7 @@
            (extract-value (car paths)))
           (t nil))))
 
-(defun* ensure-regex-path (path)
+(defun ensure-regex-path (path)
   "Return a path with regex from PATH."
   (if (string= (last* path) "/")
       path
@@ -503,7 +505,7 @@
   (when-let ((value (gethash* regex-path (atom-table *universe*))))
     value))
 
-(defun* apply-regex-set (regex-set value)
+(defun apply-regex-set (regex-set value)
   "Apply the regexes from REGEX-SET to VALUE."
   (destructuring-bind (re flag consume)
       regex-set
@@ -511,7 +513,7 @@
     (cond (consume (values (cl-ppcre:regex-replace re value consume)))
           (t (values (cl-ppcre:scan-to-strings re value))))))
 
-(defun* apply-regex-sets (regex-sets value)
+(defun apply-regex-sets (regex-sets value)
   "Apply the regex sets from REGEX-SETS with value as the starting point."
   (labels ((fn (args val)
              (cond ((null args) val)
@@ -543,18 +545,13 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (defun* recall (expr &key log)
-  "Return the results of expression and value recalls."
+  "Return the results of expression and value recalls as multiple values"
   (dispatch expr :log log :force nil)
   (values (recall-expr expr :dispatch nil)
           (recall-value expr :dispatch nil)))
 
-(defun* recall! (expr)
-  "Return the results of expression and value recalls using default options"
-  (values (recall-expr expr)
-          (recall-value expr)))
-
 (defun* recall* (expr &key log)
-  "Return the results of expression and value recalls."
+  "Return the results of expression and value recalls as multiple values if the value recall in not null."
   (dispatch expr :log log :force nil)
   (let ((value (recall-value expr :dispatch nil)))
     (if (null value)

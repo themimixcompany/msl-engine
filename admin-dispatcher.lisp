@@ -34,21 +34,21 @@
 ;; handlers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* admin-version ()
+(defun admin-version ()
   "Handle the admin command VERSION."
   (format-parens "@VER" *system-version*))
 
-(defun* admin-clear ()
+(defun admin-clear ()
   "Handle the admin command CLEAR."
   (clear)
   nil)
 
-(defun* admin-restore-log ()
+(defun admin-restore-log ()
   "Handle the admin command RESTORE-LOG."
   (restore-log)
   nil)
 
-(defun* admin-rotate-log ()
+(defun admin-rotate-log ()
   "Handle the admin command RESTORE-LOG."
   ;;(rotate-log)
   nil)
@@ -58,7 +58,7 @@
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* admin-command (expr)
+(defun admin-command (expr)
   "Return the admin command for EXPR."
   (when-let* ((head (head expr))
               (value (assoc-value (head expr) *admin-commands* :test #'equal)))

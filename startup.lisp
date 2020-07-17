@@ -12,15 +12,15 @@
 
 (in-package #:streams/startup)
 
-(defun* initialize-universe ()
+(defun initialize-universe ()
   "Initialize the universe."
   (setf *universe* (make-universe)))
 
-(defun* print-banner ()
+(defun print-banner ()
   "Print information about the software."
   (debug-print (fmt "streams v~A" *system-version*)))
 
-(defun* restore-log-data ()
+(defun restore-log-data ()
   "Restore the most recent log log file."
   (ensure-log-file-exists)
   (restore-log))

@@ -8,7 +8,6 @@
         #:streams/common
         #:streams/parser
         #:streams/unparser
-        #:streams/dispatcher
         #:streams/admin-dispatcher
         #:streams/json
         #:marie)
@@ -115,9 +114,9 @@
   "Stop the clack server SERVER."
   (clack:stop server))
 
-(defmacro* define-runners (name form port open-handler
-                                message-handler close-handler
-                                error-handler)
+(defmacro* define-runner (name port open-handler
+                               message-handler close-handler
+                               error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -155,7 +154,7 @@
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(define-runners "Admin" 'admin 60500
+(define-runner "ADMIN" 60500
   #'(lambda ()
       (handle-open server))
   #'(lambda (message)
@@ -174,7 +173,7 @@
   #'(lambda (error)
       (debug-print (fmt "Got an error: ~A" error))))
 
-(define-runners "MSL" 'msl 60000
+(define-runner "MSL" 60000
   #'(lambda ()
       (handle-open server))
   #'(lambda (message)
@@ -182,15 +181,16 @@
       (destructuring-bind (&optional expr js-data)
           (message-data message)
         (when expr
-          (dispatch expr :log t :force nil)
-          (flet ((fn (val)
-                   (make-return-data message val js-data)))
-            (let* ((expr-value (fn (recall-expr expr :dispatch nil)))
-                   (value-value (fn (recall-value expr :dispatch nil))))
-              (post *msl-wire* expr-value)
-              (debug-print (fmt "Sent on MSL wire: ~S" expr-value))
-              (post *admin-wire* value-value)
-              (debug-print (fmt "Sent on admin wire: ~S" value-value)))))))
+          (multiple-value-bind (expr value)
+              (recall expr)
+            (flet ((fn (val)
+                     (make-return-data message val js-data)))
+              (let* ((expr-value (fn expr))
+                     (value-value (fn value)))
+                (post *msl-wire* expr-value)
+                (debug-print (fmt "Sent on MSL wire: ~S" expr-value))
+                (post *admin-wire* value-value)
+                (debug-print (fmt "Sent on admin wire: ~S" value-value))))))))
   #'(lambda (&key code reason)
       (declare (ignore code reason))
       (handle-close server))
