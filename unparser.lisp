@@ -492,7 +492,7 @@
            (extract-value (car paths)))
           (t nil))))
 
-(defun ensure-regex-path (path)
+(defun* ensure-regex-path (path)
   "Return a path with regex from PATH."
   (if (string= (last* path) "/")
       path
@@ -501,25 +501,36 @@
 (defun regex-path-regex (regex-path)
   "Return the regex mod of the implied path in EXPR."
   (when-let ((value (gethash* regex-path (atom-table *universe*))))
+    ;; NOTE: this only returns the first regex
     (car value)))
+
+;;; Write separate regex processors
+
+(defun* process-regex (regex-set value)
+  "Apply the regexes from REGEX-SET to VALUE."
+  (destructuring-bind (re flag consume)
+      regex-set
+    (declare (ignorable flag))
+    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
+          (t (values (cl-ppcre:scan-to-strings re value))))))
 
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
   (let* ((value (%recall-value expr))
-         (parse (parse-msl expr))
-         (source-path (car (last* parse)))
+         (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
-         (regex (regex-path-regex regex-path)))
-    (cond (regex (destructuring-bind (re flag consume)
-                     regex
-                   (declare (ignorable flag))
-                   (cond (consume (values (cl-ppcre:regex-replace re value consume)))
-                         (t (values (cl-ppcre:scan-to-strings re value))))))
+         (regex-set (regex-path-regex regex-path)))
+    (cond (regex-set
+           (process-regex regex-set value))
+
+          ;; NOTE: embedded atom support
+          ;; NOTE: trace when using this
           ;; NOTE: currently, this will return only the top-level value, ignoring the metadata
           ;; NOTE: re-examine this prior to putting the same feature to RECALL-EXPR.
           ((valid-terms-p value)
            (recall-value (terms-base value)))
+
           (t value))))
 
 
