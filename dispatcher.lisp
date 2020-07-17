@@ -235,14 +235,18 @@
                   :do (dispatch value :log log :force force)))
           values))))
 
+(defun clear-regex-p (terms)
+  "Return true if the regex in TERMS has to be cleared."
+  (and (rmap-and terms
+                 #'terms-has-value-p
+                 #'terms-has-regex-p)
+       (not (null* (head-value* terms)))
+       (not (equal (head-value* terms)
+                   (head-value terms)))))
+
 (defun* process-terms (terms)
   "Do some processing with TERMS, including invoking destructive functions, then return a new value."
-  (cond ((and (rmap-and terms
-                        #'terms-has-value-p
-                        #'terms-has-regex-p)
-              (not (null* (head-value* terms)))
-              (not (equal (head-value* terms)
-                          (head-value terms))))
+  (cond ((clear-regex-p terms)
          (clear-regex terms)
          (remove-if #'regex-term-p terms))
         (t terms)))
