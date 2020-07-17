@@ -211,3 +211,7 @@ body contents of the parser function."
 (defun* uncomment (expr)
   "Return a new string from EXPR without the comment."
   (cl-ppcre:regex-replace-all " ?//.*[^)]" expr ""))
+
+(defun* path-exists-p (head)
+  "Return true if HEAD is a valid path.."
+  (gethash* head (atom-table *universe*)))

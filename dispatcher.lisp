@@ -63,6 +63,24 @@
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
+(defun* head-term-p (term)
+  "Return true if TERM is the main term."
+  (destructuring-bind (path value)
+      term
+    (declare (ignore value))
+    (when*
+      (length= path 2)
+      (base-namespace-p (car path)))))
+
+(defun* regex-term-p (term)
+  "Return true if TERM is a regex term."
+  (destructuring-bind (path &optional &rest value)
+      term
+    (declare (ignore value))
+    (when*
+      (length= path 3)
+      (string= (last* path) "/"))))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; readers
@@ -98,7 +116,7 @@
           (cond ((key-indicator-p (last* path)) (gethash* path table))
                 (t (fn path table))))))))
 
-(defun read-path (path &optional
+(defun* read-path (path &optional
                        (atom-table (atom-table *universe*))
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
@@ -108,17 +126,20 @@
 ;;--------------------------------------------------------------------------------------------------
 ;; writers
 ;;--------------------------------------------------------------------------------------------------
-
-(defun save-value (term line table value &optional clear-path)
-  "Store VALUE using LINE as key in TABLE."
+(defun* save-value (term location table value &optional clear-path)
+  "Store VALUE using LOCATION as specifier in TABLE."
   (destructuring-bind (path &optional &rest params)
       term
     (declare (ignorable params))
     (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path (clear-path table path))
-      (setf (gethash (single line) table) v))))
+      (when clear-path
+        (clear-path table path)
+        ;; (when (mem* location '("/" "[]"))
+        ;;   (clear-path table path))
+        )
+      (setf (gethash (single location) table) v))))
 
 (defun spawn-table (path table)
   "Conditionally return a new table for term writing and use path as key for the new table."
@@ -161,30 +182,117 @@
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
+(defun* find-head (terms)
+  "Return the head term from TERMS."
+  (find-if #'head-term-p terms))
+
+(defun* find-regex (terms)
+  "Return the regex term from TERMS."
+  (find-if #'regex-term-p terms))
+
+(defun* terms-has-value-p (terms)
+  "Return true if the head in TERMS has a value."
+  (when-let ((head (find-head terms)))
+    (not (null* (cdr head)))))
+
+(defun* terms-has-regex-p (terms)
+  "Return true if TERMS has regex."
+  (when* (find-regex terms)))
+
+(defun* head-value (terms)
+  "Return the value specified in the head of TERMS."
+  (when-let* ((head (find-head terms))
+              (value (cadr head)))
+    (when (not (null* value))
+      value)))
+
+(defun* head-value* (terms)
+  "Return the value specified in the head of TERMS, from the store."
+  (when-let ((head (find-head terms)))
+    ;; NOTE: should a simpler reader be used?
+    (handler-case (read-term head)
+      (error (c) (declare (ignore c)) nil))))
+
+(defun* clear-regex (terms)
+  "Remove the regex found in TERMS."
+  (when-let ((term (find-regex terms)))
+    (clear-path (atom-table *universe*) (car term))))
+
+(defun* %dispatch (term &key log force)
+  "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
+  (dbg "* %DISPATCH: start of body")
+  (dump)
+  (if (and (empty-term-p term)
+           (not force))
+      nil
+      (destructuring-bind (path &optional &rest params)
+          term
+        (let* ((atom-tab (atom-table *universe*))
+               (sub-atom-tab (sub-atom-table *universe*))
+               (values (write-term (list path params) atom-tab sub-atom-tab)))
+          (when (consp values)
+            (loop :for value :in values
+                  :when (valid-terms-p value)
+                  :do (progn (dbg "* %DISPATCH: call DISPATCH") (dispatch value :log log :force force)))
+            (dbg "* %DISPATCH: after loop")
+            (dump))
+          values))))
+
+;;; NOTE
+;;; There should be a terms clean-up function that does something with the clearing
+;;; and updates the terms
+
+(defun* process-terms (terms)
+  "Do some processing with TERMS, including invoking destructive functions, then return a new value."
+  (cond ((and (rmap-and terms
+                        #'terms-has-value-p
+                        #'terms-has-regex-p)
+              (not (null* (head-value* terms)))
+              (not (equal (head-value* terms)
+                          (head-value terms))))
+         (clear-regex terms)
+         (remove-if #'regex-term-p terms))
+        (t terms)))
+
 (defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (let ((terms (if (consp expr)
-                   expr
-                   (parse-msl expr))))
-    (flet ((fn (term &optional (atom-tab (atom-table *universe*))
-                               (sub-atom-tab (sub-atom-table *universe*)))
-             (if (and (empty-term-p term)
-                      (not force))
-                 nil
-                 (destructuring-bind (path &optional &rest params)
-                     term
-                   (let ((values (write-term (list path params) atom-tab sub-atom-tab)))
-                     (when (consp values)
-                       (loop :for value :in values
-                             :when (valid-terms-p value)
-                             :do (dispatch value :log log :force force)))
-                     values)))))
-      (when-let ((value (mapcar #'fn terms)))
-        (when (and log
-                   (not (null* value))
-                   (stringp expr))
-          (write-log expr))
-        value))))
+  (when-let* ((expressions (if (consp expr) expr (parse-msl expr)))
+              (terms (process-terms expressions)))
+    (dbg "* DISPATCH: start of body")
+    (dump)
+
+    ;; should this happen, after %DISPATCH
+    ;; test for comparison with NIL
+    ;; HEAD-VALUE* returns NIL when there are no values, yet
+    ;; (when (and (rmap-and terms #'terms-has-value-p #'terms-has-regex-p)
+    ;;            (not (null* (head-value* terms)))
+    ;;            (not (equal (head-value* terms) (head-value terms))))
+    ;;   (dbg "* DISPATCH: pre clearing")
+    ;;   (dump)
+    ;;   (dbg (head-value* terms)
+    ;;        (head-value terms))
+    ;;   (clear-regex terms)
+
+    ;;   (dbg "* DISPATCH: post clearing")
+    ;;   (dump))
+
+    ;; NOTE:
+    ;; If regex nuking is accepted, update TERMS
+
+    (when-let ((value (mapcar #'(lambda (term)
+                                  (%dispatch term :log log :force force))
+                              terms)))
+      ;; NOTE: regex comes back here
+      (dbg "* DISPATCH: start of main")
+      (dump)
+
+      ;; NOTE: should there be another clearing
+      ;;(clear-regex terms)
+      ;;(dump)
+
+      (when (and log (not (null* value)) (stringp expr))
+        (write-log expr))
+      value)))
 
 (defun* dispatch* (&rest args)
   "Apply DISPATCH without logging."
