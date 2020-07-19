@@ -240,10 +240,6 @@
                   :do (dispatch value :log log :force force)))
           values))))
 
-(defun clear-regex-p (terms)
-  "Return true if the regex in TERMS has to be cleared."
-  (terms-has-value-p terms))
-
 (defun process-terms (terms)
   "Do some processing with TERMS, including invoking destructive functions, then return a new terms value."
   (cond ((terms-has-value-p terms)
