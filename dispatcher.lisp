@@ -187,7 +187,7 @@
   "Return the head term from TERMS."
   (find-if #'head-term-p terms))
 
-(defun find-regex (terms)
+(defun* find-regex (terms)
   "Return the regex term from TERMS."
   (find-if #'regex-term-p terms))
 
@@ -217,8 +217,10 @@
 
 (defun clear-regex (terms)
   "Remove the regex found in TERMS in the store."
-  (when-let ((term (find-regex terms)))
-    (clear-path (atom-table *universe*) (car term))))
+  (when-let* ((head (find-head terms))
+              (regex-path (append (car head) '("/"))))
+    (when (gethash* regex-path (atom-table *universe*))
+      (clear-path (atom-table *universe*) regex-path))))
 
 (defun remove-regex (terms)
   "Remove the regex found in TERMS."
