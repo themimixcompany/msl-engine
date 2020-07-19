@@ -512,11 +512,17 @@
 
 (defun apply-regex-set (regex-set value)
   "Apply the regexes from REGEX-SET to VALUE."
-  (destructuring-bind (re flag consume)
+  (destructuring-bind (re flags consume)
       regex-set
-    (declare (ignorable flag))
-    (cond (consume (values (cl-ppcre:regex-replace re value consume)))
-          (t (values (cl-ppcre:scan-to-strings re value))))))
+    (let* ((flags-list (when flags (loop :for c :across flags :collect c)))
+           (replace-fn (if (mem #\g flags-list)
+                           #'cl-ppcre:regex-replace-all
+                           #'cl-ppcre:regex-replace))
+           (regex (if (mem #\i flags-list)
+                      (cat "(?i)" re)
+                      re)))
+      (cond (consume (funcall replace-fn regex value consume))
+            (t (cl-ppcre:scan-to-strings regex value))))))
 
 (defun apply-regex-sets (regex-sets value)
   "Apply the regex sets from REGEX-SETS with value as the starting point."

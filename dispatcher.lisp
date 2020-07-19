@@ -127,7 +127,7 @@
 ;; writers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun save-value (term location table value &optional clear-path)
+(defun* save-value (term location table value &optional clear-path)
   "Store VALUE using LOCATION as specifier in TABLE."
   (destructuring-bind (path &optional &rest params)
       term
@@ -135,7 +135,11 @@
     (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path (clear-path table path))
+      (when clear-path
+        ;;(clear-path table path)
+        ;; (when (mem* location '("/"))
+        ;;   (clear-path table path))
+        )
       (setf (gethash (single location) table) v))))
 
 (defun spawn-table (path table)
@@ -212,9 +216,13 @@
         nil))))
 
 (defun clear-regex (terms)
-  "Remove the regex found in TERMS."
+  "Remove the regex found in TERMS in the store."
   (when-let ((term (find-regex terms)))
     (clear-path (atom-table *universe*) (car term))))
+
+(defun remove-regex (terms)
+  "Remove the regex found in TERMS."
+  (remove-if #'regex-term-p terms))
 
 (defun %dispatch (term &key log force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
@@ -234,18 +242,13 @@
 
 (defun clear-regex-p (terms)
   "Return true if the regex in TERMS has to be cleared."
-  (and (rmap-and terms
-                 #'terms-has-value-p
-                 #'terms-has-regex-p)
-       (not (null* (head-value* terms)))
-       (not (equal (head-value* terms)
-                   (head-value terms)))))
+  (terms-has-value-p terms))
 
 (defun process-terms (terms)
-  "Do some processing with TERMS, including invoking destructive functions, then return a new value."
-  (cond ((clear-regex-p terms)
+  "Do some processing with TERMS, including invoking destructive functions, then return a new terms value."
+  (cond ((terms-has-value-p terms)
          (clear-regex terms)
-         (remove-if #'regex-term-p terms))
+         terms)
         (t terms)))
 
 (defun* dispatch (expr &key (log t) force)
