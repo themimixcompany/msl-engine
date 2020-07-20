@@ -364,7 +364,7 @@
       (let ((value (fn head sections)))
         (list-string (flatten-1 (wrap (stage value))))))))
 
-(defun paths (deconstruct)
+(defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (and (head-only-p (car deconstruct))
            (length> deconstruct 1))
@@ -375,6 +375,14 @@
   "Return true if PATH matches SECTION."
   (when (consp path)
     (search (subseq path 0 2) section :test #'equal)))
+
+(defun* reduce-exprs (exprs)
+  "Return a list of values that corresponding to expressions including terms reduction."
+  (mapcar #'(lambda (expr)
+              (cond ((stringp expr) expr)
+                    ((termsp expr) (recall-expr (terms-base expr)))
+                    (t expr)))
+          exprs))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -388,10 +396,11 @@
                  (loop :for path :in paths
                        :nconc (loop :for section :in sections
                                     :when (section-match-p path section)
-                                    :collect section))))
+                                    :collect (reduce-exprs section)))))
           (cond ((solop deconstruct)
                  (distill head sections))
-                (t (distill head (fn paths sections)))))))))
+                (t
+                 (distill head (fn paths sections)))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -400,12 +409,12 @@
 
 (defun* reduce-values (values &optional (separator #\space))
   "Return a string concatenation of the items in VALUES."
-  (let ((v (mapcar #'(lambda (value)
+  (let ((result (mapcar #'(lambda (value)
                        (cond ((stringp value) value)
                              ((termsp value) (recall-value (terms-base value)))
                              (t nil)))
                    values)))
-    (join v separator)))
+    (join result separator)))
 
 (defun* %extract-value (path)
   "Return the information specified by PATH."
@@ -495,26 +504,16 @@
          (metamods-count (metamods-count paths))
          (head (head expr)))
     (cond ((solop paths)
-           ;;(dbg "1")
            (extract-value (car paths)))
-
           ((and (> metamods-count 1)
                 (every #'has-metadata-p paths))
-           ;;(dbg "2")
            (extract-value head))
-
           ((and (> metamods-count 1)
                 (notevery #'has-metadata-p paths))
-           ;;(dbg "3")
            (extract-value head))
-
           ((= metamods-count 1)
-           ;;(dbg "4" paths)
            (extract-value (car paths)))
-
-          (t
-           ;;(dbg "5")
-           nil))))
+          (t nil))))
 
 (defun ensure-regex-path (path)
   "Return a path with regex from PATH."
