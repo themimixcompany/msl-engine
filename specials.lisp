@@ -22,7 +22,7 @@
 (defvar* *metadata-counter* 10000
   "The initial metadata counter value.")
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(eval-always
   (defconstant* +base-namespace-list+
       '(("c" . "canon")
         ("m" . "machine")
@@ -103,7 +103,7 @@
     ;; (uiop:os-cond
     ;;  ((uiop:os-windows-p) (system-version +self+))
     ;;  (t (asdf:system-version (system-object +self+))))
-  "2.3.1"
+  "2.3.2"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
