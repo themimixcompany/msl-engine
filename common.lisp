@@ -145,7 +145,7 @@
                    (t nil))))
     (fn table path)))
 
-(defun* valid-terms-p (form &optional (predicate #'namespacep))
+(defun* termsp (form &optional (predicate #'namespacep))
   "Return true if FORM is a valid MSL form."
   (flet ((fn (form)
            (destructuring-bind (&optional head &rest _)

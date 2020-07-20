@@ -99,8 +99,7 @@
                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (let ((default-key '("="))
-        ;;(dummy-value '(""))
-        (dummy-value nil))
+        (dummy-value nil)) ;; or '("")
     (flet ((fn (path table)
              (multiple-value-bind (emptyp existsp)
                  (empty-key-p (gethash* path table))
@@ -135,11 +134,7 @@
     (let ((v (if (has-sub-atom-path-p value)
                  (sub-atom-path value)
                  value)))
-      (when clear-path
-        ;;(clear-path table path)
-        ;; (when (mem* location '("/"))
-        ;;   (clear-path table path))
-        )
+      (when clear-path (clear-path table path))
       (setf (gethash (single location) table) v))))
 
 (defun spawn-table (path table)
@@ -238,12 +233,12 @@
                (values (write-term (list path params) atom-tab sub-atom-tab)))
           (when (consp values)
             (loop :for value :in values
-                  :when (valid-terms-p value)
+                  :when (termsp value)
                   :do (dispatch value :log log :force force)))
           values))))
 
-(defun process-terms (terms)
-  "Do some processing with TERMS, including invoking destructive functions, then return a new terms value."
+(defun pre-process-terms (terms)
+  "Do some processing with TERMS, and the environment, then return a new terms value."
   (cond ((terms-has-value-p terms)
          (clear-regex terms)
          terms)
@@ -252,7 +247,7 @@
 (defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (when-let* ((expressions (if (consp expr) expr (parse-msl expr)))
-              (terms (process-terms expressions))
+              (terms (pre-process-terms expressions))
               (value (mapcar #'(lambda (term)
                                  (%dispatch term :log log :force force))
                              terms)))

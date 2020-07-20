@@ -168,9 +168,9 @@
              (cons (cat ns (cadr list)) (cddr list)))
             (t list)))))
 
-(defun terms-base (terms)
+(defun* terms-base (terms)
   "Return the base expression that constitutes TERMS."
-  (when (valid-terms-p terms)
+  (when (termsp terms)
     (format-parens (reduce #'cat (caar terms)))))
 
 
@@ -223,9 +223,9 @@
                             (flatten-1 (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
-          :collect (flatten-1 (wrap (join (stage value)))))))
+          :collect (flatten-1 (wrap (join-items (stage value)))))))
 
-(defun* join (list)
+(defun* join-items (list)
   "Join the the items in LIST that should be together."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
@@ -248,7 +248,7 @@
                v
              (declare (ignore _ __))
              (car (construct (atom-table *universe*) ns (list key))))))
-    (cond ((valid-terms-p terms #'base-namespace-p) (fn terms))
+    (cond ((termsp terms #'base-namespace-p) (fn terms))
           (t terms))))
 
 (defun* %collect (table children keys)
@@ -259,7 +259,7 @@
                      :unless (mem (list-string terms) cache)
                      :collect (loop :for term :in terms
                                     :for v = (convert term)
-                                    :when (valid-terms-p term #'base-namespace-p)
+                                    :when (termsp term #'base-namespace-p)
                                     :do (pushnew (list-string v) cache :test #'equal)
                                     :collect v))))
 
@@ -367,7 +367,7 @@
 (defun paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (and (head-only-p (car deconstruct))
-           (> (length deconstruct) 1))
+           (length> deconstruct 1))
       (cdr deconstruct)
       deconstruct))
 
@@ -398,6 +398,15 @@
 ;; recall-value
 ;;--------------------------------------------------------------------------------------------------
 
+(defun* reduce-values (values &optional (separator #\space))
+  "Return a string concatenation of the items in VALUES."
+  (let ((v (mapcar #'(lambda (value)
+                       (cond ((stringp value) value)
+                             ((termsp value) (recall-value (terms-base value)))
+                             (t nil)))
+                   values)))
+    (join v separator)))
+
 (defun* %extract-value (path)
   "Return the information specified by PATH."
   (labels ((fn (table path)
@@ -406,7 +415,9 @@
                         (gethash (car path) table)
                       (when existsp
                         (cond ((hash-table-p val) val)
-                              (t (if (listp val) (car val) val))))))
+                              ((listp val)
+                               (reduce-values val))
+                              (t val)))))
                    ((hash-table-p (gethash (car path) table))
                     (fn (gethash (car path) table) (cdr path)))
                    (t nil))))
@@ -484,20 +495,26 @@
          (metamods-count (metamods-count paths))
          (head (head expr)))
     (cond ((solop paths)
+           ;;(dbg "1")
            (extract-value (car paths)))
 
           ((and (> metamods-count 1)
                 (every #'has-metadata-p paths))
+           ;;(dbg "2")
            (extract-value head))
 
           ((and (> metamods-count 1)
                 (notevery #'has-metadata-p paths))
+           ;;(dbg "3")
            (extract-value head))
 
           ((= metamods-count 1)
+           ;;(dbg "4" paths)
            (extract-value (car paths)))
 
-          (t nil))))
+          (t
+           ;;(dbg "5")
+           nil))))
 
 (defun ensure-regex-path (path)
   "Return a path with regex from PATH."
@@ -540,14 +557,7 @@
          (regex-path (ensure-regex-path source-path))
          (regex-sets (regex-path-regexes regex-path)))
     (cond (regex-sets (apply-regex-sets regex-sets value))
-
-          ;; NOTE: embedded atom support
-          ;; NOTE: trace when using this
-          ;; NOTE: currently, this will return only the top-level value, ignoring the metadata
-          ;; NOTE: re-examine this prior to putting the same feature to RECALL-EXPR.
-          ((valid-terms-p value)
-           (recall-value (terms-base value)))
-
+          ((termsp value) (recall-value (terms-base value)))
           (t value))))
 
 
