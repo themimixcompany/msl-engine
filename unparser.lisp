@@ -384,6 +384,17 @@
                     (t expr)))
           exprs))
 
+(defun* reduce-sections (sections)
+  "Apply REDUCE-EXPRS to sections."
+  (mapcar #'reduce-exprs sections))
+
+(defun* reduce-matched-sections (paths sections)
+  "Apply REDUCE-EXPRS to SECTIONS with PATH."
+  (loop :for path :in paths
+        :nconc (loop :for section :in sections
+                     :when (section-match-p path section)
+                     :collect (reduce-exprs section))))
+
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (when dispatch (dispatch expr :log t :force nil))
@@ -392,15 +403,9 @@
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
              (sections (sections head :post t)))
-        (flet ((fn (paths sections)
-                 (loop :for path :in paths
-                       :nconc (loop :for section :in sections
-                                    :when (section-match-p path section)
-                                    :collect (reduce-exprs section)))))
-          (cond ((solop deconstruct)
-                 (distill head sections))
-                (t
-                 (distill head (fn paths sections)))))))))
+        (cond ((solop deconstruct)
+               (distill head (reduce-sections sections)))
+              (t (distill head (reduce-matched-sections paths sections))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
