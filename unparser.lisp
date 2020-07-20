@@ -380,7 +380,9 @@
   "Return a list of values that corresponding to expressions including terms reduction."
   (mapcar #'(lambda (expr)
               (cond ((stringp expr) expr)
+                    ((termsp (car expr)) (recall-expr (terms-base (car expr))))
                     ((termsp expr) (recall-expr (terms-base expr)))
+                    ((termsp (list expr)) (recall-expr (terms-base (list expr))))
                     (t expr)))
           exprs))
 
@@ -393,7 +395,8 @@
   (loop :for path :in paths
         :nconc (loop :for section :in sections
                      :when (section-match-p path section)
-                     :collect (reduce-exprs section))))
+                     :collect (let ((v (reduce-exprs section)))
+                                v))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -405,7 +408,8 @@
              (sections (sections head :post t)))
         (cond ((solop deconstruct)
                (distill head (reduce-sections sections)))
-              (t (distill head (reduce-matched-sections paths sections))))))))
+              (t
+               (distill head (reduce-matched-sections paths sections))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
