@@ -41,6 +41,10 @@
       '((":" . "colon"))
     "The list of colon namespaces.")
 
+  (defconstant* +metadata-namespace-list+
+      '((":" . "metadata"))
+    "The list of metadata namespaces.")
+
   (defconstant* +namespace-list+
       (append +base-namespace-list+ +sub-namespace-list+)
     "The full list of namespaces, where the individual elements contain the namespace alias and full namespace name"))
@@ -103,7 +107,7 @@
     ;; (uiop:os-cond
     ;;  ((uiop:os-windows-p) (system-version +self+))
     ;;  (t (asdf:system-version (system-object +self+))))
-  "2.3.6"
+  "2.3.7"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*

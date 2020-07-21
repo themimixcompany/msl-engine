@@ -24,6 +24,10 @@
   "Return true if NS is a colon namespace indicator."
   (ns-member-p ns +colon-namespace-list+))
 
+(defun* metadata-namespace-p (ns)
+  "Return true if NS is a metadata namespace indicator."
+  (ns-member-p ns +metadata-namespace-list+))
+
 (defun* namespacep (ns)
   "Return true if NS is a namespace indicator."
   (rmap-or ns #'base-namespace-p #'sub-namespace-p))
@@ -215,3 +219,9 @@ body contents of the parser function."
 (defun* path-exists-p (head)
   "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
+
+(defun* ensure-regex-path (path)
+  "Return a path with regex from PATH."
+  (if (string= (last* path) "/")
+      path
+      (append path '("/"))))

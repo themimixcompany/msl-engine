@@ -63,14 +63,23 @@
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
-(defun head-term-p (term)
+(defun* head-term-p (term)
   "Return true if TERM is the main term."
-  (destructuring-bind (path value)
+  (destructuring-bind (path &optional &rest value)
       term
     (declare (ignore value))
     (when*
       (length= path 2)
       (base-namespace-p (car path)))))
+
+(defun* metadata-term-p (term)
+  "Return true if TERM is a metadata term."
+  (destructuring-bind (path &optional &rest value)
+      term
+    (declare (ignore value))
+    (when*
+      (length= path 4)
+      (metadata-namespace-p (caddr path)))))
 
 (defun regex-term-p (term)
   "Return true if TERM is a regex term."
@@ -156,24 +165,29 @@
                              flag
                              (null parameters))
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
+
                        ((and (null line)
                              flag
                              parameters)
                         (fn '("=") nil atom-tab sub-atom-tab)
                         (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
+
                        ((and (null line)
                              (not flag)
                              (null parameters))
                         nil)
+
                        ((and (null line)
                              (not flag)
                              parameters)
                         (fn '("=") flag atom-tab sub-atom-tab))
+
                        ((and (singlep line)
                              (key-indicator-p (single line)))
                         (save-value term line atom-tab parameters)
                         (when flag
                           (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
+
                        (t (fn (cdr line) flag (spawn-table line atom-tab) sub-atom-tab)))))
         (fn path opt atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
@@ -182,33 +196,10 @@
   "Return the head term from TERMS."
   (find-if #'head-term-p terms))
 
-(defun* find-regex (terms)
-  "Return the regex term from TERMS."
-  (find-if #'regex-term-p terms))
-
-(defun terms-has-value-p (terms)
+(defun terms-has-main-value-p (terms)
   "Return true if the head in TERMS has a value."
   (when-let ((head (find-head terms)))
     (not (null* (cdr head)))))
-
-(defun terms-has-regex-p (terms)
-  "Return true if TERMS has regex."
-  (when* (find-regex terms)))
-
-(defun head-value (terms)
-  "Return the value specified in the head of TERMS."
-  (when-let* ((head (find-head terms))
-              (value (cadr head)))
-    (when (not (null* value))
-      value)))
-
-(defun head-value* (terms)
-  "Return the value specified in the head of TERMS, from the store."
-  (when-let ((head (find-head terms)))
-    (handler-case (read-term head)
-      (error (c)
-        (declare (ignore c))
-        nil))))
 
 (defun clear-regex (terms)
   "Remove the regex found in TERMS in the store."
@@ -237,12 +228,25 @@
                   :do (dispatch value :log log :force force)))
           values))))
 
+(defun term-has-value-p (term)
+  "Return true if TERM has a value."
+  (destructuring-bind (path &optional &rest value)
+      term
+    (declare (ignore path))
+    (not (null* value))))
+
 (defun pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
-  (cond ((terms-has-value-p terms)
-         (clear-regex terms)
-         terms)
-        (t terms)))
+  (let ((%terms (loop :for term :in terms
+                     :when (or (head-term-p term)
+                               (metadata-term-p term))
+                     :collect term)))
+    (loop :for %term :in %terms
+          :for regex-path = (append (car %term) '("/"))
+          :when (and (term-has-value-p %term)
+                     (gethash* regex-path (atom-table *universe*)))
+          :do (clear-path (atom-table *universe*) regex-path))
+    terms))
 
 (defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
