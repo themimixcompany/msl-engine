@@ -155,8 +155,9 @@
 
 (defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
-  (when* (and (length= path 2)
-              (path-exists-p path))))
+  (when*
+    (length= path 2)
+    (path-exists-p path)))
 
 (defun make-head (list)
   "Return a list with custom head merging."
@@ -276,9 +277,11 @@
     (when head
       (clear-path (atom-table *universe*) head))))
 
-(defun solop (value)
-  "Return true if VALUE is the only section and that there’s only a head."
-  (head-only-p (and (length= value 1) (car value))))
+(defun head-only-paths-p (paths)
+  "Return true if there’s only one path in PATHS and that there’s only a head."
+  (when*
+    (length= paths 1)
+    (head-only-p (paths paths))))
 
 (defun has-head-p (sections)
   "Return true if SECTIONS contain a head section."
@@ -406,7 +409,7 @@
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
              (sections (sections head :post t)))
-        (cond ((solop deconstruct)
+        (cond ((head-only-paths-p deconstruct)
                (distill head (reduce-sections sections)))
               (t
                (distill head (reduce-matched-sections paths sections))))))))
@@ -474,7 +477,7 @@
   (transformp (strip-head path)))
 
 (defun* requests (expr)
-  "Return terms from EXPR that are valid requests."
+  "Return paths from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
     (flet ((fn (term)
              (or (mem (last* (car term)) '("/" "[]"))
@@ -496,8 +499,8 @@
              (car-only (car parse)))
 
             ((and (null* (cdar parse))
-                  (find-if-not #'has-metadata-p parse :key #'car)
-                  (find-if #'has-mods-p parse :key #'car))
+                  (find-if #'has-mods-p parse :key #'car)
+                  (find-if-not #'has-metadata-p parse :key #'car))
              (car-only (cadr parse)))
 
             (t (let ((value (remove-if #'fn parse)))
@@ -512,21 +515,28 @@
   (let* ((paths (requests expr))
          (metamods-count (metamods-count paths))
          (head (head expr)))
-    (cond ((solop paths)
-           (extract-value (car paths)))
+    (cond
+      ;; only the the base path
+      ((head-only-paths-p paths)
+       (extract-value (car paths)))
 
-          ((and (> metamods-count 1)
-                (every #'has-metadata-p paths))
-           (extract-value head))
+      ;; base path is not found, but a single metadata path is found
+      ((= metamods-count 1)
+       (extract-value (car paths)))
 
-          ((and (> metamods-count 1)
-                (notevery #'has-metadata-p paths))
-           (extract-value head))
+      ;; there is more than one metadata path found, and all of them are metadata paths
+      ((and (> metamods-count 1)
+            (every #'has-metadata-p paths))
+       (extract-value head))
 
-          ((= metamods-count 1)
-           (extract-value (car paths)))
+      ;; there is more than one metadata path found, but some of them are not metadata paths, like
+      ;; (d) and (f)
+      ((and (> metamods-count 1)
+            (notevery #'has-metadata-p paths))
+       (extract-value head))
 
-          (t nil))))
+      ;; there are no matching criteria
+      (t nil))))
 
 (defun regex-path-regexes (regex-path)
   "Return the regex mods of the implied path in EXPR."
