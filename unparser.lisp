@@ -514,21 +514,19 @@
          (head (head expr)))
     (cond ((solop paths)
            (extract-value (car paths)))
+
           ((and (> metamods-count 1)
                 (every #'has-metadata-p paths))
            (extract-value head))
+
           ((and (> metamods-count 1)
                 (notevery #'has-metadata-p paths))
            (extract-value head))
+
           ((= metamods-count 1)
            (extract-value (car paths)))
-          (t nil))))
 
-(defun ensure-regex-path (path)
-  "Return a path with regex from PATH."
-  (if (string= (last* path) "/")
-      path
-      (append path '("/"))))
+          (t nil))))
 
 (defun regex-path-regexes (regex-path)
   "Return the regex mods of the implied path in EXPR."
