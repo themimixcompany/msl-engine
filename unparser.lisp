@@ -500,16 +500,21 @@
                      (cdr parse)))
          (car-only (car parse)))
 
-        ;; NOTE: when is this met?
-        ;; no main value, there is at least one mod, and there are no metadata
+        ;; ;; no main value, there is at least one mod, and there are no metadata
+        ;; ((and (null* (cdar parse))
+        ;;       (find-if #'has-mods-p parse :key #'car)
+        ;;       (find-if-not #'has-metadata-p parse :key #'car))
+        ;;  (car-only (cadr parse)))
+
+        ;; no main value, there is at least one mod
         ((and (null* (cdar parse))
-              (find-if #'has-mods-p parse :key #'car)
-              ;; (find-if-not #'has-metadata-p parse :key #'car)
-              )
+              (some #'(lambda (term)
+                        (rmap-and (car term) #'has-mods-p))
+                    parse))
          (car-only (cadr parse)))
 
         ;; remove regexes, transforms, and empty heads
-        (t(mapcar #'car (remove-if #'fn parse)))))))
+        (t (mapcar #'car (remove-if #'fn parse)))))))
 
 (defun metamods-count (path)
   "Return the number of metamods in PATH."
