@@ -203,13 +203,6 @@
   (when-let ((head (find-head terms)))
     (not (null* (cdr head)))))
 
-(defun clear-regex (terms)
-  "Remove the regex found in TERMS in the store."
-  (when-let* ((head (find-head terms))
-              (regex-path (append (car head) '("/"))))
-    (when (gethash* regex-path (atom-table *universe*))
-      (clear-path (atom-table *universe*) regex-path))))
-
 (defun remove-regex (terms)
   "Remove the regex found in TERMS."
   (remove-if #'regex-term-p terms))
@@ -240,14 +233,16 @@
 (defun pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
   (let ((%terms (loop :for term :in terms
-                     :when (or (head-term-p term)
-                               (metadata-term-p term))
-                     :collect term)))
-    (loop :for %term :in %terms
-          :for regex-path = (append (car %term) '("/"))
-          :when (and (term-has-value-p %term)
-                     (gethash* regex-path (atom-table *universe*)))
-          :do (clear-path (atom-table *universe*) regex-path))
+                      :when (or (head-term-p term)
+                                (metadata-term-p term))
+                      :collect term))
+        (keys '("/" "[]" "d" "f")))
+    (loop :for key :in keys
+          :do (loop :for %term :in %terms
+                    :for path = (append (car %term) (list key))
+                    :when (and (term-has-value-p %term)
+                               (gethash* path (atom-table *universe*)))
+                    :do (clear-path (atom-table *universe*) path)))
     terms))
 
 (defun* dispatch (expr &key (log t) force)
