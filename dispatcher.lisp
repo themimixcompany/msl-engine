@@ -40,11 +40,14 @@
 
 (defun has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
-  (when* (sub-atom-index path) (not (sub-atom-path-p path))))
+  (when*
+    (sub-atom-index path)
+    (not (sub-atom-path-p path))))
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
-  (when* (member key +key-indicators+ :test #'equal)))
+  (when*
+    (member key +key-indicators+ :test #'equal)))
 
 (defun empty-params-p (params)
   "Return true if PARAMS is considered empty."
@@ -158,38 +161,37 @@
   "Return a hash table containing the embedded value tables as specified in TERM."
   (destructuring-bind (path &optional params)
       term
-    (let ((opt (has-sub-atom-path-p path))
-          (parameters (if whole params (car params))))
-      (labels ((fn (line flag atom-tab sub-atom-tab)
-                 (cond ((and (null line)
-                             flag
-                             (null parameters))
-                        (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
+    (let ((parameters (if whole params (car params))))
+      (labels ((fn (point flag atom-tab sub-atom-tab)
+                 (cond
+                   ;; point is empty, there are no (d) and (f), and there are no params
+                   ((and (null point)
+                         (null flag)
+                         (null parameters))
+                    nil)
 
-                       ((and (null line)
-                             flag
-                             parameters)
-                        (fn '("=") nil atom-tab sub-atom-tab)
-                        (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
+                   ;; point is empty, there is (d) and (f)
+                   ((and (null point)
+                         flag)
+                    (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
-                       ((and (null line)
-                             (not flag)
-                             (null parameters))
-                        nil)
+                   ;; point is empty, there are no (d) and (f), and there are params
+                   ((and (null point)
+                         (null flag)
+                         parameters)
+                    (fn '("=") flag atom-tab sub-atom-tab))
 
-                       ((and (null line)
-                             (not flag)
-                             parameters)
-                        (fn '("=") flag atom-tab sub-atom-tab))
+                   ;; save the value, where the single of point, is the table key
+                   ;; if there are (d) and (f) descend into them
+                   ((and (singlep point)
+                         (key-indicator-p (single point)))
+                    (save-value term point atom-tab parameters)
+                    (when flag
+                      (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
 
-                       ((and (singlep line)
-                             (key-indicator-p (single line)))
-                        (save-value term line atom-tab parameters)
-                        (when flag
-                          (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
-
-                       (t (fn (cdr line) flag (spawn-table line atom-tab) sub-atom-tab)))))
-        (fn path opt atom-table sub-atom-table)
+                   ;; recurse, creating new sub tables
+                   (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
+        (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
 
 (defun find-head (terms)
