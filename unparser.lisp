@@ -277,11 +277,9 @@
     (when head
       (clear-path (atom-table *universe*) head))))
 
-(defun head-only-paths-p (paths)
+(defun* head-only-paths-p (value)
   "Return true if there’s only one path in PATHS and that there’s only a head."
-  (when*
-    (length= paths 1)
-    (head-only-p (paths paths))))
+  (head-only-p (and (length= value 1) (car value))))
 
 (defun has-head-p (sections)
   "Return true if SECTIONS contain a head section."
@@ -480,31 +478,38 @@
   "Return paths from EXPR that are valid requests."
   (when-let ((parse (parse-msl expr)))
     (flet ((fn (term)
-             (or (mem (last* (car term)) '("/" "[]"))
-                 (and (length= (car term) 2)
-                      (null* (cadr term))))))
-      (cond ((length= parse 1)
-             (car-only (car parse)))
+             (or (and (length= (car term) 2)
+                      (null* (cadr term)))
+                 (mem (last* (car term)) '("/" "[]")))))
+      (cond
+        ;; top-level expression
+        ((length= parse 1)
+         (car-only (car parse)))
 
-            ((and (null* (cdar parse))
-                  (mem (last* (caadr parse)) '("/")))
-             (car-only (car parse)))
+        ;; no main value, but there is regex
+        ((and (null* (cdar parse))
+              (mem (last* (caadr parse)) '("/")))
+         (car-only (car parse)))
 
-            ((and (null* (cdar parse))
-                  (every #'(lambda (term)
-                             (rmap-or (car term)
-                                      #'has-mods-p
-                                      #'has-transform-p))
-                         (cdr parse)))
-             (car-only (car parse)))
+        ;; no main value, and the rest are either mods or transforms
+        ((and (null* (cdar parse))
+              (every #'(lambda (term)
+                         (rmap-or (car term)
+                                  #'has-mods-p
+                                  #'has-transform-p))
+                     (cdr parse)))
+         (car-only (car parse)))
 
-            ((and (null* (cdar parse))
-                  (find-if #'has-mods-p parse :key #'car)
-                  (find-if-not #'has-metadata-p parse :key #'car))
-             (car-only (cadr parse)))
+        ;; NOTE: when is this met?
+        ;; no main value, there is at least one mod, and there are no metadata
+        ((and (null* (cdar parse))
+              (find-if #'has-mods-p parse :key #'car)
+              ;; (find-if-not #'has-metadata-p parse :key #'car)
+              )
+         (car-only (cadr parse)))
 
-            (t (let ((value (remove-if #'fn parse)))
-                 (mapcar #'car value)))))))
+        ;; remove regexes, transforms, and empty heads
+        (t(mapcar #'car (remove-if #'fn parse)))))))
 
 (defun metamods-count (path)
   "Return the number of metamods in PATH."
