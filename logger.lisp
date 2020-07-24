@@ -113,7 +113,7 @@
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)
-           (with-open-file (stream path :direction :output :if-exists :append)
+           (with-open-file (stream path :direction :output :if-exists :append :external-format :utf-8)
              (format stream "~A~%" value))))
     (when (stringp value)
       (cond ((maximum-file-size-p (log-path))
