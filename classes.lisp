@@ -33,7 +33,7 @@
                  :accessor atom-counter
                  :documentation "The global integer counter for base atoms.")
    (atom-table :initarg :atom-table
-               :initform (make-hash-table :test #'equal)
+               :initform (make-hash-table :test #'equalp)
                :accessor atom-table
                :documentation "The table where all base atoms live.")
    (sub-atom-counter :initarg :sub-atom-counter
@@ -41,7 +41,7 @@
                      :accessor sub-atom-counter
                      :documentation "The global integer counter for sub atoms.")
    (sub-atom-table :initarg :sub-atom-table
-                   :initform (make-hash-table :test #'equal)
+                   :initform (make-hash-table :test #'equalp)
                    :accessor sub-atom-table
                    :documentation "The table where sub atoms live.")
    (log-date :initarg :log-date
@@ -66,7 +66,7 @@
         :accessor key
         :documentation "The unique string to identify an mx-atom in the universe.")
    (value :initarg :value
-          :initform (make-hash-table :test #'equal)
+          :initform (make-hash-table :test #'equalp)
           :accessor value
           :documentation "The hash table to store everything local to an atom."))
   (:documentation "The base class for everything."))
@@ -174,7 +174,7 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
        :accessor id
        :documentation "The unique integer to identify the register.")
    (table :initarg :table
-          :initform (make-hash-table :test #'equal)
+          :initform (make-hash-table :test #'equalp)
           :reader table
           :documentation "The hash table for the data store.")
    (date :initarg :date
