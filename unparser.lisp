@@ -261,7 +261,7 @@
                      :collect (loop :for term :in terms
                                     :for v = (convert term)
                                     :when (termsp term #'base-namespace-p)
-                                    :do (pushnew (list-string v) cache :test #'equal)
+                                    :do (pushnew (list-string v) cache :test #'equalp)
                                     :collect v))))
 
 (defun* collect (&rest keys)
@@ -375,7 +375,7 @@
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
   (when (consp path)
-    (search (subseq path 0 2) section :test #'equal)))
+    (search (subseq path 0 2) section :test #'equalp)))
 
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."

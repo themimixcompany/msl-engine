@@ -61,7 +61,7 @@
 (defun admin-command (expr)
   "Return the admin command for EXPR."
   (when-let* ((head (head expr))
-              (value (assoc-value (head expr) *admin-commands* :test #'equal)))
+              (value (assoc-value (head expr) *admin-commands* :test #'equalp)))
     value))
 
 (defun* admin-dispatch (expr)

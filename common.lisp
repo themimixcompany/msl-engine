@@ -10,7 +10,7 @@
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
-  (when* (member elem ns-list :key #'car :test #'equal)))
+  (when* (member elem ns-list :key #'car :test #'equalp)))
 
 (defun* base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
@@ -132,7 +132,7 @@
 (defun clear-other (table key)
   "Remove entries in TABLE that do not match KEY."
   (let ((keys (loop :for k :being :the :hash-key :of table :collect k)))
-    (loop :for item :in (remove key keys :test #'equal)
+    (loop :for item :in (remove key keys :test #'equalp)
           :do (remhash item table)
           :finally (return table))))
 

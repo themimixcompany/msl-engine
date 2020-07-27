@@ -47,7 +47,7 @@
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
   (when*
-    (member key +key-indicators+ :test #'equal)))
+    (member key +key-indicators+ :test #'equalp)))
 
 (defun empty-params-p (params)
   "Return true if PARAMS is considered empty."
@@ -153,7 +153,7 @@
   "Conditionally return a new table for term writing and use path as key for the new table."
   (if (hash-table-p (gethash (car path) table))
       (gethash (car path) table)
-      (let ((tab (make-hash-table :test #'equal)))
+      (let ((tab (make-hash-table :test #'equalp)))
         (setf (gethash (car path) table) tab)
         tab)))
 
@@ -207,21 +207,30 @@
   "Remove the regex found in TERMS."
   (remove-if #'regex-term-p terms))
 
+(defun* upcase-key (term)
+  "Upcase the key name in TERM"
+  (destructuring-bind (path &optional &rest value)
+      term
+    (cons (progn (setf (nth 1 path) (string-upcase (nth 1 path)))
+                 path)
+          value)))
+
 (defun %dispatch (term &key log force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (if (and (empty-term-p term)
-           (not force))
-      nil
-      (destructuring-bind (path &optional &rest params)
-          term
-        (let* ((atom-tab (atom-table *universe*))
-               (sub-atom-tab (sub-atom-table *universe*))
-               (values (write-term (list path params) atom-tab sub-atom-tab)))
-          (when (consp values)
-            (loop :for value :in values
-                  :when (termsp value)
-                  :do (dispatch value :log log :force force)))
-          values))))
+  (let ((term (upcase-key term)))
+    (if (and (empty-term-p term)
+             (not force))
+        nil
+        (destructuring-bind (path &optional &rest params)
+            term
+          (let* ((atom-tab (atom-table *universe*))
+                 (sub-atom-tab (sub-atom-table *universe*))
+                 (values (write-term (list path params) atom-tab sub-atom-tab)))
+            (when (consp values)
+              (loop :for value :in values
+                    :when (termsp value)
+                    :do (dispatch value :log log :force force)))
+            values)))))
 
 (defun term-has-value-p (term)
   "Return true if TERM has a value."
