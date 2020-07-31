@@ -43,207 +43,201 @@
   "Print a diagnostic message."
   (format t "~%~5T>>> ~A ~A~%~%" message value))
 
-(defvar *atom-value* nil
-  "The temporary staging area for the current atom value.")
-
-(defvar *atom-sequence* nil
-  "The temporary staging area for the current atom sequence.")
-
-(defvar *meta-sequence* nil
-  "The temporary staging area for the current metadata sequence")
-
-(defun clear-specials ()
-  "Set the parser special variables to NIL."
-  (setf *atom-value* nil
-        *atom-sequence* nil
-        *meta-sequence* nil))
 
 ;;--------------------------------------------------------------------------------------------------
 ;; test parsers (don't return a value)
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser ?whitespace ()
-  "Match one or more whitespace characters."
-  (?seq (%some (maxpc.char:?whitespace))))
+(eval-always
+  (define-parser ?whitespace ()
+    "Match one or more whitespace characters."
+    (?seq (%some (maxpc.char:?whitespace))))
 
-(define-parser ?hexp ()
-  "Match a single hex character."
-  (?satisfies 'hex-char-p))
+  (define-parser ?hexp ()
+    "Match a single hex character."
+    (?satisfies 'hex-char-p))
 
-(define-parser =sha256 ()
-  "Match and return a SHA-256 string."
-  (=subseq (?seq (?satisfies 'length-64-p
-                             (=subseq (%some 'hexp))))))
+  (define-parser =sha256 ()
+    "Match and return a SHA-256 string."
+    (=subseq (?seq (?satisfies 'length-64-p
+                               (=subseq (%some 'hexp))))))
 
-(define-parser =msl-key ()
-  "Match and return a valid MSL key."
-  (=subseq (?seq (%some (?satisfies 'alphanumericp))
-                 (%any (?seq (%maybe (?eq #\-))
-                             (%some (?satisfies 'alphanumericp)))))))
-
+  (define-parser =msl-key ()
+    "Match and return a valid MSL key."
+    (=subseq (?seq (%some (?satisfies 'alphanumericp))
+                   (%any (?seq (%maybe (?eq #\-))
+                               (%some (?satisfies 'alphanumericp))))))))
 
 ;;--------------------------------------------------------------------------------------------------
 ;; namespace parsers
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =@-namespace ()
-  "Match and return the @ namespace."
-  (=subseq (?eq #\@)))
+(eval-always
+  (define-parser =@-namespace ()
+    "Match and return the @ namespace."
+    (=subseq (?eq #\@)))
 
-(define-parser =atom-namespace ()
-  "Match and return an atom namespace."
-  (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
+  (define-parser =atom-namespace ()
+    "Match and return an atom namespace."
+    (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
 
-(define-parser =grouping-namespace ()
-  "Match and return m w s v namespace."
-  (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
+  (define-parser =grouping-namespace ()
+    "Match and return m w s v namespace."
+    (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
 
-(define-parser =regex-namespace ()
-  "Match and return the / namespace."
-  (=subseq (?eq #\/)))
+  (define-parser =regex-namespace ()
+    "Match and return the / namespace."
+    (=subseq (?eq #\/)))
 
-(define-parser =prelude-namespace ()
-  "Match and return the msl namespace."
-  (=subseq (maxpc.char:?string "msl")))
+  (define-parser =prelude-namespace ()
+    "Match and return the msl namespace."
+    (=subseq (maxpc.char:?string "msl")))
 
-(define-parser =metadata-namespace ()
-  "Match and return the : namespace."
-  (=subseq (?eq #\:)))
+  (define-parser =metadata-namespace ()
+    "Match and return the : namespace."
+    (=subseq (?eq #\:)))
 
-(define-parser =canon-namespace ()
-  "Match and return the c namespace."
-  (=subseq (?eq #\c)))
+  (define-parser =canon-namespace ()
+    "Match and return the c namespace."
+    (=subseq (?eq #\c)))
 
-(define-parser =datatype-namespace ()
-  "Match and return the d namespace."
-  (=subseq (?eq #\d)))
+  (define-parser =datatype-namespace ()
+    "Match and return the d namespace."
+    (=subseq (?eq #\d)))
 
-(define-parser =format-namespace ()
-  "Match and return the f namespace."
-  (=subseq (?eq #\f)))
+  (define-parser =format-namespace ()
+    "Match and return the f namespace."
+    (=subseq (?eq #\f))))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; namespace sequences
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =@-sequence ()
-  "Match and return the key sequence for an @."
-  (=list (=destructure
-             (ns _)
-             (=list (=@-namespace)
-                    (%maybe (?whitespace))))
-         (=msl-key)))
+(eval-always
+  (define-parser =@-sequence ()
+    "Match and return the key sequence for an @."
+    (=list (=destructure
+               (ns _)
+               (=list (=@-namespace)
+                      (%maybe (?whitespace))))
+           (=msl-key)))
 
-(define-parser =grouping-sequence ()
-  "Match and return the key sequence for an atom."
-  (=list (=destructure
-             (ns _)
-             (=list (=grouping-namespace)
-                    (?whitespace)))
-         (=msl-key)))
+  (define-parser =grouping-sequence ()
+    "Match and return the key sequence for an atom."
+    (=list (=destructure
+               (ns _)
+               (=list (=grouping-namespace)
+                      (?whitespace)))
+           (=msl-key)))
 
-(define-parser =canon-sequence ()
-  "Match and return the key sequence for canon."
-  (=list (=destructure
-             (ns _)
-             (=list (=canon-namespace)
-                    (?whitespace)))
-         (=msl-key)))
+  (define-parser =canon-sequence ()
+    "Match and return the key sequence for canon."
+    (=list (=destructure
+               (ns _)
+               (=list (=canon-namespace)
+                      (?whitespace)))
+           (=msl-key)))
 
-(define-parser =prelude-sequence ()
-  "Match and return the key sequence for a prelude."
-  (=list (=destructure
-             (ns _)
-             (=list (=prelude-namespace)
-                    (?whitespace)))
-         (=msl-key)))
+  (define-parser =prelude-sequence ()
+    "Match and return the key sequence for a prelude."
+    (=list (=destructure
+               (ns _)
+               (=list (=prelude-namespace)
+                      (?whitespace)))
+           (=msl-key)))
 
-(define-parser =metadata-sequence ()
-  "Match and return key sequence for : namespace."
-  (=destructure
-      (_ ns key)
-      (=list (?whitespace)
-             (=metadata-namespace)
-             (=msl-key))
-    (list ns key)))
+  (define-parser =metadata-sequence ()
+    "Match and return key sequence for : namespace."
+    (=destructure
+        (_ ns key)
+        (=list (?whitespace)
+               (=metadata-namespace)
+               (=msl-key))
+      (list ns key)))
 
-(define-parser =datatype-sequence ()
-  "Match and return key sequence for d."
-  (=destructure
-      (atom _ key)
-      (=list (=datatype-namespace)
-             (?whitespace)
-             (=msl-key))
-    (list atom key)))
+  (define-parser =datatype-sequence ()
+    "Match and return key sequence for d."
+    (=destructure
+        (atom _ key)
+        (=list (=datatype-namespace)
+               (?whitespace)
+               (=msl-key))
+      (list atom key)))
 
-(define-parser =format-sequence ()
-  "Match and return key sequence for f."
-  (=destructure
-      (atom _ key)
-      (=list (=format-namespace)
-             (?whitespace)
-             (=msl-key))
-    (list atom key)))
+  (define-parser =format-sequence ()
+    "Match and return key sequence for f."
+    (=destructure
+        (atom _ key)
+        (=list (=format-namespace)
+               (?whitespace)
+               (=msl-key))
+      (list atom key))))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; test parsers (don't return a value)
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser ?value-terminator ()
-  "Match the end of a value."
-  (%or 'nested-atom
-       (=metadata-sequence)
-       'regex-selector
-       'bracketed-transform-selector
-       'datatype-form
-       'format-form
-       'msl-hash
-       'msl-comment
-       (?seq (?eq #\right_parenthesis) (=metadata-sequence))
-       (?seq (?eq #\right_parenthesis) 'datatype-form)
-       (?seq (?eq #\right_parenthesis) 'format-form)
-       (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
-       (?seq (?eq #\right_parenthesis) (?end))))
+(eval-always
+  (define-parser ?expression-starter ()
+    "Match the end of an expression."
+    (?seq (?eq #\left_parenthesis)))
 
-(define-parser ?expression-terminator ()
-  "Match the end of an expression."
-  (?seq (?eq #\right_parenthesis)))
+  (define-parser ?expression-terminator ()
+    "Match the end of an expression."
+    (?seq (?eq #\right_parenthesis)))
+
+  (define-parser ?value-terminator ()
+    "Match the end of a value."
+    (%or 'nested-atom
+         (=metadata-sequence)
+         'regex-selector
+         'bracketed-transform-selector
+         'datatype-form
+         'format-form
+         'msl-hash
+         'msl-comment
+         (?seq (?eq #\right_parenthesis) (=metadata-sequence))
+         (?seq (?eq #\right_parenthesis) 'datatype-form)
+         (?seq (?eq #\right_parenthesis) 'format-form)
+         (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
+         (?seq (?eq #\right_parenthesis) (?end)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; single-value parsers (return one value.)
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =msl-filespec ()
-  "Match and return a URI filespec or URL."
-  (=subseq (%some (?satisfies 'alphanumericp))))
+(eval-always
+  (define-parser =msl-filespec ()
+    "Match and return a URI filespec or URL."
+    (=subseq (%some (?satisfies 'alphanumericp))))
 
-(define-parser =msl-hash ()
-  "Match and return a hash value."
-  (=destructure
-      (_ ns hash)
-      (=list (?whitespace)
-             (=subseq (?eq #\#))
-             (=sha256))
-    (list (list ns) (list hash))))
+  (define-parser =msl-hash ()
+    "Match and return a hash value."
+    (=destructure
+        (_ ns hash)
+        (=list (?whitespace)
+               (=subseq (?eq #\#))
+               (=sha256))
+      (list (list ns) (list hash))))
 
-(define-parser =msl-value ()
-  "Match and return a raw value."
-  (%and (?not (?value-terminator))
-        (=destructure
-            (_ value)
-            (=list (?whitespace)
-                   (=subseq (%some (?not (?value-terminator))))))))
+  (define-parser =msl-value ()
+    "Match and return a raw value."
+    (%and (?not (?value-terminator))
+          (=destructure
+              (_ value)
+              (=list (?whitespace)
+                     (=subseq (%some (?not (?value-terminator))))))))
 
-(define-parser =msl-comment ()
-  "Match a comment."
-  (=destructure
-      (_ _ comment)
-      (=list (?whitespace)
-             (maxpc.char:?string "//")
-             (=subseq (%some (?not (%or (?expression-terminator))))))))
+  (define-parser =msl-comment ()
+    "Match a comment."
+    (=destructure
+        (_ _ comment)
+        (=list (?whitespace)
+               (maxpc.char:?string "//")
+               (=subseq (%some (?not (%or (?expression-terminator)))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -286,246 +280,161 @@
 ;; list of values parsers (return a list)
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =@-value ()
-  "Match and return a valid value for @."
-  (%or 'nested-@
-       'nested-group
-       (=msl-value)))
+(eval-always
+  (define-parser =@-value ()
+    "Match and return a valid value for @."
+    (%or 'nested-@
+         'nested-group
+         (=msl-value)))
 
-(define-parser =c-value ()
-  "Match and return a valid value for c."
-  (%or 'nested-@
-       'nested-canon
-       (=msl-value)))
+  (define-parser =c-value ()
+    "Match and return a valid value for c."
+    (%or 'nested-@
+         'nested-canon
+         (=msl-value)))
 
-(define-parser =group-value ()
-  "Match and return a valid value for m w s v."
-  (%or 'nested-@
-       'nested-group
-       'nested-canon
-       (=msl-value)))
+  (define-parser =group-value ()
+    "Match and return a valid value for m w s v."
+    (%or 'nested-@
+         'nested-group
+         'nested-canon
+         (=msl-value)))
 
-(define-parser =regex-selector ()
-  "Match and return the key sequence for /."
-  (=destructure
-      (regex-list)
-      (=list (%some
-              (=destructure
-                  (_ _ regex _ env value)
-                  (=list (?whitespace)
-                         (=regex-namespace)
-                         (=subseq (%some (?satisfies 'regex-char-p)))
-                         (=regex-namespace)
-                         (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
-                         (%maybe (=msl-value)))
-                (list regex env value))))
-    (when regex-list
-      (list (list "/") regex-list nil nil nil nil))))
+  (define-parser =regex-selector ()
+    "Match and return the key sequence for /."
+    (=destructure
+        (regex-list)
+        (=list (%some
+                (=destructure
+                    (_ _ regex _ env value)
+                    (=list (?whitespace)
+                           (=regex-namespace)
+                           (=subseq (%some (?satisfies 'regex-char-p)))
+                           (=regex-namespace)
+                           (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                           (%maybe (=msl-value)))
+                  (list regex env value))))
+      (when regex-list
+        (list (list "/") regex-list nil nil nil nil))))
 
-(define-parser =bracketed-transform-selector ()
-  "Match and return the key sequence for []."
-  (=destructure
-      (transform-list)
-      (=list (%some
-              (=destructure
-                  (_ _ url _)
-                  (=list (?whitespace)
-                         (?eq #\[)
-                         (=msl-filespec)
-                         (?eq #\])))))
-    (when transform-list
-      (list (list "[]") transform-list nil nil nil nil))))
+  (define-parser =bracketed-transform-selector ()
+    "Match and return the key sequence for []."
+    (=destructure
+        (transform-list)
+        (=list (%some
+                (=destructure
+                    (_ _ url _)
+                    (=list (?whitespace)
+                           (?eq #\[)
+                           (=msl-filespec)
+                           (?eq #\])))))
+      (when transform-list
+        (list (list "[]") transform-list nil nil nil nil)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; Mods
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =atom-mods ()
-  "Match and return key sequence for / [] d f namespace."
-  (%or 'regex-selector
-       'datatype-form
-       'format-form
-       'bracketed-transform-selector))
+(eval-always
+  (define-parser =atom-mods ()
+    "Match and return key sequence for / [] d f namespace."
+    (%or 'regex-selector
+         'datatype-form
+         'format-form
+         'bracketed-transform-selector))
 
-(define-parser =format-mods ()
-  "Match and return key sequence for / d f namespace."
-  (%or 'regex-selector
-       'datatype-form
-       'format-form))
+  (define-parser =format-mods ()
+    "Match and return key sequence for / d f namespace."
+    (%or 'regex-selector
+         'datatype-form
+         'format-form))
 
-(define-parser =datatype-mods ()
-  "Match and return key sequence for / namespace."
-  (%or 'regex-selector))
+  (define-parser =datatype-mods ()
+    "Match and return key sequence for / namespace."
+    (%or 'regex-selector)))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; atom forms (single-setter)
 ;;--------------------------------------------------------------------------------------------------
 
-;;; current version
-;; (define-parser =@-form ()
-;;   "Match and return an atom in the @ namespace."
-;;   (let ((atom-val)
-;;         (atom-seq)
-;;         (meta-seq))
-;;     (=destructure
-;;         (_ atom-seq atom-value atom-mods metadata hash _ _)
-;;         (=list (?eq #\left_parenthesis)
-;;                (=transform (=@-sequence)
-;;                            (lambda (seq)
-;;                              (setf atom-seq seq)))
-;;                (=transform (%any (=@-value))
-;;                            (lambda (val)
-;;                              (cond (val (setf atom-val val))
-;;                                    (t (setf atom-val nil)))))
-;;                (%any (=destructure
-;;                          (mod-seq &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                          (=atom-mods)
-;;                        (list (append atom-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))
-;;                (%maybe (%or
-;;                         ;; one or more metadata keys... each one having:
-;;                         (%some (=destructure
-;;                                    (meta-seq meta-value meta-mods)
-;;                                    (%or
-;;                                     ;; a value, maybe mods (META 1, the "value" case.)
-;;                                     ;; %some value + %any mods
-;;                                     (=list (=transform
-;;                                             (=metadata-sequence)
-;;                                             (lambda (seq)
-;;                                               ;;(diag "META 1" seq)
-;;                                               (setf meta-seq seq)))
-;;                                            (%some (=@-value))
-;;                                            (%any (=destructure
-;;                                                      (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                                                      (=atom-mods)
-;;                                                    (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
-;;                                     ;; no value, with mods (META 2, the "no value" case.)
-;;                                     ;; %any value + %some mods
-;;                                     (=list (=transform
-;;                                             (=metadata-sequence)
-;;                                             (lambda (seq)
-;;                                               ;;(diag "META 2" seq)
-;;                                               (setf meta-seq seq)))
-;;                                            (%any (=@-value))
-;;                                            (%some (=destructure
-;;                                                       (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                                                       (=atom-mods)
-;;                                                     (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment)))))
-;;                                  (cons (list (append atom-seq meta-seq) meta-value) meta-mods)))
+(defmacro +@-sequence ()
+  "Define a parser macro for an @ sequence."
+  `(=transform (=@-sequence)
+               (lambda (seq)
+                 (setf %atom-sequence seq))))
 
-;;                         ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
-;;                         ;; %maybe value (if no atom-val) + %any mods
-;;                         (=destructure
-;;                             (meta-seq meta-value meta-mods)
-;;                             (=list (=transform
-;;                                     (=metadata-sequence)
-;;                                     (lambda (seq)
-;;                                       ;;(diag "META 3" seq)
-;;                                       (setf meta-seq seq)))
-;;                                    (?satisfies (lambda (val)
-;;                                                  (declare (ignore val))
-;;                                                  (unless atom-val t))
-;;                                                (%any (=@-value)))
-;;                                    (%any (=destructure
-;;                                              (mod-seq mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                                              (=atom-mods)
-;;                                            (list (append atom-seq meta-seq mod-seq) mod-value mod-mods mod-meta mod-hash mod-comment))))
-;;                           (list (cons (list (append atom-seq meta-seq) meta-value) meta-mods)))))
-;;                (%maybe (=destructure
-;;                            (hash-seq hash-value)
-;;                            (=msl-hash)
-;;                          (list (list (append atom-seq hash-seq) hash-value))))
-;;                (%maybe (=msl-comment))
-;;                (?expression-terminator))
-;;       (append (append-each (append (list (list atom-seq atom-value)) atom-mods)
-;;                            metadata)
-;;               hash))))
+(defmacro +@-value ()
+  "Define a parser macro for an @ value."
+  `(=transform (%any (=@-value))
+               (lambda (val)
+                 (cond (val (setf %atom-value val))
+                       (t (setf %atom-value nil))))))
 
-;; test 1
-;; (define-parser =metadata-value ()
-;;   "Define a parser for matching metadata value"
-;;   (%or
-;;    ;; one or more metadata keys, each one having:
-;;    (progn
-;;      (%some (=destructure
-;;                 (meta-sequence meta-value meta-mods)
-;;                 (%or
-;;                  ;; a value, maybe mods (META 1, the "value" case.)
-;;                  ;; %some value + %any mods
-;;                  (=list (=transform
-;;                          (=metadata-sequence)
-;;                          (lambda (seq)
-;;                            (setf *meta-sequence* seq)))
-;;                         (%some (=@-value))
-;;                         (%any (=destructure
-;;                                   (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                                   (=atom-mods)
-;;                                 (list (append *atom-sequence* *meta-sequence* mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
-;;                  ;; no value, with mods (META 2, the "no value" case.)
-;;                  ;; %any value + %some mods
-;;                  (=list (=transform
-;;                          (=metadata-sequence)
-;;                          (lambda (seq)
-;;                            (setf *meta-sequence* seq)))
-;;                         (%any (=@-value))
-;;                         (%some (=destructure
-;;                                    (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                                    (=atom-mods)
-;;                                  (list (append *atom-sequence* *meta-sequence* mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))))
-;;               (cons (list (append *atom-sequence* meta-sequence) meta-value) meta-mods))))
+(defmacro +mods ()
+  "Define a parser macro for atom mods."
+  `(=destructure
+       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+       (=atom-mods)
+     (list (append %atom-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))
 
-;;    ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
-;;    ;; %maybe value (if no %atom-value) + %any mods
-;;    (progn
-;;      (=destructure
-;;          (meta-sequence meta-value meta-mods)
-;;          (=list (=transform
-;;                  (=metadata-sequence)
-;;                  (lambda (seq)
-;;                    (setf *meta-sequence* seq)))
-;;                 (?satisfies (lambda (val)
-;;                               (declare (ignore val))
-;;                               (unless *atom-value* t))
-;;                             (%any (=@-value)))
-;;                 (%any (=destructure
-;;                           (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                           (=atom-mods)
-;;                         (list (append *atom-sequence* *meta-sequence* mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
-;;        (list (cons (list (append *atom-sequence* meta-sequence) meta-value) meta-mods))))))
+(defmacro +metadata ()
+  "Define a parser macro for metadata."
+  `(%maybe
+    (%or
+     ;; one or more metadata keys... each one having:
+     (%some (=destructure
+                (meta-sequence meta-value meta-mods)
+                (%or
+                 ;; a value, maybe mods (META 1, the "value" case.)
+                 ;; %some value + %any mods
+                 (=list (=transform
+                         (=metadata-sequence)
+                         (lambda (seq)
+                           (setf %meta-sequence seq)))
+                        (%some (=@-value))
+                        (%any (=destructure
+                                  (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
+                                  (=atom-mods)
+                                (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
+                 ;; no value, with mods (META 2, the "no value" case.)
+                 ;; %any value + %some mods
+                 (=list (=transform
+                         (=metadata-sequence)
+                         (lambda (seq)
+                           (setf %meta-sequence seq)))
+                        (%any (=@-value))
+                        (%some (=destructure
+                                   (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
+                                   (=atom-mods)
+                                 (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))))
+              (cons (list (append %atom-sequence %meta-sequence) meta-value) meta-mods)))
 
-;; test 1
-;; (define-parser =@-form ()
-;;   "Match and return an atom in the @ namespace."
-;;   (=destructure
-;;       (_ atom-sequence atom-value atom-mods metadata hash _ _)
-;;       (=list (?eq #\left_parenthesis)
-;;              (=transform (=@-sequence)
-;;                          (lambda (seq)
-;;                            (setf *atom-sequence* seq)))
-;;              (=transform (%any (=@-value))
-;;                          (lambda (val)
-;;                            (if val
-;;                                (setf *atom-value* val)
-;;                                (setf *atom-value* nil))))
-;;              (%any (=destructure
-;;                        (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-;;                        (=atom-mods)
-;;                      (list (append *atom-sequence* mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))
+     ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
+     ;; %maybe value (if no %atom-value) + %any mods
+     (=destructure
+         (meta-sequence meta-value meta-mods)
+         (=list (=transform
+                 (=metadata-sequence)
+                 (lambda (seq)
+                   (setf %meta-sequence seq)))
+                (?satisfies (lambda (val)
+                              (declare (ignore val))
+                              (unless %atom-value t))
+                            (%any (=@-value)))
+                (%any (=destructure
+                          (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
+                          (=atom-mods)
+                        (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
+       (list (cons (list (append %atom-sequence %meta-sequence) meta-value) meta-mods))))))
 
-;;              (%maybe (=metadata-value))
-
-;;              (%maybe (=destructure
-;;                          (hash-seq hash-value)
-;;                          (=msl-hash)
-;;                        (list (list (append *atom-sequence* hash-seq) hash-value))))
-;;              (%maybe (=msl-comment))
-;;              (?expression-terminator))
-;;     (progn
-;;       (clear-specials)
-;;       (append (append-each (append (list (list atom-sequence atom-value)) atom-mods)
-;;                          metadata)
-;;             hash))))
+(defmacro +hash ()
+  "Define a parser macro for hash."
+  `(=destructure
+       (hash-seq hash-value)
+       (=msl-hash)
+     (list (list (append %atom-sequence hash-seq) hash-value))))
 
 (define-parser =@-form ()
   "Match and return an atom in the @ namespace."
@@ -535,67 +444,11 @@
     (=destructure
         (_ atom-sequence atom-value atom-mods metadata hash _ _)
         (=list (?eq #\left_parenthesis)
-               (=transform (=@-sequence)
-                           (lambda (seq)
-                             (setf %atom-sequence seq)))
-               (=transform (%any (=@-value))
-                           (lambda (val)
-                             (cond (val (setf %atom-value val))
-                                   (t (setf %atom-value nil)))))
-               (%any (=destructure
-                         (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-                         (=atom-mods)
-                       (list (append %atom-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))
-               (%maybe (%or
-                        ;; one or more metadata keys... each one having:
-                        (%some (=destructure
-                                   (meta-sequence meta-value meta-mods)
-                                   (%or
-                                    ;; a value, maybe mods (META 1, the "value" case.)
-                                    ;; %some value + %any mods
-                                    (=list (=transform
-                                            (=metadata-sequence)
-                                            (lambda (seq)
-                                              (setf %meta-sequence seq)))
-                                           (%some (=@-value))
-                                           (%any (=destructure
-                                                     (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-                                                     (=atom-mods)
-                                                   (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
-                                    ;; no value, with mods (META 2, the "no value" case.)
-                                    ;; %any value + %some mods
-                                    (=list (=transform
-                                            (=metadata-sequence)
-                                            (lambda (seq)
-                                              (setf %meta-sequence seq)))
-                                           (%any (=@-value))
-                                           (%some (=destructure
-                                                      (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-                                                      (=atom-mods)
-                                                    (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment)))))
-                                 (cons (list (append %atom-sequence %meta-sequence) meta-value) meta-mods)))
-
-                        ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
-                        ;; %maybe value (if no %atom-value) + %any mods
-                        (=destructure
-                            (meta-sequence meta-value meta-mods)
-                            (=list (=transform
-                                    (=metadata-sequence)
-                                    (lambda (seq)
-                                      (setf %meta-sequence seq)))
-                                   (?satisfies (lambda (val)
-                                                 (declare (ignore val))
-                                                 (unless %atom-value t))
-                                               (%any (=@-value)))
-                                   (%any (=destructure
-                                             (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-                                             (=atom-mods)
-                                           (list (append %atom-sequence %meta-sequence mod-sequence) mod-value mod-mods mod-meta mod-hash mod-comment))))
-                          (list (cons (list (append %atom-sequence %meta-sequence) meta-value) meta-mods)))))
-               (%maybe (=destructure
-                           (hash-seq hash-value)
-                           (=msl-hash)
-                         (list (list (append %atom-sequence hash-seq) hash-value))))
+               (+@-sequence)
+               (+@-value)
+               (%any (+mods))
+               (%maybe (+metadata))
+               (%maybe (+hash))
                (%maybe (=msl-comment))
                (?expression-terminator))
       (append (append-each (append (list (list atom-sequence atom-value)) atom-mods)
@@ -962,7 +815,6 @@
 ;;                    metadata)
 ;;       )))
 
-;;; current parser
 (define-parser =datatype-form ()
   "Match and return an atom in the d namespace."
   (let ((atom-val))
@@ -1023,7 +875,9 @@
 
 (define-parser =prelude-form ()
   "Match and return an atom in the msl namespace."
-  (let ((atom-val) (atom-seq) (meta-seq))
+  (let ((atom-val)
+        (atom-seq)
+        (meta-seq))
     (=destructure
         (_ atom-seq atom-value atom-mods metadata hash _ _)
         (=list (?eq #\left_parenthesis)
