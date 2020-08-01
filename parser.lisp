@@ -39,13 +39,9 @@
         (t (append-each (append base-list (car item-list))
                         (cdr item-list)))))
 
-(defun diag (&optional message value)
-  "Print a diagnostic message."
-  (format t "~%~5T>>> ~A ~A~%~%" message value))
-
 
 ;;--------------------------------------------------------------------------------------------------
-;; test parsers (don't return a value)
+;; test parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
@@ -241,38 +237,38 @@
 
 ;;--------------------------------------------------------------------------------------------------
 ;; nested expressions parsers
-;; NOTE: the symbols used in this section must be quoted because they are forward references
 ;;--------------------------------------------------------------------------------------------------
 
-(define-parser =nested-@ ()
-  "Match and return a nested atom."
-  (=destructure
-      (_ atom)
-      (=list (?whitespace)
-             '@-form)))
+(eval-always
+  (define-parser =nested-@ ()
+    "Match and return a nested atom."
+    (=destructure
+        (_ atom)
+        (=list (?whitespace)
+               '@-form)))
 
-(define-parser =nested-atom ()
-  "Match and return a nested atom."
-  (=destructure
-      (_ atom)
-      (=list (?whitespace)
-             (%or '@-form
-                  'canon-form
-                  'grouping-form))))
+  (define-parser =nested-atom ()
+    "Match and return a nested atom."
+    (=destructure
+        (_ atom)
+        (=list (?whitespace)
+               (%or '@-form
+                    'canon-form
+                    'grouping-form))))
 
-(define-parser =nested-group ()
-  "Match and return a nested atom."
-  (=destructure
-      (_ atom)
-      (=list (?whitespace)
-             'grouping-form)))
+  (define-parser =nested-group ()
+    "Match and return a nested atom."
+    (=destructure
+        (_ atom)
+        (=list (?whitespace)
+               'grouping-form)))
 
-(define-parser =nested-canon ()
-  "Match and return a nested atom."
-  (=destructure
-      (_ atom)
-      (=list (?whitespace)
-             'canon-form)))
+  (define-parser =nested-canon ()
+    "Match and return a nested atom."
+    (=destructure
+        (_ atom)
+        (=list (?whitespace)
+               'canon-form))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -332,7 +328,7 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; Mods
+;; mods
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
@@ -437,24 +433,29 @@
   "Define a macro for defining parsers."
   (let ((modp (mem sequence '((=format-sequence)
                               (=datatype-sequence)))))
-    `(define-parser ,name ()
-       (let ((%atom-value)
-             (%atom-sequence)
-             (%meta-sequence))
-         (=destructure
-             (,@(if modp '(_ _) '(_)) atom-sequence atom-value atom-mods metadata hash _ _)
-             (=list ,@(if modp '((?whitespace) (?expression-starter)) '((?expression-starter)))
-                    (+sequence ,sequence)
-                    (+value ,value)
-                    (%any (+atom-mods))
-                    (%maybe (+metadata ,value))
-                    (%maybe (+hash))
-                    (%maybe (=msl-comment))
-                    (?expression-terminator))
-           ;; NOTE: generalize this
-           (append (append-each (append (list (list atom-sequence atom-value)) atom-mods)
-                                metadata)
-                   hash))))))
+    (macrolet ((ml (symbol-1 symbol-2)
+                 `(if modp
+                      (list ',symbol-1 ',symbol-2)
+                      (list ',symbol-2))))
+      `(define-parser ,name ()
+         (let ((%atom-value)
+               (%atom-sequence)
+               (%meta-sequence))
+           (=destructure
+               (,@(ml _ _) atom-sequence atom-value atom-mods metadata hash _ _)
+               (=list ,@(ml (?whitespace) (?expression-starter))
+                      (+sequence ,sequence)
+                      (+value ,value)
+                      (%any (+atom-mods))
+                      (%maybe (+metadata ,value))
+                      (%maybe (+hash))
+                      (%maybe (=msl-comment))
+                      (?expression-terminator))
+             ;; NOTE: generalize this
+             ;;(dbg atom-mods)
+             (append (append-each (cons (list atom-sequence atom-value) atom-mods)
+                                  metadata)
+                     hash)))))))
 
 (assemble-parser =@-form (=@-sequence) (=@-value))
 (assemble-parser =canon-form (=canon-sequence) (=c-value))
