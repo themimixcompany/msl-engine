@@ -59,8 +59,7 @@
 
   (define-parser =sha256 ()
     "Match and return a SHA-256 string."
-    (=subseq (?seq (?satisfies 'length-64-p
-                               (=subseq (%some 'hexp))))))
+    (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some 'hexp))))))
 
   (define-parser =msl-key ()
     "Match and return a valid MSL key."
@@ -372,7 +371,7 @@
                  (cond (val (setf %atom-value val))
                        (t (setf %atom-value nil))))))
 
-(defmacro +mods ()
+(defmacro +atom-mods ()
   "Define a parser macro for atom mods."
   `(=destructure
        (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
@@ -396,45 +395,34 @@
               meta-value)
         meta-mods))
 
+(defmacro +metadata-sequence ()
+  "Define a parser macro for metadata sequence"
+  `(=transform
+    (=metadata-sequence)
+    (lambda (seq)
+      (setf %meta-sequence seq))))
+
 (defmacro +metadata (value)
   "Define a parser macro for metadata."
-  `(%maybe
-    (%or
-     ;; one or more metadata keys, each one having:
-     (%some (=destructure
-                (meta-sequence meta-value meta-mods)
-                (%or
-                 ;; a value, maybe mods (META 1, the "value" case.)
-                 ;; %some value + %any mods
-                 (=list (=transform
-                         (=metadata-sequence)
-                         (lambda (seq)
-                           (setf %meta-sequence seq)))
-                        (%some ,value)
-                        (%any (+metadata-mods)))
-                 ;; no value, with mods (META 2, the "no value" case.)
-                 ;; %any value + %some mods
-                 (=list (=transform
-                         (=metadata-sequence)
-                         (lambda (seq)
-                           (setf %meta-sequence seq)))
-                        (%any ,value)
-                        (%some (+metadata-mods))))
-              (build-items %atom-sequence %meta-sequence meta-value meta-mods)))
-     ;; single metadata key, no value, maybe mods (META 3, the ":birthday trap.")
-     ;; %maybe value (if no %atom-value) + %any mods
-     (=destructure
-         (meta-sequence meta-value meta-mods)
-         (=list (=transform
-                 (=metadata-sequence)
-                 (lambda (seq)
-                   (setf %meta-sequence seq)))
-                (?satisfies (lambda (val)
-                              (declare (ignore val))
-                              (unless %atom-value t))
-                            (%any ,value))
-                (%any (+metadata-mods)))
-       (list (build-items %atom-sequence %meta-sequence meta-value meta-mods))))))
+  `(%some (=destructure
+             (meta-sequence meta-value meta-mods)
+             (%or
+              ;; a value, with zero or more metadata mods
+              (=list (+metadata-sequence)
+                     (%some ,value)
+                     (%any (+metadata-mods)))
+              ;; zero or more values, with mods
+              (=list (+metadata-sequence)
+                     (%any ,value)
+                     (%some (+metadata-mods)))
+              ;; no atom value, zero or more metadata mods; the birthday trap
+              (=list (+metadata-sequence)
+                     (?satisfies (lambda (_)
+                                   (declare (ignore _))
+                                   (unless %atom-value t))
+                                 (%any ,value))
+                     (%any (+metadata-mods))))
+           (build-items %atom-sequence %meta-sequence meta-value meta-mods))))
 
 (defmacro +hash ()
   "Define a parser macro for hash."
@@ -454,7 +442,7 @@
            (=list (?expression-starter)
                   (+sequence ,sequence)
                   (+value ,value)
-                  (%any (+mods))
+                  (%any (+atom-mods))
                   (%maybe (+metadata ,value))
                   (%maybe (+hash))
                   (%maybe (=msl-comment))
