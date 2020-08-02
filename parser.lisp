@@ -33,11 +33,11 @@
                   #\left_parenthesis #\right_parenthesis
                   #\[ #\] #\{ #\}))))
 
-(defun append-each (base-list item-list)
-  "Append BASE-LIST to each item of ITEM-LIST."
-  (cond ((null item-list) base-list)
-        (t (append-each (append base-list (car item-list))
-                        (cdr item-list)))))
+(defun append-each (base-list items-list)
+  "Append BASE-LIST to each item of ITEMS-LIST."
+  (cond ((null items-list) base-list)
+        (t (append-each (append base-list (car items-list))
+                        (cdr items-list)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -92,7 +92,7 @@
     "Match and return the : namespace."
     (=subseq (?eq #\:)))
 
-  (define-parser =canon-namespace ()
+  (define-parser =c-namespace ()
     "Match and return the c namespace."
     (=subseq (?eq #\c)))
 
@@ -126,11 +126,11 @@
                       (?whitespace)))
            (=msl-key)))
 
-  (define-parser =canon-sequence ()
+  (define-parser =c-sequence ()
     "Match and return the key sequence for canon."
     (=list (=destructure
                (ns _)
-               (=list (=canon-namespace)
+               (=list (=c-namespace)
                       (?whitespace)))
            (=msl-key)))
 
@@ -253,7 +253,7 @@
         (_ atom)
         (=list (?whitespace)
                (%or '@-form
-                    'canon-form
+                    'c-form
                     'grouping-form))))
 
   (define-parser =nested-group ()
@@ -268,7 +268,7 @@
     (=destructure
         (_ atom)
         (=list (?whitespace)
-               'canon-form))))
+               'c-form))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@
          'nested-canon
          (=msl-value)))
 
-  (define-parser =group-value ()
+  (define-parser =grouping-value ()
     "Match and return a valid value for m w s v."
     (%or 'nested-@
          'nested-group
@@ -429,7 +429,7 @@
        (=msl-hash)
      (list (list (append %atom-sequence hash-seq) hash-value))))
 
-(defmacro assemble-parser (name sequence value)
+(defmacro define-parser-form (name sequence value)
   "Define a macro for defining parsers."
   (let ((modp (mem sequence '((=format-sequence)
                               (=datatype-sequence)))))
@@ -451,18 +451,17 @@
                       (%maybe (+hash))
                       (%maybe (=msl-comment))
                       (?expression-terminator))
-             ;; NOTE: generalize this
-             ;;(dbg atom-mods)
-             (append (append-each (cons (list atom-sequence atom-value) atom-mods)
-                                  metadata)
-                     hash)))))))
+             (let* ((head (list (list atom-sequence atom-value)))
+                    (meta (reduce-append metadata))
+                    (value (reduce-append head atom-mods meta hash)))
+               value)))))))
 
-(assemble-parser =@-form (=@-sequence) (=@-value))
-(assemble-parser =canon-form (=canon-sequence) (=c-value))
-(assemble-parser =grouping-form (=grouping-sequence) (=group-value))
-(assemble-parser =prelude-form (=prelude-sequence) (=msl-value))
-(assemble-parser =format-form-2 (=format-sequence) (=msl-value))
-(assemble-parser =datatype-form-2 (=datatype-sequence) (=msl-value))
+(define-parser-form =@-form (=@-sequence) (=@-value))
+(define-parser-form =c-form (=c-sequence) (=c-value))
+(define-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
+(define-parser-form =prelude-form (=prelude-sequence) (=msl-value))
+(define-parser-form =format-form-2 (=format-sequence) (=msl-value))
+(define-parser-form =datatype-form-2 (=datatype-sequence) (=msl-value))
 
 (define-parser =format-form ()
   "Match and return an atom in the f namespace."
@@ -562,7 +561,7 @@
   "Match and return an MSL expression."
   (%or (=@-form)
        (=grouping-form)
-       (=canon-form)
+       (=c-form)
        (=prelude-form)
        (=datatype-form)
        (=format-form)
