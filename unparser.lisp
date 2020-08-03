@@ -81,20 +81,44 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun* wrap (list)
-  "Return a new list where items in LIST are conditionally listified."
+(defun* foo (value)
+  ""
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((string= (car args) ":")
+                    (fn (cddr args) (cons (cat (car args) (cadr args))
+                                          acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (if (and (consp value) (not (termsp value)))
+        (fn value nil)
+        value)))
+
+(defun* merge-sequences (item)
+  "Conditionally merge the key sequences in ITEM."
+  (if (rmap-or item #'basep #'metadatap)
+      (cons (cat (car item) (cadr item))
+            (cddr item))
+      item))
+
+;;; note: do not perform merging with c and friends
+(defun* merge-all-sequences (items)
+  "Conditionally merge the key sequences in ITEMS."
+  (let ((value (loop :for item :in items :collect (merge-sequences item))))
+    (if (every #'consp value)
+        (loop :for val :in value
+              :collect (mapcar #'foo val))
+        value)))
+
+(defun* wrap (items)
+  "Conditionally listify the items in ITEMS."
   (mapcar #'(lambda (item)
               (cond ((or (atom item)
                          (and (consp item)
                               (not (metamodsp item))
                               (not (stringp (car item)))))
                      (list item))
-                    ((or (basep item)
-                         (metadatap item))
-                     (cons (cat (car item) (cadr item))
-                           (cddr item)))
                     (t item)))
-          list))
+          items))
 
 (defun* stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
@@ -105,7 +129,7 @@
                         (cons (flatten-list (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
-                        (cons (flatten-1 (wrap (fn (car args) nil)))
+                        (cons (flatten-1 (wrap (merge-all-sequences (fn (car args) nil))))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
@@ -224,7 +248,7 @@
                             (flatten-1 (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
-          :collect (flatten-1 (wrap (join-items (stage value)))))))
+          :collect (flatten-1 (wrap (merge-all-sequences (join-items (stage value))))))))
 
 (defun* join-items (list)
   "Join the the items in LIST that should be together."
@@ -281,7 +305,7 @@
   "Return true if there’s only one path in PATHS and that there’s only a head."
   (head-only-p (and (length= value 1) (car value))))
 
-(defun has-head-p (sections)
+(defun* has-head-p (sections)
   "Return true if SECTIONS contain a head section."
   (when sections
     (destructuring-bind (head &optional &rest _)
@@ -355,16 +379,6 @@
              strip)
             (t (sections head :post t))))))
 
-(defun distill (head sections)
-  "Return a final, processed string value from SECTIONS."
-  (flet ((fn (head sections)
-           (if (has-head-p sections)
-               sections
-               (cons head sections))))
-    (when sections
-      (let ((value (fn head sections)))
-        (list-string (flatten-1 (wrap (stage value))))))))
-
 (defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (and (head-only-p (car deconstruct))
@@ -399,6 +413,16 @@
                      :collect (let ((v (reduce-exprs section)))
                                 v))))
 
+(defun* distill (head sections)
+  "Return a final, processed string value from SECTIONS."
+  (flet ((fn (head sections)
+           (if (has-head-p sections)
+               sections
+               (cons head sections))))
+    (when sections
+      (let ((value (fn head sections)))
+        (list-string (flatten-1 (wrap (merge-all-sequences (stage value)))))))))
+
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (when dispatch (dispatch expr :log t :force nil))
@@ -409,8 +433,7 @@
              (sections (sections head :post t)))
         (cond ((head-only-paths-p deconstruct)
                (distill head (reduce-sections sections)))
-              (t
-               (distill head (reduce-matched-sections paths sections))))))))
+              (t (distill head (reduce-matched-sections paths sections))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
