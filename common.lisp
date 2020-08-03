@@ -225,3 +225,11 @@ body contents of the parser function."
   (if (string= (last* path) "/")
       path
       (append path '("/"))))
+
+(defun* prefix-terms (prefix terms)
+  "Add PREFIX to the paths in TERMS."
+  (when (termsp terms)
+    (loop :for term :in terms
+          :collect (destructuring-bind (path &optional &rest value)
+                       term
+                     (cons (append prefix path) value)))))

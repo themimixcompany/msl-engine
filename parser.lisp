@@ -33,12 +33,6 @@
                   #\left_parenthesis #\right_parenthesis
                   #\[ #\] #\{ #\}))))
 
-(defun append-each (base-list items-list)
-  "Append BASE-LIST to each item of ITEMS-LIST."
-  (cond ((null items-list) base-list)
-        (t (append-each (append base-list (car items-list))
-                        (cdr items-list)))))
-
 
 ;;--------------------------------------------------------------------------------------------------
 ;; test parsers
@@ -332,21 +326,24 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =atom-mods ()
-    "Match and return key sequence for / [] d f namespace."
+  (define-parser =atom-mods-1 ()
+    "Match and return key sequence for the the /, and [] namespaces."
     (%or 'regex-selector
-         'datatype-form
-         'format-form
          'bracketed-transform-selector))
 
+  (define-parser =atom-mods-2 ()
+    "Match and return key sequence for the d, and f namespaces."
+    (%or 'datatype-form
+         'format-form))
+
   (define-parser =format-mods ()
-    "Match and return key sequence for / d f namespace."
+    "Match and return key sequence for the /, d, and f namespaces."
     (%or 'regex-selector
          'datatype-form
          'format-form))
 
   (define-parser =datatype-mods ()
-    "Match and return key sequence for / namespace."
+    "Match and return key sequence for the / namespace."
     (%or 'regex-selector)))
 
 
@@ -367,36 +364,57 @@
                  (cond (val (setf %atom-value val))
                        (t (setf %atom-value nil))))))
 
-(defmacro +atom-mods ()
-  "Define a variable capturing parser macro for atom mods."
+(defmacro +atom-mods-1 ()
+  "Define a variable capturing parser macro for type 1 atom mods."
   `(=destructure
        (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-       (=atom-mods)
-     (list (append %atom-sequence mod-sequence)
-           mod-value
-           mod-mods mod-meta mod-hash mod-comment)))
+       (=atom-mods-1)
+     (list (list (append %atom-sequence mod-sequence)
+                 mod-value mod-mods mod-meta mod-hash mod-comment))))
+
+(defmacro +atom-mods-2 ()
+  "Define a variable capturing parser macro for type 2 atom mods."
+  `(=transform (=atom-mods-2)
+               (lambda (terms)
+                 (let ((value (prefix-terms %atom-sequence terms)))
+                   value))))
+
+(defmacro +atom-mods ()
+  "Define a parser for handling atom mods."
+  `(%or (+atom-mods-1)
+        (+atom-mods-2)))
+
+(defmacro +metadata-mods-1 ()
+  "Define a variable capturing parser macro for type 1 metadata mods."
+  `(=destructure
+       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+       (=atom-mods-1)
+     (list (list (append %atom-sequence %meta-sequence mod-sequence)
+           mod-value mod-mods mod-meta mod-hash mod-comment))))
+
+(defmacro +metadata-mods-2 ()
+  "Define a variable capturing parser macro for type 2 metadata mods."
+  `(=transform (=atom-mods-2)
+               (lambda (terms)
+                 (prefix-terms (append %atom-sequence %meta-sequence)
+                               terms))))
 
 (defmacro +metadata-mods ()
-  "Define a variable capturing parser macro for handling metadata mods"
-  `(=destructure
-       (mod-sequence mod-value mod-mods mod-meta mod-hash mod-comment)
-       (=atom-mods)
-     (list (append %atom-sequence %meta-sequence mod-sequence)
-           mod-value
-           mod-mods mod-meta mod-hash mod-comment)))
+  "Define a parser for handling metadata mods."
+  `(%or (+metadata-mods-1)
+        (+metadata-mods-2)))
+
+(defmacro +metadata-sequence ()
+  "Define a variable capturing parser macro for metadata sequence"
+  `(=transform (=metadata-sequence)
+               (lambda (seq)
+                 (setf %meta-sequence seq))))
 
 (defun build-items (atom-sequence meta-sequence meta-value meta-mods)
   "Return a list for +METADATA processing."
   (cons (list (append atom-sequence meta-sequence)
               meta-value)
         meta-mods))
-
-(defmacro +metadata-sequence ()
-  "Define a variable capturing parser macro for metadata sequence"
-  `(=transform
-    (=metadata-sequence)
-    (lambda (seq)
-      (setf %meta-sequence seq))))
 
 (defmacro +metadata (value)
   "Define a variable capturing parser macro for metadata."
@@ -420,7 +438,9 @@
                             (%any ,value))
                 (%any (+metadata-mods))))
       (declare (ignore meta-sequence))
-      (build-items %atom-sequence %meta-sequence meta-value meta-mods))))
+      (let* ((mods (reduce-append meta-mods))
+             (value (build-items %atom-sequence %meta-sequence meta-value mods)))
+        value))))
 
 (defmacro +hash ()
   "Define a variable capturing parser macro for hash."
@@ -452,110 +472,17 @@
                       (%maybe (=msl-comment))
                       (?expression-terminator))
              (let* ((head (list (list atom-sequence atom-value)))
+                    (mods (reduce-append atom-mods))
                     (meta (reduce-append metadata))
-                    (value (reduce-append head atom-mods meta hash)))
+                    (value (reduce-append head mods meta hash)))
                value)))))))
 
 (define-parser-form =@-form (=@-sequence) (=@-value))
 (define-parser-form =c-form (=c-sequence) (=c-value))
 (define-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
 (define-parser-form =prelude-form (=prelude-sequence) (=msl-value))
-(define-parser-form =format-form-2 (=format-sequence) (=msl-value))
-(define-parser-form =datatype-form-2 (=datatype-sequence) (=msl-value))
-
-(define-parser =format-form ()
-  "Match and return an atom in the f namespace."
-  (let ((saved-val))
-    (=destructure
-        (_ _ atom-seq atom-value atom-mods metadata comment _)
-        (=list (?whitespace)
-               (?eq #\left_parenthesis)
-               (=format-sequence)
-               (=transform (%any (=msl-value))
-                           (lambda (val)
-                             (cond (val (setf saved-val val))
-                                   (t (setf saved-val nil)))))
-               (%maybe (=format-mods))
-               (%maybe (%or
-                        (%some (=destructure
-                                   (meta-seq meta-value meta-mods)
-                                   (%or
-                                    (=list (=metadata-sequence)
-                                           (=msl-value)
-                                           (%any (=format-mods)))
-                                    (=list (=metadata-sequence)
-                                           (%maybe (=msl-value))
-                                           (%some (=format-mods))))
-                                 (list meta-seq meta-value meta-mods)))
-                        (=destructure
-                            (meta-seq meta-value meta-mods)
-                            (=list (=metadata-sequence)
-                                   (?satisfies (lambda (val)
-                                                 (declare (ignore val)) (unless saved-val t))
-                                               (%maybe (=msl-value)))
-                                   (%any (=format-mods)))
-                          (list meta-seq meta-value meta-mods))))
-               (%maybe (=msl-comment))
-               (?expression-terminator))
-      (list atom-seq atom-value atom-mods metadata nil comment))))
-
-(define-parser =datatype-form ()
-  "Match and return an atom in the d namespace."
-  (let ((atom-val))
-    (=destructure
-        (_ _ atom-seq atom-value atom-mods metadata comment _)
-        (=list (?whitespace)
-               (?eq #\left_parenthesis)
-               (=datatype-sequence)
-               (=transform (%any (=msl-value))
-                           (lambda (val)
-                             (cond (val (setf atom-val val))
-                                   (t (setf atom-val nil)))))
-               (%maybe (=datatype-mods))
-               (%maybe (%or (%some (=destructure
-                                       (meta-seq meta-value meta-mods)
-                                       (%or (=list (=metadata-sequence)
-                                                   (=msl-value)
-                                                   (%any (=datatype-mods)))
-                                            (=list (=metadata-sequence)
-                                                   (%maybe (=msl-value))
-                                                   (%some (=datatype-mods))))
-                                     (list meta-seq meta-value meta-mods)))
-                            (=destructure
-                                (meta-seq meta-value meta-mods)
-                                (=list (=metadata-sequence)
-                                       (?satisfies (lambda (val)
-                                                     (declare (ignore val))
-                                                     (unless atom-val t))
-                                                   (%maybe (=msl-value)))
-                                       (%any (=datatype-mods)))
-                              (list meta-seq meta-value meta-mods))))
-               (%maybe (=msl-comment))
-               (?expression-terminator))
-      (list atom-seq atom-value atom-mods metadata nil comment))))
-
-(defun setup (value)
-  "Return a value suitable for =@-FORM from the shorter version of =DATATYPE-FORM"
-  (destructuring-bind (atom-seq atom-value atom-mods metadata hash comment)
-      value
-    (declare (ignorable atom-value atom-mods metadata hash comment))
-    (list (list atom-seq atom-value)
-          (when atom-mods
-            (destructuring-bind (head &rest body)
-                atom-mods
-              (declare (ignorable body))
-              (append (list (append atom-seq head) body))))
-          (when metadata
-            (loop :for meta :in metadata
-                  :collect (destructuring-bind (path &rest body)
-                               meta
-                             (cons (append atom-seq path) body))))
-          nil
-          nil)))
-
-(defun setup-print (value)
-  "Display the results of applying SETUP to VALUE."
-  (format t "~{~S~%~}" (setup value)))
+(define-parser-form =format-form (=format-sequence) (=msl-value))
+(define-parser-form =datatype-form (=datatype-sequence) (=msl-value))
 
 (define-parser =msl-expression ()
   "Match and return an MSL expression."
