@@ -81,8 +81,8 @@
                     (t (append x y))))
           (marshall list)))
 
-(defun* foo (value)
-  ""
+(defun* merge-colons (value)
+  "Merge the colons and keys in VALUE."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
                    ((string= (car args) ":")
@@ -106,7 +106,7 @@
   (let ((value (loop :for item :in items :collect (merge-sequences item))))
     (if (every #'consp value)
         (loop :for val :in value
-              :collect (mapcar #'foo val))
+              :collect (mapcar #'merge-colons val))
         value)))
 
 (defun* wrap (items)
