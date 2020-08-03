@@ -167,25 +167,20 @@
                    ;; point is empty, there are no (d) and (f), and there are no params
                    ((and (null point)
                          (null flag)
-                         (null parameters)
-                         )
+                         (null parameters))
                     nil)
 
                    ;; point is empty, there are no (d) and (f), and there are params
                    ((and (null point)
-                         ;;(null flag)
                          parameters)
-                    ;(dbg flag parameters)
                     (fn '("=") flag atom-tab sub-atom-tab)
-                    ;; (when flag
-                    ;;   (fn (sub-atom-path path) nil sub-atom-tab))
-                    )
+                    (when flag
+                      (fn (sub-atom-path path) nil sub-atom-tab)))
 
                    ;; point is empty, there is (d) and (f)
                    ;; write to the sub-atom table
                    ((and (null point)
                          flag)
-                    ;(dbg flag parameters)
                     (fn (sub-atom-path path) nil sub-atom-tab))
 
                    ;; save the value, where the single of point, is the table key
