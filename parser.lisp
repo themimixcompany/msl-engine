@@ -6,8 +6,7 @@
         #:maxpc
         #:marie)
   (:export #:parse-msl
-           #:parse-setters
-           #:parse-explain))
+           #:parse-setters))
 
 (in-package #:streams/parser)
 
@@ -65,10 +64,6 @@
   (define-parser =@-namespace ()
     "Match and return the @ namespace."
     (=subseq (?eq #\@)))
-
-  (define-parser =atom-namespace ()
-    "Match and return an atom namespace."
-    (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v #\c #\@))))))
 
   (define-parser =grouping-namespace ()
     "Match and return m w s v namespace."
