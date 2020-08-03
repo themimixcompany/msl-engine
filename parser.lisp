@@ -30,7 +30,7 @@
   "Return true if CHAR is a valid regex character."
   (or (alphanumericp char)
       (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
-                  #\left_parenthesis #\right_parenthesis
+                  #\( #\)
                   #\[ #\] #\{ #\}))))
 
 
@@ -171,11 +171,11 @@
 (eval-always
   (define-parser ?expression-starter ()
     "Match the end of an expression."
-    (?seq (?eq #\left_parenthesis)))
+    (?seq (?eq #\()))
 
   (define-parser ?expression-terminator ()
     "Match the end of an expression."
-    (?seq (?eq #\right_parenthesis)))
+    (?seq (?eq #\))))
 
   (define-parser ?value-terminator ()
     "Match the end of a value."
@@ -187,11 +187,17 @@
          'format-form
          'msl-hash
          'msl-comment
-         (?seq (?eq #\right_parenthesis) (=metadata-sequence))
-         (?seq (?eq #\right_parenthesis) 'datatype-form)
-         (?seq (?eq #\right_parenthesis) 'format-form)
-         (?seq (?eq #\right_parenthesis) (?eq #\right_parenthesis))
-         (?seq (?eq #\right_parenthesis) (?end)))))
+         (?seq (?eq #\)) 'nested-atom)
+         (?seq (?eq #\)) (=metadata-sequence))
+         (?seq (?eq #\)) 'regex-selector)
+         (?seq (?eq #\)) 'bracketed-transform-selector)
+         (?seq (?eq #\)) 'datatype-form)
+         (?seq (?eq #\)) 'format-form)
+         (?seq (?eq #\)) 'msl-hash)
+         (?seq (?eq #\)) 'msl-comment)
+         ;;(?seq (?eq #\)) (=element))
+         (?seq (?eq #\)) (?eq #\)))
+         (?seq (?eq #\)) (?end)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
