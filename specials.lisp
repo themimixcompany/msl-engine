@@ -77,11 +77,6 @@
     5242880
     "The maximum filesize of logging files in bytes.")
 
-(defvar* *machine*
-  "my-machine"
-  ;;(uiop:hostname)
-  "The default name to use as the machine name.")
-
 (defun* system-object (name)
   "Return the system object for the current system."
   (asdf:find-system (intern name (find-package :keyword))))
@@ -103,11 +98,16 @@
          (forms (uiop:read-file-forms (uiop:merge-pathnames* asdf-base-name source-directory))))
     (getf (assoc 'defsystem forms :test #'equal) :version)))
 
+(defvar* *machine*
+  ;;(uiop:hostname)
+  "my-machine"
+  "The default name to use as the machine name.")
+
 (defvar* *system-version*
     ;; (uiop:os-cond
     ;;  ((uiop:os-windows-p) (system-version +self+))
     ;;  (t (asdf:system-version (system-object +self+))))
-  "2.3.19"
+  "2.4.0"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
@@ -117,3 +117,7 @@
 (defvar* *debug-print*
   t
   "Whether to print debugging information using a dedicated outputter.")
+
+(defvar* *restore-log*
+  nil
+  "Whether to restore data from the log files.")

@@ -22,8 +22,9 @@
 
 (defun restore-log-data ()
   "Restore the most recent log log file."
-  (ensure-log-file-exists)
-  (restore-log))
+  (when *restore-log*
+    (ensure-log-file-exists)
+    (restore-log)))
 
 (defun main ()
   "Run the module."
