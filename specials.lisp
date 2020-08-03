@@ -119,5 +119,5 @@
   "Whether to print debugging information using a dedicated outputter.")
 
 (defvar* *restore-log*
-  nil
+  t
   "Whether to restore data from the log files.")

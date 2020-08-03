@@ -16,7 +16,7 @@
 ;; general helpers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun sub-atom-index (path)
+(defun* sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
   (when (and (consp path)
              (not (uiop:emptyp path)))
@@ -31,14 +31,14 @@
   (when-let ((index (sub-atom-index path)))
     (subseq path index)))
 
-(defun sub-atom-path-p (path)
+(defun* sub-atom-path-p (path)
   "Return true if PATH starts with a sub-atom path."
   (destructuring-bind (ns &optional &rest _)
       path
     (declare (ignore _))
     (sub-namespace-p ns)))
 
-(defun has-sub-atom-path-p (path)
+(defun* has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (when*
     (sub-atom-index path)
@@ -162,34 +162,38 @@
   (destructuring-bind (path &optional params)
       term
     (let ((parameters (if whole params (car params))))
-      (labels ((fn (point flag atom-tab sub-atom-tab)
+      (labels ((fn (point flag atom-tab &optional sub-atom-tab)
                  (cond
                    ;; point is empty, there are no (d) and (f), and there are no params
                    ((and (null point)
                          (null flag)
-                         (null parameters))
+                         (null parameters)
+                         )
                     nil)
-
-                   ;; point is empty, there is (d) and (f)
-                   ((and (null point)
-                         flag)
-                    (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab))
 
                    ;; point is empty, there are no (d) and (f), and there are params
                    ((and (null point)
-                         (null flag)
+                         ;;(null flag)
                          parameters)
-                    (fn '("=") flag atom-tab sub-atom-tab))
+                    ;(dbg flag parameters)
+                    (fn '("=") flag atom-tab sub-atom-tab)
+                    ;; (when flag
+                    ;;   (fn (sub-atom-path path) nil sub-atom-tab))
+                    )
+
+                   ;; point is empty, there is (d) and (f)
+                   ;; write to the sub-atom table
+                   ((and (null point)
+                         flag)
+                    ;(dbg flag parameters)
+                    (fn (sub-atom-path path) nil sub-atom-tab))
 
                    ;; save the value, where the single of point, is the table key
-                   ;; if there are (d) and (f) descend into them
                    ((and (singlep point)
                          (key-indicator-p (single point)))
-                    (save-value term point atom-tab parameters)
-                    (when flag
-                      (fn (sub-atom-path path) nil sub-atom-tab sub-atom-tab)))
+                    (save-value term point atom-tab parameters))
 
-                   ;; recurse, creating new sub tables
+                   ;; creating new sub tables
                    (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
         (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
         (read-term term atom-table sub-atom-table)))))
@@ -239,7 +243,7 @@
     (declare (ignore path))
     (not (null* value))))
 
-(defun pre-process-terms (terms)
+(defun* pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
   (let ((%terms (loop :for term :in terms
                       :when (or (head-term-p term)

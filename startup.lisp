@@ -22,14 +22,14 @@
 
 (defun restore-log-data ()
   "Restore the most recent log log file."
-  (when *restore-log*
-    (ensure-log-file-exists)
-    (restore-log)))
+  (ensure-log-file-exists)
+  (restore-log))
 
 (defun main ()
   "Run the module."
   (initialize-universe)
   (print-banner)
-  (restore-log-data))
+  (when *restore-log*
+    (restore-log-data)))
 
 (main)
