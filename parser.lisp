@@ -456,6 +456,20 @@
        (=hash)
      (list (list (append %atom-sequence hash-seq) hash-value))))
 
+(defmacro +@-metadata* ()
+  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
+  `(=destructure
+       (_ atom-sequence metadata hash _ _)
+       (=list (?expression-starter)
+              (=@-sequence)
+              (=metadata-sequence*)
+              (%maybe (+hash))
+              (%maybe (=comment))
+              (?expression-terminator))
+     (declare (ignore hash))
+     (list (list atom-sequence nil)
+           (list (append atom-sequence metadata) nil))))
+
 (defmacro define-parser-form (name sequence value)
   "Define a macro for defining parsers."
   (let ((modp (mem sequence '((=format-sequence)
@@ -469,17 +483,7 @@
                (%atom-sequence)
                (%meta-sequence))
            (%or
-            (=destructure
-                (_ atom-sequence metadata hash _ _)
-                (=list (?expression-starter)
-                       (=@-sequence)
-                       (=metadata-sequence*)
-                       (%maybe (+hash))
-                       (%maybe (=comment))
-                       (?expression-terminator))
-              (declare (ignore hash))
-              (list (list atom-sequence nil)
-                    (list (append atom-sequence metadata) nil)))
+            (+@-metadata*)
             (=destructure
                (,@(ml _ _) atom-sequence atom-value atom-mods metadata hash _ _)
                (=list ,@(ml (?whitespace) (?expression-starter))
