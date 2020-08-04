@@ -50,7 +50,7 @@
     "Match and return a SHA-256 string."
     (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some 'hexp))))))
 
-  (define-parser =msl-key ()
+  (define-parser =key ()
     "Match and return a valid MSL key."
     (=subseq (?seq (%some (?satisfies 'alphanumericp))
                    (%any (?seq (%maybe (?eq #\-))
@@ -105,7 +105,7 @@
                (ns _)
                (=list (=@-namespace)
                       (%maybe (?whitespace))))
-           (=msl-key)))
+           (=key)))
 
   (define-parser =grouping-sequence ()
     "Match and return the key sequence for an atom."
@@ -113,7 +113,7 @@
                (ns _)
                (=list (=grouping-namespace)
                       (?whitespace)))
-           (=msl-key)))
+           (=key)))
 
   (define-parser =c-sequence ()
     "Match and return the key sequence for canon."
@@ -121,7 +121,7 @@
                (ns _)
                (=list (=c-namespace)
                       (?whitespace)))
-           (=msl-key)))
+           (=key)))
 
   (define-parser =prelude-sequence ()
     "Match and return the key sequence for a prelude."
@@ -129,7 +129,7 @@
                (ns _)
                (=list (=prelude-namespace)
                       (?whitespace)))
-           (=msl-key)))
+           (=key)))
 
   (define-parser =metadata-sequence ()
     "Match and return key sequence for : namespace."
@@ -137,7 +137,7 @@
         (_ ns key)
         (=list (?whitespace)
                (=metadata-namespace)
-               (=msl-key))
+               (=key))
       (list ns key)))
 
   (define-parser =datatype-sequence ()
@@ -146,7 +146,7 @@
         (atom _ key)
         (=list (=datatype-namespace)
                (?whitespace)
-               (=msl-key))
+               (=key))
       (list atom key)))
 
   (define-parser =format-sequence ()
@@ -155,7 +155,7 @@
         (atom _ key)
         (=list (=format-namespace)
                (?whitespace)
-               (=msl-key))
+               (=key))
       (list atom key))))
 
 
@@ -180,16 +180,16 @@
          'bracketed-transform-selector
          'datatype-form
          'format-form
-         'msl-hash
-         'msl-comment
+         'hash
+         'comment
          (?seq (?eq #\)) 'nested-atom)
          (?seq (?eq #\)) 'metadata-sequence)
          (?seq (?eq #\)) 'regex-selector)
          (?seq (?eq #\)) 'bracketed-transform-selector)
          (?seq (?eq #\)) 'datatype-form)
          (?seq (?eq #\)) 'format-form)
-         (?seq (?eq #\)) 'msl-hash)
-         (?seq (?eq #\)) 'msl-comment)
+         (?seq (?eq #\)) 'hash)
+         (?seq (?eq #\)) 'comment)
          (?seq (?eq #\)) (?eq #\)))
          (?seq (?eq #\)) (?end)))))
 
@@ -199,11 +199,11 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =msl-filespec ()
+  (define-parser =filespec ()
     "Match and return a URI filespec or URL."
     (=subseq (%some (?satisfies 'alphanumericp))))
 
-  (define-parser =msl-hash ()
+  (define-parser =hash ()
     "Match and return a hash value."
     (=destructure
         (_ ns hash)
@@ -212,7 +212,7 @@
                (=sha256))
       (list (list ns) (list hash))))
 
-  (define-parser =msl-value ()
+  (define-parser =value ()
     "Match and return a raw value."
     (%and (?not (?value-terminator))
           (=destructure
@@ -220,7 +220,7 @@
               (=list (?whitespace)
                      (=subseq (%some (?not (?value-terminator))))))))
 
-  (define-parser =msl-comment ()
+  (define-parser =comment ()
     "Match a comment."
     (=destructure
         (_ _ comment)
@@ -274,20 +274,20 @@
     "Match and return a valid value for @."
     (%or 'nested-@
          'nested-group
-         (=msl-value)))
+         (=value)))
 
   (define-parser =c-value ()
     "Match and return a valid value for c."
     (%or 'nested-@
          'nested-canon
-         (=msl-value)))
+         (=value)))
 
   (define-parser =grouping-value ()
     "Match and return a valid value for m w s v."
     (%or 'nested-@
          'nested-group
          'nested-canon
-         (=msl-value)))
+         (=value)))
 
   (define-parser =regex-selector ()
     "Match and return the key sequence for /."
@@ -301,7 +301,7 @@
                            (=subseq (%some (?satisfies 'regex-char-p)))
                            (=regex-namespace)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
-                           (%maybe (=msl-value)))
+                           (%maybe (=value)))
                   (list regex env value))))
       (when regex-list
         (list (list "/") regex-list nil nil nil nil))))
@@ -315,7 +315,7 @@
                     (_ _ url _)
                     (=list (?whitespace)
                            (?eq #\[)
-                           (=msl-filespec)
+                           (=filespec)
                            (?eq #\])))))
       (when transform-list
         (list (list "[]") transform-list nil nil nil nil)))))
@@ -446,7 +446,7 @@
   "Define a variable capturing parser macro for hash."
   `(=destructure
        (hash-seq hash-value)
-       (=msl-hash)
+       (=hash)
      (list (list (append %atom-sequence hash-seq) hash-value))))
 
 (defmacro define-parser-form (name sequence value)
@@ -469,7 +469,7 @@
                       (%any (+atom-mods))
                       (%maybe (+metadata ,value))
                       (%maybe (+hash))
-                      (%maybe (=msl-comment))
+                      (%maybe (=comment))
                       (?expression-terminator))
              (let* ((head (list (list atom-sequence atom-value)))
                     (mods (reduce-append atom-mods))
@@ -480,11 +480,11 @@
 (define-parser-form =@-form (=@-sequence) (=@-value))
 (define-parser-form =c-form (=c-sequence) (=c-value))
 (define-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
-(define-parser-form =prelude-form (=prelude-sequence) (=msl-value))
-(define-parser-form =format-form (=format-sequence) (=msl-value))
-(define-parser-form =datatype-form (=datatype-sequence) (=msl-value))
+(define-parser-form =prelude-form (=prelude-sequence) (=value))
+(define-parser-form =format-form (=format-sequence) (=value))
+(define-parser-form =datatype-form (=datatype-sequence) (=value))
 
-(define-parser =msl-expression ()
+(define-parser =expression ()
   "Match and return an MSL expression."
   (%or (=@-form)
        (=grouping-form)
@@ -496,7 +496,7 @@
 
 (defun parse-msl (expr)
   "Parse an MSL expression."
-  (parse expr (=msl-expression)))
+  (parse expr (=expression)))
 
 (defun explain-lines (setters &optional (line-num 1))
   "Print each setter from a list on a separate line."
