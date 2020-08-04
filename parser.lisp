@@ -131,14 +131,21 @@
                       (?whitespace)))
            (=key)))
 
+  (define-parser =metadata-sequence* ()
+    "Match and return key sequence for : namespace, without a leading whitespace"
+    (=destructure
+        (ns key)
+        (=list (=metadata-namespace)
+               (=key))
+      (list ns key)))
+
   (define-parser =metadata-sequence ()
     "Match and return key sequence for : namespace."
     (=destructure
-        (_ ns key)
+        (_ seq)
         (=list (?whitespace)
-               (=metadata-namespace)
-               (=key))
-      (list ns key)))
+               (=metadata-sequence*))
+      seq))
 
   (define-parser =datatype-sequence ()
     "Match and return key sequence for d."
@@ -156,77 +163,77 @@
         (=list (=format-namespace)
                (?whitespace)
                (=key))
-      (list atom key))))
+      (list atom key)))
 
 
-;;--------------------------------------------------------------------------------------------------
-;; test parsers (don't return a value)
-;;--------------------------------------------------------------------------------------------------
+  ;;--------------------------------------------------------------------------------------------------
+  ;; test parsers (don't return a value)
+  ;;--------------------------------------------------------------------------------------------------
 
-(eval-always
-  (define-parser ?expression-starter ()
-    "Match the end of an expression."
-    (?seq (?eq #\()))
+  (eval-always
+    (define-parser ?expression-starter ()
+      "Match the end of an expression."
+      (?seq (?eq #\()))
 
-  (define-parser ?expression-terminator ()
-    "Match the end of an expression."
-    (?seq (?eq #\))))
+    (define-parser ?expression-terminator ()
+      "Match the end of an expression."
+      (?seq (?eq #\))))
 
-  (define-parser ?value-terminator ()
-    "Match the end of a value."
-    (%or 'nested-atom
-         'metadata-sequence
-         'regex-selector
-         'bracketed-transform-selector
-         'datatype-form
-         'format-form
-         'hash
-         'comment
-         (?seq (?eq #\)) 'nested-atom)
-         (?seq (?eq #\)) 'metadata-sequence)
-         (?seq (?eq #\)) 'regex-selector)
-         (?seq (?eq #\)) 'bracketed-transform-selector)
-         (?seq (?eq #\)) 'datatype-form)
-         (?seq (?eq #\)) 'format-form)
-         (?seq (?eq #\)) 'hash)
-         (?seq (?eq #\)) 'comment)
-         (?seq (?eq #\)) (?eq #\)))
-         (?seq (?eq #\)) (?end)))))
+    (define-parser ?value-terminator ()
+      "Match the end of a value."
+      (%or 'nested-atom
+           'metadata-sequence
+           'regex-selector
+           'bracketed-transform-selector
+           'datatype-form
+           'format-form
+           'hash
+           'comment
+           (?seq (?eq #\)) 'nested-atom)
+           (?seq (?eq #\)) 'metadata-sequence)
+           (?seq (?eq #\)) 'regex-selector)
+           (?seq (?eq #\)) 'bracketed-transform-selector)
+           (?seq (?eq #\)) 'datatype-form)
+           (?seq (?eq #\)) 'format-form)
+           (?seq (?eq #\)) 'hash)
+           (?seq (?eq #\)) 'comment)
+           (?seq (?eq #\)) (?eq #\)))
+           (?seq (?eq #\)) (?end)))))
 
 
-;;--------------------------------------------------------------------------------------------------
-;; single-value parsers (return one value.)
-;;--------------------------------------------------------------------------------------------------
+  ;;--------------------------------------------------------------------------------------------------
+  ;; single-value parsers (return one value.)
+  ;;--------------------------------------------------------------------------------------------------
 
-(eval-always
-  (define-parser =filespec ()
-    "Match and return a URI filespec or URL."
-    (=subseq (%some (?satisfies 'alphanumericp))))
+  (eval-always
+    (define-parser =filespec ()
+      "Match and return a URI filespec or URL."
+      (=subseq (%some (?satisfies 'alphanumericp))))
 
-  (define-parser =hash ()
-    "Match and return a hash value."
-    (=destructure
-        (_ ns hash)
-        (=list (?whitespace)
-               (=subseq (?eq #\#))
-               (=sha256))
-      (list (list ns) (list hash))))
+    (define-parser =hash ()
+      "Match and return a hash value."
+      (=destructure
+          (_ ns hash)
+          (=list (?whitespace)
+                 (=subseq (?eq #\#))
+                 (=sha256))
+        (list (list ns) (list hash))))
 
-  (define-parser =value ()
-    "Match and return a raw value."
-    (%and (?not (?value-terminator))
-          (=destructure
-              (_ value)
-              (=list (?whitespace)
-                     (=subseq (%some (?not (?value-terminator))))))))
+    (define-parser =value ()
+      "Match and return a raw value."
+      (%and (?not (?value-terminator))
+            (=destructure
+                (_ value)
+                (=list (?whitespace)
+                       (=subseq (%some (?not (?value-terminator))))))))
 
-  (define-parser =comment ()
-    "Match a comment."
-    (=destructure
-        (_ _ comment)
-        (=list (?whitespace)
-               (maxpc.char:?string "//")
-               (=subseq (%some (?not (%or (?expression-terminator)))))))))
+    (define-parser =comment ()
+      "Match a comment."
+      (=destructure
+          (_ _ comment)
+          (=list (?whitespace)
+                 (maxpc.char:?string "//")
+                 (=subseq (%some (?not (%or (?expression-terminator))))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -461,7 +468,19 @@
          (let ((%atom-value)
                (%atom-sequence)
                (%meta-sequence))
-           (=destructure
+           (%or
+            (=destructure
+                (_ atom-sequence metadata hash _ _)
+                (=list (?expression-starter)
+                       (=@-sequence)
+                       (=metadata-sequence*)
+                       (%maybe (+hash))
+                       (%maybe (=comment))
+                       (?expression-terminator))
+              (declare (ignore hash))
+              (list (list atom-sequence nil)
+                    (list (append atom-sequence metadata) nil)))
+            (=destructure
                (,@(ml _ _) atom-sequence atom-value atom-mods metadata hash _ _)
                (=list ,@(ml (?whitespace) (?expression-starter))
                       (+sequence ,sequence)
@@ -475,7 +494,7 @@
                     (mods (reduce-append atom-mods))
                     (meta (reduce-append metadata))
                     (value (reduce-append head mods meta hash)))
-               value)))))))
+               value))))))))
 
 (define-parser-form =@-form (=@-sequence) (=@-value))
 (define-parser-form =c-form (=c-sequence) (=c-value))
