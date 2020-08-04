@@ -46,6 +46,10 @@
     "Match a single hex character."
     (?satisfies 'hex-char-p))
 
+  (define-parser ?untrue ()
+    "Match falsehood."
+    (?satisfies 'false))
+
   (define-parser =sha256 ()
     "Match and return a SHA-256 string."
     (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some 'hexp))))))
@@ -474,31 +478,34 @@
   "Define a macro for defining parsers."
   (let ((modp (mem sequence '((=format-sequence)
                               (=datatype-sequence)))))
-    (macrolet ((ml (symbol-1 symbol-2)
+    (macrolet ((~mod (symbol-1 symbol-2)
                  `(if modp
                       (list ',symbol-1 ',symbol-2)
-                      (list ',symbol-2))))
+                      (list ',symbol-2)))
+               (~@-form ()
+                 `(if (equal name '=@-form)
+                      '(+@-metadata*)
+                      '(?untrue))))
       `(define-parser ,name ()
          (let ((%atom-value)
                (%atom-sequence)
                (%meta-sequence))
-           (%or
-            (+@-metadata*)
-            (=destructure
-               (,@(ml _ _) atom-sequence atom-value atom-mods metadata hash _ _)
-               (=list ,@(ml (?whitespace) (?expression-starter))
-                      (+sequence ,sequence)
-                      (+value ,value)
-                      (%any (+atom-mods))
-                      (%maybe (+metadata ,value))
-                      (%maybe (+hash))
-                      (%maybe (=comment))
-                      (?expression-terminator))
-             (let* ((head (list (list atom-sequence atom-value)))
-                    (mods (reduce-append atom-mods))
-                    (meta (reduce-append metadata))
-                    (value (reduce-append head mods meta hash)))
-               value))))))))
+           (%or ,(~@-form)
+                (=destructure
+                    (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
+                    (=list ,@(~mod (?whitespace) (?expression-starter))
+                           (+sequence ,sequence)
+                           (+value ,value)
+                           (%any (+atom-mods))
+                           (%maybe (+metadata ,value))
+                           (%maybe (+hash))
+                           (%maybe (=comment))
+                           (?expression-terminator))
+                  (let* ((head (list (list atom-sequence atom-value)))
+                         (mods (reduce-append atom-mods))
+                         (meta (reduce-append metadata))
+                         (value (reduce-append head mods meta hash)))
+                    value))))))))
 
 (define-parser-form =@-form (=@-sequence) (=@-value))
 (define-parser-form =c-form (=c-sequence) (=c-value))
