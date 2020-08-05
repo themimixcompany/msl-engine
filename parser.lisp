@@ -42,6 +42,10 @@
     "Match one or more whitespace characters."
     (?seq (%some (maxpc.char:?whitespace))))
 
+  (define-parser ?greyspace ()
+    "Match one or more greyspace characters."
+    (?seq (%maybe (maxpc.char:?whitespace))))
+
   (define-parser ?hexp ()
     "Match a single hex character."
     (?satisfies 'hex-char-p))
@@ -228,7 +232,7 @@
       (%and (?not (?value-terminator))
             (=destructure
                 (_ value)
-                (=list (?whitespace)
+                (=list (%maybe (?whitespace))
                        (=subseq (%some (?not (?value-terminator))))))))
 
     (define-parser =comment ()
@@ -268,7 +272,7 @@
         (=list (?whitespace)
                'grouping-form)))
 
-  (define-parser =nested-canon-form ()
+  (define-parser =nested-c-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
@@ -290,14 +294,14 @@
   (define-parser =c-value ()
     "Match and return a valid value for c."
     (%or 'nested-@-form
-         'nested-canon-form
+         'nested-c-form
          (=value)))
 
   (define-parser =grouping-value ()
     "Match and return a valid value for m w s v."
     (%or 'nested-@-form
+         'nested-c-form
          'nested-grouping-form
-         'nested-canon-form
          (=value)))
 
   (define-parser =regex-selector ()
@@ -536,7 +540,6 @@
 (defun parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
   (format t "~%")
-  (let ((parsed-atom (parse-msl expr))
-        (atom-explainer '(atom-seq atom-value atom-mods metadata hash comment)))
+  (let ((parsed-atom (parse-msl expr)))
     (when (explain-lines parsed-atom)
       parsed-atom)))
