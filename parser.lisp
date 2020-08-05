@@ -185,7 +185,7 @@
 
     (define-parser ?value-terminator ()
       "Match the end of a value."
-      (%or 'nested-atom
+      (%or 'nested-atom-form
            'metadata-sequence
            'regex-selector
            'bracketed-transform-selector
@@ -193,7 +193,7 @@
            'format-form
            'hash
            'comment
-           (?seq (?eq #\)) 'nested-atom)
+           (?seq (?eq #\)) 'nested-atom-form)
            (?seq (?eq #\)) 'metadata-sequence)
            (?seq (?eq #\)) 'regex-selector)
            (?seq (?eq #\)) 'bracketed-transform-selector)
@@ -245,14 +245,14 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =nested-@ ()
+  (define-parser =nested-@-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
         (=list (?whitespace)
                '@-form)))
 
-  (define-parser =nested-atom ()
+  (define-parser =nested-atom-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
@@ -261,14 +261,14 @@
                     'c-form
                     'grouping-form))))
 
-  (define-parser =nested-group ()
+  (define-parser =nested-grouping-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
         (=list (?whitespace)
                'grouping-form)))
 
-  (define-parser =nested-canon ()
+  (define-parser =nested-canon-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
@@ -283,21 +283,21 @@
 (eval-always
   (define-parser =@-value ()
     "Match and return a valid value for @."
-    (%or 'nested-@
-         'nested-group
+    (%or 'nested-@-form
+         'nested-grouping-form
          (=value)))
 
   (define-parser =c-value ()
     "Match and return a valid value for c."
-    (%or 'nested-@
-         'nested-canon
+    (%or 'nested-@-form
+         'nested-canon-form
          (=value)))
 
   (define-parser =grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or 'nested-@
-         'nested-group
-         'nested-canon
+    (%or 'nested-@-form
+         'nested-grouping-form
+         'nested-canon-form
          (=value)))
 
   (define-parser =regex-selector ()
