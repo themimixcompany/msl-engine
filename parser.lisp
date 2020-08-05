@@ -29,7 +29,7 @@
   "Return true if CHAR is a valid regex character."
   (or (alphanumericp char)
       (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
-                  #\( #\)
+                  #\left_parenthesis #\right_parenthesis
                   #\[ #\] #\{ #\}))))
 
 
@@ -175,24 +175,34 @@
         (=list (=format-namespace)
                (?whitespace)
                (=key))
-      (list atom key)))
+      (list atom key))))
 
 
-  ;;--------------------------------------------------------------------------------------------------
-  ;; test parsers (don't return a value)
-  ;;--------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------
+;; test parsers (don't return a value)
+;;--------------------------------------------------------------------------------------------------
 
-  (eval-always
-    (define-parser ?expression-starter ()
-      "Match the end of an expression."
-      (?seq (?eq #\()))
+(eval-always
+  (define-parser ?left-parenthesis ()
+    "Match a left parenthesis."
+    (?eq #\left_parenthesis))
 
-    (define-parser ?expression-terminator ()
-      "Match the end of an expression."
-      (?seq (?eq #\))))
+  (define-parser ?right-parenthesis ()
+    "Match a right parenthesis."
+    (?eq #\right_parenthesis))
 
-    (define-parser ?value-terminator ()
-      "Match the end of a value."
+  (define-parser ?expression-starter ()
+    "Match the end of an expression."
+    (?seq (?left-parenthesis)))
+
+  (define-parser ?expression-terminator ()
+    "Match the end of an expression."
+    (?seq (?right-parenthesis)))
+
+  (define-parser ?value-terminator ()
+    "Match the end of a value."
+    (macrolet ((~seq (&rest data)
+                 `(?seq (?right-parenthesis) ,@data)))
       (%or 'nested-atom-form
            'metadata-sequence
            'regex-selector
@@ -201,52 +211,55 @@
            'format-form
            'hash
            'comment
-           (?seq (?eq #\)) 'value)
-           (?seq (?eq #\)) 'nested-atom-form)
-           (?seq (?eq #\)) 'metadata-sequence)
-           (?seq (?eq #\)) 'regex-selector)
-           (?seq (?eq #\)) 'bracketed-transform-selector)
-           (?seq (?eq #\)) 'datatype-form)
-           (?seq (?eq #\)) 'format-form)
-           (?seq (?eq #\)) 'hash)
-           (?seq (?eq #\)) 'comment)
-           (?seq (?eq #\)) (?eq #\)))
-           (?seq (?eq #\)) (?end)))))
+           (~seq 'value)
+           (~seq 'nested-atom-form)
+           (~seq 'metadata-sequence)
+           (~seq 'regex-selector)
+           (~seq 'bracketed-transform-selector)
+           (~seq 'datatype-form)
+           (~seq 'format-form)
+           (~seq 'hash)
+           (~seq 'comment)
+
+           ;;(~seq (?right-parenthesis))
+           (?seq (?right-parenthesis))
+
+           (~seq (?end))))))
 
 
-  ;;--------------------------------------------------------------------------------------------------
-  ;; single-value parsers (return one value.)
-  ;;--------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------
+;; single-value parsers (return one value.)
+;;--------------------------------------------------------------------------------------------------
 
-  (eval-always
-    (define-parser =filespec ()
-      "Match and return a URI filespec or URL."
-      (=subseq (%some (?satisfies 'alphanumericp))))
+(eval-always
+  (define-parser =filespec ()
+    "Match and return a URI filespec or URL."
+    (=subseq (%some (?satisfies 'alphanumericp))))
 
-    (define-parser =hash ()
-      "Match and return a hash value."
-      (=destructure
-          (_ ns hash)
-          (=list (?whitespace)
-                 (=subseq (?eq #\#))
-                 (=sha256))
-        (list (list ns) (list hash))))
+  (define-parser =hash ()
+    "Match and return a hash value."
+    (=destructure
+        (_ ns hash)
+        (=list (?whitespace)
+               (=subseq (?eq #\#))
+               (=sha256))
+      (list (list ns) (list hash))))
 
-    (define-parser =value ()
-      "Match and return a raw value."
-      (%and (?not (?value-terminator))
-            (=destructure
-                (_ value)
-                (=list (?blackspace)
-                       (=subseq (%some (?not (?value-terminator))))))))
+  (define-parser =value ()
+    "Match and return a raw value."
+    (%and (?not (?value-terminator))
+          (=destructure
+              (_ value)
+              (=list (?blackspace)
+                     (=subseq (%some (?not (?value-terminator))))))))
 
-    (define-parser =comment ()
-      "Match a comment."
-      (=destructure
-          (_ _ comment)
-          (=list (?whitespace)
-                 (maxpc.char:?string "//")
-                 (=subseq (%some (?not (%or (?expression-terminator))))))))))
+  (define-parser =comment ()
+    "Match a comment."
+    (=destructure
+        (_ _ comment)
+        (=list (?whitespace)
+               (maxpc.char:?string "//")
+               (=subseq (%some (?not (%or (?expression-terminator)))))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -261,14 +274,12 @@
         (=list (?blackspace)
                '@-form)))
 
-  (define-parser =nested-atom-form ()
+  (define-parser =nested-c-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
         (=list (?blackspace)
-               (%or '@-form
-                    'c-form
-                    'grouping-form))))
+               'c-form)))
 
   (define-parser =nested-grouping-form ()
     "Match and return a nested atom."
@@ -277,12 +288,14 @@
         (=list (?blackspace)
                'grouping-form)))
 
-  (define-parser =nested-c-form ()
+  (define-parser =nested-atom-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
         (=list (?blackspace)
-               'c-form))))
+               (%or '@-form
+                    'c-form
+                    'grouping-form)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
