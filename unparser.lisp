@@ -435,6 +435,10 @@
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-matched-sections paths sections))))))))
 
+(defun* recall-expr* (expr)
+  "Apply RECALL-EXPR without dispatching."
+  (recall-expr expr :dispatch nil))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; recall-value
@@ -608,6 +612,10 @@
     (cond (regex-sets (apply-regex-sets regex-sets value))
           ((termsp value) (recall-value (terms-base value)))
           (t value))))
+
+(defun* recall-value* (expr)
+  "Apply RECALL-VALUE without dispatching."
+  (recall-value expr :dispatch nil))
 
 
 ;;--------------------------------------------------------------------------------------------------
