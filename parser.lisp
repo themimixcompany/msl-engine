@@ -38,6 +38,10 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
+  (define-parser ?blackspace ()
+    "Match one or more greyspace characters."
+    (?seq (%any (maxpc.char:?whitespace))))
+
   (define-parser ?whitespace ()
     "Match one or more whitespace characters."
     (?seq (%some (maxpc.char:?whitespace))))
@@ -197,9 +201,7 @@
            'format-form
            'hash
            'comment
-
            (?seq (?eq #\)) 'value)
-
            (?seq (?eq #\)) 'nested-atom-form)
            (?seq (?eq #\)) 'metadata-sequence)
            (?seq (?eq #\)) 'regex-selector)
@@ -235,9 +237,8 @@
       (%and (?not (?value-terminator))
             (=destructure
                 (_ value)
-                (=list
-                 (%or (%any (maxpc.char:?whitespace)))
-                 (=subseq (%some (?not (?value-terminator))))))))
+                (=list (?blackspace)
+                       (=subseq (%some (?not (?value-terminator))))))))
 
     (define-parser =comment ()
       "Match a comment."
