@@ -39,19 +39,19 @@
 
 (eval-always
   (define-parser ?blackspace ()
-    "Match one or more greyspace characters."
+    "Match zero or more whitespace character input."
     (?seq (%any (maxpc.char:?whitespace))))
 
   (define-parser ?whitespace ()
-    "Match one or more whitespace characters."
+    "Match one or more whitespace character input."
     (?seq (%some (maxpc.char:?whitespace))))
 
   (define-parser ?greyspace ()
-    "Match one or more greyspace characters."
+    "Conditionally match whitespace character input."
     (?seq (%maybe (maxpc.char:?whitespace))))
 
   (define-parser ?hexp ()
-    "Match a single hex character."
+    "Match a single hexadecimal character input."
     (?satisfies 'hex-char-p))
 
   (define-parser ?untrue ()
@@ -258,14 +258,14 @@
     "Match and return a nested atom."
     (=destructure
         (_ atom)
-        (=list (?whitespace)
+        (=list (?blackspace)
                '@-form)))
 
   (define-parser =nested-atom-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
-        (=list (?whitespace)
+        (=list (?blackspace)
                (%or '@-form
                     'c-form
                     'grouping-form))))
@@ -274,14 +274,14 @@
     "Match and return a nested atom."
     (=destructure
         (_ atom)
-        (=list (?whitespace)
+        (=list (?blackspace)
                'grouping-form)))
 
   (define-parser =nested-c-form ()
     "Match and return a nested atom."
     (=destructure
         (_ atom)
-        (=list (?whitespace)
+        (=list (?blackspace)
                'c-form))))
 
 
