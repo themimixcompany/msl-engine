@@ -211,6 +211,7 @@
            'format-form
            'hash
            'comment
+
            (~seq 'value)
            (~seq 'nested-atom-form)
            (~seq 'metadata-sequence)
@@ -221,8 +222,10 @@
            (~seq 'hash)
            (~seq 'comment)
 
+           ;;'right-parenthesis
            ;;(~seq (?right-parenthesis))
-           (?seq (?right-parenthesis))
+           ;;(%some 'right-parenthesis)
+           (~seq (%some (?right-parenthesis)))
 
            (~seq (?end))))))
 

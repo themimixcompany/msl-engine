@@ -277,7 +277,9 @@
           (t terms))))
 
 (defun* %collect (table children keys)
-  "Return the raw original complete expressions in TABLE that matches CHILDREN and KEYS, where CHILDREN is a list of top-level keys as strings, and KEYS is a list of keys as strings under CHILDREN."
+  "Return the raw original complete expressions in TABLE that matches CHILDREN and KEYS, where
+CHILDREN is a list of top-level keys as strings, and KEYS is a list of keys as strings under
+CHILDREN."
   (loop :for child :in children
         :with cache
         :nconc (loop :for terms :in (construct table child keys)
@@ -289,7 +291,8 @@
                                     :collect v))))
 
 (defun* collect (&rest keys)
-  "Return the original expressions in TABLE. This is mostly a user function to check if the expressions can be read from the store."
+  "Return the original expressions in TABLE. This is mostly a user function to check if the
+expressions can be read from the store."
   (declare (ignorable keys))
   (let* ((table (atom-table *universe*))
          (children (children table)))
@@ -451,7 +454,9 @@
                              ((termsp value) (recall-value (terms-base value)))
                              (t nil)))
                    values)))
-    (join result separator)))
+    (join result separator)
+    ;;(join result nil)
+    ))
 
 (defun* %extract-value (path)
   "Return the information specified by PATH."
