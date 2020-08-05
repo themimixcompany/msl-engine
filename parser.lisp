@@ -197,6 +197,9 @@
            'format-form
            'hash
            'comment
+
+           (?seq (?eq #\)) 'value)
+
            (?seq (?eq #\)) 'nested-atom-form)
            (?seq (?eq #\)) 'metadata-sequence)
            (?seq (?eq #\)) 'regex-selector)
@@ -232,8 +235,9 @@
       (%and (?not (?value-terminator))
             (=destructure
                 (_ value)
-                (=list (%maybe (?whitespace))
-                       (=subseq (%some (?not (?value-terminator))))))))
+                (=list
+                 (%or (%any (maxpc.char:?whitespace)))
+                 (=subseq (%some (?not (?value-terminator))))))))
 
     (define-parser =comment ()
       "Match a comment."
