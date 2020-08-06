@@ -362,7 +362,7 @@ expressions can be read from the store."
                                    (post-sections value)
                                    value)))))))
 
-(defun strip-heads (parse)
+(defun* strip-heads (parse)
     "Remove the heads from a parse."
     (remove-if-not #'(lambda (item)
                        (length= item 2))
