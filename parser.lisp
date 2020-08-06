@@ -211,7 +211,6 @@
            'format-form
            'hash
            'comment
-           (~seq 'value)
            (~seq 'nested-atom-form)
            (~seq 'metadata-sequence)
            (~seq 'regex-selector)
@@ -220,6 +219,7 @@
            (~seq 'format-form)
            (~seq 'hash)
            (~seq 'comment)
+           (~seq 'value)
            (~seq (%some (?right-parenthesis)))
            (~seq (?end))))))
 
@@ -510,7 +510,7 @@
          (%or ,(~@-metadata)
               (=destructure
                   (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
-                  (=list ,@(~mod (?whitespace) (?expression-starter))
+                  (=list ,@(~mod (?blackspace) (?expression-starter))
                          (+sequence ,sequence)
                          (+value ,value)
                          (%any (+atom-mods))

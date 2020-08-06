@@ -18,8 +18,8 @@
 
 (defmethod process-connection :around ((*acceptor* acceptor) (socket t))
   (handler-case (progn
-                  (format t "~A~%" (usocket:socket-stream socket))
-                  (force-output *standard-output*)
+                  ;;(format t "~A~%" (usocket:socket-stream socket))
+                  ;;(force-output *standard-output*)
                   (with-mapped-conditions ()
                     (call-next-method)))
     (error (c)
