@@ -54,14 +54,6 @@
     "Match one or more whitespace character input."
     (=subseq (%some (maxpc.char:?whitespace))))
 
-  (define-parser ?greyspace ()
-    "Conditionally match whitespace character input."
-    (?seq (%maybe (maxpc.char:?whitespace))))
-
-  (define-parser =greyspace ()
-    "Conditionally match whitespace character input."
-    (=subseq (%maybe (maxpc.char:?whitespace))))
-
   (define-parser ?hexp ()
     "Match a single hexadecimal character input."
     (?satisfies 'hex-char-p))
@@ -503,7 +495,7 @@
                   (_ atom-sequence _ atom-value atom-mods metadata hash _ _)
                   (=list (?expression-starter)
                          (+sequence ,sequence)
-                         (?blackspace)
+                         (%maybe (?blackspace))
                          (+value ,value)
                          (%any (+atom-mods))
                          (%maybe (+metadata ,value))
@@ -528,11 +520,7 @@
   (%or (=@-form)
        (=c-form)
        (=grouping-form)
-       (=prelude-form)
-       ;; (=format-form)
-       ;; (=datatype-form)
-       ;; (=regex-selector)
-       ))
+       (=prelude-form)))
 
 (defun parse-msl (expr)
   "Parse an MSL expression."
