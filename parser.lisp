@@ -261,7 +261,7 @@
           ;;     (_ value)
           ;;     (=list (?blackspace)
           ;;            (=subseq (%some (?not (?value-terminator))))))
-          (=subseq (%some (?not (?value-terminator))))))
+          (=subseq (%any (?not (?value-terminator))))))
 
   (define-parser =comment ()
     "Match a comment."
@@ -506,8 +506,7 @@
          (%or ,(~@-metadata)
               (=destructure
                   (_ atom-sequence atom-value atom-mods metadata hash _ _)
-                  (=list ;;(=blackspace)
-                         (?expression-starter)
+                  (=list (?expression-starter)
                          (+sequence ,sequence)
                          (+value ,value)
                          (%any (+atom-mods))
