@@ -492,10 +492,12 @@
              (%meta-sequence))
          (%or ,(~@-metadata)
               (=destructure
-                  (_ atom-sequence _ atom-value atom-mods metadata hash _ _)
+                  (_ atom-sequence
+                   ;;_
+                   atom-value atom-mods metadata hash _ _)
                   (=list (?expression-starter)
                          (+sequence ,sequence)
-                         (%maybe (?blackspace))
+                         ;;(%maybe (?blackspace))
                          (+value ,value)
                          (%any (+atom-mods))
                          (%maybe (+metadata ,value))

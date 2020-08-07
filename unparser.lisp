@@ -420,6 +420,26 @@ expressions can be read from the store."
                      :collect (let ((v (reduce-exprs section)))
                                 v))))
 
+(defun* string*-2 (value)
+  "Return VALUE to a string."
+  (etypecase value
+    (number (format nil "~A" value))
+    (cons (format nil "(~{~A~^~})" value))
+    (string value)
+    (t (string value))))
+
+(defun* list-string-2 (list)
+  "Return the string version of LIST."
+  (labels ((fn (args &optional acc)
+             (cond ((null args)
+                    (string*-2 (nreverse acc)))
+                   ((consp (car args))
+                    (fn (cdr args)
+                        (cons (fn (car args) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn list)))
+
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
   (flet ((fn (head sections)
@@ -428,7 +448,7 @@ expressions can be read from the store."
                (cons head sections))))
     (when sections
       (let ((value (fn head sections)))
-        (list-string (flatten-1 (wrap (merge-all-sequences (stage value)))))))))
+        (list-string-2 (flatten-1 (wrap (merge-all-sequences (stage value)))))))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -612,7 +632,7 @@ expressions can be read from the store."
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
-  (let* ((value (%recall-value expr))
+  (let* ((value (string-left-trim '(#\Space #\Tab #\Newline) (%recall-value expr)))
          (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
          (regex-sets (regex-path-regexes regex-path)))
