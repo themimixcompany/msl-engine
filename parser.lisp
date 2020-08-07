@@ -245,10 +245,11 @@
   (define-parser =value ()
     "Match and return a raw value."
     (%and (?not (?value-terminator))
-          (=destructure
-              (_ value)
-              (=list (?blackspace)
-                     (=subseq (%some (?not (?value-terminator))))))))
+          ;; (=destructure
+          ;;     (_ value)
+          ;;     (=list (?blackspace)
+          ;;            (=subseq (%some (?not (?value-terminator))))))
+          (=subseq (%some (?not (?value-terminator))))))
 
   (define-parser =comment ()
     "Match a comment."
@@ -266,10 +267,11 @@
 (eval-always
   (define-parser =nested-@-form ()
     "Match and return a nested atom."
-    (=destructure
-        (_ atom)
-        (=list (?blackspace)
-               '@-form)))
+    ;; (=destructure
+    ;;     (_ atom)
+    ;;     (=list (?blackspace)
+    ;;            '@-form))
+    (%or '@-form))
 
   (define-parser =nested-c-form ()
     "Match and return a nested atom."
@@ -287,12 +289,15 @@
 
   (define-parser =nested-atom-form ()
     "Match and return a nested atom."
-    (=destructure
-        (_ atom)
-        (=list (?blackspace)
-               (%or '@-form
-                    'c-form
-                    'grouping-form)))))
+    ;; (=destructure
+    ;;     (_ atom)
+    ;;     (=list (?blackspace)
+    ;;            (%or '@-form
+    ;;                 'c-form
+    ;;                 'grouping-form)))
+    (%or '@-form
+         'c-form
+         'grouping-form)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -494,11 +499,11 @@
 
 (defmacro define-parser-form (name sequence value)
   "Define a macro for defining parsers."
-  (macrolet ((~mod (symbol-1 symbol-2)
-               `(if (mem sequence '((=format-sequence)
-                                    (=datatype-sequence)))
-                    (list ',symbol-1 ',symbol-2)
-                    (list ',symbol-2)))
+  (macrolet (;; (~mod (symbol-1 symbol-2)
+             ;;   `(if (mem sequence '((=format-sequence)
+             ;;                        (=datatype-sequence)))
+             ;;        (list ',symbol-1 ',symbol-2)
+             ;;        (list ',symbol-2)))
              (~@-metadata ()
                `(if (equal name '=@-form)
                     '(+@-metadata)
@@ -509,8 +514,12 @@
              (%meta-sequence))
          (%or ,(~@-metadata)
               (=destructure
-                  (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
-                  (=list ,@(~mod (?blackspace) (?expression-starter))
+                  (;; ,@(~mod _ _)
+                   _ _
+                   atom-sequence atom-value atom-mods metadata hash _ _)
+                  (=list ;; ,@(~mod (?blackspace) (?expression-starter))
+                         (?blackspace)
+                         (?expression-starter)
                          (+sequence ,sequence)
                          (+value ,value)
                          (%any (+atom-mods))
