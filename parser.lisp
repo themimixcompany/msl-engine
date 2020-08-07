@@ -231,9 +231,9 @@
            (~seq 'format-form)
            (~seq 'hash)
            (~seq 'comment)
-           (~seq 'value)
            (~seq (%some (?right-parenthesis)))
-           (~seq (?end))))))
+           (~seq (?end))
+           (~seq 'value)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -256,12 +256,7 @@
 
   (define-parser =value ()
     "Match and return a raw value."
-    (%and (?not (?value-terminator))
-          ;; (=destructure
-          ;;     (_ value)
-          ;;     (=list (?blackspace)
-          ;;            (=subseq (%some (?not (?value-terminator))))))
-          (=subseq (%any (?not (?value-terminator))))))
+    (=subseq (%some (?not (?value-terminator)))))
 
   (define-parser =comment ()
     "Match a comment."
@@ -531,12 +526,13 @@
 (define-parser =expression ()
   "Match and return an MSL expression."
   (%or (=@-form)
-       (=grouping-form)
        (=c-form)
+       (=grouping-form)
        (=prelude-form)
-       (=datatype-form)
-       (=format-form)
-       (=regex-selector)))
+       ;; (=format-form)
+       ;; (=datatype-form)
+       ;; (=regex-selector)
+       ))
 
 (defun parse-msl (expr)
   "Parse an MSL expression."
