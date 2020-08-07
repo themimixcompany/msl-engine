@@ -526,16 +526,10 @@
   "Parse an MSL expression."
   (parse expr (=expression)))
 
-(defun explain-lines (setters &optional (line-num 1))
-  "Print each setter from a list on a separate line."
-  (cond ((not setters) nil)
-        (t (format t "~A.~4T~S~%" line-num (car setters))
-           (explain-lines (cdr setters) (+ line-num 1))
-           t)))
-
 (defun parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
-  (format t "~%")
-  (let ((parsed-atom (parse-msl expr)))
-    (when (explain-lines parsed-atom)
-      parsed-atom)))
+  (let ((parse (parse-msl expr)))
+    (loop :for count :from 1
+          :for term :in parse
+          :do (format t "~A.~4T~S~%" count term))
+    parse))
