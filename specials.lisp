@@ -115,7 +115,7 @@
   "The default slynk communication port.")
 
 (defvar* *debug-print*
-  nil
+  t
   "Whether to print debugging information using a dedicated outputter.")
 
 (defvar* *restore-log*
