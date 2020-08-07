@@ -503,7 +503,7 @@
                   (_ atom-sequence _ atom-value atom-mods metadata hash _ _)
                   (=list (?expression-starter)
                          (+sequence ,sequence)
-                         (?whitespace)
+                         (?blackspace)
                          (+value ,value)
                          (%any (+atom-mods))
                          (%maybe (+metadata ,value))
