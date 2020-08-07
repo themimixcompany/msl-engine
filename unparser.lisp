@@ -421,24 +421,10 @@ expressions can be read from the store."
                                 v))))
 
 (defun* string*-2 (value)
-  "Return VALUE to a string."
+  "Return VALUE to a string like STRING*, without space concatenation."
   (etypecase value
-    (number (format nil "~A" value))
     (cons (format nil "(~{~A~^~})" value))
-    (string value)
-    (t (string value))))
-
-(defun* list-string-2 (list)
-  "Return the string version of LIST."
-  (labels ((fn (args &optional acc)
-             (cond ((null args)
-                    (string*-2 (nreverse acc)))
-                   ((consp (car args))
-                    (fn (cdr args)
-                        (cons (fn (car args) nil)
-                              acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list)))
+    (t (string* value))))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -448,7 +434,8 @@ expressions can be read from the store."
                (cons head sections))))
     (when sections
       (let ((value (fn head sections)))
-        (list-string-2 (flatten-1 (wrap (merge-all-sequences (stage value)))))))))
+        (list-string (flatten-1 (wrap (merge-all-sequences (stage value))))
+                     #'string*-2)))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -629,10 +616,14 @@ expressions can be read from the store."
                           (apply-regex-set (car args) val))))))
     (fn regex-sets value)))
 
+(defun left-trim (string)
+  "Return a new string from STRING without the leading whitespace."
+  (string-left-trim '(#\Space #\Tab #\Newline) string))
+
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
-  (let* ((value (string-left-trim '(#\Space #\Tab #\Newline) (%recall-value expr)))
+  (let* ((value (left-trim (%recall-value expr)))
          (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
          (regex-sets (regex-path-regexes regex-path)))
