@@ -346,7 +346,7 @@ expressions can be read from the store."
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
 
-(defun* sections (head &key post)
+(defun* sections (head &optional post)
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
@@ -380,7 +380,7 @@ expressions can be read from the store."
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
-            (t (sections head :post t))))))
+            (t (sections head))))))
 
 (defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -397,10 +397,14 @@ expressions can be read from the store."
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
   (mapcar #'(lambda (expr)
-              (cond ((stringp expr) expr)
-                    ((termsp (car expr)) (recall-expr (terms-base (car expr))))
-                    ((termsp expr) (recall-expr (terms-base expr)))
-                    ((termsp (list expr)) (recall-expr (terms-base (list expr))))
+              (cond ((stringp expr)
+                     expr)
+                    ((termsp (car expr))
+                     (recall-expr (terms-base (car expr))))
+                    ((termsp expr)
+                     (recall-expr (terms-base expr)))
+                    ((termsp (list expr))
+                     (recall-expr (terms-base (list expr))))
                     (t expr)))
           exprs))
 
@@ -433,7 +437,7 @@ expressions can be read from the store."
     (when (path-exists-p head)
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
-             (sections (sections head :post t)))
+             (sections (sections head t)))
         (cond ((head-only-paths-p deconstruct)
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-matched-sections paths sections))))))))
@@ -447,16 +451,14 @@ expressions can be read from the store."
 ;; recall-value
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* reduce-values (values &optional (separator #\space))
+(defun* reduce-values (values)
   "Return a string concatenation of the items in VALUES."
   (let ((result (mapcar #'(lambda (value)
                        (cond ((stringp value) value)
                              ((termsp value) (recall-value (terms-base value)))
                              (t nil)))
                    values)))
-    (join result separator)
-    ;;(join result nil)
-    ))
+    (join result nil)))
 
 (defun* %extract-value (path)
   "Return the information specified by PATH."
