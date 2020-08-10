@@ -626,10 +626,6 @@ expressions can be read from the store."
                           (apply-regex-set (car args) val))))))
     (fn regex-sets value)))
 
-(defun left-trim (string)
-  "Return a new string from STRING without the leading whitespace."
-  (string-left-trim '(#\Space #\Tab #\Newline) string))
-
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))

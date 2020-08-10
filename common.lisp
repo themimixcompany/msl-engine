@@ -234,3 +234,14 @@ body contents of the parser function."
                        term
                      (cons (append prefix path) value)))))
 
+(defun* left-trim (string)
+  "Return a new string from STRING without the leading whitespace."
+  (string-left-trim *whitespace* string))
+
+(defun* right-trim (string)
+  "Return a new string from STRING without the trailing whitespace."
+  (string-right-trim *whitespace* string))
+
+(defun* trim (string)
+  "Return a new string from STRING without the leading and trailing whitespaces."
+  (string-trim *whitespace* string))
