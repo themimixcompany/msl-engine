@@ -107,7 +107,7 @@
     ;; (uiop:os-cond
     ;;  ((uiop:os-windows-p) (system-version +self+))
     ;;  (t (asdf:system-version (system-object +self+))))
-  "2.4.14"
+  "2.4.15"
   "The introspected version of this system.")
 
 (defvar* *slynk-port*
@@ -121,3 +121,7 @@
 (defvar* *restore-log*
   t
   "Whether to restore data from the log files.")
+
+(defvar* *whitespace*
+    '(#\space #\tab #\newline #\rubout)
+  "The list of whitespace characters.")
