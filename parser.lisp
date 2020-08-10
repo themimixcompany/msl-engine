@@ -155,14 +155,6 @@
                (=key))
       (list ns key)))
 
-  (define-parser =metadata-sequence ()
-    "Match and return key sequence for : namespace."
-    (=destructure
-        (_ seq)
-        (=list (?whitespace)
-               (=metadata-sequence*))
-      seq))
-
   (define-parser =datatype-sequence ()
     "Match and return key sequence for d."
     (=destructure
@@ -208,7 +200,7 @@
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
       (%or 'nested-atom-form
-           'metadata-sequence
+           'metadata-sequence*
            'regex-selector
            'bracketed-transform-selector
            'datatype-form
@@ -216,7 +208,7 @@
            'hash
            'comment
            (~seq 'nested-atom-form)
-           (~seq 'metadata-sequence)
+           (~seq 'metadata-sequence*)
            (~seq 'regex-selector)
            (~seq 'bracketed-transform-selector)
            (~seq 'datatype-form)
@@ -424,7 +416,7 @@
 
 (defmacro +metadata-sequence ()
   "Define a variable capturing parser macro for metadata sequence"
-  `(=transform (=metadata-sequence)
+  `(=transform (=metadata-sequence*)
                (lambda (seq)
                  (setf %meta-sequence seq))))
 
@@ -492,12 +484,9 @@
              (%meta-sequence))
          (%or ,(~@-metadata)
               (=destructure
-                  (_ atom-sequence
-                   ;;_
-                   atom-value atom-mods metadata hash _ _)
+                  (_ atom-sequence atom-value atom-mods metadata hash _ _)
                   (=list (?expression-starter)
                          (+sequence ,sequence)
-                         ;;(%maybe (?blackspace))
                          (+value ,value)
                          (%any (+atom-mods))
                          (%maybe (+metadata ,value))
@@ -522,7 +511,10 @@
   (%or (=@-form)
        (=c-form)
        (=grouping-form)
-       (=prelude-form)))
+       (=prelude-form)
+       (=datatype-form)
+       (=format-form)
+       (=regex-selector)))
 
 (defun parse-msl (expr)
   "Parse an MSL expression."
