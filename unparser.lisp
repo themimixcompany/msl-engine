@@ -380,7 +380,7 @@ expressions can be read from the store."
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
-            (t (sections head))))))
+            (t (sections head nil))))))
 
 (defun* paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -420,18 +420,18 @@ expressions can be read from the store."
                      :collect (let ((v (reduce-exprs section)))
                                 v))))
 
-(defun* wtf (items)
-  "WTF"
+(defun* fuse (items)
+  "Join the items in ITEMS with a space, removing extra spaces prior to joining."
   (join (loop :for item :in items
-              :collect (string-trim '(#\space) item))))
+              :collect (string-trim '(#\space #\tab #\newline) item))))
 
 (defun* list-string* (value)
   "Apply LIST-STRING to value with a custom combiner."
-  (dbg value)
-  (list-string value #'(lambda (value)
-                         (etypecase value
-                           (cons (format nil "(~{~A~^~})" value))
-                           (t (string* value))))))
+  (flet ((fn (value)
+           (etypecase value
+             (cons (format nil "(~A)" (fuse value)))
+             (t (string* value)))))
+    (list-string value #'fn)))
 
 (defun* reduce-items (value)
   "Filter VALUE through modifiers."
@@ -447,55 +447,6 @@ expressions can be read from the store."
       (let ((value (fn head sections)))
         (reduce-items value)))))
 
-;; (defun* join* (list &optional (pad " "))
-;;   "Merge items in LIST conditionally by PAD."
-;;   (labels ((first-char (string)
-;;              (when (length>= string 1)
-;;                (elt string 0)))
-;;            (last-char (string)
-;;              (when (length>= string 1)
-;;                (elt (reverse string) 0)))
-;;            (fn (args acc)
-;;              (dbg (car args))
-;;              (cond ((or (null args)
-;;                         ;; (null (cadr args))
-;;                         )
-;;                     (nreverse acc))
-;;                    ((empty-string-p (car args))
-;;                     (fn (cdr args) acc))
-;;                    ((or (char= (last-char (car args)) #\space)
-;;                         (char= (first-char (cadr args)) #\space))
-;;                     (fn (cddr args) (cons (cadr args) (cons (car args) acc))))
-;;                    (t (fn (cdr args) (cons pad (cons (car args) acc)))))))
-;;     (fn list nil)))
-
-;; (defun* has-space-p (part)
-;;   "Return true if PART contains spaces."
-;;   (flet ((fn (char)
-;;            (char= char #\space)))
-;;     (destructuring-bind (x y)
-;;         part
-;;       (or (and (not (empty-string-p x))
-;;                (fn (elt x (1- (length x)))))
-;;           (and (not (empty-string-p y))
-;;                (fn (elt y 0)))))))
-
-;; (defun* insert-space (part)
-;;   "Return a new part from PART that contains a space in the middle."
-;;   (destructuring-bind (x y)
-;;       part
-;;     (cons x (list " " y))))
-
-;; (defun* insert-spaces (items)
-;;   ""
-;;   (let ((parts (partition items 2)))
-;;     (cond ((length= parts 1) items)
-;;           (t (loop :for part :in parts
-;;                    :collect (if (or (has-space-p part)
-;;                                     (length= part 1))
-;;                                 part
-;;                                 (insert-space part)))))))
-
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (when dispatch (dispatch expr :log t :force nil))
@@ -503,7 +454,7 @@ expressions can be read from the store."
     (when (path-exists-p head)
       (let* ((deconstruct (deconstruct expr))
              (paths (paths deconstruct))
-             (sections (sections head t)))
+             (sections (sections head)))
         (cond ((head-only-paths-p deconstruct)
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-matched-sections paths sections))))))))
