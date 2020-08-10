@@ -93,21 +93,19 @@
         (fn value nil)
         value)))
 
-(defun* merge-sequences (item)
-  "Conditionally merge the key sequences in ITEM."
-  (if (rmap-or item #'basep #'metadatap)
-      (cons (cat (car item) (cadr item))
-            (cddr item))
-      item))
-
 ;;; note: do not perform merging with c and friends
-(defun* merge-all-sequences (items)
+(defun* merge-sequences (items)
   "Conditionally merge the key sequences in ITEMS."
-  (let ((value (loop :for item :in items :collect (merge-sequences item))))
-    (if (every #'consp value)
-        (loop :for val :in value
-              :collect (mapcar #'merge-colons val))
-        value)))
+  (flet ((fn (item)
+           (if (rmap-or item #'basep #'metadatap)
+               (cons (cat (car item) (cadr item))
+                     (cddr item))
+               item)))
+    (let ((value (mapcar #'fn items)))
+      (if (every #'consp value)
+          (loop :for val :in value
+                :collect (mapcar #'merge-colons val))
+          value))))
 
 (defun* wrap (items)
   "Conditionally listify the items in ITEMS."
@@ -129,7 +127,7 @@
                         (cons (flatten-list (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
-                        (cons (flatten-1 (wrap (merge-all-sequences (fn (car args) nil))))
+                        (cons (flatten-1 (wrap (merge-sequences (fn (car args) nil))))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
@@ -248,7 +246,7 @@
                             (flatten-1 (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
-          :collect (flatten-1 (wrap (merge-all-sequences (join-items (stage value))))))))
+          :collect (flatten-1 (wrap (merge-sequences (join-items (stage value))))))))
 
 (defun* join-items (list)
   "Join the the items in LIST that should be together."
@@ -394,36 +392,40 @@ expressions can be read from the store."
   (when (consp path)
     (search (subseq path 0 2) section :test #'equalp)))
 
+
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+;; start of experimental stuff
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
-  (mapcar #'(lambda (expr)
-              (cond ((stringp expr)
-                     expr)
-                    ((termsp (car expr))
-                     (recall-expr (terms-base (car expr))))
-                    ((termsp expr)
-                     (recall-expr (terms-base expr)))
-                    ((termsp (list expr))
-                     (recall-expr (terms-base (list expr))))
-                    (t expr)))
-          exprs))
+  (flet ((fn (expr)
+           (cond ((termsp (list expr))
+                  (recall-expr (terms-base (list expr))))
+                 (t expr))))
+    (loop :for expr :in exprs :collect (fn expr))))
 
 (defun* reduce-sections (sections)
   "Apply REDUCE-EXPRS to sections."
-  (mapcar #'reduce-exprs sections))
+  (reduce-exprs sections))
 
 (defun* reduce-matched-sections (paths sections)
   "Apply REDUCE-EXPRS to SECTIONS with PATH."
   (loop :for path :in paths
         :nconc (loop :for section :in sections
                      :when (section-match-p path section)
-                     :collect (let ((v (reduce-exprs section)))
-                                v))))
+                     :collect (reduce-exprs section))))
 
+;;; note: is this even a good idea?
+;;; note: are we going to lose information?
 (defun* fuse (items)
   "Join the items in ITEMS with a space, removing extra spaces prior to joining."
-  (join (loop :for item :in items
-              :collect (string-trim '(#\space #\tab #\newline) item))))
+  (let ((result (mapcar #'trim items)))
+    (join result "")))
+
+(defun* join* (items)
+  "Join the items in ITEMS without a separator."
+  (join items ""))
 
 (defun* list-string* (value)
   "Apply LIST-STRING to value with a custom combiner."
@@ -433,9 +435,29 @@ expressions can be read from the store."
              (t (string* value)))))
     (list-string value #'fn)))
 
-(defun* reduce-items (value)
+;;; (defparameter *expr* "(@WALT Walt (@A A) Disney (@B B)(@C C).)")
+;;; (dispatch* *expr*)
+;;; (reduce-sections (sections (head "(@WALT Walt (@A A) Disney (@B B)(@C C).)")))
+
+;; (loop :for section :in (sections (head "(@WALT Walt (@A A) Disney (@B B)(@C C).)")) :collect (if (termsp (list section)) (reduce-sections (sections (head (terms-base (list section))))) section))
+
+;; (join (flatten-1 (wrap (merge-sequences (stage (loop :for item :in (reduce-items-2 "(@WALT Walt (@A A 123) Disney (@B B)(@C C).)") :collect (if (and (consp item) (consp (car item))) (list-string (flatten-1 (wrap (merge-sequences (stage item))))) item)))))) "")
+
+(defun* reduce-items-2 (expr)
   "Filter VALUE through modifiers."
-  (list-string* (flatten-1 (wrap (merge-all-sequences (stage value))))))
+  (loop :for section :in (sections (head expr))
+        :collect (if (termsp (list section))
+                     (reduce-sections (sections (head (terms-base (list section)))))
+                     section)))
+
+(defun* reduce-items-3 (expr)
+  "Filter VALUE through modifiers."
+  (loop :for section :in (sections (head expr))
+        :collect section))
+
+(defun* reduce-items (sections)
+  "Filter VALUE through modifiers."
+  (list-string* (flatten-1 (wrap (merge-sequences (stage sections))))))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -444,8 +466,12 @@ expressions can be read from the store."
                sections
                (cons head sections))))
     (when sections
-      (let ((value (fn head sections)))
-        (reduce-items value)))))
+      (reduce-items (fn head sections)))))
+
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+;; end of experimental stuff
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -474,8 +500,8 @@ expressions can be read from the store."
                        (cond ((stringp value) value)
                              ((termsp value) (recall-value (terms-base value)))
                              (t nil)))
-                   values)))
-    (join result nil)))
+                        values)))
+    (join result "")))
 
 (defun* %extract-value (path)
   "Return the information specified by PATH."
@@ -629,7 +655,7 @@ expressions can be read from the store."
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
-  (let* ((value (left-trim (%recall-value expr)))
+  (let* ((value (%recall-value expr))
          (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
          (regex-sets (regex-path-regexes regex-path)))
