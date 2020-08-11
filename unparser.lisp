@@ -172,7 +172,7 @@
 
 (defun* head (expr)
   "Return the namespace and key sequence from EXPR."
-  (when-let ((parse (parse-msl expr)))
+  (when-let ((parse (read-parse expr)))
     (caar parse)))
 
 (defun* head-only-p (path)
@@ -368,24 +368,36 @@ expressions can be read from the store."
                                (strip-head (car item)))
                            parse)))
 
+(defun* active-paths (deconstruct)
+  "Return only sections from DECONSTRUCT that contain valid value information."
+  (if (and (head-only-p (car deconstruct))
+           (length> deconstruct 1))
+      (cdr deconstruct)
+      deconstruct))
+
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
   (with-fresh-universe
-    (when-let* ((parse (parse-msl expr))
-                (strip (strip-heads parse))
+    (when-let* ((parse (read-parse expr))
                 (head (head expr))
+                (strip (strip-heads parse))
                 (dispatch (dispatch expr :log nil :force t)))
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
             (t (sections head nil))))))
 
-(defun* paths (deconstruct)
-  "Return only sections from DECONSTRUCT that contain valid value information."
-  (if (and (head-only-p (car deconstruct))
-           (length> deconstruct 1))
-      (cdr deconstruct)
-      deconstruct))
+;;; turn this into a fully recursive deconstructor?
+(defun* deconstruct* (expr)
+  "Return the active sections of EXPR from a new universe."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc)) ;perform the merging here
+                   ((termsp (list (car args)))
+                    (fn (cdr args)
+                        (cons (fn (deconstruct (list (car args))) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn (deconstruct expr) nil)))
 
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
@@ -450,10 +462,24 @@ expressions can be read from the store."
                      (reduce-sections (sections (head (terms-base (list section)))))
                      section)))
 
-(defun* reduce-items-3 (expr)
+(defun* reduce-items-3 (sections)
   "Filter VALUE through modifiers."
-  (loop :for section :in (sections (head expr))
-        :collect section))
+  sections
+  (loop :for section :in sections
+        :collect (if (termsp (list section))
+                     )))
+
+;;; note: should it start with an expr, or a parse?
+;;; if it’s an expr, the starting point is (head ...)
+;;; if it’s a parse, the starting point is (head (terms-base ...))
+;;; the goal is to get the original expression
+(defun* reduce-elements (expr)
+  ""
+  (labels ((fn (args acc)
+             (cond ((null args) acc)
+                   ;; loop over terms
+                   (t))))
+    (fn (sections (head expr)))))
 
 (defun* reduce-items (sections)
   "Filter VALUE through modifiers."
@@ -479,11 +505,11 @@ expressions can be read from the store."
   (let ((head (head expr)))
     (when (path-exists-p head)
       (let* ((deconstruct (deconstruct expr))
-             (paths (paths deconstruct))
+             (active-paths (active-paths deconstruct))
              (sections (sections head)))
         (cond ((head-only-paths-p deconstruct)
                (distill head (reduce-sections sections)))
-              (t (distill head (reduce-matched-sections paths sections))))))))
+              (t (distill head (reduce-matched-sections active-paths sections))))))))
 
 (defun* recall-expr* (expr)
   "Apply RECALL-EXPR without dispatching."
@@ -553,7 +579,7 @@ expressions can be read from the store."
 
 (defun* requests (expr)
   "Return paths from EXPR that are valid requests."
-  (when-let ((parse (parse-msl expr)))
+  (when-let ((parse (read-parse expr)))
     (flet ((fn (term)
              (or (and (length= (car term) 2)
                       (null* (cadr term)))
