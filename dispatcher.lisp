@@ -255,8 +255,8 @@
 
 (defun* dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (when-let* ((expressions (if (consp expr) expr (parse-msl expr)))
-              (terms (pre-process-terms expressions))
+  (when-let* ((parse (read-parse expr))
+              (terms (pre-process-terms parse))
               (value (mapcar #'(lambda (term)
                                  (%dispatch term :log log :force force))
                              terms)))
@@ -272,3 +272,6 @@
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
   (apply #'dispatch (append args '(:log nil :force nil))))
+
+(defun* dispatch-terms (terms)
+  terms)

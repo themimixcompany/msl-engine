@@ -528,3 +528,9 @@
           :for term :in parse
           :do (format t "~A.~4T~S~%" count term))
     parse))
+
+(defun* read-parse (value)
+  "Return the parse of VALUE."
+  (if (consp value)
+      value
+      (parse-msl value)))
