@@ -443,19 +443,6 @@ have been dispatched already in the current universe."
 (define-spacer space-before insert-before)
 (define-spacer space-after insert-after)
 
-(defun* fuse-metadata (items)
-  "Merge the metadata items found in ITEMS."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   ((and (string= (car args) ":")
-                         (cadr args))
-                    (fn (cddr args)
-                        (cons (cat (car args) (cadr args))
-                              acc)))
-                   (t (fn (cdr args)
-                          (cons (car args) acc))))))
-    (fn items nil)))
-
 (defun* space-part (part)
   "Conditionally insert a space in PART if it meets a criteria."
   (cond ((consp part)
@@ -467,8 +454,8 @@ have been dispatched already in the current universe."
            ((metadata-part-p part)
             (space-before part 0 3))
 
-           ((and (sub-part-p part))
-            (list-string (fuse-metadata part)))
+           ((sub-part-p part)
+            (list-string (merge-colons part)))
 
            ((and (atom-part-p part)
                  (length= part 2))
@@ -485,7 +472,7 @@ have been dispatched already in the current universe."
   "Apply SPACE-PART to PARTS."
   (mapcar #'space-part parts))
 
-(defun* deflate (parts)
+(defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (space-parts parts))
          (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
@@ -494,7 +481,7 @@ have been dispatched already in the current universe."
 (defun* reduce-expr (expr)
   "Reduce EXPR to a valid MSL form."
   (labels ((fn (args acc)
-             (cond ((null args) (deflate (nreverse acc)))
+             (cond ((null args) (reduce-parts (nreverse acc)))
                    ((termsp (list (car args)))
                     (fn (cdr args)
                         (cons (fn (car args) nil)
