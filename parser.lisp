@@ -150,8 +150,9 @@
   (define-parser =metadata-sequence ()
     "Match and return key sequence for : namespace, without a leading whitespace"
     (=destructure
-        (ns key)
-        (=list (=metadata-namespace)
+        (_ ns key)
+        (=list (?blackspace)
+               (=metadata-namespace)
                (=key))
       (list ns key)))
 
@@ -305,11 +306,12 @@
         (regex-list)
         (=list (%some
                 (=destructure
-                    (_ regex _ env value)
+                    (_ regex _ env _ value)
                     (=list (=regex-namespace)
                            (=subseq (%some (?satisfies 'regex-char-p)))
                            (=regex-namespace)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                           (?blackspace)
                            (%maybe (=value)))
                   (list regex env value))))
       (when regex-list
