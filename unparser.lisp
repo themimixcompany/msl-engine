@@ -487,10 +487,11 @@ have been dispatched already in the current universe."
 
 (defun* deflate (parts)
   "Return a string from running PARTS through filters."
-  (let ((value (space-parts parts)))
-    (list-string* (flatten-1 (wrap (merge-sequences (stage value)))))))
+  (let* ((value (space-parts parts))
+         (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
+    (list-string* staged-value)))
 
-(defun* reduce-parts (expr)
+(defun* reduce-expr (expr)
   "Reduce EXPR to a valid MSL form."
   (labels ((fn (args acc)
              (cond ((null args) (deflate (nreverse acc)))
@@ -501,29 +502,17 @@ have been dispatched already in the current universe."
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn (parts expr) nil)))
 
-;;; (master)
-;; (defun* reduce-exprs (exprs)
-;;   "Return a list of values that corresponding to expressions including terms reduction."
-;;   (mapcar #'(lambda (expr)
-;;               (cond ((stringp expr) expr)
-;;                     ((termsp (car expr)) (recall-expr (terms-base (car expr))))
-;;                     ((termsp expr) (recall-expr (terms-base expr)))
-;;                     ((termsp (list expr)) (recall-expr (terms-base (list expr))))
-;;                     (t expr)))
-;;           exprs))
-
-;;; (interpolation)
-(defun* reduce-exprs (exprs)
-  "Return a list of values that corresponding to expressions including terms reduction."
-  (flet ((fn (expr)
-           (cond ((termsp (list expr))
-                  (recall-expr (terms-base (list expr))))
-                 (t expr))))
-    (loop :for expr :in exprs :collect (fn expr))))
-
 (defun* reduce-sections (sections)
-  "Apply REDUCE-EXPRS to sections."
-  (reduce-exprs sections))
+  "Return a list of values that corresponding to expressions including terms reduction."
+  (flet ((fn (section)
+           (cond ((termsp (car section))
+                  (recall-expr (terms-base (car section))))
+                 ((termsp section)
+                  (recall-expr (terms-base section)))
+                 ((termsp (list section))
+                  (recall-expr (terms-base (list section))))
+                 (t section))))
+    (loop :for section :in sections :collect (fn section))))
 
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
@@ -531,15 +520,11 @@ have been dispatched already in the current universe."
     (search (subseq path 0 2) section :test #'equalp)))
 
 (defun* reduce-matched-sections (paths sections)
-  "Apply REDUCE-EXPRS to SECTIONS with PATH."
+  "Apply REDUCE-SECTIONS to SECTIONS with PATH."
   (loop :for path :in paths
         :nconc (loop :for section :in sections
                      :when (section-match-p path section)
-                     :collect (reduce-exprs section))))
-
-(defun* reduce-items (sections)
-  "Filter VALUE through modifiers."
-  (list-string (flatten-1 (wrap (merge-sequences (stage sections))))))
+                     :collect (reduce-sections section))))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -548,7 +533,7 @@ have been dispatched already in the current universe."
                sections
                (cons head sections))))
     (when sections
-      (reduce-items (fn head sections)))))
+      (list-string (flatten-1 (wrap (merge-sequences (stage (fn head sections)))))))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
