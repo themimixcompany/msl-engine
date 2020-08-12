@@ -147,7 +147,7 @@
                       (?whitespace)))
            (=key)))
 
-  (define-parser =metadata-sequence* ()
+  (define-parser =metadata-sequence ()
     "Match and return key sequence for : namespace, without a leading whitespace"
     (=destructure
         (ns key)
@@ -416,7 +416,7 @@
 
 (defmacro +metadata-sequence ()
   "Define a variable capturing parser macro for metadata sequence"
-  `(=transform (=metadata-sequence*)
+  `(=transform (=metadata-sequence)
                (lambda (seq)
                  (setf %meta-sequence seq))))
 
@@ -430,18 +430,21 @@
   "Define a variable capturing parser macro for metadata."
   `(%some
     (=destructure
-        (meta-sequence meta-value meta-mods)
+        (meta-sequence _ meta-value meta-mods)
         (%or
          ;; a value, with zero or more metadata mods
          (=list (+metadata-sequence)
+                (?blackspace)
                 (%some ,value)
                 (%any (+metadata-mods)))
          ;; zero or more values, with metadata mods
          (=list (+metadata-sequence)
+                (?blackspace)
                 (%any ,value)
                 (%some (+metadata-mods)))
          ;; no atom value, zero or more metadata mods; the birthday trap
          (=list (+metadata-sequence)
+                (?blackspace)
                 (?satisfies (lambda (_)
                               (declare (ignore _))
                               (unless %atom-value t))
@@ -465,7 +468,7 @@
        (_ atom-sequence metadata _ _ _)
        (=list (?expression-starter)
               (=@-sequence)
-              (=metadata-sequence*)
+              (=metadata-sequence)
               (%maybe (+hash))
               (%maybe (=comment))
               (?expression-terminator))
