@@ -392,11 +392,6 @@ have been dispatched already in the current universe."
   "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
 
-
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-;; start of experimental stuff
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 (defmacro* define-part-predicate (name predicate)
   `(defun* ,name (part)
      "Return true if PART is part of the meh namespaces."
@@ -412,30 +407,28 @@ have been dispatched already in the current universe."
 
 (defun* space-part (part)
   "Conditionally insert a space in PART if it meets a criteria."
-  (flet ((is-atom-p (part)
+  (flet ((%before (part index)
+           (insert-before part index " "))
+         (%after (part index)
+           (insert-after part index " "))
+         (%is-atom-p (part)
            (rmap-or part
                     #'atom-part-p
-                    #'sub-part-p))
-         (space-after (part index)
-           (insert-after part index " "))
-         (space-before (part index)
-           (insert-before part index " ")))
-    (if (consp part)
-        (cond ((and (rmap-or part
-                             #'@-part-p)
-                    (length> part 2))
-               (space-after part 1))
-              ((rmap-or part
-                        #'metadata-part-p)
-               (space-after (space-before part 0) 2))
-              ((and (is-atom-p part)
-                    (length= part 2))
-               (space-after part 0))
-              ((and (is-atom-p part)
-                    (length> part 2))
-               (space-after (space-after part 0) 2))
-              (t part))
-        part)))
+                    #'sub-part-p)))
+    (cond ((consp part)
+           (cond ((and (@-part-p part)
+                       (length> part 2))
+                  (%after part 1))
+                 ((metadata-part-p part)
+                  (%after (%before part 0) 2))
+                 ((and (%is-atom-p part)
+                       (length= part 2))
+                  (%after part 0))
+                 ((and (%is-atom-p part)
+                       (length> part 2))
+                  (%after (%after part 0) 2))
+                 (t part)))
+          (t part))))
 
 (defun* space-parts (parts)
   "Apply SPACE-PART to PARTS."
@@ -480,12 +473,18 @@ have been dispatched already in the current universe."
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn (parts expr) nil)))
 
+;;; master branch
+;; (defun* reduce-exprs (exprs)
+;;   "Return a list of values that corresponding to expressions including terms reduction."
+;;   (mapcar #'(lambda (expr)
+;;               (cond ((stringp expr) expr)
+;;                     ((termsp (car expr)) (recall-expr (terms-base (car expr))))
+;;                     ((termsp expr) (recall-expr (terms-base expr)))
+;;                     ((termsp (list expr)) (recall-expr (terms-base (list expr))))
+;;                     (t expr)))
+;;           exprs))
 
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-;; end of experimental stuff
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-;;; note: compare this version with the one from master
+;;; interpolation branch
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
   (flet ((fn (expr)
