@@ -305,9 +305,8 @@
         (regex-list)
         (=list (%some
                 (=destructure
-                    (_ _ regex _ env value)
-                    (=list (?whitespace)
-                           (=regex-namespace)
+                    (_ regex _ env value)
+                    (=list (=regex-namespace)
                            (=subseq (%some (?satisfies 'regex-char-p)))
                            (=regex-namespace)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
@@ -322,9 +321,8 @@
         (transform-list)
         (=list (%some
                 (=destructure
-                    (_ _ url _)
-                    (=list (?whitespace)
-                           (?eq #\[)
+                    (_ url _)
+                    (=list (?eq #\[)
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
@@ -384,7 +382,10 @@
 
 (defmacro +atom-mods-2 ()
   "Define a variable capturing parser macro for type 2 atom mods."
-  `(=transform (=atom-mods-2)
+  `(=transform (=destructure
+                   (_ atom-mods)
+                   (=list (=blackspace)
+                          (=atom-mods-2)))
                (lambda (terms)
                  (let ((value (prefix-terms %atom-sequence terms)))
                    value))))
@@ -404,7 +405,10 @@
 
 (defmacro +metadata-mods-2 ()
   "Define a variable capturing parser macro for type 2 metadata mods."
-  `(=transform (=atom-mods-2)
+  `(=transform (=destructure
+                   (_ atom-mods)
+                   (=list (=blackspace)
+                          (=atom-mods-2)))
                (lambda (terms)
                  (prefix-terms (append %atom-sequence %meta-sequence)
                                terms))))
@@ -416,7 +420,10 @@
 
 (defmacro +metadata-sequence ()
   "Define a variable capturing parser macro for metadata sequence"
-  `(=transform (=metadata-sequence)
+  `(=transform (=destructure
+                   (_ atom-mods)
+                   (=list (=blackspace)
+                          (=metadata-sequence)))
                (lambda (seq)
                  (setf %meta-sequence seq))))
 

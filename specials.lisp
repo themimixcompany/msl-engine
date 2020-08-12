@@ -23,13 +23,21 @@
   "The initial metadata counter value.")
 
 (eval-always
-  (defconstant* +base-namespace-list+
+  (defconstant* +@-namespace-list+
+      '(("@" . "@"))
+    "The list of @ namespaces.")
+
+  (defconstant* +atom-namespace-list+
       '(("c" . "canon")
         ("m" . "machine")
         ("w" . "world")
         ("s" . "stream")
-        ("v" . "view")
-        ("@" . "atom"))
+        ("v" . "view"))
+    "The list of atom namespaces.")
+
+  (defconstant* +base-namespace-list+
+      (append +@-namespace-list+
+              +atom-namespace-list+)
     "The list of base namespaces.")
 
   (defconstant* +sub-namespace-list+
