@@ -12,6 +12,14 @@
   "Return true if elem is a MEMBER of NS-LIST by CAR."
   (when* (member elem ns-list :key #'car :test #'equalp)))
 
+(defun* @-namespace-p (ns)
+  "Return true if NS is a base namespace indicator."
+  (ns-member-p ns +@-namespace-list+))
+
+(defun* atom-namespace-p (ns)
+  "Return true if NS is a atom namespace indicator."
+  (ns-member-p ns +atom-namespace-list+))
+
 (defun* base-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
   (ns-member-p ns +base-namespace-list+))
