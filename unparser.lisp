@@ -387,17 +387,9 @@ expressions can be read from the store."
              strip)
             (t (sections head nil))))))
 
-;;; turn this into a fully recursive deconstructor?
 (defun* deconstruct* (expr)
   "Return the active sections of EXPR from a new universe."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc)) ;perform the merging here
-                   ((termsp (list (car args)))
-                    (fn (cdr args)
-                        (cons (fn (deconstruct (list (car args))) nil)
-                              acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn (deconstruct expr) nil)))
+  (active-paths (deconstruct expr)))
 
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
@@ -409,6 +401,72 @@ expressions can be read from the store."
 ;; start of experimental stuff
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+(defun* list-string* (value)
+  "Apply LIST-STRING to VALUE, with a custom combiner."
+  (flet ((fn (value)
+           (etypecase value
+             (cons (format nil "(~{~A~})" value))
+             (t (string* value)))))
+    (list-string value #'fn)))
+
+(eval-always
+  (defmacro* define-container-predicate (name predicate)
+    `(defun* ,name (part)
+       "Return true if PART is part of the meh namespaces."
+       (when (length>= part 3)
+         (destructuring-bind (ns &optional &rest _)
+             part
+           (declare (ignore _))
+           (,predicate ns)))))
+
+  (define-container-predicate container-base-part-p base-namespace-p)
+  (define-container-predicate container-metadata-part-p metadata-namespace-p)
+  (define-container-predicate container-sub-part-p sub-namespace-p))
+
+(defun* space-part (part)
+  "Conditionally insert a space in PART if it meets a criteria."
+  (cond ((and (consp part)
+              (rmap-or part
+                       #'container-base-part-p
+                       #'container-metadata-part-p
+                       #'container-sub-part-p))
+         (let ((copy (copy-list part)))
+           (rplacd (cdr part) (cons " " (cddr copy))))
+         part)
+        (t part)))
+
+(defun* space-parts (parts)
+  "Apply SPACE-PART to PARTS."
+  (mapcar #'space-part parts))
+
+(defun* red (sections)
+  "Filter VALUE through modifiers."
+  (let ((value (space-parts sections)))
+    (list-string* (flatten-1 (wrap (merge-sequences (stage value)))))))
+
+(defun* parts (expr)
+  "Return the active sections of EXPR from a new universe."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((termsp (list (car args)))
+                    (fn (cdr args)
+                        (cons (fn (deconstruct (list (car args))) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn (deconstruct expr) nil)))
+
+(defun* reduce-parts (parts)
+  "Reduce PARTS to a valid MSL form."
+  (labels ((fn (args acc)
+             (cond ((null args) (red (nreverse acc)))
+                   ((termsp (list (car args)))
+                    (fn (cdr args)
+                        (cons (fn (car args) nil)
+                              acc)))
+                   (t (fn (cdr args) (cons (car args) acc))))))
+    (fn parts nil)))
+
+;;; note: compare this version with the one from master
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
   (flet ((fn (expr)
@@ -416,6 +474,11 @@ expressions can be read from the store."
                   (recall-expr (terms-base (list expr))))
                  (t expr))))
     (loop :for expr :in exprs :collect (fn expr))))
+
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+;; end of experimental stuff
+;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 (defun* reduce-sections (sections)
   "Apply REDUCE-EXPRS to sections."
@@ -428,62 +491,9 @@ expressions can be read from the store."
                      :when (section-match-p path section)
                      :collect (reduce-exprs section))))
 
-;;; note: is this even a good idea?
-;;; note: are we going to lose information?
-(defun* fuse (items)
-  "Join the items in ITEMS with a space, removing extra spaces prior to joining."
-  (let ((result (mapcar #'trim items)))
-    (join result "")))
-
-(defun* join* (items)
-  "Join the items in ITEMS without a separator."
-  (join items ""))
-
-(defun* list-string* (value)
-  "Apply LIST-STRING to value with a custom combiner."
-  (flet ((fn (value)
-           (etypecase value
-             (cons (format nil "(~A)" (fuse value)))
-             (t (string* value)))))
-    (list-string value #'fn)))
-
-;;; (defparameter *expr* "(@WALT Walt (@A A) Disney (@B B)(@C C).)")
-;;; (dispatch* *expr*)
-;;; (reduce-sections (sections (head "(@WALT Walt (@A A) Disney (@B B)(@C C).)")))
-
-;; (loop :for section :in (sections (head "(@WALT Walt (@A A) Disney (@B B)(@C C).)")) :collect (if (termsp (list section)) (reduce-sections (sections (head (terms-base (list section))))) section))
-
-;; (join (flatten-1 (wrap (merge-sequences (stage (loop :for item :in (reduce-items-2 "(@WALT Walt (@A A 123) Disney (@B B)(@C C).)") :collect (if (and (consp item) (consp (car item))) (list-string (flatten-1 (wrap (merge-sequences (stage item))))) item)))))) "")
-
-(defun* reduce-items-2 (expr)
-  "Filter VALUE through modifiers."
-  (loop :for section :in (sections (head expr))
-        :collect (if (termsp (list section))
-                     (reduce-sections (sections (head (terms-base (list section)))))
-                     section)))
-
-(defun* reduce-items-3 (sections)
-  "Filter VALUE through modifiers."
-  sections
-  (loop :for section :in sections
-        :collect (if (termsp (list section))
-                     )))
-
-;;; note: should it start with an expr, or a parse?
-;;; if it’s an expr, the starting point is (head ...)
-;;; if it’s a parse, the starting point is (head (terms-base ...))
-;;; the goal is to get the original expression
-(defun* reduce-elements (expr)
-  ""
-  (labels ((fn (args acc)
-             (cond ((null args) acc)
-                   ;; loop over terms
-                   (t))))
-    (fn (sections (head expr)))))
-
 (defun* reduce-items (sections)
   "Filter VALUE through modifiers."
-  (list-string* (flatten-1 (wrap (merge-sequences (stage sections))))))
+  (list-string (flatten-1 (wrap (merge-sequences (stage sections))))))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -493,11 +503,6 @@ expressions can be read from the store."
                (cons head sections))))
     (when sections
       (reduce-items (fn head sections)))))
-
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-;; end of experimental stuff
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
