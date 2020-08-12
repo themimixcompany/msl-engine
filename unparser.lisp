@@ -376,7 +376,8 @@ expressions can be read from the store."
       deconstruct))
 
 (defun* deconstruct (expr)
-  "Return the sections of EXPR from a new universe."
+  "Return the sections of EXPR from a new universe. In order to make proper comparisons, EXPR must
+have been dispatched already in the current universe."
   (with-fresh-universe
     (when-let* ((parse (read-parse expr))
                 (head (head expr))
@@ -388,13 +389,8 @@ expressions can be read from the store."
             (t (sections head nil))))))
 
 (defun* deconstruct* (expr)
-  "Return the active sections of EXPR from a new universe."
+  "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
-
-(defun section-match-p (path section)
-  "Return true if PATH matches SECTION."
-  (when (consp path)
-    (search (subseq path 0 2) section :test #'equalp)))
 
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -410,18 +406,18 @@ expressions can be read from the store."
     (list-string value #'fn)))
 
 (eval-always
-  (defmacro* define-container-predicate (name predicate)
+  (defmacro* define-container-predicate (name condition predicate)
     `(defun* ,name (part)
        "Return true if PART is part of the meh namespaces."
-       (when (length>= part 3)
+       (when ,condition
          (destructuring-bind (ns &optional &rest _)
              part
            (declare (ignore _))
            (,predicate ns)))))
 
-  (define-container-predicate container-base-part-p base-namespace-p)
-  (define-container-predicate container-metadata-part-p metadata-namespace-p)
-  (define-container-predicate container-sub-part-p sub-namespace-p))
+  (define-container-predicate container-base-part-p (length>= part 2) base-namespace-p)
+  (define-container-predicate container-metadata-part-p (length>= part 2) metadata-namespace-p)
+  (define-container-predicate container-sub-part-p (length>= part 2) sub-namespace-p))
 
 (defun* space-part (part)
   "Conditionally insert a space in PART if it meets a criteria."
@@ -430,6 +426,14 @@ expressions can be read from the store."
                        #'container-base-part-p
                        #'container-metadata-part-p
                        #'container-sub-part-p))
+         (let ((copy (copy-list part)))
+           (rplacd (cdr part) (cons " " (cddr copy))))
+         part)
+        (t part)))
+
+(defun* space-part* (part)
+  "Conditionally insert a space in PART if it meets a criteria."
+  (cond ((and (consp part))
          (let ((copy (copy-list part)))
            (rplacd (cdr part) (cons " " (cddr copy))))
          part)
@@ -475,6 +479,7 @@ expressions can be read from the store."
                  (t expr))))
     (loop :for expr :in exprs :collect (fn expr))))
 
+
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;; end of experimental stuff
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -483,6 +488,11 @@ expressions can be read from the store."
 (defun* reduce-sections (sections)
   "Apply REDUCE-EXPRS to sections."
   (reduce-exprs sections))
+
+(defun section-match-p (path section)
+  "Return true if PATH matches SECTION."
+  (when (consp path)
+    (search (subseq path 0 2) section :test #'equalp)))
 
 (defun* reduce-matched-sections (paths sections)
   "Apply REDUCE-EXPRS to SECTIONS with PATH."
@@ -513,6 +523,18 @@ expressions can be read from the store."
              (active-paths (active-paths deconstruct))
              (sections (sections head)))
         (cond ((head-only-paths-p deconstruct)
+               (distill head (reduce-sections sections)))
+              (t (distill head (reduce-matched-sections active-paths sections))))))))
+
+(defun* recall-expr! (expr &key (dispatch t))
+  "Return the matching expression from the store with EXPR."
+  (when dispatch (dispatch expr :log t :force nil))
+  (let ((head (head expr)))
+    (when (path-exists-p head)
+      (let* ((all-paths (deconstruct expr))
+             (active-paths (deconstruct* expr))
+             (sections (sections head)))
+        (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-matched-sections active-paths sections))))))))
 
