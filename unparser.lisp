@@ -416,21 +416,29 @@ have been dispatched already in the current universe."
            (rmap-or part
                     #'atom-part-p
                     #'sub-part-p))
-         (space (part index)
-           (insert-after part index " ")))
+         (space-after (part index)
+           (insert-after part index " "))
+         (space-before (part index)
+           (insert-before part index " ")))
     (if (consp part)
         (cond ((rmap-or part
-                        #'@-part-p
+                        #'@-part-p)
+               (space-after part 1))
+              ((rmap-or part
                         #'metadata-part-p)
-               (space part 1))
+               (space-after (space-before part 0) 2))
               ((and (is-atom-p part)
                     (length= part 2))
-               (space part 0))
+               (space-after part 0))
               ((and (is-atom-p part)
                     (length> part 2))
-               (space (space part 0) 2))
+               (space-after (space-after part 0) 2))
               (t part))
         part)))
+
+(defun* space-parts (parts)
+  "Apply SPACE-PART to PARTS."
+  (mapcar #'space-part parts))
 
 (defun* parts (expr)
   "Return the active sections of EXPR from a new universe."
@@ -456,14 +464,14 @@ have been dispatched already in the current universe."
              (t (string* value)))))
     (list-string value #'fn)))
 
-(defun* deflate-parts (parts)
-  (let ((value (mapcar #'space-part parts)))
+(defun* deflate (parts)
+  (let ((value (space-parts parts)))
     (list-string* (flatten-1 (wrap (merge-sequences (stage value)))))))
 
-(defun* deflate (expr)
-  "Reduce PARTS to a valid MSL form."
+(defun* reduce-parts (expr)
+  "Reduce EXPR to a valid MSL form."
   (labels ((fn (args acc)
-             (cond ((null args) (deflate-parts (nreverse acc)))
+             (cond ((null args) (deflate (nreverse acc)))
                    ((termsp (list (car args)))
                     (fn (cdr args)
                         (cons (fn (car args) nil)
