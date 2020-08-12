@@ -443,31 +443,43 @@ have been dispatched already in the current universe."
 (define-spacer space-before insert-before)
 (define-spacer space-after insert-after)
 
+(defun* fuse-metadata (items)
+  "Merge the metadata items found in ITEMS."
+  (labels ((fn (args acc)
+             (cond ((null args) (nreverse acc))
+                   ((and (string= (car args) ":")
+                         (cadr args))
+                    (fn (cddr args)
+                        (cons (cat (car args) (cadr args))
+                              acc)))
+                   (t (fn (cdr args)
+                          (cons (car args) acc))))))
+    (fn items nil)))
+
 (defun* space-part (part)
   "Conditionally insert a space in PART if it meets a criteria."
-  (flet ((%is-atom-p (part)
-           (rmap-or part
-                    #'atom-part-p
-                    #'sub-part-p)))
-    (cond ((consp part)
-           (cond
-             ((and (@-part-p part)
-                   (length> part 2))
-              (space-after part 1))
+  (cond ((consp part)
+         (cond
+           ((and (@-part-p part)
+                 (length> part 2))
+            (space-after part 1))
 
-             ((metadata-part-p part)
-              (space-before part 0 3))
+           ((metadata-part-p part)
+            (space-before part 0 3))
 
-             ((and (%is-atom-p part)
-                   (length= part 2))
-              (space-after part 0))
+           ((and (sub-part-p part))
+            (list-string (fuse-metadata part)))
 
-             ((and (%is-atom-p part)
-                   (length> part 2))
-              (space-after part 0 2))
+           ((and (atom-part-p part)
+                 (length= part 2))
+            (space-after part 0))
 
-             (t part)))
-          (t part))))
+           ((and (atom-part-p part)
+                 (length> part 2))
+            (space-after part 0 2))
+
+           (t part)))
+        (t part)))
 
 (defun* space-parts (parts)
   "Apply SPACE-PART to PARTS."
