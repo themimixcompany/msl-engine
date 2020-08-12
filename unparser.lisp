@@ -421,8 +421,9 @@ have been dispatched already in the current universe."
          (space-before (part index)
            (insert-before part index " ")))
     (if (consp part)
-        (cond ((rmap-or part
-                        #'@-part-p)
+        (cond ((and (rmap-or part
+                             #'@-part-p)
+                    (length> part 2))
                (space-after part 1))
               ((rmap-or part
                         #'metadata-part-p)
