@@ -392,48 +392,6 @@ have been dispatched already in the current universe."
   "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
 
-(defmacro* define-part-predicate (name predicate)
-  `(defun* ,name (part)
-     "Return true if PART is part of the meh namespaces."
-     (destructuring-bind (ns &optional &rest _)
-         part
-       (declare (ignore _))
-       (,predicate ns))))
-
-(define-part-predicate @-part-p @-namespace-p)
-(define-part-predicate atom-part-p atom-namespace-p)
-(define-part-predicate sub-part-p sub-namespace-p)
-(define-part-predicate metadata-part-p metadata-namespace-p)
-
-(defun* space-part (part)
-  "Conditionally insert a space in PART if it meets a criteria."
-  (flet ((%before (part index)
-           (insert-before part index " "))
-         (%after (part index)
-           (insert-after part index " "))
-         (%is-atom-p (part)
-           (rmap-or part
-                    #'atom-part-p
-                    #'sub-part-p)))
-    (cond ((consp part)
-           (cond ((and (@-part-p part)
-                       (length> part 2))
-                  (%after part 1))
-                 ((metadata-part-p part)
-                  (%after (%before part 0) 2))
-                 ((and (%is-atom-p part)
-                       (length= part 2))
-                  (%after part 0))
-                 ((and (%is-atom-p part)
-                       (length> part 2))
-                  (%after (%after part 0) 2))
-                 (t part)))
-          (t part))))
-
-(defun* space-parts (parts)
-  "Apply SPACE-PART to PARTS."
-  (mapcar #'space-part parts))
-
 (defun* parts (expr)
   "Return the active sections of EXPR from a new universe."
   (labels ((fn (args acc)
@@ -458,7 +416,65 @@ have been dispatched already in the current universe."
              (t (string* value)))))
     (list-string value #'fn)))
 
+(defmacro define-part-predicate (name predicate)
+  "Define a predicate for testing namespaces."
+  `(defun* ,name (part)
+     (destructuring-bind (ns &optional &rest _)
+         part
+       (declare (ignore _))
+       (,predicate ns))))
+
+(define-part-predicate @-part-p @-namespace-p)
+(define-part-predicate atom-part-p atom-namespace-p)
+(define-part-predicate sub-part-p sub-namespace-p)
+(define-part-predicate metadata-part-p metadata-namespace-p)
+
+(defmacro define-spacer (name fun)
+  "Define a helper for inserting spaces."
+  `(defun* ,name (list &rest indexes)
+     "Return a new list from inserting string into the locations specified by indexes."
+     (labels ((fn (list args)
+                (cond ((or (null args))
+                       list)
+                      (t (fn (,fun list (car args) " ")
+                             (cdr args))))))
+       (fn list indexes))))
+
+(define-spacer space-before insert-before)
+(define-spacer space-after insert-after)
+
+(defun* space-part (part)
+  "Conditionally insert a space in PART if it meets a criteria."
+  (flet ((%is-atom-p (part)
+           (rmap-or part
+                    #'atom-part-p
+                    #'sub-part-p)))
+    (cond ((consp part)
+           (cond
+             ((and (@-part-p part)
+                   (length> part 2))
+              (space-after part 1))
+
+             ((metadata-part-p part)
+              (space-before part 0 3))
+
+             ((and (%is-atom-p part)
+                   (length= part 2))
+              (space-after part 0))
+
+             ((and (%is-atom-p part)
+                   (length> part 2))
+              (space-after part 0 2))
+
+             (t part)))
+          (t part))))
+
+(defun* space-parts (parts)
+  "Apply SPACE-PART to PARTS."
+  (mapcar #'space-part parts))
+
 (defun* deflate (parts)
+  "Return a string from running PARTS through filters."
   (let ((value (space-parts parts)))
     (list-string* (flatten-1 (wrap (merge-sequences (stage value)))))))
 
@@ -473,7 +489,7 @@ have been dispatched already in the current universe."
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn (parts expr) nil)))
 
-;;; master branch
+;;; (master)
 ;; (defun* reduce-exprs (exprs)
 ;;   "Return a list of values that corresponding to expressions including terms reduction."
 ;;   (mapcar #'(lambda (expr)
@@ -484,7 +500,7 @@ have been dispatched already in the current universe."
 ;;                     (t expr)))
 ;;           exprs))
 
-;;; interpolation branch
+;;; (interpolation)
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
   (flet ((fn (expr)
