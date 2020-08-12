@@ -415,12 +415,13 @@ have been dispatched already in the current universe."
   (flet ((is-atom-p (part)
            (rmap-or part
                     #'atom-part-p
-                    #'metadata-part-p
                     #'sub-part-p))
          (space (part index)
            (insert-after part index " ")))
     (if (consp part)
-        (cond ((@-part-p part)
+        (cond ((rmap-or part
+                        #'@-part-p
+                        #'metadata-part-p)
                (space part 1))
               ((and (is-atom-p part)
                     (length= part 2))
@@ -457,7 +458,6 @@ have been dispatched already in the current universe."
 
 (defun* deflate-parts (parts)
   (let ((value (mapcar #'space-part parts)))
-    (dbg value)
     (list-string* (flatten-1 (wrap (merge-sequences (stage value)))))))
 
 (defun* deflate (expr)
