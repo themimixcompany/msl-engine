@@ -200,7 +200,7 @@
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
       (%or 'nested-atom-form
-           'metadata-sequence*
+           'metadata-sequence
            'regex-selector
            'bracketed-transform-selector
            'datatype-form
@@ -208,7 +208,7 @@
            'hash
            'comment
            (~seq 'nested-atom-form)
-           (~seq 'metadata-sequence*)
+           (~seq 'metadata-sequence)
            (~seq 'regex-selector)
            (~seq 'bracketed-transform-selector)
            (~seq 'datatype-form)
