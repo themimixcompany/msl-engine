@@ -407,8 +407,8 @@ have been dispatched already in the current universe."
 
 (define-part-predicate @-part-p @-namespace-p)
 (define-part-predicate atom-part-p atom-namespace-p)
-(define-part-predicate metadata-part-p metadata-namespace-p)
 (define-part-predicate sub-part-p sub-namespace-p)
+(define-part-predicate metadata-part-p metadata-namespace-p)
 
 (defun* space-part (part)
   "Conditionally insert a space in PART if it meets a criteria."
