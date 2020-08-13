@@ -36,7 +36,8 @@
 
 (defun key-member-p (keys path)
   "Return true if KEYS is part of PATH."
-  (when* (consp path) (mem (car path) (uiop:ensure-list keys))))
+  (∧ (consp path)
+     (mem (car path) (uiop:ensure-list keys))))
 
 (defun* basep (path)
   "Return true if PATH is in the @ key."
@@ -177,9 +178,8 @@
 
 (defun* head-only-p (path)
   "Return true if PATH is exclusively a head."
-  (when*
-    (length= path 2)
-    (path-exists-p path)))
+  (∧ (length= path 2)
+     (path-exists-p path)))
 
 (defun make-head (list)
   "Return a list with custom head merging."
@@ -316,7 +316,7 @@ expressions can be read from the store."
         (destructuring-bind (ns key &optional &rest _)
             head
           (declare (ignore _))
-          (when* (path-exists-p (list ns key))))))))
+          (∧ (path-exists-p (list ns key))))))))
 
 (defun strip-head (path)
   "Return path PATH without the leading primary namespace and key."
@@ -361,12 +361,12 @@ expressions can be read from the store."
                                    value)))))))
 
 (defun* strip-heads (parse)
-    "Remove the heads from a parse."
-    (remove-if-not #'(lambda (item)
-                       (length= item 2))
-                   (mapcar #'(lambda (item)
-                               (strip-head (car item)))
-                           parse)))
+  "Remove the heads from a parse."
+  (remove-if-not #'(lambda (item)
+                     (length= item 2))
+                 (mapcar #'(lambda (item)
+                             (strip-head (car item)))
+                         parse)))
 
 (defun* active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -416,18 +416,18 @@ have been dispatched already in the current universe."
              (t (string* value)))))
     (list-string value #'fn)))
 
-(defmacro define-part-predicate (name predicate)
+(defmacro define-checker (name)
   "Define a predicate for testing namespaces."
-  `(defun* ,name (part)
-     (destructuring-bind (ns &optional &rest _)
-         part
-       (declare (ignore _))
-       (,predicate ns))))
+  (let* ((part-name (hyphenate-intern nil name "part-p"))
+         (namespace-name (hyphenate-intern nil name "namespace-p")))
+    `(defun* ,part-name (part)
+       (destructuring-bind (ns &optional &rest _)
+           part
+         (declare (ignore _))
+         (,namespace-name ns)))))
 
-(define-part-predicate @-part-p @-namespace-p)
-(define-part-predicate atom-part-p atom-namespace-p)
-(define-part-predicate sub-part-p sub-namespace-p)
-(define-part-predicate metadata-part-p metadata-namespace-p)
+(mapply define-checker
+        @ atom sub metadata)
 
 (defmacro define-spacer (name)
   "Define a helper for inserting spaces."
@@ -443,8 +443,8 @@ have been dispatched already in the current universe."
                                  (cdr args))))))
            (fn list indexes))))))
 
-(define-spacer space-before)
-(define-spacer space-after)
+(mapply define-spacer
+        space-before space-after)
 
 (defun* trim-items (items)
   "Remove the extraneous whitespace from the items in ITEMS."
@@ -453,8 +453,8 @@ have been dispatched already in the current universe."
 (defun* refine-part (part)
   "Conditionally perform additional processing on PART."
   (macrolet ((~m (&body body)
-               `(when* (consp part)
-                  ,@body)))
+               `(∧ (consp part)
+                   ,@body)))
     (cond
       ((~m (@-part-p part) (length> part 2))
        (space-after part 1))
@@ -552,9 +552,9 @@ non-value information."
 (defun* reduce-values (values)
   "Return a string concatenation of the items in VALUES."
   (let ((result (mapcar #'(lambda (value)
-                       (cond ((stringp value) value)
-                             ((termsp value) (recall-value (terms-base value)))
-                             (t nil)))
+                            (cond ((stringp value) value)
+                                  ((termsp value) (recall-value (terms-base value)))
+                                  (t nil)))
                         values)))
     (join result "")))
 

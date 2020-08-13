@@ -40,14 +40,12 @@
 
 (defun* has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
-  (when*
-    (sub-atom-index path)
-    (not (sub-atom-path-p path))))
+  (∧ (sub-atom-index path)
+     (not (sub-atom-path-p path))))
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
-  (when*
-    (member key +key-indicators+ :test #'equalp)))
+  (∧ (member key +key-indicators+ :test #'equalp)))
 
 (defun empty-params-p (params)
   "Return true if PARAMS is considered empty."
@@ -58,9 +56,8 @@
   "Return true if TERM is considered empty."
   (destructuring-bind (path &optional &rest params)
       term
-    (when*
-      (empty-params-p params)
-      (not (has-sub-atom-path-p path)))))
+    (∧ (empty-params-p params)
+       (not (has-sub-atom-path-p path)))))
 
 (defun find-table (table)
   "Return the table from the universe identified by TABLE."
@@ -71,27 +68,24 @@
   (destructuring-bind (path &optional &rest value)
       term
     (declare (ignore value))
-    (when*
-      (length= path 2)
-      (base-namespace-p (car path)))))
+    (∧ (length= path 2)
+       (base-namespace-p (car path)))))
 
 (defun* metadata-term-p (term)
   "Return true if TERM is a metadata term."
   (destructuring-bind (path &optional &rest value)
       term
     (declare (ignore value))
-    (when*
-      (length= path 4)
-      (metadata-namespace-p (caddr path)))))
+    (∧ (length= path 4)
+       (metadata-namespace-p (caddr path)))))
 
 (defun regex-term-p (term)
   "Return true if TERM is a regex term."
   (destructuring-bind (path &optional &rest value)
       term
     (declare (ignore value))
-    (when*
-      (length= path 3)
-      (string= (last* path) "/"))))
+    (∧ (length= path 3)
+       (string= (last* path) "/"))))
 
 
 ;;--------------------------------------------------------------------------------------------------
