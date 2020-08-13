@@ -101,8 +101,8 @@
               nil)))
 
 (defun* read-term (term &optional
-                       (atom-table (atom-table *universe*))
-                       (sub-atom-table (sub-atom-table *universe*)))
+                        (atom-table (atom-table *universe*))
+                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (let ((default-key '("="))
         (dummy-value nil)) ;; or '("")
@@ -122,8 +122,8 @@
                 (t (fn path table))))))))
 
 (defun* read-path (path &optional
-                       (atom-table (atom-table *universe*))
-                       (sub-atom-table (sub-atom-table *universe*)))
+                        (atom-table (atom-table *universe*))
+                        (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
