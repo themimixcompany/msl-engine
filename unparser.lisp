@@ -432,7 +432,6 @@ have been dispatched already in the current universe."
 (defmacro define-spacer (name fun)
   "Define a helper for inserting spaces."
   `(defun* ,name (list &rest indexes)
-     "Return a new list from inserting string into the locations specified by indexes."
      (labels ((fn (list args)
                 (cond ((or (null args))
                        list)
@@ -443,43 +442,46 @@ have been dispatched already in the current universe."
 (define-spacer space-before insert-before)
 (define-spacer space-after insert-after)
 
-(defun* space-part (part)
-  "Conditionally insert a space in PART if it meets a criteria."
-  (cond ((consp part)
-         (cond
-           ((and (@-part-p part)
-                 (length> part 2))
-            (space-after part 1))
+(defun* trim-items (items)
+  "Remove the extraneous whitespace from the items in ITEMS."
+  (mapcar #'trim items))
 
-           ((metadata-part-p part)
-            (space-before part 0 3))
+(defun* refine-part (part)
+  "Conditionally perform additional processing on PART."
+  (macrolet ((~m (&body body)
+               `(when* (consp part)
+                  ,@body)))
+    (cond
+      ((~m (@-part-p part) (length> part 2))
+       (space-after part 1))
 
-           ((sub-part-p part)
-            (list-string (merge-colons part)))
+      ((~m (atom-part-p part) (length= part 2))
+       (space-after part 0))
 
-           ((and (atom-part-p part)
-                 (length= part 2))
-            (space-after part 0))
+      ((~m (atom-part-p part) (length> part 2))
+       (space-after part 0 2))
 
-           ((and (atom-part-p part)
-                 (length> part 2))
-            (space-after part 0 2))
+      ((~m (sub-part-p part))
+       (list-string (trim-items (merge-colons part))))
 
-           (t part)))
-        (t part)))
+      ((~m (metadata-part-p part))
+       (space-before part 0 3))
 
-(defun* space-parts (parts)
-  "Apply SPACE-PART to PARTS."
-  (mapcar #'space-part parts))
+      (t part))))
+
+(defun* refine-parts (parts)
+  "Apply REFINE-PART to PARTS."
+  (mapcar #'refine-part parts))
 
 (defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
-  (let* ((value (space-parts parts))
+  (let* ((value (refine-parts parts))
          (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
     (list-string* staged-value)))
 
 (defun* reduce-expr (expr)
-  "Reduce EXPR to a valid MSL form."
+  "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
+non-value information."
   (labels ((fn (args acc)
              (cond ((null args) (reduce-parts (nreverse acc)))
                    ((termsp (list (car args)))
