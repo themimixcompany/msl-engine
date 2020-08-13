@@ -33,7 +33,7 @@
 
 (defun json-object-p (string)
   "Return true if STRING is a JSON object."
-  (when*
+  (∧
     (handler-case (json:decode-json-from-string string)
       (json:json-syntax-error nil))))
 

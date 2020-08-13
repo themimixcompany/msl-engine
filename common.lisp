@@ -10,7 +10,7 @@
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
-  (when* (member elem ns-list :key #'car :test #'equalp)))
+  (∧ (member elem ns-list :key #'car :test #'equalp)))
 
 (defun* @-namespace-p (ns)
   "Return true if NS is a base namespace indicator."
@@ -163,13 +163,12 @@
            (destructuring-bind (&optional head &rest _)
                form
              (declare (ignore _))
-             (when*
-               (consp head)
-               (destructuring-bind (value &rest _)
-                   head
-                 (declare (ignore _))
-                 (and (consp value)
-                      (funcall predicate (car value))))))))
+             (∧ (consp head)
+                (destructuring-bind (value &rest _)
+                    head
+                  (declare (ignore _))
+                  (and (consp value)
+                       (funcall predicate (car value))))))))
     (cond ((rmap-or form #'stringp #'numberp) nil)
           (t (fn form)))))
 
