@@ -429,18 +429,22 @@ have been dispatched already in the current universe."
 (define-part-predicate sub-part-p sub-namespace-p)
 (define-part-predicate metadata-part-p metadata-namespace-p)
 
-(defmacro define-spacer (name fun)
+(defmacro define-spacer (name)
   "Define a helper for inserting spaces."
-  `(defun* ,name (list &rest indexes)
-     (labels ((fn (list args)
-                (cond ((or (null args))
-                       list)
-                      (t (fn (,fun list (car args) " ")
-                             (cdr args))))))
-       (fn list indexes))))
+  (destructuring-bind (_ position)
+      (uiop:split-string (string name) :separator '(#\-))
+    (declare (ignore _))
+    (let ((fn-name (hyphenate-intern nil "insert" position)))
+      `(defun* ,name (list &rest indexes)
+         (labels ((fn (list args)
+                    (cond ((or (null args))
+                           list)
+                          (t (fn (,fn-name list (car args) " ")
+                                 (cdr args))))))
+           (fn list indexes))))))
 
-(define-spacer space-before insert-before)
-(define-spacer space-after insert-after)
+(define-spacer space-before)
+(define-spacer space-after)
 
 (defun* trim-items (items)
   "Remove the extraneous whitespace from the items in ITEMS."
