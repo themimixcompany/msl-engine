@@ -76,8 +76,8 @@
 (defun* flatten-1 (list)
   "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
-              (cond ((or (metadatap y)
-                         (modsp y))
+              (cond ((∨ (metadatap y)
+                        (modsp y))
                      (append x (list y)))
                     (t (append x y))))
           (marshall list)))
@@ -111,10 +111,10 @@
 (defun* wrap (items)
   "Conditionally listify the items in ITEMS."
   (mapcar #'(lambda (item)
-              (cond ((or (atom item)
-                         (and (consp item)
-                              (not (metamodsp item))
-                              (not (stringp (car item)))))
+              (cond ((∨ (atom item)
+                        (and (consp item)
+                             (not (metamodsp item))
+                             (not (stringp (car item)))))
                      (list item))
                     (t item)))
           items))
@@ -252,8 +252,8 @@
   "Join the the items in LIST that should be together."
   (labels ((fn (args acc)
              (cond ((null args) (nreverse acc))
-                   ((or (base-namespace-p (car args))
-                        (colon-namespace-p (car args)))
+                   ((∨ (base-namespace-p (car args))
+                       (colon-namespace-p (car args)))
                     (fn (cddr args)
                         (cons (cat (car args) (cadr args))
                               acc)))
@@ -321,7 +321,7 @@ expressions can be read from the store."
 (defun strip-head (path)
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
-    (cond ((or (and (= length 4) (metamodsp (cddr path)))
+    (cond ((∨ (and (= length 4) (metamodsp (cddr path)))
                (and (> length 2) (base-namespace-p (car path))))
            (cddr path))
           (t path))))
@@ -338,7 +338,7 @@ expressions can be read from the store."
          (hash (remove-if-not #'string-hash-p sections))
          (hash-value (when hash (list hash)))
          (start (remove-if #'(lambda (section)
-                               (or (metadatap section)
+                               (∨ (metadatap section)
                                    (string-hash-p section)))
                            sections))
          (lead (list (append (car start) (cdr start)))))
@@ -352,7 +352,8 @@ expressions can be read from the store."
            (roots (roots table key keys))
            (stage (stage (flatten-1 (gird table (car roots))))))
       (loop :for item :in stage
-            :with limit = (or (position-if #'consp stage) (length stage))
+            :with limit = (or (position-if #'consp stage)
+                              (length stage))
             :for count :from 1 :to limit
             :collect item :into items
             :finally (let ((value (cons items (nthcdr limit stage))))
@@ -437,8 +438,7 @@ have been dispatched already in the current universe."
     (let ((fn-name (hyphenate-intern nil "insert" position)))
       `(defun* ,name (list &rest indexes)
          (labels ((fn (list args)
-                    (cond ((or (null args))
-                           list)
+                    (cond ((null args) list)
                           (t (fn (,fn-name list (car args) " ")
                                  (cdr args))))))
            (fn list indexes))))))
@@ -590,7 +590,7 @@ non-value information."
 
 (defun* has-mods-p (path)
   "Return true if PATH contains a mods subsection."
-  (or (modsp (strip-head path))
+  (∨ (modsp (strip-head path))
       (modsp (strip-head (strip-head path)))))
 
 (defun* has-metamods-p (path)
@@ -599,7 +599,7 @@ non-value information."
 
 (defun* has-regex-p (path)
   "Return true if PATH contains a regex subsection."
-  (or (regexp (strip-head path))
+  (∨ (regexp (strip-head path))
       (regexp (strip-head (strip-head path)))))
 
 (defun* has-transform-p (path)
@@ -610,9 +610,9 @@ non-value information."
   "Return paths from EXPR that are valid requests."
   (when-let ((parse (read-parse expr)))
     (flet ((fn (term)
-             (or (and (length= (car term) 2)
-                      (null* (cadr term)))
-                 (mem (last* (car term)) '("/" "[]")))))
+             (∨ (and (length= (car term) 2)
+                     (null* (cadr term)))
+                (mem (last* (car term)) '("/" "[]")))))
       (cond
         ;; top-level expression
         ((length= parse 1)

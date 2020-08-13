@@ -41,8 +41,8 @@
   "Return the appropriate data type from MESSAGE."
   (flet ((fn (v)
            (let ((value (if (stringp v) (list v) v)))
-             (if (or (length= value 1)
-                     (length= value 2))
+             (if (∨ (length= value 1)
+                    (length= value 2))
                  value
                  nil))))
     (if (json-object-p message)
@@ -75,8 +75,8 @@
 (defun read-location (path set)
   "Return the value specified by PATH in SET."
   (labels ((fn (path value)
-             (cond ((or (and (null path) (atom value) (stringp value))
-                        (null path))
+             (cond ((∨ (and (null path) (atom value) (stringp value))
+                       (null path))
                     value)
                    ((and path (consp value))
                     (fn (cdr path) (assoc-value (car path) value)))

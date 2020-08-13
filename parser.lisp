@@ -17,9 +17,9 @@
 
 (defun hex-char-p (char)
   "Return true if CHAR is valid hexadecimal character."
-  (or (digit-char-p char)
-      (char<= #\a char #\f)
-      (char<= #\A char #\F)))
+  (∨ (digit-char-p char)
+     (char<= #\a char #\f)
+     (char<= #\A char #\F)))
 
 (defun length-64-p (value)
   "Return true if VALUE is 64 characters long."
@@ -27,10 +27,10 @@
 
 (defun regex-char-p (char)
   "Return true if CHAR is a valid regex character."
-  (or (alphanumericp char)
-      (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
-                  #\left_parenthesis #\right_parenthesis
-                  #\[ #\] #\{ #\}))))
+  (∨ (alphanumericp char)
+     (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
+                 #\left_parenthesis #\right_parenthesis
+                 #\[ #\] #\{ #\}))))
 
 
 ;;--------------------------------------------------------------------------------------------------
