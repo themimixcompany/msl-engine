@@ -77,7 +77,8 @@
   "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
               (cond ((∨ (metadatap y)
-                        (modsp y))
+                        (modsp y)
+                        (termsp y))
                      (append x (list y)))
                     (t (append x y))))
           (marshall list)))
@@ -316,7 +317,7 @@ expressions can be read from the store."
         (destructuring-bind (ns key &optional &rest _)
             head
           (declare (ignore _))
-          (∧ (path-exists-p (list ns key))))))))
+          (path-exists-p (list ns key)))))))
 
 (defun strip-head (path)
   "Return path PATH without the leading primary namespace and key."
@@ -351,6 +352,7 @@ expressions can be read from the store."
     (let* ((table (atom-table *universe*))
            (roots (roots table key keys))
            (stage (stage (flatten-1 (gird table (car roots))))))
+      (dbg (flatten-1 (gird table (car roots))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
@@ -371,47 +373,30 @@ expressions can be read from the store."
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
   (with-fresh-universe ()
-    (when-let* ((parse (parse-msl expr))
-                (strip (strip-heads parse))
+    (when-let* ((parse (read-parse expr))
                 (head (head expr))
+                (strip (strip-heads parse))
                 (dispatch (dispatch expr :log nil :force t)))
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
             (t (sections head :post t))))))
 
-(defun* paths (deconstruct)
+(defun* active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
   (if (and (head-only-p (car deconstruct))
            (length> deconstruct 1))
       (cdr deconstruct)
       deconstruct))
 
-(defun section-match-p (path section)
-  "Return true if PATH matches SECTION."
-  (when (consp path)
-    (search (subseq path 0 2) section :test #'equalp)))
+(defun* deconstruct* (expr)
+  "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
+  (active-paths (deconstruct expr)))
 
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;; REDUCE-EXPR
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-(defun* parts (expr)
-  "Return the active sections of EXPR from a new universe."
-  (labels ((fn (args acc)
-             (cond ((null args) (nreverse acc))
-                   ((termsp (list (car args)))
-                    (fn (cdr args)
-                        (cons (fn (deconstruct (list (car args))) nil)
-                              acc)))
-                   ((and (consp (car args))
-                         (termsp (caar args)))
-                    (fn (cdr args)
-                        (cons (fn (deconstruct (caar args)) nil)
-                              acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn (deconstruct expr) nil)))
 
 (defmacro define-checker (name)
   "Define a predicate for testing namespaces."
@@ -423,8 +408,7 @@ expressions can be read from the store."
          (declare (ignore _))
          (,namespace-name ns)))))
 
-(mapply define-checker
-        @ atom sub metadata)
+(mapply define-checker @ atom sub metadata)
 
 (defmacro define-spacer (name)
   "Define a helper for inserting spaces."
@@ -439,8 +423,7 @@ expressions can be read from the store."
                                  (cdr args))))))
            (fn list indexes))))))
 
-(mapply define-spacer
-        space-before space-after)
+(mapply define-spacer space-before space-after)
 
 (defun* trim-items (items)
   "Remove the extraneous whitespace from the items in ITEMS."
@@ -473,26 +456,51 @@ expressions can be read from the store."
   "Apply REFINE-PART to PARTS."
   (mapcar #'refine-part parts))
 
+(defun* list-string* (value)
+  "Apply LIST-STRING to VALUE, with a custom CONS combiner."
+  (flet ((fn (value)
+           (etypecase value
+             (cons (format nil "(~{~A~})" value))
+             (t (string* value)))))
+    (list-string value #'fn)))
+
 (defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
          (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
-    (list-string staged-value
-                 #'(lambda (value)
-                     (etypecase value
-                       (cons (format nil "(~{~A~})" value))
-                       (t (string* value)))))))
+    (list-string* staged-value)))
+
+(defun* parts (expr)
+  "Return the active parts of EXPR."
+  (labels ((fn (args acc)
+             (dbg args)
+             (cond
+               ((null args)
+                (nreverse acc))
+
+               ((termsp (car args))
+                (fn (cdr args)
+                    (cons (fn (deconstruct (car args)) nil)
+                          acc)))
+
+               (t (dbg "D")
+                  (fn (cdr args) (cons (car args) acc))))))
+    (fn (deconstruct expr) nil)))
 
 (defun* reduce-expr (expr)
   "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
 non-value information."
   (labels ((fn (args acc)
-             (cond ((null args) (reduce-parts (nreverse acc)))
-                   ((termsp (list (car args)))
-                    (fn (cdr args)
-                        (cons (fn (car args) nil)
-                              acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
+             (cond
+               ((null args)
+                (reduce-parts (nreverse acc)))
+
+               ((termsp (car args))
+                (fn (cdr args)
+                    (cons (fn (car args) nil)
+                          acc)))
+
+               (t (fn (cdr args) (cons (car args) acc))))))
     (fn (parts expr) nil)))
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -501,24 +509,34 @@ non-value information."
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions including terms reduction."
   (mapcar #'(lambda (expr)
-              (cond ((stringp expr) expr)
-                    ((termsp (car expr)) (recall-expr (terms-base (car expr))))
-                    ((termsp expr) (recall-expr (terms-base expr)))
-                    ((termsp (list expr)) (recall-expr (terms-base (list expr))))
-                    (t expr)))
+              (cond
+                ((termsp expr)
+                 (recall-expr (terms-base expr)))
+
+                (t expr)))
           exprs))
 
 (defun* reduce-sections (sections)
   "Apply REDUCE-EXPRS to sections."
-  (mapcar #'reduce-exprs sections))
+  (mapcar #'(lambda (section)
+              (cond
+                ((consp section)
+                 (reduce-exprs section))
+
+                (t section)))
+          sections))
+
+(defun section-match-p (path section)
+  "Return true if PATH matches SECTION."
+  (when (consp path)
+    (search (subseq path 0 2) section :test #'equalp)))
 
 (defun* reduce-matched-sections (paths sections)
   "Apply REDUCE-EXPRS to SECTIONS with PATH."
   (loop :for path :in paths
         :nconc (loop :for section :in sections
                      :when (section-match-p path section)
-                     :collect (let ((v (reduce-exprs section)))
-                                v))))
+                     :collect (reduce-exprs section))))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -535,13 +553,13 @@ non-value information."
   (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (path-exists-p head)
-      (let* ((deconstruct (deconstruct expr))
-             (paths (paths deconstruct))
-             (sections (sections head :post t)))
-        (cond ((head-only-paths-p deconstruct)
+      (let* ((all-paths (deconstruct expr))
+             (active-paths (deconstruct* expr))
+             (sections (sections head)))
+        (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
               ;; note: call REDUCE-EXPR here
-              (t (distill head (reduce-matched-sections paths sections))))))))
+              (t (distill head (reduce-matched-sections active-paths sections))))))))
 
 (defun* recall-expr* (expr)
   "Apply RECALL-EXPR without dispatching."
