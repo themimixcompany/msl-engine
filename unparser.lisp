@@ -379,7 +379,7 @@ expressions can be read from the store."
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe. In order to make proper comparisons, EXPR must
 have been dispatched already in the current universe."
-  (with-fresh-universe
+  (with-fresh-universe ()
     (when-let* ((parse (read-parse expr))
                 (head (head expr))
                 (strip (strip-heads parse))
@@ -408,14 +408,6 @@ have been dispatched already in the current universe."
                               acc)))
                    (t (fn (cdr args) (cons (car args) acc))))))
     (fn (deconstruct expr) nil)))
-
-(defun* list-string* (value)
-  "Apply LIST-STRING to VALUE, with a custom CONS combiner."
-  (flet ((fn (value)
-           (etypecase value
-             (cons (format nil "(~{~A~})" value))
-             (t (string* value)))))
-    (list-string value #'fn)))
 
 (defmacro define-checker (name)
   "Define a predicate for testing namespaces."
@@ -481,7 +473,11 @@ have been dispatched already in the current universe."
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
          (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
-    (list-string* staged-value)))
+    (list-string staged-value
+                 #'(lambda (value)
+                     (etypecase value
+                       (cons (format nil "(~{~A~})" value))
+                       (t (string* value)))))))
 
 (defun* reduce-expr (expr)
   "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
