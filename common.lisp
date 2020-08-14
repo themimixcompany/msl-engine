@@ -214,7 +214,7 @@ body contents of the parser function."
   (clear-universe)
   (dump-universe))
 
-(defmacro* with-fresh-universe (&body body)
+(defmacro* with-fresh-universe ((&optional) &body body)
   "Evaluate BODY in a separate universe."
   `(let ((streams/specials:*universe* (streams/classes:make-universe)))
      ,@body))

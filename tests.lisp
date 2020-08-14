@@ -73,6 +73,6 @@
 (defun* run-tests ()
   "Run all the tests defined in the suite."
   ;; (run! 'all-tests)
-  (with-fresh-universe                  ;this may affect cumulative tests
+  (with-fresh-universe ()                  ;this may affect cumulative tests
     (run! 'parser-tests-1)
     (clear-universe)))

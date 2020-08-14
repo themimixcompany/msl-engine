@@ -8,7 +8,7 @@
 
 (defun* build (&optional (root *default-pathname-defaults*))
   "Build the executable of streams for different platforms."
-  (with-muffled-debugger
+  (with-muffled-debugger ()
     (let ((arch (string (uiop:architecture))))
       (flet ((fn (name)
                (let ((suffix (cond ((string= name "windows") (cat name "_" arch ".exe"))
