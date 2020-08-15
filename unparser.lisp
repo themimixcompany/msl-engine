@@ -39,38 +39,25 @@
   (∧ (consp path)
      (mem (car path) (uiop:ensure-list keys))))
 
-(defun* basep (path)
-  "Return true if PATH is in the @ key."
-  (key-member-p "@" path))
+(defmacro define-key-predicate (name items)
+  "Define a key member predicate."
+  `(defun* ,name (path)
+     (key-member-p ',items path)))
 
-(defun* metadatap (path)
-  "Return true if PATH is in the : namespace."
-  (key-member-p ":" path))
-
-(defun* modsp (path)
-  "Return true if PATH is a datatype or format form."
-  (key-member-p '("d" "f") path))
-
-(defun* metamodsp (path)
-  "Return true if PATH is in the metadata or mods namespaces."
-  (rmap-or path #'metadatap #'modsp))
-
-(defun* hashp (path)
-  "Return true if PATH is in the # namespace."
-  (key-member-p "#" path))
-
-(defun* regexp (path)
-  "Return true if PATH is in the / namespace."
-  (key-member-p "/" path))
-
-(defun* transformp (path)
-  "Return true if PATH is in the [] namespace."
-  (key-member-p "[]" path))
+(define-key-predicate @p "@")
+(define-key-predicate metadatap ":")
+(define-key-predicate modsp ("d" "f"))
+(define-key-predicate hashp "#")
+(define-key-predicate regexp "/")
+(define-key-predicate transformp "[]")
+(defun* metamodsp (path) (rmap-or path #'metadatap #'modsp))
 
 (defun marshall (list)
   "Return a list where non-cons items are made conses."
   (mapcar #'(lambda (item)
-              (if (consp item) item (list item)))
+              (if (consp item)
+                  item
+                  (list item)))
           list))
 
 (defun* flatten-1 (list)
@@ -85,21 +72,22 @@
 
 (defun* merge-colons (value)
   "Merge the colons and keys in VALUE."
-  (labels ((fn (args acc)
+  (labels ((fn (args &optional acc)
              (cond ((null args) (nreverse acc))
                    ((string= (car args) ":")
-                    (fn (cddr args) (cons (cat (car args) (cadr args))
-                                          acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (if (and (consp value) (not (termsp value)))
-        (fn value nil)
-        value)))
+                    (fn (cddr args)
+                        (cons (cat (car args) (cadr args)) acc)))
+                   (t (fn (cdr args)
+                          (cons (car args) acc))))))
+    (if (∧ (consp value)
+           (not (termsp value)))
+        (fn value))))
 
 ;;; note: do not perform merging with c and friends
 (defun* merge-sequences (items)
   "Conditionally merge the key sequences in ITEMS."
   (flet ((fn (item)
-           (if (rmap-or item #'basep #'metadatap)
+           (if (rmap-or item #'@p #'metadatap)
                (cons (cat (car item) (cadr item))
                      (cddr item))
                item)))
@@ -122,18 +110,18 @@
 
 (defun* stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
-  (labels ((fn (args acc)
+  (labels ((fn (args &optional acc)
              (cond ((null args) (nreverse acc))
                    ((modsp (car args))
                     (fn (cdr args)
                         (cons (flatten-list (car args)) acc)))
                    ((metadatap (car args))
                     (fn (cdr args)
-                        (cons (flatten-1 (wrap (merge-sequences (fn (car args) nil))))
+                        (cons (flatten-1 (wrap (merge-sequences (fn (car args)))))
                               acc)))
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
-    (fn list nil)))
+    (fn list)))
 
 (defun* normalize (list)
   "Return special merging on items of LIST."
@@ -224,8 +212,8 @@
 
 (defun* roots (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (let* ((tab (gethash key table))
-         (entries (or keys (table-keys tab))))
+  (when-let* ((tab (gethash key table))
+              (entries (or keys (table-keys tab))))
     (loop :for v :in (assemble tab entries)
           :for kv = (cons key v)
           :when kv :collect (normalize kv))))
@@ -251,7 +239,7 @@
 
 (defun* join-items (list)
   "Join the the items in LIST that should be together."
-  (labels ((fn (args acc)
+  (labels ((fn (args &optional acc)
              (cond ((null args) (nreverse acc))
                    ((or (base-namespace-p (car args))
                         (colon-namespace-p (car args)))
@@ -260,10 +248,11 @@
                               acc)))
                    ((consp (car args))
                     (fn (cdr args)
-                        (cons (fn (car args) nil)
+                        (cons (fn (car args))
                               acc)))
-                   (t (fn (cdr args) (cons (car args) acc))))))
-    (fn list nil)))
+                   (t (fn (cdr args)
+                          (cons (car args) acc))))))
+    (fn list)))
 
 (defun* convert (terms)
   "Return the original expression from TERMS."
@@ -345,14 +334,13 @@ expressions can be read from the store."
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
 
-(defun* sections (head &key post)
+(defun* sections (head &optional (post t))
   "Return the original expressions under HEAD according to type."
   (destructuring-bind (key &rest keys)
       head
-    (let* ((table (atom-table *universe*))
-           (roots (roots table key keys))
-           (stage (stage (flatten-1 (gird table (car roots))))))
-      (dbg (flatten-1 (gird table (car roots))))
+    (when-let* ((table (atom-table *universe*))
+                (roots (roots table key keys))
+                (stage (stage (flatten-1 (gird table (car roots))))))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage) (length stage))
             :for count :from 1 :to limit
@@ -380,7 +368,22 @@ expressions can be read from the store."
       (cond ((and (null* dispatch)
                   (null (find-if #'modsp strip)))
              strip)
-            (t (sections head :post t))))))
+            (t (sections head))))))
+
+;;; note: write this
+(defun* deconstruct-all (expr)
+  (with-fresh-universe ())
+  (labels ((fn (args &optional acc)
+             (cond ((null args) (nreverse acc))
+                   ((termsp (car args))
+                    (fn (cdr args)
+                        (cons (mapcar #'fn (sections (head (car args))))
+                              acc)))
+                   (t (fn (cdr args)
+                          (cons (car args)
+                                acc))))))
+    (dispatch expr :log nil :force t)
+    (mapcar #'fn (sections (head expr)))))
 
 (defun* active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -472,36 +475,35 @@ expressions can be read from the store."
 
 (defun* parts (expr)
   "Return the active parts of EXPR."
-  (labels ((fn (args acc)
-             (dbg args)
+  (labels ((fn (args &optional acc)
              (cond
                ((null args)
                 (nreverse acc))
 
                ((termsp (car args))
                 (fn (cdr args)
-                    (cons (fn (deconstruct (car args)) nil)
+                    (cons (fn (deconstruct (car args)))
                           acc)))
 
-               (t (dbg "D")
-                  (fn (cdr args) (cons (car args) acc))))))
-    (fn (deconstruct expr) nil)))
+               (t (fn (cdr args)
+                      (cons (car args) acc))))))
+    (fn (deconstruct expr))))
 
 (defun* reduce-expr (expr)
   "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
 non-value information."
-  (labels ((fn (args acc)
+  (labels ((fn (args &optional acc)
              (cond
                ((null args)
                 (reduce-parts (nreverse acc)))
 
                ((termsp (car args))
                 (fn (cdr args)
-                    (cons (fn (car args) nil)
-                          acc)))
+                    (cons (fn (car args)) acc)))
 
-               (t (fn (cdr args) (cons (car args) acc))))))
-    (fn (parts expr) nil)))
+               (t (fn (cdr args)
+                      (cons (car args) acc))))))
+    (fn (parts expr))))
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -555,7 +557,7 @@ non-value information."
     (when (path-exists-p head)
       (let* ((all-paths (deconstruct expr))
              (active-paths (deconstruct* expr))
-             (sections (sections head)))
+             (sections (sections head nil)))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
               ;; note: call REDUCE-EXPR here
