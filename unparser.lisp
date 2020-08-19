@@ -81,7 +81,7 @@
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
     (if (∧ (consp value)
-           (¬ (termsp value)))
+           (¬ (termsp value)))
         (fn value))))
 
 ;;; note: do not perform merging with c and friends
@@ -104,7 +104,6 @@
            (cond ((∨ (atom item)
                      (∧ (consp item)
                         (¬ (metamodsp item))
-
                         ;; note: what are the exact consequences of these?
                         (¬ (stringp (car item)))
                         (¬ (consp (car item)))))
@@ -124,7 +123,6 @@
                 (fn (cdr args)
                     (cons (flatten-list (car args)) acc)))
 
-               ;; note: is this where the bug happens?
                ((metadatap (car args))
                 (fn (cdr args)
                     (cons (flatten-1 (wrap (merge-sequences (fn (car args)))))
@@ -132,7 +130,6 @@
 
                (t (fn (cdr args)
                       (cons (car args) acc))))))
-    ;;(dbg list)
     (fn list)))
 
 (defun* normalize (list)
@@ -364,35 +361,6 @@ expressions can be read from the store."
                          parse)))
 
 (defun* deconstruct (expr)
-  "Return the sections of EXPR from a new universe."
-  (with-fresh-universe ()
-    (when-let* ((parse (read-parse expr))
-                (head (head expr))
-                (strip (strip-heads parse))
-                (dispatch (dispatch expr :log nil :force t)))
-      (cond ((∧ (null* dispatch)
-                (null* (find-if #'modsp strip)))
-             strip)
-            (t (sections head))))))
-
-(defun* active-paths (deconstruct)
-  "Return only sections from DECONSTRUCT that contain valid value information."
-  (if (and (head-only-p (car deconstruct))
-           (length> deconstruct 1))
-      (cdr deconstruct)
-      deconstruct))
-
-(defun* deconstruct* (expr)
-  "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
-  (active-paths (deconstruct expr)))
-
-(defun* sections* (expr)
-  "Return the scetions from the head of EXPR in a different universe."
-  (with-fresh-universe ()
-    (dispatch expr :log nil :force t)
-    (sections (head expr))))
-
-(defun* dismantle (expr)
   "Return the full deconstuct of EXPR."
   (with-fresh-universe ()
     (labels ((fn (args &optional acc)
@@ -411,10 +379,16 @@ expressions can be read from the store."
       (dispatch expr :log nil :force t)
       (mapcar #'fn (sections (head expr))))))
 
+(defun* active-paths (deconstruct)
+  "Return only sections from DECONSTRUCT that contain valid value information."
+  (if (and (head-only-p (car deconstruct))
+           (length> deconstruct 1))
+      (cdr deconstruct)
+      deconstruct))
 
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-;; REDUCE-EXPR
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(defun* deconstruct* (expr)
+  "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
+  (active-paths (deconstruct expr)))
 
 (defmacro define-checker (name)
   "Define a predicate for testing namespaces."
@@ -485,24 +459,8 @@ expressions can be read from the store."
 (defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
-         (staged-value (flatten-1 (wrap (merge-sequences (stage value))))))
-    (list-string* staged-value)))
-
-(defun* parts (expr)
-  "Return the active parts of EXPR."
-  (labels ((fn (args &optional acc)
-             (cond
-               ((null args)
-                (nreverse acc))
-
-               ((termsp (car args))
-                (fn (cdr args)
-                    (cons (fn (deconstruct (car args)))
-                          acc)))
-
-               (t (fn (cdr args)
-                      (cons (car args) acc))))))
-    (fn (deconstruct expr))))
+         (stage (flatten-1 (wrap (merge-sequences (stage value))))))
+    (list-string* stage)))
 
 (defun* reduce-expr (expr)
   "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
@@ -518,10 +476,7 @@ non-value information."
 
                (t (fn (cdr args)
                       (cons (car args) acc))))))
-    (fn (parts expr))))
-
-;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+    (fn (deconstruct expr))))
 
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
@@ -558,7 +513,6 @@ non-value information."
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
-  ;;(dbg sections)
   (flet ((fn (head sections)
            (if (has-head-p sections)
                sections
