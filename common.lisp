@@ -177,8 +177,8 @@
 function; ARGS are the arguments passed to a parser—usually NIL; and BODY is the
 body contents of the parser function."
   (let ((fname (string name)))
-    (if (not (some #'(lambda (char) (char= (elt fname 0) char))
-                   '(#\= #\? #\%)))
+    (if (¬ (some #'(lambda (char) (char= (elt fname 0) char))
+                 '(#\= #\? #\%)))
         (error "The parser name must start with =, ?, or %.")
         `(progn
            (export ',name)

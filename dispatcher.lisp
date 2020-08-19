@@ -18,8 +18,8 @@
 
 (defun* sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
-  (when (and (consp path)
-             (not (uiop:emptyp path)))
+  (when (∧ (consp path)
+           (¬ (uiop:emptyp path)))
     (destructuring-bind (ns &optional &rest body)
         path
       (declare (ignorable body))
@@ -41,7 +41,7 @@
 (defun* has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (∧ (sub-atom-index path)
-     (not (sub-atom-path-p path))))
+     (¬ (sub-atom-path-p path))))
 
 (defun key-indicator-p (key)
   "Return true if KEY is one of the key indicators for table values."
@@ -57,7 +57,7 @@
   (destructuring-bind (path &optional &rest params)
       term
     (∧ (empty-params-p params)
-       (not (has-sub-atom-path-p path)))))
+       (¬ (has-sub-atom-path-p path)))))
 
 (defun find-table (table)
   "Return the table from the universe identified by TABLE."
@@ -194,7 +194,7 @@
 (defun terms-has-main-value-p (terms)
   "Return true if the head in TERMS has a value."
   (when-let ((head (find-head terms)))
-    (not (null* (cdr head)))))
+    (¬ (null* (cdr head)))))
 
 (defun remove-regex (terms)
   "Remove the regex found in TERMS."
@@ -211,8 +211,8 @@
 (defun %dispatch (term &key log force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (let ((term (upcase-key term)))
-    (if (and (empty-term-p term)
-             (not force))
+    (if (∧ (empty-term-p term)
+           (¬ force))
         nil
         (destructuring-bind (path &optional &rest params)
             term
@@ -230,7 +230,7 @@
   (destructuring-bind (path &optional &rest value)
       term
     (declare (ignore path))
-    (not (null* value))))
+    (¬ (null* value))))
 
 (defun* pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
@@ -254,7 +254,7 @@
               (value (mapcar #'(lambda (term)
                                  (%dispatch term :log log :force force))
                              terms)))
-    (when (and log (not (null* value)) (stringp expr))
+    (when (∧ log (¬ (null* value)) (stringp expr))
       (write-log expr))
     value))
 
