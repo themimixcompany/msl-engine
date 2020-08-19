@@ -63,9 +63,10 @@
 (defun* flatten-1 (list)
   "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
-              (cond ((∨ (metadatap y)
-                        (modsp y)
-                        (termsp y))
+              (cond ((rmap-or y
+                              #'metadatap
+                              #'modsp
+                              #'termsp)
                      (append x (list y)))
                     (t (append x y))))
           (marshall list)))
@@ -80,7 +81,7 @@
                    (t (fn (cdr args)
                           (cons (car args) acc))))))
     (if (∧ (consp value)
-           (not (termsp value)))
+           (¬ (termsp value)))
         (fn value))))
 
 ;;; note: do not perform merging with c and friends
@@ -99,28 +100,39 @@
 
 (defun* wrap (items)
   "Conditionally listify the items in ITEMS."
-  (mapcar #'(lambda (item)
-              (cond ((∨ (atom item)
-                        (and (consp item)
-                             (not (metamodsp item))
-                             (not (stringp (car item)))))
-                     (list item))
-                    (t item)))
-          items))
+  (flet ((fn (item)
+           (cond ((∨ (atom item)
+                     (∧ (consp item)
+                        (¬ (metamodsp item))
+
+                        ;; note: what are the exact consequences of these?
+                        (¬ (stringp (car item)))
+                        (¬ (consp (car item)))))
+                  (list item))
+                 (t item))))
+    (let ((value (mapcar #'fn items)))
+      value)))
 
 (defun* stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
   (labels ((fn (args &optional acc)
-             (cond ((null args) (nreverse acc))
-                   ((modsp (car args))
-                    (fn (cdr args)
-                        (cons (flatten-list (car args)) acc)))
-                   ((metadatap (car args))
-                    (fn (cdr args)
-                        (cons (flatten-1 (wrap (merge-sequences (fn (car args)))))
-                              acc)))
-                   (t (fn (cdr args)
-                          (cons (car args) acc))))))
+             (cond
+               ((null args)
+                (nreverse acc))
+
+               ((modsp (car args))
+                (fn (cdr args)
+                    (cons (flatten-list (car args)) acc)))
+
+               ;; note: is this where the bug happens?
+               ((metadatap (car args))
+                (fn (cdr args)
+                    (cons (flatten-1 (wrap (merge-sequences (fn (car args)))))
+                          acc)))
+
+               (t (fn (cdr args)
+                      (cons (car args) acc))))))
+    ;;(dbg list)
     (fn list)))
 
 (defun* normalize (list)
@@ -169,16 +181,6 @@
   "Return true if PATH is exclusively a head."
   (∧ (length= path 2)
      (path-exists-p path)))
-
-(defun make-head (list)
-  "Return a list with custom head merging."
-  (when (consp (cdr list))
-    (destructuring-bind (ns &optional &rest _)
-        list
-      (declare (ignore _))
-      (cond ((string= ns "@")
-             (cons (cat ns (cadr list)) (cddr list)))
-            (t list)))))
 
 (defun* terms-base (terms)
   "Return the base expression that constitutes TERMS."
@@ -318,8 +320,8 @@ expressions can be read from the store."
 
 (defun string-hash-p (string)
   "Return true if string is a hash."
-  (when (and (stringp string)
-             (not (empty-string-p string)))
+  (when (∧ (stringp string)
+           (¬ (empty-string-p string)))
     (char= (aref string 0) #\#)))
 
 (defun post-sections (sections)
@@ -335,14 +337,17 @@ expressions can be read from the store."
     (append lead metadata hash-value)))
 
 (defun* sections (head &optional (post t))
-  "Return the original expressions under HEAD according to type."
+  "Return the original expressions under HEAD."
   (destructuring-bind (key &rest keys)
       head
     (when-let* ((table (atom-table *universe*))
                 (roots (roots table key keys))
-                (stage (stage (flatten-1 (gird table (car roots))))))
+                (gird (gird table (car roots)))
+                (flatten-1 (flatten-1 gird))
+                (stage (stage flatten-1)))
       (loop :for item :in stage
-            :with limit = (or (position-if #'consp stage) (length stage))
+            :with limit = (or (position-if #'consp stage)
+                              (length stage))
             :for count :from 1 :to limit
             :collect item :into items
             :finally (let ((value (cons items (nthcdr limit stage))))
@@ -351,12 +356,12 @@ expressions can be read from the store."
                                    value)))))))
 
 (defun* strip-heads (parse)
-    "Remove the heads from a parse."
-    (remove-if-not #'(lambda (item)
-                       (length= item 2))
-                   (mapcar #'(lambda (item)
-                               (strip-head (car item)))
-                           parse)))
+  "Remove the heads from a parse."
+  (remove-if-not #'(lambda (item)
+                     (length= item 2))
+                 (mapcar #'(lambda (item)
+                             (strip-head (car item)))
+                         parse)))
 
 (defun* deconstruct (expr)
   "Return the sections of EXPR from a new universe."
@@ -365,25 +370,10 @@ expressions can be read from the store."
                 (head (head expr))
                 (strip (strip-heads parse))
                 (dispatch (dispatch expr :log nil :force t)))
-      (cond ((and (null* dispatch)
-                  (null (find-if #'modsp strip)))
+      (cond ((∧ (null* dispatch)
+                (null* (find-if #'modsp strip)))
              strip)
             (t (sections head))))))
-
-;;; note: write this
-(defun* deconstruct-all (expr)
-  (with-fresh-universe ())
-  (labels ((fn (args &optional acc)
-             (cond ((null args) (nreverse acc))
-                   ((termsp (car args))
-                    (fn (cdr args)
-                        (cons (mapcar #'fn (sections (head (car args))))
-                              acc)))
-                   (t (fn (cdr args)
-                          (cons (car args)
-                                acc))))))
-    (dispatch expr :log nil :force t)
-    (mapcar #'fn (sections (head expr)))))
 
 (defun* active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -395,6 +385,31 @@ expressions can be read from the store."
 (defun* deconstruct* (expr)
   "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
+
+(defun* sections* (expr)
+  "Return the scetions from the head of EXPR in a different universe."
+  (with-fresh-universe ()
+    (dispatch expr :log nil :force t)
+    (sections (head expr))))
+
+(defun* dismantle (expr)
+  "Return the full deconstuct of EXPR."
+  (with-fresh-universe ()
+    (labels ((fn (args &optional acc)
+               (cond
+                 ((null args)
+                  (nreverse acc))
+
+                 ((termsp (car args))
+                  (fn (cdr args)
+                      (cons (mapcar #'fn (sections (head (car args))))
+                            acc)))
+
+                 (t (fn (cdr args)
+                        (cons (car args)
+                              acc))))))
+      (dispatch expr :log nil :force t)
+      (mapcar #'fn (sections (head expr))))))
 
 
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -509,7 +524,7 @@ non-value information."
 
 
 (defun* reduce-exprs (exprs)
-  "Return a list of values that corresponding to expressions including terms reduction."
+  "Return a list of values that corresponding to expressions, including terms reduction."
   (mapcar #'(lambda (expr)
               (cond
                 ((termsp expr)
@@ -523,7 +538,8 @@ non-value information."
   (mapcar #'(lambda (section)
               (cond
                 ((consp section)
-                 (reduce-exprs section))
+                 (let ((value (reduce-exprs section)))
+                   value))
 
                 (t section)))
           sections))
@@ -542,6 +558,7 @@ non-value information."
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
+  ;;(dbg sections)
   (flet ((fn (head sections)
            (if (has-head-p sections)
                sections
@@ -557,6 +574,7 @@ non-value information."
     (when (path-exists-p head)
       (let* ((all-paths (deconstruct expr))
              (active-paths (deconstruct* expr))
+             ;; note: does it still make sense to have the second argument as NIL?
              (sections (sections head nil)))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
@@ -614,7 +632,7 @@ non-value information."
 (defun* has-mods-p (path)
   "Return true if PATH contains a mods subsection."
   (∨ (modsp (strip-head path))
-      (modsp (strip-head (strip-head path)))))
+     (modsp (strip-head (strip-head path)))))
 
 (defun* has-metamods-p (path)
   "Return true if PATH contains metadata or mods."
@@ -623,7 +641,7 @@ non-value information."
 (defun* has-regex-p (path)
   "Return true if PATH contains a regex subsection."
   (∨ (regexp (strip-head path))
-      (regexp (strip-head (strip-head path)))))
+     (regexp (strip-head (strip-head path)))))
 
 (defun* has-transform-p (path)
   "Return true if PATH contains a transform subsection."
