@@ -74,25 +74,29 @@
 (defun* merge-colons (value)
   "Merge the colons and keys in VALUE."
   (labels ((fn (args &optional acc)
-             (cond ((null args) (nreverse acc))
-                   ((string= (car args) ":")
-                    (fn (cddr args)
-                        (cons (cat (car args) (cadr args)) acc)))
-                   (t (fn (cdr args)
-                          (cons (car args) acc))))))
-    (if (∧ (consp value)
-           (¬ (termsp value)))
-        (fn value))))
+             (cond
+               ((null args)
+                (nreverse acc))
+
+               ((string= (car args) ":")
+                (fn (cddr args)
+                    (cons (cat (car args) (cadr args)) acc)))
+
+               (t (fn (cdr args)
+                      (cons (car args) acc))))))
+    (if (∧ (consp value) (¬ (termsp value)))
+        (fn value)
+        value)))
 
 ;;; note: do not perform merging with c and friends
-(defun* merge-sequences (items)
-  "Conditionally merge the key sequences in ITEMS."
-  (flet ((fn (item)
-           (if (rmap-or item #'@p #'metadatap)
-               (cons (cat (car item) (cadr item))
-                     (cddr item))
-               item)))
-    (let ((value (mapcar #'fn items)))
+(defun* merge-sections (sections)
+  "Conditionally merge the key sequences in SECTIONS."
+  (flet ((fn (section)
+           (if (rmap-or section #'@p #'metadatap)
+               (cons (cat (car section) (cadr section))
+                     (cddr section))
+               section)))
+    (let ((value (mapcar #'fn sections)))
       (if (every #'consp value)
           (loop :for val :in value
                 :collect (mapcar #'merge-colons val))
@@ -125,7 +129,7 @@
 
                ((metadatap (car args))
                 (fn (cdr args)
-                    (cons (flatten-1 (wrap (merge-sequences (fn (car args)))))
+                    (cons (flatten-1 (wrap (merge-sections (fn (car args)))))
                           acc)))
 
                (t (fn (cdr args)
@@ -234,7 +238,7 @@
                             (flatten-1 (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
-          :collect (flatten-1 (wrap (merge-sequences (join-items (stage value))))))))
+          :collect (flatten-1 (wrap (merge-sections (join-items (stage value))))))))
 
 (defun* join-items (list)
   "Join the the items in LIST that should be together."
@@ -459,7 +463,7 @@ expressions can be read from the store."
 (defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
-         (stage (flatten-1 (wrap (merge-sequences (stage value))))))
+         (stage (flatten-1 (wrap (merge-sections (stage value))))))
     (list-string* stage)))
 
 (defun* reduce-expr (expr)
@@ -518,8 +522,12 @@ non-value information."
                sections
                (cons head sections))))
     (when sections
-      (let ((value (fn head sections)))
-        (list-string (flatten-1 (wrap (merge-sequences (stage value)))))))))
+      (let* ((stage (fn head sections))
+             (merge-sections (merge-sections stage))
+             (wrap (wrap merge-sections))
+             (flatten-1 (flatten-1 wrap))
+             (list-string (list-string flatten-1)))
+        list-string))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -528,11 +536,9 @@ non-value information."
     (when (path-exists-p head)
       (let* ((all-paths (deconstruct expr))
              (active-paths (deconstruct* expr))
-             ;; note: does it still make sense to have the second argument as NIL?
-             (sections (sections head nil)))
+             (sections (sections head)))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
-              ;; note: call REDUCE-EXPR here
               (t (distill head (reduce-matched-sections active-paths sections))))))))
 
 (defun* recall-expr* (expr)
