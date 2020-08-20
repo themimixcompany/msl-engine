@@ -219,7 +219,8 @@
            (roots (gethash* (base-ns-key-sequence root) table)
                   (car item))))
     (mapcar #'(lambda (item)
-                (if (and (consp item) (sub-ns-p (car item)))
+                (if (∧ (consp item)
+                       (sub-ns-p (car item)))
                     (fn table root item)
                     item))
             root)))
@@ -236,8 +237,8 @@
   "Join the the items in LIST that should be together."
   (labels ((fn (args &optional acc)
              (cond ((null args) (nreverse acc))
-                   ((or (base-ns-p (car args))
-                        (colon-ns-p (car args)))
+                   ((∨ (base-ns-p (car args))
+                       (colon-ns-p (car args)))
                     (fn (cddr args)
                         (cons (cat (car args) (cadr args))
                               acc)))
@@ -306,8 +307,10 @@ expressions can be read from the store."
 (defun strip-head (path)
   "Return path PATH without the leading primary ns and key."
   (let ((length (length path)))
-    (cond ((or (and (= length 4) (metamodsp (cddr path)))
-               (and (> length 2) (base-ns-p (car path))))
+    (cond ((∨ (∧ (length= path 4)
+                 (metamodsp (cddr path)))
+              (∧ (length> path 2)
+                 (base-ns-p (car path))))
            (cddr path))
           (t path))))
 
@@ -323,8 +326,8 @@ expressions can be read from the store."
          (hash (remove-if-not #'string-hash-p sections))
          (hash-value (when hash (list hash)))
          (start (remove-if #'(lambda (section)
-                               (or (metadatap section)
-                                   (string-hash-p section)))
+                               (∨ (metadatap section)
+                                  (string-hash-p section)))
                            sections))
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
@@ -377,8 +380,8 @@ expressions can be read from the store."
 
 (defun* active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
-  (if (and (head-only-p (car deconstruct))
-           (length> deconstruct 1))
+  (if (∧ (head-only-p (car deconstruct))
+         (length> deconstruct 1))
       (cdr deconstruct)
       deconstruct))
 
@@ -516,11 +519,26 @@ non-value data."
                     (t item)))
           items))
 
+(defun* pad-z (items)
+  "Do additiol padding on ITEMS."
+  (labels ((fn (args &optional acc)
+             (cond ((null args)
+                    (nreverse acc))
+                   ((∧ (modsp (car args))
+                       (modsp (cadr args)))
+                    (fn (cddr args)
+                        (cons (cadr args)
+                              (cons " " (cons (car args) acc)))))
+                   (t (fn (cdr args)
+                          (cons (car args) acc))))))
+    (fn items)))
+
 (defun* pad-sections (sections)
   "Add padding information to the items in SECTIONS."
   (flet ((fn (section)
+           (dbg section)
            (destructuring-bind (head &optional &rest body)
-               (pad-items section)
+               (pad-items (pad-z section))
              (cond ((∧ (base-ns-p (string (elt head 0)))
                        (length> section 1))
                     (cons (pad-value-right head) body))
@@ -543,12 +561,12 @@ non-value data."
              (pad-sections (pad-sections wrap))
              (flatten-one (flatten-one pad-sections))
              (list-string (list-string* flatten-one)))
-        ;; (dbg stage)
-        ;; (dbg merge-sections)
-        ;; (dbg wrap)
-        ;; (dbg pad-sections)
-        ;; (dbg flatten-one)
-        list-string))))
+        (dbg stage)
+        (dbg merge-sections)
+        (dbg wrap)
+        (dbg pad-sections)
+        (dbg flatten-one)
+        (dbg list-string)))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -633,8 +651,8 @@ non-value data."
   "Return paths from EXPR that are valid requests."
   (when-let ((parse (read-parse expr)))
     (flet ((fn (term)
-             (∨ (and (length= (car term) 2)
-                     (null* (cadr term)))
+             (∨ (∧ (length= (car term) 2)
+                   (null* (cadr term)))
                 (mem (last* (car term)) '("/" "[]")))))
       (cond
         ;; top-level expression
@@ -642,17 +660,17 @@ non-value data."
          (car-only (car parse)))
 
         ;; no main value, but there is regex
-        ((and (null* (cdar parse))
-              (mem (last* (caadr parse)) '("/")))
+        ((∧ (null* (cdar parse))
+            (mem (last* (caadr parse)) '("/")))
          (car-only (car parse)))
 
         ;; no main value, and the rest are either mods or transforms
-        ((and (null* (cdar parse))
-              (every #'(lambda (term)
-                         (rmap-or (car term)
-                                  #'has-mods-p
-                                  #'has-transform-p))
-                     (cdr parse)))
+        ((∧ (null* (cdar parse))
+            (every #'(lambda (term)
+                       (rmap-or (car term)
+                                #'has-mods-p
+                                #'has-transform-p))
+                   (cdr parse)))
          (car-only (car parse)))
 
         ;; ;; no main value, there is at least one mod, and there are no metadata
@@ -662,10 +680,10 @@ non-value data."
         ;;  (car-only (cadr parse)))
 
         ;; no main value, there is at least one mod
-        ((and (null* (cdar parse))
-              (some #'(lambda (term)
-                        (rmap-and (car term) #'has-mods-p))
-                    parse))
+        ((∧ (null* (cdar parse))
+            (some #'(lambda (term)
+                      (rmap-and (car term) #'has-mods-p))
+                  parse))
          (car-only (cadr parse)))
 
         ;; remove regexes, transforms, and empty heads
@@ -690,14 +708,14 @@ non-value data."
        (extract-value (car paths)))
 
       ;; there is more than one metadata path found, and all of them are metadata paths
-      ((and (> metamods-count 1)
-            (every #'has-metadata-p paths))
+      ((∧ (> metamods-count 1)
+          (every #'has-metadata-p paths))
        (extract-value head))
 
       ;; there is more than one metadata path found, but some of them are not metadata paths, like
       ;; (d) and (f)
-      ((and (> metamods-count 1)
-            (notevery #'has-metadata-p paths))
+      ((∧ (> metamods-count 1)
+          (notevery #'has-metadata-p paths))
        (extract-value head))
 
       ;; there are no matching criteria
