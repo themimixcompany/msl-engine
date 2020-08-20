@@ -166,7 +166,7 @@
               (t (cons data value)))))))
 
 (defun* head (expr)
-  "Return the namespace and key sequence from EXPR."
+  "Return the ns and key sequence from EXPR."
   (when-let ((parse (read-parse expr)))
     (caar parse)))
 
@@ -214,7 +214,7 @@
           :when kv :collect (normalize kv))))
 
 (defun* gird (table root)
-  "Return a new root from TABLE and ROOT with proper distribution of sub namespaces."
+  "Return a new root from TABLE and ROOT with proper distribution of sub nss."
   (flet ((fn (table root item)
            (roots (gethash* (base-ns-key-sequence root) table)
                   (car item))))
@@ -304,7 +304,7 @@ expressions can be read from the store."
           (path-exists-p (list ns key)))))))
 
 (defun strip-head (path)
-  "Return path PATH without the leading primary namespace and key."
+  "Return path PATH without the leading primary ns and key."
   (let ((length (length path)))
     (cond ((or (and (= length 4) (metamodsp (cddr path)))
                (and (> length 2) (base-ns-p (car path))))
@@ -387,14 +387,14 @@ expressions can be read from the store."
   (active-paths (deconstruct expr)))
 
 (defmacro define-checker (name)
-  "Define a predicate for testing namespaces."
+  "Define a predicate for testing nss."
   (let* ((part-name (hyphenate-intern nil name "part-p"))
-         (namespace-name (hyphenate-intern nil name "namespace-p")))
+         (ns-name (hyphenate-intern nil name "ns-p")))
     `(defun* ,part-name (part)
        (destructuring-bind (ns &optional &rest _)
            part
          (declare (ignore _))
-         (,namespace-name ns)))))
+         (,ns-name ns)))))
 
 (mapply define-checker @ atom sub metadata)
 
@@ -458,7 +458,6 @@ expressions can be read from the store."
          (stage (flatten-one (wrap (merge-sections (stage value))))))
     (list-string* stage)))
 
-;;; note: resume here
 (defun* reduce-expr (expr)
   "Reduce EXPR to the closest approximate original expression, removing comments and other
 non-value data."

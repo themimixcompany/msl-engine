@@ -73,45 +73,45 @@
                                (%some (?satisfies 'alphanumericp))))))))
 
 ;;--------------------------------------------------------------------------------------------------
-;; namespace parsers
+;; ns parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =@-namespace ()
-    "Match and return the @ namespace."
+  (define-parser =@-ns ()
+    "Match and return the @ ns."
     (=subseq (?eq #\@)))
 
-  (define-parser =grouping-namespace ()
-    "Match and return m w s v namespace."
+  (define-parser =grouping-ns ()
+    "Match and return m w s v ns."
     (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
 
-  (define-parser =regex-namespace ()
-    "Match and return the / namespace."
+  (define-parser =regex-ns ()
+    "Match and return the / ns."
     (=subseq (?eq #\/)))
 
-  (define-parser =prelude-namespace ()
-    "Match and return the msl namespace."
+  (define-parser =prelude-ns ()
+    "Match and return the msl ns."
     (=subseq (maxpc.char:?string "msl")))
 
-  (define-parser =metadata-namespace ()
-    "Match and return the : namespace."
+  (define-parser =metadata-ns ()
+    "Match and return the : ns."
     (=subseq (?eq #\:)))
 
-  (define-parser =c-namespace ()
-    "Match and return the c namespace."
+  (define-parser =c-ns ()
+    "Match and return the c ns."
     (=subseq (?eq #\c)))
 
-  (define-parser =datatype-namespace ()
-    "Match and return the d namespace."
+  (define-parser =datatype-ns ()
+    "Match and return the d ns."
     (=subseq (?eq #\d)))
 
-  (define-parser =format-namespace ()
-    "Match and return the f namespace."
+  (define-parser =format-ns ()
+    "Match and return the f ns."
     (=subseq (?eq #\f))))
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; namespace sequences
+;; ns sequences
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
@@ -119,7 +119,7 @@
     "Match and return the key sequence for an @."
     (=list (=destructure
                (ns _)
-               (=list (=@-namespace)
+               (=list (=@-ns)
                       (%maybe (?whitespace))))
            (=key)))
 
@@ -127,7 +127,7 @@
     "Match and return the key sequence for an atom."
     (=list (=destructure
                (ns _)
-               (=list (=grouping-namespace)
+               (=list (=grouping-ns)
                       (?whitespace)))
            (=key)))
 
@@ -135,7 +135,7 @@
     "Match and return the key sequence for canon."
     (=list (=destructure
                (ns _)
-               (=list (=c-namespace)
+               (=list (=c-ns)
                       (?whitespace)))
            (=key)))
 
@@ -143,16 +143,16 @@
     "Match and return the key sequence for a prelude."
     (=list (=destructure
                (ns _)
-               (=list (=prelude-namespace)
+               (=list (=prelude-ns)
                       (?whitespace)))
            (=key)))
 
   (define-parser =metadata-sequence ()
-    "Match and return key sequence for : namespace, without a leading whitespace"
+    "Match and return key sequence for : ns, without a leading whitespace"
     (=destructure
         (_ ns key)
         (=list (?blackspace)
-               (=metadata-namespace)
+               (=metadata-ns)
                (=key))
       (list ns key)))
 
@@ -160,7 +160,7 @@
     "Match and return key sequence for d."
     (=destructure
         (atom _ key)
-        (=list (=datatype-namespace)
+        (=list (=datatype-ns)
                (?whitespace)
                (=key))
       (list atom key)))
@@ -169,7 +169,7 @@
     "Match and return key sequence for f."
     (=destructure
         (atom _ key)
-        (=list (=format-namespace)
+        (=list (=format-ns)
                (?whitespace)
                (=key))
       (list atom key))))
@@ -307,9 +307,9 @@
         (=list (%some
                 (=destructure
                     (_ regex _ env _ value)
-                    (=list (=regex-namespace)
+                    (=list (=regex-ns)
                            (=subseq (%some (?satisfies 'regex-char-p)))
-                           (=regex-namespace)
+                           (=regex-ns)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
                            (?blackspace)
                            (%maybe (=value)))
@@ -337,23 +337,23 @@
 
 (eval-always
   (define-parser =atom-mods-1 ()
-    "Match and return key sequence for the the /, and [] namespaces."
+    "Match and return key sequence for the the /, and [] nss."
     (%or 'regex-selector
          'bracketed-transform-selector))
 
   (define-parser =atom-mods-2 ()
-    "Match and return key sequence for the d, and f namespaces."
+    "Match and return key sequence for the d, and f nss."
     (%or 'datatype-form
          'format-form))
 
   (define-parser =format-mods ()
-    "Match and return key sequence for the /, d, and f namespaces."
+    "Match and return key sequence for the /, d, and f nss."
     (%or 'regex-selector
          'datatype-form
          'format-form))
 
   (define-parser =datatype-mods ()
-    "Match and return key sequence for the / namespace."
+    "Match and return key sequence for the / ns."
     (%or 'regex-selector)))
 
 
