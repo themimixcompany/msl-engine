@@ -60,7 +60,7 @@
   ((ns :initarg :ns
        :initform nil
        :reader ns
-       :documentation "The type of namespace, and consequently storage type, that an mx-base has.")
+       :documentation "The type of ns, and consequently storage type, that an mx-base has.")
    (key :initarg :key
         :initform nil
         :accessor key
@@ -94,14 +94,14 @@
   `(progn (incf (,accessor ,universe))
           (,accessor ,universe)))
 
-(defmacro define-updaters (&rest namespaces)
-  "Define functions for updating the namespace counters in the universe."
+(defmacro define-updaters (&rest nss)
+  "Define functions for updating the ns counters in the universe."
   (flet ((make-name (&rest args)
            (apply #'hyphenate-intern nil args)))
     `(progn
-       ,@(loop :for namespace :in namespaces
-               :for fname = (make-name "update" namespace "counter")
-               :for cname = (make-name namespace "counter")
+       ,@(loop :for ns :in nss
+               :for fname = (make-name "update" ns "counter")
+               :for cname = (make-name ns "counter")
                :collect `(defun ,fname (universe)
                            (update-counter universe ,cname))))))
 (define-updaters atom sub-atom)

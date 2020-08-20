@@ -13,31 +13,31 @@
   (∧ (member elem ns-list :key #'car :test #'equalp)))
 
 (defun* @-ns-p (ns)
-  "Return true if NS is a base namespace indicator."
+  "Return true if NS is a base ns indicator."
   (ns-member-p ns +@-ns-list+))
 
 (defun* atom-ns-p (ns)
-  "Return true if NS is a atom namespace indicator."
+  "Return true if NS is a atom ns indicator."
   (ns-member-p ns +atom-ns-list+))
 
 (defun* base-ns-p (ns)
-  "Return true if NS is a base namespace indicator."
+  "Return true if NS is a base ns indicator."
   (ns-member-p ns +base-ns-list+))
 
 (defun* sub-ns-p (ns)
-  "Return true if NS is a sub namespace indicator."
+  "Return true if NS is a sub ns indicator."
   (ns-member-p ns +sub-ns-list+))
 
 (defun* colon-ns-p (ns)
-  "Return true if NS is a colon namespace indicator."
+  "Return true if NS is a colon ns indicator."
   (ns-member-p ns +colon-ns-list+))
 
 (defun* metadata-ns-p (ns)
-  "Return true if NS is a metadata namespace indicator."
+  "Return true if NS is a metadata ns indicator."
   (ns-member-p ns +metadata-ns-list+))
 
 (defun* nsp (ns)
-  "Return true if NS is a namespace indicator."
+  "Return true if NS is a ns indicator."
   (rmap-or ns #'base-ns-p #'sub-ns-p))
 
 (defun* object-slots (object)

@@ -25,7 +25,7 @@
 (eval-always
   (defconstant* +@-ns-list+
       '(("@" . "@"))
-    "The list of @ namespaces.")
+    "The list of @ nss.")
 
   (defconstant* +atom-ns-list+
       '(("c" . "canon")
@@ -33,29 +33,25 @@
         ("w" . "world")
         ("s" . "stream")
         ("v" . "view"))
-    "The list of atom namespaces.")
+    "The list of atom nss.")
 
   (defconstant* +base-ns-list+
       (append +@-ns-list+
               +atom-ns-list+)
-    "The list of base namespaces.")
+    "The list of base nss.")
 
   (defconstant* +sub-ns-list+
       '(("d" . "datatype")
         ("f" . "format"))
-    "The list of sub namespaces.")
+    "The list of sub nss.")
 
   (defconstant* +colon-ns-list+
       '((":" . "colon"))
-    "The list of colon namespaces.")
+    "The list of colon nss.")
 
   (defconstant* +metadata-ns-list+
       '((":" . "metadata"))
-    "The list of metadata namespaces.")
-
-  (defconstant* +namespace-list+
-      (append +base-ns-list+ +sub-ns-list+)
-    "The full list of namespaces, where the individual elements contain the namespace alias and full namespace name"))
+    "The list of metadata nss."))
 
 (defconstant* +key-indicators+
     '("=" "/" "[]")
