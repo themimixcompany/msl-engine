@@ -199,9 +199,9 @@
                (cdr keys)
                (accumulate keys acc v))))))
 
-(defun base-namespace-key-sequence (value)
+(defun base-ns-key-sequence (value)
   "Return the key sequence from value."
-  (when (∧ (base-namespace-p (car value))
+  (when (∧ (base-ns-p (car value))
            (consp value))
     (subseq value 0 2)))
 
@@ -216,10 +216,10 @@
 (defun* gird (table root)
   "Return a new root from TABLE and ROOT with proper distribution of sub namespaces."
   (flet ((fn (table root item)
-           (roots (gethash* (base-namespace-key-sequence root) table)
+           (roots (gethash* (base-ns-key-sequence root) table)
                   (car item))))
     (mapcar #'(lambda (item)
-                (if (and (consp item) (sub-namespace-p (car item)))
+                (if (and (consp item) (sub-ns-p (car item)))
                     (fn table root item)
                     item))
             root)))
@@ -236,8 +236,8 @@
   "Join the the items in LIST that should be together."
   (labels ((fn (args &optional acc)
              (cond ((null args) (nreverse acc))
-                   ((or (base-namespace-p (car args))
-                        (colon-namespace-p (car args)))
+                   ((or (base-ns-p (car args))
+                        (colon-ns-p (car args)))
                     (fn (cddr args)
                         (cons (cat (car args) (cadr args))
                               acc)))
@@ -256,7 +256,7 @@
                v
              (declare (ignore _ __))
              (car (construct (atom-table *universe*) ns (list key))))))
-    (cond ((termsp terms #'base-namespace-p) (fn terms))
+    (cond ((termsp terms #'base-ns-p) (fn terms))
           (t terms))))
 
 (defun* %collect (table children keys)
@@ -269,7 +269,7 @@ CHILDREN."
                      :unless (mem (list-string terms) cache)
                      :collect (loop :for term :in terms
                                     :for v = (convert term)
-                                    :when (termsp term #'base-namespace-p)
+                                    :when (termsp term #'base-ns-p)
                                     :do (pushnew (list-string v) cache :test #'equalp)
                                     :collect v))))
 
@@ -307,7 +307,7 @@ expressions can be read from the store."
   "Return path PATH without the leading primary namespace and key."
   (let ((length (length path)))
     (cond ((or (and (= length 4) (metamodsp (cddr path)))
-               (and (> length 2) (base-namespace-p (car path))))
+               (and (> length 2) (base-ns-p (car path))))
            (cddr path))
           (t path))))
 
@@ -522,7 +522,7 @@ non-value data."
   (flet ((fn (section)
            (destructuring-bind (head &optional &rest body)
                (pad-items section)
-             (cond ((base-namespace-p (string (elt head 0)))
+             (cond ((base-ns-p (string (elt head 0)))
                     (cons (pad-value-right head) body))
                    (t (cons (pad-value head) body))))))
     (mapcar #'fn sections)))

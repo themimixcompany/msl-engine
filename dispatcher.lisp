@@ -23,8 +23,8 @@
     (destructuring-bind (ns &optional &rest body)
         path
       (declare (ignorable body))
-      (when (namespacep ns)
-        (position-if #'sub-namespace-p path :from-end t)))))
+      (when (nsp ns)
+        (position-if #'sub-ns-p path :from-end t)))))
 
 (defun sub-atom-path (path)
   "Return the sub-atom path from PATH."
@@ -36,7 +36,7 @@
   (destructuring-bind (ns &optional &rest _)
       path
     (declare (ignore _))
-    (sub-namespace-p ns)))
+    (sub-ns-p ns)))
 
 (defun* has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
@@ -69,7 +69,7 @@
       term
     (declare (ignore value))
     (∧ (length= path 2)
-       (base-namespace-p (car path)))))
+       (base-ns-p (car path)))))
 
 (defun* metadata-term-p (term)
   "Return true if TERM is a metadata term."
@@ -77,7 +77,7 @@
       term
     (declare (ignore value))
     (∧ (length= path 4)
-       (metadata-namespace-p (caddr path)))))
+       (metadata-ns-p (caddr path)))))
 
 (defun regex-term-p (term)
   "Return true if TERM is a regex term."
