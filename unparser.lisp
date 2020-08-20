@@ -513,7 +513,7 @@ non-value data."
   "Pad the items in ITEMS."
   (mapcar #'(lambda (item)
               (cond ((modsp item)
-                     (list-string (merge-colons items)))
+                     (list-string (merge-colons item)))
                     (t item)))
           items))
 
@@ -521,7 +521,7 @@ non-value data."
   "Add padding information to the items in SECTIONS."
   (flet ((fn (section)
            (destructuring-bind (head &optional &rest body)
-               section
+               (pad-items section)
              (cond ((base-namespace-p (string (elt head 0)))
                     (cons (pad-value-right head) body))
                    (t (cons (pad-value head) body))))))
@@ -537,13 +537,8 @@ non-value data."
       (let* ((stage (fn head sections))
              (merge-sections (merge-sections stage))
              (wrap (wrap merge-sections))
-
-             ;; note: do corrections on (d) and (f)
              (flatten-one (flatten-one (pad-sections wrap)))
-
              (list-string (list-string* flatten-one)))
-        (dbg wrap)
-        (dbg flatten-one)
         list-string))))
 
 (defun* recall-expr (expr &key (dispatch t))
