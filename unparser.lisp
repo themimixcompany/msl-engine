@@ -519,26 +519,36 @@ non-value data."
                     (t item)))
           items))
 
-(defun* pad-z (items)
+(defun* is-mods-p (value)
+  "Return true is STRING is a mod."
+  (etypecase value
+    (string (mem (elt value 0) '(#\/ #\[)))
+    (cons (modsp value))
+    (t nil)))
+
+(defun* pad-section (section)
   "Do additiol padding on ITEMS."
   (labels ((fn (args &optional acc)
-             (cond ((null args)
-                    (nreverse acc))
-                   ((∧ (modsp (car args))
-                       (modsp (cadr args)))
-                    (fn (cddr args)
-                        (cons (cadr args)
-                              (cons " " (cons (car args) acc)))))
-                   (t (fn (cdr args)
-                          (cons (car args) acc))))))
-    (fn items)))
+             (cond
+               ((null args)
+                (nreverse acc))
+
+               ;; note: work on this
+               ;; ((∧ (is-mods-p (car args))
+               ;;     (is-mods-p (cadr args)))
+               ;;  (fn (cddr args)
+               ;;      (cons (cadr args)
+               ;;            (cons " " (cons (car args) acc)))))
+
+               (t (fn (cdr args)
+                      (cons (car args) acc))))))
+    (fn section)))
 
 (defun* pad-sections (sections)
   "Add padding information to the items in SECTIONS."
   (flet ((fn (section)
-           (dbg section)
            (destructuring-bind (head &optional &rest body)
-               (pad-items (pad-z section))
+               (pad-items (pad-section section))
              (cond ((∧ (base-ns-p (string (elt head 0)))
                        (length> section 1))
                     (cons (pad-value-right head) body))
@@ -567,7 +577,8 @@ non-value data."
         ;; (dbg pad-sections)
         ;; (dbg flatten-one)
         ;; (dbg list-string)
-        list-string))))
+        list-string
+        ))))
 
 (defun* recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
@@ -752,7 +763,7 @@ non-value data."
 (defun* recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
-  (let* ((value (%recall-value expr))
+  (let* ((value (trim (%recall-value expr)))
          (source-path (car (requests expr)))
          (regex-path (ensure-regex-path source-path))
          (regex-sets (regex-path-regexes regex-path)))
