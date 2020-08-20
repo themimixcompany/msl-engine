@@ -52,15 +52,7 @@
 (define-key-predicate transformp "[]")
 (defun* metamodsp (path) (rmap-or path #'metadatap #'modsp))
 
-(defun marshall (list)
-  "Return a list where non-cons items are made conses."
-  (mapcar #'(lambda (item)
-              (if (consp item)
-                  item
-                  (list item)))
-          list))
-
-(defun* flatten-1 (list)
+(defun* flatten-one (list)
   "Return a list where items in LIST are conditionally flattened to one level only"
   (reduce #'(lambda (x y)
               (cond ((rmap-or y
@@ -69,7 +61,7 @@
                               #'termsp)
                      (append x (list y)))
                     (t (append x y))))
-          (marshall list)))
+          (mapcar #'uiop:ensure-list list)))
 
 (defun* merge-colons (value)
   "Merge the colons and keys in VALUE."
@@ -78,17 +70,21 @@
                ((null args)
                 (nreverse acc))
 
+               ;; note: evaluate the consequences of this
+               ((consp (car args))
+                (fn (cdr args)
+                    (cons (car args) acc)))
+
                ((string= (car args) ":")
                 (fn (cddr args)
                     (cons (cat (car args) (cadr args)) acc)))
 
                (t (fn (cdr args)
                       (cons (car args) acc))))))
-    (if (∧ (consp value) (¬ (termsp value)))
-        (fn value)
-        value)))
+    (cond ((∧ (consp value) (¬ (termsp value)))
+           (fn value))
+          (t value))))
 
-;;; note: do not perform merging with c and friends
 (defun* merge-sections (sections)
   "Conditionally merge the key sequences in SECTIONS."
   (flet ((fn (section)
@@ -96,11 +92,7 @@
                (cons (cat (car section) (cadr section))
                      (cddr section))
                section)))
-    (let ((value (mapcar #'fn sections)))
-      (if (every #'consp value)
-          (loop :for val :in value
-                :collect (mapcar #'merge-colons val))
-          value))))
+    (mapcar #'fn sections)))
 
 (defun* wrap (items)
   "Conditionally listify the items in ITEMS."
@@ -129,7 +121,7 @@
 
                ((metadatap (car args))
                 (fn (cdr args)
-                    (cons (flatten-1 (wrap (merge-sections (fn (car args)))))
+                    (cons (flatten-one (wrap (merge-sections (fn (car args)))))
                           acc)))
 
                (t (fn (cdr args)
@@ -144,7 +136,7 @@
                    ((hashp value)
                     (apply #'cat (car value) (cadr value)))
                    (t value))))
-    (flatten-1 (mapcar #'fn list))))
+    (flatten-one (mapcar #'fn list))))
 
 (defun make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
@@ -209,8 +201,8 @@
 
 (defun base-namespace-key-sequence (value)
   "Return the key sequence from value."
-  (when (and (base-namespace-p (car value))
-             (consp value))
+  (when (∧ (base-namespace-p (car value))
+           (consp value))
     (subseq value 0 2)))
 
 (defun* roots (table key &optional keys)
@@ -235,10 +227,10 @@
 (defun* construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
   (let ((result (mapcar #'(lambda (root)
-                            (flatten-1 (gird table root)))
+                            (flatten-one (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
-          :collect (flatten-1 (wrap (merge-sections (join-items (stage value))))))))
+          :collect (flatten-one (wrap (merge-sections (join-items (stage value))))))))
 
 (defun* join-items (list)
   "Join the the items in LIST that should be together."
@@ -344,8 +336,8 @@ expressions can be read from the store."
     (when-let* ((table (atom-table *universe*))
                 (roots (roots table key keys))
                 (gird (gird table (car roots)))
-                (flatten-1 (flatten-1 gird))
-                (stage (stage flatten-1)))
+                (flatten-one (flatten-one gird))
+                (stage (stage flatten-one)))
       (loop :for item :in stage
             :with limit = (or (position-if #'consp stage)
                               (length stage))
@@ -463,12 +455,13 @@ expressions can be read from the store."
 (defun* reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
-         (stage (flatten-1 (wrap (merge-sections (stage value))))))
+         (stage (flatten-one (wrap (merge-sections (stage value))))))
     (list-string* stage)))
 
+;;; note: resume here
 (defun* reduce-expr (expr)
-  "Reduce EXPR to the closest approximate original valid MSL form, removing comments and other
-non-value information."
+  "Reduce EXPR to the closest approximate original expression, removing comments and other
+non-value data."
   (labels ((fn (args &optional acc)
              (cond
                ((null args)
@@ -485,35 +478,54 @@ non-value information."
 (defun* reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
   (mapcar #'(lambda (expr)
-              (cond
-                ((termsp expr)
-                 (recall-expr (terms-base expr)))
-
-                (t expr)))
+              (cond ((termsp expr)
+                     (recall-expr (terms-base expr)))
+                    (t expr)))
           exprs))
-
-(defun* reduce-sections (sections)
-  "Apply REDUCE-EXPRS to sections."
-  (mapcar #'(lambda (section)
-              (cond
-                ((consp section)
-                 (let ((value (reduce-exprs section)))
-                   value))
-
-                (t section)))
-          sections))
 
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
   (when (consp path)
     (search (subseq path 0 2) section :test #'equalp)))
 
-(defun* reduce-matched-sections (paths sections)
-  "Apply REDUCE-EXPRS to SECTIONS with PATH."
-  (loop :for path :in paths
-        :nconc (loop :for section :in sections
-                     :when (section-match-p path section)
-                     :collect (reduce-exprs section))))
+(defun* reduce-sections (sections &optional paths)
+  "Apply REDUCE-EXPRS to sections."
+  (if paths
+      (loop :for path :in paths
+            :nconc (loop :for section :in sections
+                         :when (section-match-p path section)
+                         :collect (reduce-exprs section)))
+      (loop :for section :in sections
+            :if (consp section) :collect (reduce-exprs section)
+            :else :collect section)))
+
+(defun* pad-value (value)
+  "Add padding information to VALUE."
+  (let ((val (trim value)))
+    (cat " " val " ")))
+
+(defun* pad-value-right (value)
+  "Add padding information to the right side of VALUE."
+  (let ((val (trim value)))
+    (cat val " ")))
+
+(defun* pad-items (items)
+  "Pad the items in ITEMS."
+  (mapcar #'(lambda (item)
+              (cond ((modsp item)
+                     (list-string (merge-colons items)))
+                    (t item)))
+          items))
+
+(defun* pad-sections (sections)
+  "Add padding information to the items in SECTIONS."
+  (flet ((fn (section)
+           (destructuring-bind (head &optional &rest body)
+               section
+             (cond ((base-namespace-p (string (elt head 0)))
+                    (cons (pad-value-right head) body))
+                   (t (cons (pad-value head) body))))))
+    (mapcar #'fn sections)))
 
 (defun* distill (head sections)
   "Return a final, processed string value from SECTIONS."
@@ -525,8 +537,13 @@ non-value information."
       (let* ((stage (fn head sections))
              (merge-sections (merge-sections stage))
              (wrap (wrap merge-sections))
-             (flatten-1 (flatten-1 wrap))
-             (list-string (list-string flatten-1)))
+
+             ;; note: do corrections on (d) and (f)
+             (flatten-one (flatten-one (pad-sections wrap)))
+
+             (list-string (list-string* flatten-one)))
+        (dbg wrap)
+        (dbg flatten-one)
         list-string))))
 
 (defun* recall-expr (expr &key (dispatch t))
@@ -539,7 +556,8 @@ non-value information."
              (sections (sections head)))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
-              (t (distill head (reduce-matched-sections active-paths sections))))))))
+              (t
+               (distill head (reduce-sections sections active-paths))))))))
 
 (defun* recall-expr* (expr)
   "Apply RECALL-EXPR without dispatching."
