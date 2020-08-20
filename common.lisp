@@ -12,33 +12,33 @@
   "Return true if elem is a MEMBER of NS-LIST by CAR."
   (∧ (member elem ns-list :key #'car :test #'equalp)))
 
-(defun* @-namespace-p (ns)
+(defun* @-ns-p (ns)
   "Return true if NS is a base namespace indicator."
-  (ns-member-p ns +@-namespace-list+))
+  (ns-member-p ns +@-ns-list+))
 
-(defun* atom-namespace-p (ns)
+(defun* atom-ns-p (ns)
   "Return true if NS is a atom namespace indicator."
-  (ns-member-p ns +atom-namespace-list+))
+  (ns-member-p ns +atom-ns-list+))
 
-(defun* base-namespace-p (ns)
+(defun* base-ns-p (ns)
   "Return true if NS is a base namespace indicator."
-  (ns-member-p ns +base-namespace-list+))
+  (ns-member-p ns +base-ns-list+))
 
-(defun* sub-namespace-p (ns)
+(defun* sub-ns-p (ns)
   "Return true if NS is a sub namespace indicator."
-  (ns-member-p ns +sub-namespace-list+))
+  (ns-member-p ns +sub-ns-list+))
 
-(defun* colon-namespace-p (ns)
+(defun* colon-ns-p (ns)
   "Return true if NS is a colon namespace indicator."
-  (ns-member-p ns +colon-namespace-list+))
+  (ns-member-p ns +colon-ns-list+))
 
-(defun* metadata-namespace-p (ns)
+(defun* metadata-ns-p (ns)
   "Return true if NS is a metadata namespace indicator."
-  (ns-member-p ns +metadata-namespace-list+))
+  (ns-member-p ns +metadata-ns-list+))
 
-(defun* namespacep (ns)
+(defun* nsp (ns)
   "Return true if NS is a namespace indicator."
-  (rmap-or ns #'base-namespace-p #'sub-namespace-p))
+  (rmap-or ns #'base-ns-p #'sub-ns-p))
 
 (defun* object-slots (object)
   "Return the slot names of OBJECT."
@@ -157,7 +157,7 @@
                    (t nil))))
     (fn table path)))
 
-(defun* termsp (form &optional (predicate #'namespacep))
+(defun* termsp (form &optional (predicate #'nsp))
   "Return true if FORM is a valid MSL form."
   (flet ((fn (form)
            (destructuring-bind (&optional head &rest _)

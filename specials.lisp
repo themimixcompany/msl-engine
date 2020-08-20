@@ -23,11 +23,11 @@
   "The initial metadata counter value.")
 
 (eval-always
-  (defconstant* +@-namespace-list+
+  (defconstant* +@-ns-list+
       '(("@" . "@"))
     "The list of @ namespaces.")
 
-  (defconstant* +atom-namespace-list+
+  (defconstant* +atom-ns-list+
       '(("c" . "canon")
         ("m" . "machine")
         ("w" . "world")
@@ -35,26 +35,26 @@
         ("v" . "view"))
     "The list of atom namespaces.")
 
-  (defconstant* +base-namespace-list+
-      (append +@-namespace-list+
-              +atom-namespace-list+)
+  (defconstant* +base-ns-list+
+      (append +@-ns-list+
+              +atom-ns-list+)
     "The list of base namespaces.")
 
-  (defconstant* +sub-namespace-list+
+  (defconstant* +sub-ns-list+
       '(("d" . "datatype")
         ("f" . "format"))
     "The list of sub namespaces.")
 
-  (defconstant* +colon-namespace-list+
+  (defconstant* +colon-ns-list+
       '((":" . "colon"))
     "The list of colon namespaces.")
 
-  (defconstant* +metadata-namespace-list+
+  (defconstant* +metadata-ns-list+
       '((":" . "metadata"))
     "The list of metadata namespaces.")
 
   (defconstant* +namespace-list+
-      (append +base-namespace-list+ +sub-namespace-list+)
+      (append +base-ns-list+ +sub-ns-list+)
     "The full list of namespaces, where the individual elements contain the namespace alias and full namespace name"))
 
 (defconstant* +key-indicators+
