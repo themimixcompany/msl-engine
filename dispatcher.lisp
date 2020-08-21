@@ -49,8 +49,8 @@
 
 (defun empty-params-p (params)
   "Return true if PARAMS is considered empty."
-  (or (null params)
-      (every #'null params)))
+  (∨ (null params)
+     (every #'null params)))
 
 (defun empty-term-p (term)
   "Return true if TERM is considered empty."
@@ -157,35 +157,35 @@
       term
     (let ((parameters (if whole params (car params))))
       (flet* ((fn (point flag atom-tab &optional sub-atom-tab)
-                  (cond
-                    ;; point is empty, there are no (d) and (f), and there are no params
-                    ((and (null point)
-                          (null flag)
-                          (null parameters))
-                     nil)
+                (cond
+                  ;; point is empty, there are no (d) and (f), and there are no params
+                  ((∧ (null point)
+                      (null flag)
+                      (null parameters))
+                   nil)
 
-                    ;; point is empty, there are no (d) and (f), and there are params
-                    ((and (null point)
-                          parameters)
-                     (fn '("=") flag atom-tab sub-atom-tab)
-                     (when flag
-                       (fn (sub-atom-path path) nil sub-atom-tab)))
+                  ;; point is empty, there are no (d) and (f), and there are params
+                  ((∧ (null point)
+                      parameters)
+                   (fn '("=") flag atom-tab sub-atom-tab)
+                   (when flag
+                     (fn (sub-atom-path path) nil sub-atom-tab)))
 
-                    ;; point is empty, there is (d) and (f)
-                    ;; write to the sub-atom table
-                    ((and (null point)
-                          flag)
-                     (fn (sub-atom-path path) nil sub-atom-tab))
+                  ;; point is empty, there is (d) and (f)
+                  ;; write to the sub-atom table
+                  ((∧ (null point)
+                      flag)
+                   (fn (sub-atom-path path) nil sub-atom-tab))
 
-                    ;; save the value, where the single of point, is the table key
-                    ((and (singlep point)
-                          (key-indicator-p (single point)))
-                     (save-value term point atom-tab parameters))
+                  ;; save the value, where the single of point, is the table key
+                  ((∧ (singlep point)
+                      (key-indicator-p (single point)))
+                   (save-value term point atom-tab parameters))
 
-                    ;; creating new sub tables
-                    (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
-             (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
-             (read-term term atom-table sub-atom-table)))))
+                  ;; creating new sub tables
+                  (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
+        (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
+        (read-term term atom-table sub-atom-table)))))
 
 (defun find-head (terms)
   "Return the head term from TERMS."
@@ -235,15 +235,15 @@
 (def pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
   (let ((%terms (loop :for term :in terms
-                      :when (or (head-term-p term)
-                                (metadata-term-p term))
+                      :when (∨ (head-term-p term)
+                               (metadata-term-p term))
                       :collect term))
         (keys '("/" "[]" "d" "f")))
     (loop :for key :in keys
           :do (loop :for %term :in %terms
                     :for path = (append (car %term) (list key))
-                    :when (and (term-has-value-p %term)
-                               (gethash* path (atom-table *universe*)))
+                    :when (∧ (term-has-value-p %term)
+                             (gethash* path (atom-table *universe*)))
                     :do (clear-path (atom-table *universe*) path)))
     terms))
 
@@ -251,8 +251,8 @@
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (when-let* ((parse (read-parse expr))
               (terms (pre-process-terms parse))
-              (value (mapcar #'(λ (term)
-                                  (%dispatch term :log log :force force))
+              (value (mapcar (λ (term)
+                               (%dispatch term :log log :force force))
                              terms)))
     (when (∧ log (¬ (null* value)) (stringp expr))
       (write-log expr))

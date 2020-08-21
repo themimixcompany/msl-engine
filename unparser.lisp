@@ -54,36 +54,36 @@
 
 (def flatten-one (list)
   "Return a list where items in LIST are conditionally flattened to one level only"
-  (reduce #'(λ (x y)
-               (cond ((rmap-or y
-                               #'metadatap
-                               #'modsp
-                               #'termsp)
-                      (append x (list y)))
-                     (t (append x y))))
+  (reduce (λ (x y)
+            (cond ((rmap-or y
+                            #'metadatap
+                            #'modsp
+                            #'termsp)
+                   (append x (list y)))
+                  (t (append x y))))
           (mapcar #'uiop:ensure-list list)))
 
 (def merge-colons (value)
   "Merge the colons and keys in VALUE."
   (flet* ((fn (args &optional acc)
-              (cond
-                ((null args)
-                 (nreverse acc))
+            (cond
+              ((null args)
+               (nreverse acc))
 
-                ;; note: evaluate the consequences of this
-                ((consp (car args))
-                 (fn (cdr args)
-                     (cons (car args) acc)))
+              ;; note: evaluate the consequences of this
+              ((consp (car args))
+               (fn (cdr args)
+                   (cons (car args) acc)))
 
-                ((string= (car args) ":")
-                 (fn (cddr args)
-                     (cons (cat (car args) (cadr args)) acc)))
+              ((string= (car args) ":")
+               (fn (cddr args)
+                   (cons (cat (car args) (cadr args)) acc)))
 
-                (t (fn (cdr args)
-                       (cons (car args) acc))))))
-         (cond ((∧ (consp value) (¬ (termsp value)))
-                (fn value))
-               (t value))))
+              (t (fn (cdr args)
+                     (cons (car args) acc))))))
+    (cond ((∧ (consp value) (¬ (termsp value)))
+           (fn value))
+          (t value))))
 
 (def merge-sections (sections)
   "Conditionally merge the key sequences in SECTIONS."
@@ -111,32 +111,32 @@
 (def stage (list)
   "Return a new list with preprocessed elements for wrapping and joining."
   (flet* ((fn (args &optional acc)
-              (cond
-                ((null args)
-                 (nreverse acc))
+            (cond
+              ((null args)
+               (nreverse acc))
 
-                ((modsp (car args))
-                 (fn (cdr args)
-                     (cons (flatten-list (car args)) acc)))
+              ((modsp (car args))
+               (fn (cdr args)
+                   (cons (flatten-list (car args)) acc)))
 
-                ((metadatap (car args))
-                 (fn (cdr args)
-                     (cons (flatten-one (wrap (merge-sections (fn (car args)))))
-                           acc)))
+              ((metadatap (car args))
+               (fn (cdr args)
+                   (cons (flatten-one (wrap (merge-sections (fn (car args)))))
+                         acc)))
 
-                (t (fn (cdr args)
-                       (cons (car args) acc))))))
-         (fn list)))
+              (t (fn (cdr args)
+                     (cons (car args) acc))))))
+    (fn list)))
 
 (def normalize (list)
   "Return special merging on items of LIST."
   (flet* ((fn (value)
-              (cond ((metadatap value)
-                     (loop :for v :in (cdr value) :collect (cons (car value) v)))
-                    ((hashp value)
-                     (apply #'cat (car value) (cadr value)))
-                    (t value))))
-         (flatten-one (mapcar #'fn list))))
+            (cond ((metadatap value)
+                   (loop :for v :in (cdr value) :collect (cons (car value) v)))
+                  ((hashp value)
+                   (apply #'cat (car value) (cadr value)))
+                  (t value))))
+    (flatten-one (mapcar #'fn list))))
 
 (defun make-regex (exprs)
   "Return a list containing raw regex expressions from VALUE."
@@ -218,17 +218,17 @@
   (flet ((fn (table root item)
            (roots (gethash* (base-ns-key-sequence root) table)
                   (car item))))
-    (mapcar #'(λ (item)
-                 (if (∧ (consp item)
-                        (sub-ns-p (car item)))
-                     (fn table root item)
-                     item))
+    (mapcar (λ (item)
+              (if (∧ (consp item)
+                     (sub-ns-p (car item)))
+                  (fn table root item)
+                  item))
             root)))
 
 (def construct (table key &optional keys)
   "Return the original expressions in TABLE under KEYS, without further processing."
-  (let ((result (mapcar #'(λ (root)
-                             (flatten-one (gird table root)))
+  (let ((result (mapcar (λ (root)
+                          (flatten-one (gird table root)))
                         (roots table key keys))))
     (loop :for value :in result
           :collect (flatten-one (wrap (merge-sections (join-items (stage value))))))))
@@ -236,19 +236,19 @@
 (def join-items (list)
   "Join the the items in LIST that should be together."
   (flet* ((fn (args &optional acc)
-              (cond ((null args) (nreverse acc))
-                    ((∨ (base-ns-p (car args))
-                        (colon-ns-p (car args)))
-                     (fn (cddr args)
-                         (cons (cat (car args) (cadr args))
-                               acc)))
-                    ((consp (car args))
-                     (fn (cdr args)
-                         (cons (fn (car args))
-                               acc)))
-                    (t (fn (cdr args)
-                           (cons (car args) acc))))))
-         (fn list)))
+            (cond ((null args) (nreverse acc))
+                  ((∨ (base-ns-p (car args))
+                      (colon-ns-p (car args)))
+                   (fn (cddr args)
+                       (cons (cat (car args) (cadr args))
+                             acc)))
+                  ((consp (car args))
+                   (fn (cdr args)
+                       (cons (fn (car args))
+                             acc)))
+                  (t (fn (cdr args)
+                         (cons (car args) acc))))))
+    (fn list)))
 
 (def convert (terms)
   "Return the original expression from TERMS."
@@ -325,9 +325,9 @@ expressions can be read from the store."
   (let* ((metadata (remove-if-not #'metadatap sections))
          (hash (remove-if-not #'string-hash-p sections))
          (hash-value (when hash (list hash)))
-         (start (remove-if #'(λ (section)
-                                (∨ (metadatap section)
-                                   (string-hash-p section)))
+         (start (remove-if (λ (section)
+                             (∨ (metadatap section)
+                                (string-hash-p section)))
                            sections))
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
@@ -353,30 +353,30 @@ expressions can be read from the store."
 
 (def strip-heads (parse)
   "Remove the heads from a parse."
-  (remove-if-not #'(λ (item)
-                      (length= item 2))
-                 (mapcar #'(λ (item)
-                              (strip-head (car item)))
+  (remove-if-not (λ (item)
+                   (length= item 2))
+                 (mapcar (λ (item)
+                           (strip-head (car item)))
                          parse)))
 
 (def deconstruct (expr)
   "Return the full deconstuct of EXPR."
   (with-fresh-universe ()
     (flet* ((fn (args &optional acc)
-                (cond
-                  ((null args)
-                   (nreverse acc))
+              (cond
+                ((null args)
+                 (nreverse acc))
 
-                  ((termsp (car args))
-                   (fn (cdr args)
-                       (cons (mapcar #'fn (sections (head (car args))))
-                             acc)))
+                ((termsp (car args))
+                 (fn (cdr args)
+                     (cons (mapcar #'fn (sections (head (car args))))
+                           acc)))
 
-                  (t (fn (cdr args)
-                         (cons (car args)
-                               acc))))))
-           (dispatch expr :log nil :force t)
-           (mapcar #'fn (sections (head expr))))))
+                (t (fn (cdr args)
+                       (cons (car args)
+                             acc))))))
+      (dispatch expr :log nil :force t)
+      (mapcar #'fn (sections (head expr))))))
 
 (def active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -409,10 +409,10 @@ expressions can be read from the store."
     (let ((fn-name (hyphenate-intern nil "insert" position)))
       `(def ,name (list &rest indexes)
          (flet* ((fn (list args)
-                     (cond ((null args) list)
-                           (t (fn (,fn-name list (car args) " ")
-                                  (cdr args))))))
-                (fn list indexes))))))
+                   (cond ((null args) list)
+                         (t (fn (,fn-name list (car args) " ")
+                                (cdr args))))))
+           (fn list indexes))))))
 
 (mapply define-spacer space-before space-after)
 
@@ -465,24 +465,24 @@ expressions can be read from the store."
   "Reduce EXPR to the closest approximate original expression, removing comments and other
 non-value data."
   (flet* ((fn (args &optional acc)
-              (cond
-                ((null args)
-                 (reduce-parts (nreverse acc)))
+            (cond
+              ((null args)
+               (reduce-parts (nreverse acc)))
 
-                ((termsp (car args))
-                 (fn (cdr args)
-                     (cons (fn (car args)) acc)))
+              ((termsp (car args))
+               (fn (cdr args)
+                   (cons (fn (car args)) acc)))
 
-                (t (fn (cdr args)
-                       (cons (car args) acc))))))
-         (fn (deconstruct expr))))
+              (t (fn (cdr args)
+                     (cons (car args) acc))))))
+    (fn (deconstruct expr))))
 
 (def reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
-  (mapcar #'(λ (expr)
-               (cond ((termsp expr)
-                      (recall-expr (terms-base expr)))
-                     (t expr)))
+  (mapcar (λ (expr)
+            (cond ((termsp expr)
+                   (recall-expr (terms-base expr)))
+                  (t expr)))
           exprs))
 
 (defun section-match-p (path section)
@@ -513,10 +513,10 @@ non-value data."
 
 (def pad-items (items)
   "Pad the items in ITEMS."
-  (mapcar #'(λ (item)
-               (cond ((modsp item)
-                      (list-string (merge-colons item)))
-                     (t item)))
+  (mapcar (λ (item)
+            (cond ((modsp item)
+                   (list-string (merge-colons item)))
+                  (t item)))
           items))
 
 (def is-mods-p (value)
@@ -529,20 +529,20 @@ non-value data."
 (def pad-section (section)
   "Do additiol padding on ITEMS."
   (flet* ((fn (args &optional acc)
-              (cond
-                ((null args)
-                 (nreverse acc))
+            (cond
+              ((null args)
+               (nreverse acc))
 
-                ;; note: work on this
-                ;; ((∧ (is-mods-p (car args))
-                ;;     (is-mods-p (cadr args)))
-                ;;  (fn (cddr args)
-                ;;      (cons (cadr args)
-                ;;            (cons " " (cons (car args) acc)))))
+              ;; note: work on this
+              ;; ((∧ (is-mods-p (car args))
+              ;;     (is-mods-p (cadr args)))
+              ;;  (fn (cddr args)
+              ;;      (cons (cadr args)
+              ;;            (cons " " (cons (car args) acc)))))
 
-                (t (fn (cdr args)
-                       (cons (car args) acc))))))
-         (fn section)))
+              (t (fn (cdr args)
+                     (cons (car args) acc))))))
+    (fn section)))
 
 (def pad-sections (sections)
   "Add padding information to the items in SECTIONS."
@@ -589,11 +589,8 @@ non-value data."
              (active-paths (deconstruct* expr))
              (sections (sections head)))
         (cond ((head-only-paths-p all-paths)
-               (dbg "X")
                (distill head (reduce-sections sections)))
-              (t
-               (dbg "Y")
-               (distill head (reduce-sections sections active-paths))))))))
+              (t (distill head (reduce-sections sections active-paths))))))))
 
 (def recall-expr* (expr)
   "Apply RECALL-EXPR without dispatching."
@@ -606,28 +603,28 @@ non-value data."
 
 (def reduce-values (values)
   "Return a string concatenation of the items in VALUES."
-  (let ((result (mapcar #'(λ (value)
-                             (cond ((stringp value) value)
-                                   ((termsp value) (recall-value (terms-base value)))
-                                   (t nil)))
+  (let ((result (mapcar (λ (value)
+                          (cond ((stringp value) value)
+                                ((termsp value) (recall-value (terms-base value)))
+                                (t nil)))
                         values)))
     (join result "")))
 
 (def %extract-value (path)
   "Return the information specified by PATH."
   (flet* ((fn (table path)
-              (cond ((singlep path)
-                     (multiple-value-bind (val existsp)
-                         (gethash (car path) table)
-                       (when existsp
-                         (cond ((hash-table-p val) val)
-                               ((listp val)
-                                (reduce-values val))
-                               (t val)))))
-                    ((hash-table-p (gethash (car path) table))
-                     (fn (gethash (car path) table) (cdr path)))
-                    (t nil))))
-         (fn (atom-table *universe*) path)))
+            (cond ((singlep path)
+                   (multiple-value-bind (val existsp)
+                       (gethash (car path) table)
+                     (when existsp
+                       (cond ((hash-table-p val) val)
+                             ((listp val)
+                              (reduce-values val))
+                             (t val)))))
+                  ((hash-table-p (gethash (car path) table))
+                   (fn (gethash (car path) table) (cdr path)))
+                  (t nil))))
+    (fn (atom-table *universe*) path)))
 
 (def extract-value (path)
   "Return the value specified in PATH."
@@ -680,10 +677,10 @@ non-value data."
 
         ;; no main value, and the rest are either mods or transforms
         ((∧ (null* (cdar parse))
-            (every #'(λ (term)
-                        (rmap-or (car term)
-                                 #'has-mods-p
-                                 #'has-transform-p))
+            (every (λ (term)
+                     (rmap-or (car term)
+                              #'has-mods-p
+                              #'has-transform-p))
                    (cdr parse)))
          (car-only (car parse)))
 
@@ -695,8 +692,8 @@ non-value data."
 
         ;; no main value, there is at least one mod
         ((∧ (null* (cdar parse))
-            (some #'(λ (term)
-                       (rmap-and (car term) #'has-mods-p))
+            (some (λ (term)
+                    (rmap-and (car term) #'has-mods-p))
                   parse))
          (car-only (cadr parse)))
 
@@ -757,10 +754,10 @@ non-value data."
 (defun apply-regex-sets (regex-sets value)
   "Apply the regex sets from REGEX-SETS with value as the starting point."
   (flet* ((fn (args val)
-              (cond ((null args) val)
-                    (t (fn (cdr args)
-                           (apply-regex-set (car args) val))))))
-         (fn regex-sets value)))
+            (cond ((null args) val)
+                  (t (fn (cdr args)
+                         (apply-regex-set (car args) val))))))
+    (fn regex-sets value)))
 
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
