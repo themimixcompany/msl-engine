@@ -39,17 +39,17 @@
   (∧ (consp path)
      (mem (car path) (uiop:ensure-list keys))))
 
-(defmacro define-key-predicate (name items)
+(defmacro def-key-predicate (name items)
   "Define a key member predicate."
   `(def ,name (path)
      (key-member-p ',items path)))
 
-(define-key-predicate @p "@")
-(define-key-predicate metadatap ":")
-(define-key-predicate modsp ("d" "f"))
-(define-key-predicate hashp "#")
-(define-key-predicate regexp "/")
-(define-key-predicate transformp "[]")
+(def-key-predicate @p "@")
+(def-key-predicate metadatap ":")
+(def-key-predicate modsp ("d" "f"))
+(def-key-predicate hashp "#")
+(def-key-predicate regexp "/")
+(def-key-predicate transformp "[]")
 (def metamodsp (path) (rmap-or path #'metadatap #'modsp))
 
 (def flatten-one (list)
@@ -290,7 +290,8 @@ expressions can be read from the store."
 
 (def head-only-paths-p (value)
   "Return true if there’s only one path in PATHS and that there’s only a head."
-  (head-only-p (and (length= value 1) (car value))))
+  (when (length= value 1)
+    (head-only-p (car value))))
 
 (def has-head-p (sections)
   "Return true if SECTIONS contain a head section."
@@ -389,7 +390,7 @@ expressions can be read from the store."
   "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
 
-(defmacro define-checker (name)
+(defmacro def-checker (name)
   "Define a predicate for testing nss."
   (let* ((part-name (hyphenate-intern nil name "part-p"))
          (ns-name (hyphenate-intern nil name "ns-p")))
@@ -399,9 +400,9 @@ expressions can be read from the store."
          (declare (ignore _))
          (,ns-name ns)))))
 
-(mapply define-checker @ atom sub metadata)
+(mapply def-checker @ atom sub metadata)
 
-(defmacro define-spacer (name)
+(defmacro def-spacer (name)
   "Define a helper for inserting spaces."
   (destructuring-bind (_ position)
       (uiop:split-string (string name) :separator '(#\-))
@@ -414,7 +415,7 @@ expressions can be read from the store."
                                 (cdr args))))))
            (fn list indexes))))))
 
-(mapply define-spacer space-before space-after)
+(mapply def-spacer space-before space-after)
 
 (def trim-items (items)
   "Remove the extraneous whitespace from the items in ITEMS."
@@ -685,9 +686,9 @@ non-value data."
          (car-only (car parse)))
 
         ;; ;; no main value, there is at least one mod, and there are no metadata
-        ;; ((and (null* (cdar parse))
-        ;;       (find-if #'has-mods-p parse :key #'car)
-        ;;       (find-if-not #'has-metadata-p parse :key #'car))
+        ;; ((∧ (null* (cdar parse))
+        ;;     (find-if #'has-mods-p parse :key #'car)
+        ;;     (find-if-not #'has-metadata-p parse :key #'car))
         ;;  (car-only (cadr parse)))
 
         ;; no main value, there is at least one mod
@@ -786,7 +787,8 @@ non-value data."
           (recall-value expr :dispatch nil)))
 
 (def recall* (expr &key log)
-  "Return the results of expression and value recalls as multiple values if the value recall in not null."
+  "Return the results of expression and value recalls as multiple values if the value recall is not
+null."
   (dispatch expr :log log :force nil)
   (let ((value (recall-value expr :dispatch nil)))
     (if (null value)
