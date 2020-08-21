@@ -16,7 +16,7 @@
 ;; general helpers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* sub-atom-index (path)
+(def sub-atom-index (path)
   "Return true if PATH is a sub-atom path."
   (when (∧ (consp path)
            (¬ (uiop:emptyp path)))
@@ -31,14 +31,14 @@
   (when-let ((index (sub-atom-index path)))
     (subseq path index)))
 
-(defun* sub-atom-path-p (path)
+(def sub-atom-path-p (path)
   "Return true if PATH starts with a sub-atom path."
   (destructuring-bind (ns &optional &rest _)
       path
     (declare (ignore _))
     (sub-ns-p ns)))
 
-(defun* has-sub-atom-path-p (path)
+(def has-sub-atom-path-p (path)
   "Retun true if PATH contains a sub-atom path and PATH is not a sub-atom path itself."
   (∧ (sub-atom-index path)
      (¬ (sub-atom-path-p path))))
@@ -63,7 +63,7 @@
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
 
-(defun* head-term-p (term)
+(def head-term-p (term)
   "Return true if TERM is the main term."
   (destructuring-bind (path &optional &rest value)
       term
@@ -71,7 +71,7 @@
     (∧ (length= path 2)
        (base-ns-p (car path)))))
 
-(defun* metadata-term-p (term)
+(def metadata-term-p (term)
   "Return true if TERM is a metadata term."
   (destructuring-bind (path &optional &rest value)
       term
@@ -92,7 +92,7 @@
 ;; readers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* empty-key-p (value)
+(def empty-key-p (value)
   "Return true if VALUE contains an empty hash table. The second value is true if the path to the table exists."
   (if (hash-table-p value)
       (values (zerop (hash-table-count value))
@@ -100,9 +100,9 @@
       (values nil
               nil)))
 
-(defun* read-term (term &optional
-                        (atom-table (atom-table *universe*))
-                        (sub-atom-table (sub-atom-table *universe*)))
+(def read-term (term &optional
+                     (atom-table (atom-table *universe*))
+                     (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by TERM in SOURCE."
   (let ((default-key '("="))
         (dummy-value nil)) ;; or '("")
@@ -121,9 +121,9 @@
           (cond ((key-indicator-p (last* path)) (gethash* path table))
                 (t (fn path table))))))))
 
-(defun* read-path (path &optional
-                        (atom-table (atom-table *universe*))
-                        (sub-atom-table (sub-atom-table *universe*)))
+(def read-path (path &optional
+                     (atom-table (atom-table *universe*))
+                     (sub-atom-table (sub-atom-table *universe*)))
   "Return the value specified by PATH in SOURCE."
   (read-term (list path nil) atom-table sub-atom-table))
 
@@ -132,7 +132,7 @@
 ;; writers
 ;;--------------------------------------------------------------------------------------------------
 
-(defun* save-value (term location table value &optional clear-path)
+(def save-value (term location table value &optional clear-path)
   "Store VALUE using LOCATION as specifier in TABLE."
   (destructuring-bind (path &optional &rest params)
       term
@@ -156,36 +156,36 @@
   (destructuring-bind (path &optional params)
       term
     (let ((parameters (if whole params (car params))))
-      (labels ((fn (point flag atom-tab &optional sub-atom-tab)
-                 (cond
-                   ;; point is empty, there are no (d) and (f), and there are no params
-                   ((and (null point)
-                         (null flag)
-                         (null parameters))
-                    nil)
+      (flet* ((fn (point flag atom-tab &optional sub-atom-tab)
+                  (cond
+                    ;; point is empty, there are no (d) and (f), and there are no params
+                    ((and (null point)
+                          (null flag)
+                          (null parameters))
+                     nil)
 
-                   ;; point is empty, there are no (d) and (f), and there are params
-                   ((and (null point)
-                         parameters)
-                    (fn '("=") flag atom-tab sub-atom-tab)
-                    (when flag
-                      (fn (sub-atom-path path) nil sub-atom-tab)))
+                    ;; point is empty, there are no (d) and (f), and there are params
+                    ((and (null point)
+                          parameters)
+                     (fn '("=") flag atom-tab sub-atom-tab)
+                     (when flag
+                       (fn (sub-atom-path path) nil sub-atom-tab)))
 
-                   ;; point is empty, there is (d) and (f)
-                   ;; write to the sub-atom table
-                   ((and (null point)
-                         flag)
-                    (fn (sub-atom-path path) nil sub-atom-tab))
+                    ;; point is empty, there is (d) and (f)
+                    ;; write to the sub-atom table
+                    ((and (null point)
+                          flag)
+                     (fn (sub-atom-path path) nil sub-atom-tab))
 
-                   ;; save the value, where the single of point, is the table key
-                   ((and (singlep point)
-                         (key-indicator-p (single point)))
-                    (save-value term point atom-tab parameters))
+                    ;; save the value, where the single of point, is the table key
+                    ((and (singlep point)
+                          (key-indicator-p (single point)))
+                     (save-value term point atom-tab parameters))
 
-                   ;; creating new sub tables
-                   (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
-        (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
-        (read-term term atom-table sub-atom-table)))))
+                    ;; creating new sub tables
+                    (t (fn (cdr point) flag (spawn-table point atom-tab) sub-atom-tab)))))
+             (fn path (has-sub-atom-path-p path) atom-table sub-atom-table)
+             (read-term term atom-table sub-atom-table)))))
 
 (defun find-head (terms)
   "Return the head term from TERMS."
@@ -200,7 +200,7 @@
   "Remove the regex found in TERMS."
   (remove-if #'regex-term-p terms))
 
-(defun* upcase-key (term)
+(def upcase-key (term)
   "Upcase the key name in TERM"
   (destructuring-bind (path &optional &rest value)
       term
@@ -232,7 +232,7 @@
     (declare (ignore path))
     (¬ (null* value))))
 
-(defun* pre-process-terms (terms)
+(def pre-process-terms (terms)
   "Do some processing with TERMS, and the environment, then return a new terms value."
   (let ((%terms (loop :for term :in terms
                       :when (or (head-term-p term)
@@ -247,25 +247,25 @@
                     :do (clear-path (atom-table *universe*) path)))
     terms))
 
-(defun* dispatch (expr &key (log t) force)
+(def dispatch (expr &key (log t) force)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
   (when-let* ((parse (read-parse expr))
               (terms (pre-process-terms parse))
-              (value (mapcar #'(lambda (term)
-                                 (%dispatch term :log log :force force))
+              (value (mapcar #'(λ (term)
+                                  (%dispatch term :log log :force force))
                              terms)))
     (when (∧ log (¬ (null* value)) (stringp expr))
       (write-log expr))
     value))
 
-(defun* dispatch* (&rest args)
+(def dispatch* (&rest args)
   "Apply DISPATCH without logging."
   (apply #'dispatch (append args '(:log nil))))
 
-(defun* dispatch! (&rest args)
+(def dispatch! (&rest args)
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
   (apply #'dispatch (append args '(:log nil :force nil))))
 
-(defun* dispatch-terms (terms)
+(def dispatch-terms (terms)
   terms)

@@ -77,35 +77,35 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =@-ns ()
+  (define-parser =@-namespace ()
     "Match and return the @ ns."
     (=subseq (?eq #\@)))
 
-  (define-parser =grouping-ns ()
+  (define-parser =grouping-namespace ()
     "Match and return m w s v ns."
-    (=subseq (?satisfies (lambda (c) (member c '(#\m #\w #\s #\v))))))
+    (=subseq (?satisfies (λ (c) (member c '(#\m #\w #\s #\v))))))
 
-  (define-parser =regex-ns ()
+  (define-parser =regex-namespace ()
     "Match and return the / ns."
     (=subseq (?eq #\/)))
 
-  (define-parser =prelude-ns ()
+  (define-parser =prelude-namespace ()
     "Match and return the msl ns."
     (=subseq (maxpc.char:?string "msl")))
 
-  (define-parser =metadata-ns ()
+  (define-parser =metadata-namespace ()
     "Match and return the : ns."
     (=subseq (?eq #\:)))
 
-  (define-parser =c-ns ()
+  (define-parser =c-namespace ()
     "Match and return the c ns."
     (=subseq (?eq #\c)))
 
-  (define-parser =datatype-ns ()
+  (define-parser =datatype-namespace ()
     "Match and return the d ns."
     (=subseq (?eq #\d)))
 
-  (define-parser =format-ns ()
+  (define-parser =format-namespace ()
     "Match and return the f ns."
     (=subseq (?eq #\f))))
 
@@ -119,7 +119,7 @@
     "Match and return the key sequence for an @."
     (=list (=destructure
                (ns _)
-               (=list (=@-ns)
+               (=list (=@-namespace)
                       (%maybe (?whitespace))))
            (=key)))
 
@@ -127,7 +127,7 @@
     "Match and return the key sequence for an atom."
     (=list (=destructure
                (ns _)
-               (=list (=grouping-ns)
+               (=list (=grouping-namespace)
                       (?whitespace)))
            (=key)))
 
@@ -135,7 +135,7 @@
     "Match and return the key sequence for canon."
     (=list (=destructure
                (ns _)
-               (=list (=c-ns)
+               (=list (=c-namespace)
                       (?whitespace)))
            (=key)))
 
@@ -143,7 +143,7 @@
     "Match and return the key sequence for a prelude."
     (=list (=destructure
                (ns _)
-               (=list (=prelude-ns)
+               (=list (=prelude-namespace)
                       (?whitespace)))
            (=key)))
 
@@ -152,7 +152,7 @@
     (=destructure
         (_ ns key)
         (=list (?blackspace)
-               (=metadata-ns)
+               (=metadata-namespace)
                (=key))
       (list ns key)))
 
@@ -160,7 +160,7 @@
     "Match and return key sequence for d."
     (=destructure
         (atom _ key)
-        (=list (=datatype-ns)
+        (=list (=datatype-namespace)
                (?whitespace)
                (=key))
       (list atom key)))
@@ -169,7 +169,7 @@
     "Match and return key sequence for f."
     (=destructure
         (atom _ key)
-        (=list (=format-ns)
+        (=list (=format-namespace)
                (?whitespace)
                (=key))
       (list atom key))))
@@ -307,9 +307,9 @@
         (=list (%some
                 (=destructure
                     (_ regex _ env _ value)
-                    (=list (=regex-ns)
+                    (=list (=regex-namespace)
                            (=subseq (%some (?satisfies 'regex-char-p)))
-                           (=regex-ns)
+                           (=regex-namespace)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
                            (?blackspace)
                            (%maybe (=value)))
@@ -364,25 +364,25 @@
 (defmacro +sequence (sequence)
   "Define a variable capturing parser macro for sequences."
   `(=transform ,sequence
-               (lambda (seq)
-                 ;; note: this unconditionaly sets the atom sequence
-                 ;;(setf %atom-sequence seq)
+               (λ (seq)
+                  ;; note: this unconditionaly sets the atom sequence
+                  ;;(setf %atom-sequence seq)
 
-                 ;; note: are these all the right conditions?
-                 ;; note: it seems, that the conditions are not enough.
-                 (cond ((null %meta-sequence)
-                        (setf %atom-sequence seq))
+                  ;; note: are these all the right conditions?
+                  ;; note: it seems, that the conditions are not enough.
+                  (cond ((null %meta-sequence)
+                         (setf %atom-sequence seq))
 
-                       ;; note: this fixes the ghosting bug, but
-                       ;; yields the embedded atom in metadata bug
-                       (t (setf %atom-sequence seq))))))
+                        ;; note: this fixes the ghosting bug, but
+                        ;; yields the embedded atom in metadata bug
+                        (t (setf %atom-sequence seq))))))
 
 (defmacro +value (value)
   "Define a variable capturing parser macro for values."
   `(=transform (%any ,value)
-               (lambda (val)
-                 (cond (val (setf %atom-value val))
-                       (t (setf %atom-value nil))))))
+               (λ (val)
+                  (cond (val (setf %atom-value val))
+                        (t (setf %atom-value nil))))))
 
 (defmacro +atom-mods-1 ()
   "Define a variable capturing parser macro for type 1 atom mods."
@@ -398,9 +398,9 @@
                    (_ atom-mods)
                    (=list (=blackspace)
                           (=atom-mods-2)))
-               (lambda (terms)
-                 (let ((value (prefix-terms %atom-sequence terms)))
-                   value))))
+               (λ (terms)
+                  (let ((value (prefix-terms %atom-sequence terms)))
+                    value))))
 
 (defmacro +atom-mods ()
   "Define a parser for handling atom mods."
@@ -413,7 +413,7 @@
        (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
        (=atom-mods-1)
      (list (list (append %atom-sequence %meta-sequence mod-sequence)
-           mod-value mod-mods mod-meta mod-hash mod-comment))))
+                 mod-value mod-mods mod-meta mod-hash mod-comment))))
 
 (defmacro +metadata-mods-2 ()
   "Define a variable capturing parser macro for type 2 metadata mods."
@@ -421,9 +421,9 @@
                    (_ atom-mods)
                    (=list (=blackspace)
                           (=atom-mods-2)))
-               (lambda (terms)
-                 (prefix-terms (append %atom-sequence %meta-sequence)
-                               terms))))
+               (λ (terms)
+                  (prefix-terms (append %atom-sequence %meta-sequence)
+                                terms))))
 
 (defmacro +metadata-mods ()
   "Define a parser for handling metadata mods."
@@ -436,8 +436,8 @@
                    (_ atom-mods)
                    (=list (=blackspace)
                           (=metadata-sequence)))
-               (lambda (seq)
-                 (setf %meta-sequence seq))))
+               (λ (seq)
+                  (setf %meta-sequence seq))))
 
 (defun build-items (atom-sequence meta-sequence meta-value meta-mods)
   "Return a list for +METADATA processing."
@@ -464,9 +464,9 @@
          ;; no atom value, zero or more metadata mods; the birthday trap
          (=list (+metadata-sequence)
                 (?blackspace)
-                (?satisfies (lambda (_)
-                              (declare (ignore _))
-                              (unless %atom-value t))
+                (?satisfies (λ (_)
+                               (declare (ignore _))
+                               (unless %atom-value t))
                             (%any ,value))
                 (%any (+metadata-mods))))
       (declare (ignore meta-sequence))
@@ -551,7 +551,7 @@
           :do (format t "~A.~4T~S~%" count term))
     parse))
 
-(defun* read-parse (value)
+(def read-parse (value)
   "Return the parse of VALUE."
   (if (consp value)
       value

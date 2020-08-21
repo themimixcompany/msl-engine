@@ -54,11 +54,11 @@
   (when (and wire data)
     (send wire data)))
 
-(defun* connection-headers (connection)
+(def connection-headers (connection)
   "Return the header table from CONNECTION."
   (websocket-driver.ws.server::headers connection))
 
-(defun* dump-headers (connection)
+(def dump-headers (connection)
   "Print the headers information from CONNECTION."
   (dump-table (connection-headers connection)))
 
@@ -114,9 +114,9 @@
   "Stop the clack server SERVER."
   (clack:stop server))
 
-(defmacro* define-runner (name port open-handler
-                               message-handler close-handler
-                               error-handler)
+(defm define-runner (name port open-handler
+                          message-handler close-handler
+                          error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -136,9 +136,9 @@
              (websocket-driver:on :message server ,message-handler)
              (websocket-driver:on :close server ,close-handler)
              (websocket-driver:on :error server ,error-handler)
-             (lambda (arg)
-               (declare (ignore arg))
-               (websocket-driver:start-connection server))))
+             (λ (arg)
+                (declare (ignore arg))
+                (websocket-driver:start-connection server))))
          (defun ,start-server-name ()
            (let ((server (clack-start #',server-name ,port)))
              (setf ,server-symbol-name server)
@@ -155,47 +155,47 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (define-runner "ADMIN" 60500
-  #'(lambda ()
-      (handle-open server))
-  #'(lambda (message)
-      (debug-print (fmt "Received on admin wire: ~S" message))
-      (destructuring-bind (&optional expr js-data)
-          (message-data message)
-        (when expr
-          (flet ((fn (val)
-                   (make-return-data message val js-data)))
-            (let ((value (fn (admin-dispatch expr))))
-              (post *admin-wire* value)
-              (debug-print (fmt "Sent on admin wire: ~S" value)))))))
-  #'(lambda (&key code reason)
-      (declare (ignore code reason))
-      (handle-close server))
-  #'(lambda (error)
-      (debug-print (fmt "Got an error: ~A" error))))
+  #'(λ ()
+       (handle-open server))
+  #'(λ (message)
+       (debug-print (fmt "Received on admin wire: ~S" message))
+       (destructuring-bind (&optional expr js-data)
+           (message-data message)
+         (when expr
+           (flet ((fn (val)
+                    (make-return-data message val js-data)))
+             (let ((value (fn (admin-dispatch expr))))
+               (post *admin-wire* value)
+               (debug-print (fmt "Sent on admin wire: ~S" value)))))))
+  #'(λ (&key code reason)
+       (declare (ignore code reason))
+       (handle-close server))
+  #'(λ (error)
+       (debug-print (fmt "Got an error: ~A" error))))
 
 (define-runner "MSL" 60000
-  #'(lambda ()
-      (handle-open server))
-  #'(lambda (message)
-      (debug-print (fmt "Received on MSL wire: ~S" message))
-      (destructuring-bind (&optional expr js-data)
-          (message-data message)
-        (when expr
-          (multiple-value-bind (expr value)
-              (recall expr)
-            (flet ((fn (val)
-                     (make-return-data message val js-data)))
-              (let* ((expr-value (fn expr))
-                     (value-value (fn value)))
-                (post *msl-wire* expr-value)
-                (debug-print (fmt "Sent on MSL wire: ~S" expr-value))
-                (post *admin-wire* value-value)
-                (debug-print (fmt "Sent on admin wire: ~S" value-value))))))))
-  #'(lambda (&key code reason)
-      (declare (ignore code reason))
-      (handle-close server))
-  #'(lambda (error)
-      (debug-print (fmt "Got an error: ~A" error))))
+  #'(λ ()
+       (handle-open server))
+  #'(λ (message)
+       (debug-print (fmt "Received on MSL wire: ~S" message))
+       (destructuring-bind (&optional expr js-data)
+           (message-data message)
+         (when expr
+           (multiple-value-bind (expr value)
+               (recall expr)
+             (flet ((fn (val)
+                      (make-return-data message val js-data)))
+               (let* ((expr-value (fn expr))
+                      (value-value (fn value)))
+                 (post *msl-wire* expr-value)
+                 (debug-print (fmt "Sent on MSL wire: ~S" expr-value))
+                 (post *admin-wire* value-value)
+                 (debug-print (fmt "Sent on admin wire: ~S" value-value))))))))
+  #'(λ (&key code reason)
+       (declare (ignore code reason))
+       (handle-close server))
+  #'(λ (error)
+       (debug-print (fmt "Got an error: ~A" error))))
 
 (defun start-servers ()
   "Start all the servers."
@@ -214,7 +214,7 @@
   "Return an open for slynk."
   (find-port:find-port :min 40000 :max 50000))
 
-(defun* start-slynk-server ()
+(def start-slynk-server ()
   "Start a slynk server."
   (let ((port (find-open-port))
         (*slynk-debug-p* nil))
@@ -222,21 +222,21 @@
       (slynk:create-server :port port :dont-close t)
       (debug-print (fmt "Slynk open at ~A." port)))))
 
-(defun* dump-threads ()
+(def dump-threads ()
   "Print a list of running threads."
   (loop :for thread :in (bt:all-threads)
         :do (format t "~A~%" thread)))
 
-(defun* dump-thread-names ()
+(def dump-thread-names ()
   "Print a list of the names of the running threads."
   (loop :for thread :in (bt:all-threads)
         :do (format t "~A~%" (bt:thread-name thread))))
 
-(defun* serve (&key slynk)
+(def serve (&key slynk)
   "The main entrypoint of the server."
   (flet ((find-threads (query)
-           (bt:join-thread (find-if #'(lambda (thread)
-                                        (search query (bt:thread-name thread)))
+           (bt:join-thread (find-if #'(λ (thread)
+                                         (search query (bt:thread-name thread)))
                                     (bt:all-threads)))))
     (handler-bind ((#+sbcl sb-sys:interactive-interrupt
                     #+ccl ccl:interrupt-signal-condition
@@ -244,12 +244,12 @@
                     #+ecl ext:interactive-interrupt
                     #+allegro excl:interrupt-signal
                     #+lispworks mp:process-interrupt
-                    #'(lambda (c)
-                        (declare (ignore c))
-                        (stop-servers)))
+                    #'(λ (c)
+                         (declare (ignore c))
+                         (stop-servers)))
                    (error
-                     #'(lambda (c)
-                         (format t "Oops, an unknown error occured: ~A~%" c))))
+                     #'(λ (c)
+                          (format t "Oops, an unknown error occured: ~A~%" c))))
       (when slynk (start-slynk-server))
       (start-servers)
       (find-threads "hunchentoot"))))

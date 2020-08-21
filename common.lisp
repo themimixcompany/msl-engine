@@ -12,45 +12,45 @@
   "Return true if elem is a MEMBER of NS-LIST by CAR."
   (∧ (member elem ns-list :key #'car :test #'equalp)))
 
-(defun* @-ns-p (ns)
+(def @-ns-p (ns)
   "Return true if NS is a base ns indicator."
   (ns-member-p ns +@-ns-list+))
 
-(defun* atom-ns-p (ns)
+(def atom-ns-p (ns)
   "Return true if NS is a atom ns indicator."
   (ns-member-p ns +atom-ns-list+))
 
-(defun* base-ns-p (ns)
+(def base-ns-p (ns)
   "Return true if NS is a base ns indicator."
   (ns-member-p ns +base-ns-list+))
 
-(defun* sub-ns-p (ns)
+(def sub-ns-p (ns)
   "Return true if NS is a sub ns indicator."
   (ns-member-p ns +sub-ns-list+))
 
-(defun* colon-ns-p (ns)
+(def colon-ns-p (ns)
   "Return true if NS is a colon ns indicator."
   (ns-member-p ns +colon-ns-list+))
 
-(defun* metadata-ns-p (ns)
+(def metadata-ns-p (ns)
   "Return true if NS is a metadata ns indicator."
   (ns-member-p ns +metadata-ns-list+))
 
-(defun* nsp (ns)
+(def nsp (ns)
   "Return true if NS is a ns indicator."
   (rmap-or ns #'base-ns-p #'sub-ns-p))
 
-(defun* object-slots (object)
+(def object-slots (object)
   "Return the slot names of OBJECT."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (class-of object))))
 
-(defun* slots (class)
+(def slots (class)
   "Return the slot names of CLASS."
   (mapcar #'closer-mop:slot-definition-name
           (closer-mop:class-slots (find-class class))))
 
-(defun* dump-object (object)
+(def dump-object (object)
   "Display the contents of OBJECT."
   (loop :for slot :in (object-slots object)
         :do (let ((v (funcall slot object)))
@@ -58,7 +58,7 @@
               (when (hash-table-p v)
                 (dump-table v)))))
 
-(defun* (dump-universe dump) (&optional (universe *universe*))
+(def (dump-universe dump) (&optional (universe *universe*))
   "Dump the contents of the universe."
   (let* ((slots (object-slots universe))
          (string-slots (mapcar #'string* slots))
@@ -74,11 +74,11 @@
                 (format t "~%~A:~%" table-reader)
                 (dump-table* table)))))
 
-(defun* dump-table (table)
+(def dump-table (table)
   "Print information about TABLE recursively."
   (dump-table* table))
 
-(defun* dump-path (table path)
+(def dump-path (table path)
   "Print the information in TABLE specified by PATH."
   (cond ((singlep path)
          (multiple-value-bind (val existsp)
@@ -90,22 +90,22 @@
          (dump-path (gethash (car path) table) (cdr path)))
         (t nil)))
 
-(defun* clear-table (table)
+(def clear-table (table)
   "Clear all the contents of TABLE."
   (clrhash table))
 
-(defun* tables (&optional (universe *universe*))
+(def tables (&optional (universe *universe*))
   "Return the list of slots from UNIVERSE that are tables."
   (loop :for slot :in (object-slots universe)
         :for tab = (funcall slot universe)
         :when (hash-table-p tab)
         :collect tab))
 
-(defun* (clear-universe clear) (&optional (universe *universe*))
+(def (clear-universe clear) (&optional (universe *universe*))
   "Set the current universe to an empty state."
   (loop :for table :in (tables universe) :do (clear-table table)))
 
-(defun* copy-universe (universe)
+(def copy-universe (universe)
   "Return a copy of the universe UNIVERSE, but with a new log date. The tables are copied using an external function to allow selective table information copying."
   (with-slots (atom-counter atom-table sub-atom-counter sub-atom-table)
       universe
@@ -115,7 +115,7 @@
                    :sub-atom-counter sub-atom-counter
                    :sub-atom-table (copy-table sub-atom-table))))
 
-(defun* copy-table (table)
+(def copy-table (table)
   "Create a new hash table from TABLE."
   (let ((ht (make-hash-table :test (hash-table-test table)
                              :rehash-size (hash-table-rehash-size table)
@@ -126,16 +126,16 @@
           :do (setf (gethash key ht) value)
           :finally (return ht))))
 
-(defun* clear-path (table path)
+(def clear-path (table path)
   "Remove the specified entry in TABLE that matches PATH."
-  (labels ((fn (tab location)
-             (cond ((singlep location)
-                    (remhash (single location) tab)
-                    table)
-                   ((hash-table-p (gethash (car location) tab))
-                    (fn (gethash (car location) tab) (cdr location)))
-                   (t nil))))
-    (fn table path)))
+  (flet* ((fn (tab location)
+              (cond ((singlep location)
+                     (remhash (single location) tab)
+                     table)
+                    ((hash-table-p (gethash (car location) tab))
+                     (fn (gethash (car location) tab) (cdr location)))
+                    (t nil))))
+         (fn table path)))
 
 (defun clear-other (table key)
   "Remove entries in TABLE that do not match KEY."
@@ -144,20 +144,20 @@
           :do (remhash item table)
           :finally (return table))))
 
-(defun* filter-path (table path)
+(def filter-path (table path)
   "Remove all other table entries in SOURCE that do not match PATH."
-  (labels ((fn (tab location)
-             (cond ((and (singlep location)
-                         (hash-table-p (gethash (car location) tab)))
-                    (clear-other tab (car location))
-                    table)
-                   ((hash-table-p (gethash (car location) tab))
-                    (clear-other tab (car location))
-                    (fn (gethash (car location) tab) (cdr location)))
-                   (t nil))))
-    (fn table path)))
+  (flet* ((fn (tab location)
+              (cond ((∧ (singlep location)
+                        (hash-table-p (gethash (car location) tab)))
+                     (clear-other tab (car location))
+                     table)
+                    ((hash-table-p (gethash (car location) tab))
+                     (clear-other tab (car location))
+                     (fn (gethash (car location) tab) (cdr location)))
+                    (t nil))))
+         (fn table path)))
 
-(defun* termsp (form &optional (predicate #'nsp))
+(def termsp (form &optional (predicate #'nsp))
   "Return true if FORM is a valid MSL form."
   (flet ((fn (form)
            (destructuring-bind (&optional head &rest _)
@@ -167,73 +167,74 @@
                 (destructuring-bind (value &rest _)
                     head
                   (declare (ignore _))
-                  (and (consp value)
-                       (funcall predicate (car value))))))))
+                  (∧ (consp value)
+                     (funcall predicate (car value))))))))
     (cond ((rmap-or form #'stringp #'numberp) nil)
           (t (fn form)))))
 
-(defmacro* define-parser (name args &body body)
+(defm define-parser (name args &body body)
   "Define a function for defining parsers. NAME is the name of the parser
 function; ARGS are the arguments passed to a parser—usually NIL; and BODY is the
 body contents of the parser function."
   (let ((fname (string name)))
-    (if (¬ (some #'(lambda (char) (char= (elt fname 0) char))
+    (if (¬ (some #'(λ (char) (char= (elt fname 0) char))
                  '(#\= #\? #\%)))
         (error "The parser name must start with =, ?, or %.")
         `(progn
            (export ',name)
            (defun ,name ,args ,@body)
-           (setf (fdefinition ',(intern (subseq (string name) 1))) (,name))))))
+           (setf (fdefinition ',(intern (subseq (string name) 1)))
+                 (,name))))))
 
-(defun* current-date-iso-8601 ()
+(def current-date-iso-8601 ()
   "Return the current date and time in ISO 8601 format."
   (local-time:format-timestring nil (local-time:now)))
 
-(defun* current-date-mimix ()
+(def current-date-mimix ()
   "Return the current date and time in Mimix format."
   (local-time:format-timestring
-    nil (local-time:now)
-    :format `((:year 4) #\- (:month 2) #\- (:day 2)
-              #\@
-              (:hour 2) #\- (:min 2) #\- (:sec 2)
-              #\.
-              (:usec 6) :gmt-offset-hhmm)))
+   nil (local-time:now)
+   :format `((:year 4) #\- (:month 2) #\- (:day 2)
+                       #\@
+                       (:hour 2) #\- (:min 2) #\- (:sec 2)
+                       #\.
+                       (:usec 6) :gmt-offset-hhmm)))
 
-(defun* debug-print (text &optional (stream *standard-output*))
+(def debug-print (text &optional (stream *standard-output*))
   "Display TEXT to STREAM prefixing it with the the current date and time."
   (when *debug-print*
     (format stream "[~A] ~A~%" (current-date-mimix) text)
     (force-output stream)))
 
-(defun* format-parens (&rest args)
+(def format-parens (&rest args)
   "Return a string formatted for MSL."
   (fmt "(~{~A~^ ~})" args))
 
-(defun* clear-dump ()
+(def clear-dump ()
   "Call CLEAR and DUMP."
   (clear-universe)
   (dump-universe))
 
-(defmacro* with-fresh-universe ((&optional) &body body)
+(defm with-fresh-universe ((&optional) &body body)
   "Evaluate BODY in a separate universe."
   `(let ((streams/specials:*universe* (streams/classes:make-universe)))
      ,@body))
 
-(defun* uncomment (expr)
+(def uncomment (expr)
   "Return a new string from EXPR without the comment."
   (cl-ppcre:regex-replace-all " ?//.*[^)]" expr ""))
 
-(defun* path-exists-p (head)
+(def path-exists-p (head)
   "Return true if HEAD is a valid path.."
   (gethash* head (atom-table *universe*)))
 
-(defun* ensure-regex-path (path)
+(def ensure-regex-path (path)
   "Return a path with regex from PATH."
   (if (string= (last* path) "/")
       path
       (append path '("/"))))
 
-(defun* prefix-terms (prefix terms)
+(def prefix-terms (prefix terms)
   "Add PREFIX to the paths in TERMS."
   (when (termsp terms)
     (loop :for term :in terms
@@ -241,14 +242,14 @@ body contents of the parser function."
                        term
                      (cons (append prefix path) value)))))
 
-(defun* left-trim (string)
+(def left-trim (string)
   "Return a new string from STRING without the leading whitespace."
   (string-left-trim *whitespace* string))
 
-(defun* right-trim (string)
+(def right-trim (string)
   "Return a new string from STRING without the trailing whitespace."
   (string-right-trim *whitespace* string))
 
-(defun* trim (string)
+(def trim (string)
   "Return a new string from STRING without the leading and trailing whitespaces."
   (string-trim *whitespace* string))

@@ -51,57 +51,57 @@
   (when (maximum-file-size-p path)
     (purge-file path)))
 
-(defun* make-machine-log-path (machine date)
+(def make-machine-log-path (machine date)
   "Return a log file path using MACHINE. Optional parameter DATE is for specifying another date value."
   (make-log-file-path (cat machine #\. date)))
 
-(defun* make-log-path ()
+(def make-log-path ()
   "Return a new log path from the current date and time."
   (make-machine-log-path *machine* (current-date-mimix)))
 
 (defun alt-case-re (string)
   "Return a regular expression string for downcased and upcased members of string."
-  (labels ((fn (args acc)
-             (cond ((null args) acc)
-                   (t (fn (cdr args)
-                          (cat acc
-                               "["
-                               (char-downcase (car args))
-                               (char-upcase (car args))
-                               "]"))))))
-    (fn (loop :for char :across string :collect char) "")))
+  (flet* ((fn (args acc)
+              (cond ((null args) acc)
+                    (t (fn (cdr args)
+                           (cat acc
+                                "["
+                                (char-downcase (car args))
+                                (char-upcase (car args))
+                                "]"))))))
+         (fn (loop :for char :across string :collect char) "")))
 
-(defun* build-paths (directory)
+(def build-paths (directory)
   "Return a path with corrected string representations."
   (let ((files (uiop:directory-files directory)))
-    #+ccl (mapcar #'(lambda (entry)
-                      (uiop:ensure-pathname
-                       (cl-ppcre:regex-replace-all "\\\\" (uiop:native-namestring entry) "")))
+    #+ccl (mapcar #'(λ (entry)
+                       (uiop:ensure-pathname
+                        (cl-ppcre:regex-replace-all "\\\\" (uiop:native-namestring entry) "")))
                   files)
     #-(or ccl) files))
 
-(defun* filter-paths (machine files)
+(def filter-paths (machine files)
   "Return a filtered path for LOG-PATHS."
-  (remove-if-not #'(lambda (file)
-                     (let ((name (file-namestring file))
-                           (suffix (alt-case-re +log-file-suffix+)))
-                       (cl-ppcre:scan (cat "^" machine "\\."
-                                           +mimix-date-re+ "\\."
-                                           suffix "$")
-                                      name)))
+  (remove-if-not #'(λ (file)
+                      (let ((name (file-namestring file))
+                            (suffix (alt-case-re +log-file-suffix+)))
+                        (cl-ppcre:scan (cat "^" machine "\\."
+                                            +mimix-date-re+ "\\."
+                                            suffix "$")
+                                       name)))
                  files))
 
-(defun* log-paths (&key (directory *log-directory*) (machine *machine*) sort)
+(def log-paths (&key (directory *log-directory*) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (build-paths directory))
          (entries (filter-paths machine files)))
     (if sort
-        (mapcar #'(lambda (path)
-                    (uiop:merge-pathnames* *log-directory* path))
+        (mapcar #'(λ (path)
+                     (uiop:merge-pathnames* *log-directory* path))
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(defun* log-path (&key (directory *log-directory*) (machine *machine*))
+(def log-path (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (last* (log-paths :directory directory :machine machine :sort t)))
 
@@ -109,7 +109,7 @@
   "Update the log date on UNIVERSE to the current one."
   (setf (log-date universe) (current-date-mimix)))
 
-(defun* write-log (value)
+(def write-log (value)
   "Write VALUE to the computed log file."
   (flet ((fn (path)
            (ensure-file-exists path)
@@ -120,11 +120,11 @@
              (fn (make-machine-log-path *machine* (log-date *universe*))))
             (t (fn (log-path)))))))
 
-(defun* ensure-log-directory-exists ()
+(def ensure-log-directory-exists ()
   "Create the log directory if it doesn’t exist, yet."
   (uiop:ensure-all-directories-exist (list *log-directory*)))
 
-(defun* ensure-log-file-exists ()
+(def ensure-log-file-exists ()
   "Create a base log file if none exists."
   (ensure-log-directory-exists)
   (let ((paths (log-paths))
