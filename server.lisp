@@ -51,7 +51,7 @@
 
 (defun post (wire data)
   "Send DATA to WIRE if it contains valid information."
-  (when (and wire data)
+  (when (∧ wire data)
     (send wire data)))
 
 (def connection-headers (connection)
@@ -114,9 +114,9 @@
   "Stop the clack server SERVER."
   (clack:stop server))
 
-(defm define-runner (name port open-handler
-                          message-handler close-handler
-                          error-handler)
+(defm def-runner (name port open-handler
+                       message-handler close-handler
+                       error-handler)
   "Define functions for executing server operations."
   (declare (ignorable form))
   (flet ((make-name (&rest args)
@@ -154,7 +154,7 @@
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(define-runner "ADMIN" 60500
+(def-runner "ADMIN" 60500
   (λ ()
     (handle-open server))
   (λ (message)
@@ -173,7 +173,7 @@
   (λ (error)
     (debug-print (fmt "Got an error: ~A" error))))
 
-(define-runner "MSL" 60000
+(def-runner "MSL" 60000
   (λ ()
     (handle-open server))
   (λ (message)

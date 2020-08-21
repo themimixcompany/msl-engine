@@ -75,10 +75,13 @@
 (defun read-location (path set)
   "Return the value specified by PATH in SET."
   (flet* ((fn (path value)
-            (cond ((∨ (and (null path) (atom value) (stringp value))
+            (cond ((∨ (∧ (null path)
+                         (atom value)
+                         (stringp value))
                       (null path))
                    value)
-                  ((and path (consp value))
+                  ((∧ path
+                      (consp value))
                    (fn (cdr path) (assoc-value (car path) value)))
                   (t nil))))
     (fn (uiop:ensure-list path) set)))

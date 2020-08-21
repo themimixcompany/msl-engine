@@ -38,35 +38,35 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser ?blackspace ()
+  (def-parser ?blackspace ()
     "Match zero or more whitespace character input."
     (?seq (%any (maxpc.char:?whitespace))))
 
-  (define-parser =blackspace ()
+  (def-parser =blackspace ()
     "Match zero or more whitespace character input."
     (=subseq (%any (maxpc.char:?whitespace))))
 
-  (define-parser ?whitespace ()
+  (def-parser ?whitespace ()
     "Match one or more whitespace character input."
     (?seq (%some (maxpc.char:?whitespace))))
 
-  (define-parser =whitespace ()
+  (def-parser =whitespace ()
     "Match one or more whitespace character input."
     (=subseq (%some (maxpc.char:?whitespace))))
 
-  (define-parser ?hexp ()
+  (def-parser ?hexp ()
     "Match a single hexadecimal character input."
     (?satisfies 'hex-char-p))
 
-  (define-parser ?untrue ()
+  (def-parser ?untrue ()
     "Match falsehood."
     (?satisfies 'false))
 
-  (define-parser =sha256 ()
+  (def-parser =sha256 ()
     "Match and return a SHA-256 string."
     (=subseq (?seq (?satisfies 'length-64-p (=subseq (%some 'hexp))))))
 
-  (define-parser =key ()
+  (def-parser =key ()
     "Match and return a valid MSL key."
     (=subseq (?seq (%some (?satisfies 'alphanumericp))
                    (%any (?seq (%maybe (?eq #\-))
@@ -77,35 +77,35 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =@-namespace ()
+  (def-parser =@-namespace ()
     "Match and return the @ ns."
     (=subseq (?eq #\@)))
 
-  (define-parser =grouping-namespace ()
+  (def-parser =grouping-namespace ()
     "Match and return m w s v ns."
     (=subseq (?satisfies (λ (c) (member c '(#\m #\w #\s #\v))))))
 
-  (define-parser =regex-namespace ()
+  (def-parser =regex-namespace ()
     "Match and return the / ns."
     (=subseq (?eq #\/)))
 
-  (define-parser =prelude-namespace ()
+  (def-parser =prelude-namespace ()
     "Match and return the msl ns."
     (=subseq (maxpc.char:?string "msl")))
 
-  (define-parser =metadata-namespace ()
+  (def-parser =metadata-namespace ()
     "Match and return the : ns."
     (=subseq (?eq #\:)))
 
-  (define-parser =c-namespace ()
+  (def-parser =c-namespace ()
     "Match and return the c ns."
     (=subseq (?eq #\c)))
 
-  (define-parser =datatype-namespace ()
+  (def-parser =datatype-namespace ()
     "Match and return the d ns."
     (=subseq (?eq #\d)))
 
-  (define-parser =format-namespace ()
+  (def-parser =format-namespace ()
     "Match and return the f ns."
     (=subseq (?eq #\f))))
 
@@ -115,7 +115,7 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =@-sequence ()
+  (def-parser =@-sequence ()
     "Match and return the key sequence for an @."
     (=list (=destructure
             (ns _)
@@ -123,7 +123,7 @@
                    (%maybe (?whitespace))))
            (=key)))
 
-  (define-parser =grouping-sequence ()
+  (def-parser =grouping-sequence ()
     "Match and return the key sequence for an atom."
     (=list (=destructure
             (ns _)
@@ -131,7 +131,7 @@
                    (?whitespace)))
            (=key)))
 
-  (define-parser =c-sequence ()
+  (def-parser =c-sequence ()
     "Match and return the key sequence for canon."
     (=list (=destructure
             (ns _)
@@ -139,7 +139,7 @@
                    (?whitespace)))
            (=key)))
 
-  (define-parser =prelude-sequence ()
+  (def-parser =prelude-sequence ()
     "Match and return the key sequence for a prelude."
     (=list (=destructure
             (ns _)
@@ -147,7 +147,7 @@
                    (?whitespace)))
            (=key)))
 
-  (define-parser =metadata-sequence ()
+  (def-parser =metadata-sequence ()
     "Match and return key sequence for : ns, without a leading whitespace"
     (=destructure
      (_ ns key)
@@ -156,7 +156,7 @@
             (=key))
      (list ns key)))
 
-  (define-parser =datatype-sequence ()
+  (def-parser =datatype-sequence ()
     "Match and return key sequence for d."
     (=destructure
      (atom _ key)
@@ -165,7 +165,7 @@
             (=key))
      (list atom key)))
 
-  (define-parser =format-sequence ()
+  (def-parser =format-sequence ()
     "Match and return key sequence for f."
     (=destructure
      (atom _ key)
@@ -180,23 +180,23 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser ?left-parenthesis ()
+  (def-parser ?left-parenthesis ()
     "Match a left parenthesis."
     (?eq #\left_parenthesis))
 
-  (define-parser ?right-parenthesis ()
+  (def-parser ?right-parenthesis ()
     "Match a right parenthesis."
     (?eq #\right_parenthesis))
 
-  (define-parser ?expression-starter ()
+  (def-parser ?expression-starter ()
     "Match the end of an expression."
     (?seq (?left-parenthesis)))
 
-  (define-parser ?expression-terminator ()
+  (def-parser ?expression-terminator ()
     "Match the end of an expression."
     (?seq (?right-parenthesis)))
 
-  (define-parser ?value-terminator ()
+  (def-parser ?value-terminator ()
     "Match the end of a value."
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
@@ -226,11 +226,11 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =filespec ()
+  (def-parser =filespec ()
     "Match and return a URI filespec or URL."
     (=subseq (%some (?satisfies 'alphanumericp))))
 
-  (define-parser =hash ()
+  (def-parser =hash ()
     "Match and return a hash value."
     (=destructure
      (_ ns hash)
@@ -239,11 +239,11 @@
             (=sha256))
      (list (list ns) (list hash))))
 
-  (define-parser =value ()
+  (def-parser =value ()
     "Match and return a raw value."
     (=subseq (%some (?not (?value-terminator)))))
 
-  (define-parser =comment ()
+  (def-parser =comment ()
     "Match a comment."
     (=destructure
      (_ _ comment)
@@ -257,19 +257,19 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =nested-@-form ()
+  (def-parser =nested-@-form ()
     "Match and return a nested atom."
     (%or '@-form))
 
-  (define-parser =nested-c-form ()
+  (def-parser =nested-c-form ()
     "Match and return a nested atom."
     (%or 'c-form))
 
-  (define-parser =nested-grouping-form ()
+  (def-parser =nested-grouping-form ()
     "Match and return a nested atom."
     (%or 'grouping-form))
 
-  (define-parser =nested-atom-form ()
+  (def-parser =nested-atom-form ()
     "Match and return a nested atom."
     (%or '@-form
          'c-form
@@ -281,26 +281,26 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =@-value ()
+  (def-parser =@-value ()
     "Match and return a valid value for @."
     (%or 'nested-@-form
          'nested-grouping-form
          (=value)))
 
-  (define-parser =c-value ()
+  (def-parser =c-value ()
     "Match and return a valid value for c."
     (%or 'nested-@-form
          'nested-c-form
          (=value)))
 
-  (define-parser =grouping-value ()
+  (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
     (%or 'nested-@-form
          'nested-c-form
          'nested-grouping-form
          (=value)))
 
-  (define-parser =regex-selector ()
+  (def-parser =regex-selector ()
     "Match and return the key sequence for /."
     (=destructure
      (regex-list)
@@ -317,7 +317,7 @@
      (when regex-list
        (list (list "/") regex-list nil nil nil nil))))
 
-  (define-parser =bracketed-transform-selector ()
+  (def-parser =bracketed-transform-selector ()
     "Match and return the key sequence for []."
     (=destructure
      (transform-list)
@@ -336,23 +336,23 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (define-parser =atom-mods-1 ()
+  (def-parser =atom-mods-1 ()
     "Match and return key sequence for the the /, and [] nss."
     (%or 'regex-selector
          'bracketed-transform-selector))
 
-  (define-parser =atom-mods-2 ()
+  (def-parser =atom-mods-2 ()
     "Match and return key sequence for the d, and f nss."
     (%or 'datatype-form
          'format-form))
 
-  (define-parser =format-mods ()
+  (def-parser =format-mods ()
     "Match and return key sequence for the /, d, and f nss."
     (%or 'regex-selector
          'datatype-form
          'format-form))
 
-  (define-parser =datatype-mods ()
+  (def-parser =datatype-mods ()
     "Match and return key sequence for the / ns."
     (%or 'regex-selector)))
 
@@ -494,13 +494,13 @@
     (list (list atom-sequence nil)
           (list (append atom-sequence metadata) nil))))
 
-(defmacro define-parser-form (name sequence value)
+(defmacro def-parser-form (name sequence value)
   "Define a macro for defining parsers."
   (macrolet ((~@-metadata ()
                `(if (equal name '=@-form)
                     '(+@-metadata)
                     '(?untrue))))
-    `(define-parser ,name ()
+    `(def-parser ,name ()
        (let ((%atom-value)
              (%atom-sequence)
              (%meta-sequence))
@@ -522,14 +522,14 @@
                       (value (reduce-append head mods meta hash)))
                  value)))))))
 
-(define-parser-form =@-form (=@-sequence) (=@-value))
-(define-parser-form =c-form (=c-sequence) (=c-value))
-(define-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
-(define-parser-form =prelude-form (=prelude-sequence) (=value))
-(define-parser-form =format-form (=format-sequence) (=value))
-(define-parser-form =datatype-form (=datatype-sequence) (=value))
+(def-parser-form =@-form (=@-sequence) (=@-value))
+(def-parser-form =c-form (=c-sequence) (=c-value))
+(def-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
+(def-parser-form =prelude-form (=prelude-sequence) (=value))
+(def-parser-form =format-form (=format-sequence) (=value))
+(def-parser-form =datatype-form (=datatype-sequence) (=value))
 
-(define-parser =expression ()
+(def-parser =expression ()
   "Match and return an MSL expression."
   (%or (=@-form)
        (=c-form)

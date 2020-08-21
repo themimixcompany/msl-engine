@@ -94,7 +94,7 @@
   `(progn (incf (,accessor ,universe))
           (,accessor ,universe)))
 
-(defmacro define-updaters (&rest nss)
+(defmacro def-updaters (&rest nss)
   "Define functions for updating the ns counters in the universe."
   (flet ((make-name (&rest args)
            (apply #'hyphenate-intern nil args)))
@@ -104,9 +104,9 @@
                :for cname = (make-name ns "counter")
                :collect `(defun ,fname (universe)
                            (update-counter universe ,cname))))))
-(define-updaters atom sub-atom)
+(def-updaters atom sub-atom)
 
-(defmacro define-maker (class &key allocate)
+(defmacro def-maker (class &key allocate)
   "Define functions for MX classes. CLASS is the name of MX class to be
 instantiated. ALLOCATE is a boolean whether to allocate the instance on the universe."
   (flet ((make-name (&rest args)
@@ -150,13 +150,13 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
          (export ',maker-name)
          (export ',builder-name)))))
 
-(defmacro define-makers (specs)
-  "Define MX structure makers and helpers with DEFINE-MAKER."
+(defmacro def-makers (specs)
+  "Define MX structure makers and helpers with DEF-MAKER."
   `(progn ,@(loop :for spec :in specs :collect
                      (destructuring-bind (name &optional allocate)
                          spec
-                       `(define-maker ,name :allocate ,allocate)))))
-(define-makers ((atom t) (sub-atom t)))
+                       `(def-maker ,name :allocate ,allocate)))))
+(def-makers ((atom t) (sub-atom t)))
 
 (def make-universe ()
   "Return an instance of the universe class."
