@@ -6,7 +6,7 @@
 
 (in-package #:streams/builder)
 
-(defun* build (&optional (root *default-pathname-defaults*))
+(def build (&optional (root *default-pathname-defaults*))
   "Build the executable of streams for different platforms."
   (with-muffled-debugger ()
     (let ((arch (string (uiop:architecture))))
@@ -28,6 +28,6 @@
           (ccl:save-application path :toplevel-function #'streams/server:serve
                                      :prepend-kernel t)
           #+clisp
-          (ext:saveinitmem path :init-function #'(lambda () (funcall 'streams/server:serve) (ext:exit))
+          (ext:saveinitmem path :init-function #'(λ () (funcall 'streams/server:serve) (ext:exit))
                                 :executable t
                                 :norc t))))))

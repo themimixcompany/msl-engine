@@ -19,14 +19,14 @@
 ;; assignments
 ;;--------------------------------------------------------------------------------------------------
 
-(defparameter* *admin-commands*
-  '((("@" "VERSION")     . admin-version)
-    (("@" "VER")         . admin-version)
-    (("@" "CLEAR")       . admin-clear)
-    (("@" "RESTORE-LOG") . admin-restore-log)
-    (("@" "RESTORE")     . admin-restore-log)
-    (("@" "ROTATE-LOG")  . admin-rotate-log)
-    (("@" "ROTATE")      . admin-rotate-log))
+(defp *admin-commands*
+    '((("@" "VERSION")     . admin-version)
+      (("@" "VER")         . admin-version)
+      (("@" "CLEAR")       . admin-clear)
+      (("@" "RESTORE-LOG") . admin-restore-log)
+      (("@" "RESTORE")     . admin-restore-log)
+      (("@" "ROTATE-LOG")  . admin-rotate-log)
+      (("@" "ROTATE")      . admin-rotate-log))
   "The alist of paths and command symbols.")
 
 
@@ -64,7 +64,7 @@
               (value (assoc-value (head expr) *admin-commands* :test #'equalp)))
     value))
 
-(defun* admin-dispatch (expr)
+(def admin-dispatch (expr)
   "Dispatch an admin command."
   (let* ((command (admin-command expr))
          (value (when command (funcall command))))
