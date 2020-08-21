@@ -62,33 +62,33 @@
 (defun alt-case-re (string)
   "Return a regular expression string for downcased and upcased members of string."
   (flet* ((fn (args acc)
-              (cond ((null args) acc)
-                    (t (fn (cdr args)
-                           (cat acc
-                                "["
-                                (char-downcase (car args))
-                                (char-upcase (car args))
-                                "]"))))))
-         (fn (loop :for char :across string :collect char) "")))
+            (cond ((null args) acc)
+                  (t (fn (cdr args)
+                         (cat acc
+                              "["
+                              (char-downcase (car args))
+                              (char-upcase (car args))
+                              "]"))))))
+    (fn (loop :for char :across string :collect char) "")))
 
 (def build-paths (directory)
   "Return a path with corrected string representations."
   (let ((files (uiop:directory-files directory)))
-    #+ccl (mapcar #'(λ (entry)
-                       (uiop:ensure-pathname
-                        (cl-ppcre:regex-replace-all "\\\\" (uiop:native-namestring entry) "")))
+    #+ccl (mapcar (λ (entry)
+                    (uiop:ensure-pathname
+                     (cl-ppcre:regex-replace-all "\\\\" (uiop:native-namestring entry) "")))
                   files)
     #-(or ccl) files))
 
 (def filter-paths (machine files)
   "Return a filtered path for LOG-PATHS."
-  (remove-if-not #'(λ (file)
-                      (let ((name (file-namestring file))
-                            (suffix (alt-case-re +log-file-suffix+)))
-                        (cl-ppcre:scan (cat "^" machine "\\."
-                                            +mimix-date-re+ "\\."
-                                            suffix "$")
-                                       name)))
+  (remove-if-not (λ (file)
+                   (let ((name (file-namestring file))
+                         (suffix (alt-case-re +log-file-suffix+)))
+                     (cl-ppcre:scan (cat "^" machine "\\."
+                                         +mimix-date-re+ "\\."
+                                         suffix "$")
+                                    name)))
                  files))
 
 (def log-paths (&key (directory *log-directory*) (machine *machine*) sort)
@@ -96,8 +96,8 @@
   (let* ((files (build-paths directory))
          (entries (filter-paths machine files)))
     (if sort
-        (mapcar #'(λ (path)
-                     (uiop:merge-pathnames* *log-directory* path))
+        (mapcar (λ (path)
+                  (uiop:merge-pathnames* *log-directory* path))
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 

@@ -129,13 +129,13 @@
 (def clear-path (table path)
   "Remove the specified entry in TABLE that matches PATH."
   (flet* ((fn (tab location)
-              (cond ((singlep location)
-                     (remhash (single location) tab)
-                     table)
-                    ((hash-table-p (gethash (car location) tab))
-                     (fn (gethash (car location) tab) (cdr location)))
-                    (t nil))))
-         (fn table path)))
+            (cond ((singlep location)
+                   (remhash (single location) tab)
+                   table)
+                  ((hash-table-p (gethash (car location) tab))
+                   (fn (gethash (car location) tab) (cdr location)))
+                  (t nil))))
+    (fn table path)))
 
 (defun clear-other (table key)
   "Remove entries in TABLE that do not match KEY."
@@ -147,15 +147,15 @@
 (def filter-path (table path)
   "Remove all other table entries in SOURCE that do not match PATH."
   (flet* ((fn (tab location)
-              (cond ((∧ (singlep location)
-                        (hash-table-p (gethash (car location) tab)))
-                     (clear-other tab (car location))
-                     table)
-                    ((hash-table-p (gethash (car location) tab))
-                     (clear-other tab (car location))
-                     (fn (gethash (car location) tab) (cdr location)))
-                    (t nil))))
-         (fn table path)))
+            (cond ((∧ (singlep location)
+                      (hash-table-p (gethash (car location) tab)))
+                   (clear-other tab (car location))
+                   table)
+                  ((hash-table-p (gethash (car location) tab))
+                   (clear-other tab (car location))
+                   (fn (gethash (car location) tab) (cdr location)))
+                  (t nil))))
+    (fn table path)))
 
 (def termsp (form &optional (predicate #'nsp))
   "Return true if FORM is a valid MSL form."
@@ -177,7 +177,7 @@
 function; ARGS are the arguments passed to a parser—usually NIL; and BODY is the
 body contents of the parser function."
   (let ((fname (string name)))
-    (if (¬ (some #'(λ (char) (char= (elt fname 0) char))
+    (if (¬ (some (λ (char) (char= (elt fname 0) char))
                  '(#\= #\? #\%)))
         (error "The parser name must start with =, ?, or %.")
         `(progn

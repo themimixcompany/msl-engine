@@ -28,6 +28,6 @@
           (ccl:save-application path :toplevel-function #'streams/server:serve
                                      :prepend-kernel t)
           #+clisp
-          (ext:saveinitmem path :init-function #'(λ () (funcall 'streams/server:serve) (ext:exit))
+          (ext:saveinitmem path :init-function (λ () (funcall 'streams/server:serve) (ext:exit))
                                 :executable t
                                 :norc t))))))
