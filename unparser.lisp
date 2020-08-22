@@ -168,7 +168,7 @@
 
 (def head (expr)
   "Return the ns and key sequence from EXPR."
-  (when-let ((parse (read-parse expr)))
+  (when-let ((parse (read-expr expr)))
     (caar parse)))
 
 (def head-only-p (path)
@@ -337,7 +337,7 @@ expressions can be read from the store."
 (def sections (expr)
   "Return the original expressions from EXPR. EXPR must already be evaluated prior to calling this
 function."
-  (destructuring-bind (key &rest keys)
+  (destructuring-bind (&optional key &rest keys)
       (head expr)
     (when-let* ((table (atom-table *universe*))
                 (roots (roots table key keys))
@@ -352,43 +352,38 @@ function."
             :finally (let ((value (cons items (nthcdr limit stage))))
                        (return (post-sections value)))))))
 
-(def strip-heads (parse)
-  "Remove the heads from a parse."
-  (remove-if-not (λ (item)
-                   (length= item 2))
-                 (mapcar (λ (item)
-                           (strip-head (car item)))
-                         parse)))
+(def deconstruct (expr &key force)
+  "Return the full deconstruct of EXPR. If FORCE is true, dispatch EXPR unconditionally."
+  ;; note: this will fail to go if there are errors in EXPR
+  (flet* ((fn (args &optional acc)
+            (cond
+              ((null args)
+               (nreverse acc))
 
-(def deconstruct (expr)
-  "Return the full deconstuct of EXPR."
+              ((termsp (car args))
+               (fn (cdr args)
+                   (cons (mapcar #'fn (sections (car args)))
+                         acc)))
+
+              (t (fn (cdr args)
+                     (cons (car args)
+                           acc))))))
+    ;;(dispatch expr :log nil :force force)
+    (mapcar #'fn (sections expr))))
+
+(def deconstruct* (expr &key (force t))
+  "Return the full deconstruct of EXPR from a fresh universe. If FORCE is true, dispatch EXPR
+unconditionally."
   (with-fresh-universe ()
-    (flet* ((fn (args &optional acc)
-              (cond
-                ((null args)
-                 (nreverse acc))
+    (dispatch expr :log nil :force force)
+    (deconstruct expr :force force)))
 
-                ((termsp (car args))
-                 (fn (cdr args)
-                     (cons (mapcar #'fn (sections (car args)))
-                           acc)))
-
-                (t (fn (cdr args)
-                       (cons (car args)
-                             acc))))))
-      (dispatch expr :log nil :force t)
-      (mapcar #'fn (sections expr)))))
-
-(def active-paths (deconstruct)
-  "Return only sections from DECONSTRUCT that contain valid value information."
-  (if (∧ (head-only-p (car deconstruct))
-         (length> deconstruct 1))
-      (cdr deconstruct)
-      deconstruct))
-
-(def deconstruct* (expr)
-  "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
-  (active-paths (deconstruct expr)))
+(def active-paths (sections)
+  "Return only sections from SECTIONS that contain valid value information."
+  (if (∧ (head-only-p (car sections))
+         (length> sections 1))
+      (cdr sections)
+      sections))
 
 (defm def-checker (name)
   "Define a predicate for testing nss."
@@ -399,7 +394,6 @@ function."
            part
          (declare (ignore _))
          (,ns-name ns)))))
-
 (mapply def-checker @ atom sub metadata)
 
 (defm def-spacer (name)
@@ -414,7 +408,6 @@ function."
                          (t (fn (,fn-name list (car args) " ")
                                 (cdr args))))))
            (fn list indexes))))))
-
 (mapply def-spacer space-before space-after)
 
 (def trim-items (items)
@@ -476,7 +469,7 @@ non-value data."
 
               (t (fn (cdr args)
                      (cons (car args) acc))))))
-    (fn (deconstruct expr))))
+    (fn (deconstruct* expr))))
 
 (def reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
@@ -583,12 +576,15 @@ non-value data."
 
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
+
+  ;; note: when DISPATCH says no, bail out.
   (when dispatch (dispatch expr :log t :force nil))
+
   (let ((head (head expr)))
     (when (path-exists-p head)
-      (let* ((sections (sections expr))
-             (all-paths (deconstruct expr))
-             (active-paths (deconstruct* expr)))
+      (let* ((sections (deconstruct expr))
+             (all-paths (deconstruct* expr))
+             (active-paths (active-paths (deconstruct* expr))))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-sections sections active-paths))))))))
@@ -661,7 +657,7 @@ non-value data."
 
 (def requests (expr)
   "Return paths from EXPR that are valid requests."
-  (when-let ((parse (read-parse expr)))
+  (when-let ((parse (read-expr expr)))
     (flet ((fn (term)
              (∨ (∧ (length= (car term) 2)
                    (null* (cadr term)))

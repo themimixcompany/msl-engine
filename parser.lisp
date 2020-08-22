@@ -557,7 +557,7 @@
           :do (format t "~A.~4T~S~%" count term))
     parse))
 
-(def read-parse (value)
+(def read-expr (value)
   "Return the parse of VALUE."
   (if (consp value)
       value

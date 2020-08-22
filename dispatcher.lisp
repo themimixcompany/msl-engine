@@ -210,22 +210,27 @@
                  path)
           value)))
 
-(defun %dispatch (term &key log force)
-  "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (let ((term (upcase-key term)))
-    (if (∧ (empty-term-p term)
-           (¬ force))
-        nil
-        (destructuring-bind (path &optional &rest params)
-            term
-          (let* ((atom-tab (atom-table *universe*))
-                 (sub-atom-tab (sub-atom-table *universe*))
-                 (values (write-term (list path params) atom-tab sub-atom-tab)))
-            (when (consp values)
-              (loop :for value :in values
-                    :when (termsp value)
-                    :do (dispatch value :log log :force force)))
-            values)))))
+(def dispatch-term (term &key force log)
+  "Evaluate TERM is the active universe."
+  (block nil
+    (let ((term (upcase-key term)))
+      (cond
+        ((∧ (empty-term-p term)
+            (¬ force))
+         (dbg term)
+         (return nil))
+        (t (destructuring-bind (path &optional &rest params)
+               term
+             (let* ((atom-tab (atom-table *universe*))
+                    (sub-atom-tab (sub-atom-table *universe*))
+                    (values (write-term (list path params) atom-tab sub-atom-tab)))
+               (when (consp values)
+                 (loop :for value :in values
+                       :do (when (termsp value)
+                             (let ((dispatch-value (dispatch value :log log :force force)))
+                               (when (null* dispatch-value)
+                                 (return nil)))))
+                 values))))))))
 
 (defun term-has-value-p (term)
   "Return true if TERM has a value."
@@ -249,16 +254,25 @@
                     :do (clear-path (atom-table *universe*) path)))
     terms))
 
-(def dispatch (expr &key (log t) force)
+(def dispatch (expr &key force log)
   "Evaluate EXPR as an MSL expression and store the resulting object in the universe."
-  (when-let* ((parse (read-parse expr))
-              (terms (pre-process-terms parse))
-              (value (mapcar (λ (term)
-                               (%dispatch term :log log :force force))
-                             terms)))
-    (when (∧ log (¬ (null* value)) (stringp expr))
-      (write-log expr))
-    value))
+  (block nil
+    (when-let* ((parse (read-expr expr))
+                (terms (pre-process-terms parse)))
+      (let ((value (mapcar (λ (term)
+                             (let ((v (dispatch-term term :log log :force force)))
+                               (if (null* v)
+                                   (progn
+                                     (dbg "dispatch-term is nil")
+                                     (return nil))
+                                   v)))
+                           terms)))
+        (dbg value)
+        (when (null* value)
+          (return nil))
+        (when (∧ log (¬ (null* value)) (stringp expr))
+          (write-log expr))
+        value))))
 
 (def dispatch* (&rest args)
   "Apply DISPATCH without logging."
