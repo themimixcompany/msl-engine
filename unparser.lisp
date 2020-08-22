@@ -334,10 +334,11 @@ expressions can be read from the store."
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
 
-(def sections (head &optional (post t))
-  "Return the original expressions under HEAD."
+(def sections (expr)
+  "Return the original expressions from EXPR. EXPR must already be evaluated prior to calling this
+function."
   (destructuring-bind (key &rest keys)
-      head
+      (head expr)
     (when-let* ((table (atom-table *universe*))
                 (roots (roots table key keys))
                 (gird (gird table (car roots)))
@@ -349,9 +350,7 @@ expressions can be read from the store."
             :for count :from 1 :to limit
             :collect item :into items
             :finally (let ((value (cons items (nthcdr limit stage))))
-                       (return (if post
-                                   (post-sections value)
-                                   value)))))))
+                       (return (post-sections value)))))))
 
 (def strip-heads (parse)
   "Remove the heads from a parse."
@@ -371,14 +370,14 @@ expressions can be read from the store."
 
                 ((termsp (car args))
                  (fn (cdr args)
-                     (cons (mapcar #'fn (sections (head (car args))))
+                     (cons (mapcar #'fn (sections (car args)))
                            acc)))
 
                 (t (fn (cdr args)
                        (cons (car args)
                              acc))))))
       (dispatch expr :log nil :force t)
-      (mapcar #'fn (sections (head expr))))))
+      (mapcar #'fn (sections expr)))))
 
 (def active-paths (deconstruct)
   "Return only sections from DECONSTRUCT that contain valid value information."
@@ -587,7 +586,7 @@ non-value data."
   (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (path-exists-p head)
-      (let* ((sections (sections head))
+      (let* ((sections (sections expr))
              (all-paths (deconstruct expr))
              (active-paths (deconstruct* expr)))
         (cond ((head-only-paths-p all-paths)
