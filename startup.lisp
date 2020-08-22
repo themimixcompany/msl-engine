@@ -25,11 +25,11 @@
   (ensure-log-file-exists)
   (restore-log))
 
-(defun main ()
+(defun load-module ()
   "Run the module."
   (initialize-universe)
   (print-banner)
   (when *restore-log*
     (restore-log-data)))
 
-(main)
+(load-module)

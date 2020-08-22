@@ -39,7 +39,7 @@
   (∧ (consp path)
      (mem (car path) (uiop:ensure-list keys))))
 
-(defmacro def-key-predicate (name items)
+(defm def-key-predicate (name items)
   "Define a key member predicate."
   `(def ,name (path)
      (key-member-p ',items path)))
@@ -108,7 +108,8 @@
     (let ((value (mapcar #'fn items)))
       value)))
 
-(def stage (list)
+;;; note: examine this function
+(def stage (sections)
   "Return a new list with preprocessed elements for wrapping and joining."
   (flet* ((fn (args &optional acc)
             (cond
@@ -126,7 +127,7 @@
 
               (t (fn (cdr args)
                      (cons (car args) acc))))))
-    (fn list)))
+    (fn sections)))
 
 (def normalize (list)
   "Return special merging on items of LIST."
@@ -390,7 +391,7 @@ expressions can be read from the store."
   "Return the active sections of EXPR from a new universe, as with DECONSTRUCT."
   (active-paths (deconstruct expr)))
 
-(defmacro def-checker (name)
+(defm def-checker (name)
   "Define a predicate for testing nss."
   (let* ((part-name (hyphenate-intern nil name "part-p"))
          (ns-name (hyphenate-intern nil name "ns-p")))
@@ -402,7 +403,7 @@ expressions can be read from the store."
 
 (mapply def-checker @ atom sub metadata)
 
-(defmacro def-spacer (name)
+(defm def-spacer (name)
   "Define a helper for inserting spaces."
   (destructuring-bind (_ position)
       (uiop:split-string (string name) :separator '(#\-))
@@ -572,13 +573,13 @@ non-value data."
              (pad-sections (pad-sections wrap))
              (flatten-one (flatten-one pad-sections))
              (list-string (list-string* flatten-one)))
-        ;; (dbg stage)
-        ;; (dbg merge-sections)
-        ;; (dbg wrap)
-        ;; (dbg pad-sections)
-        ;; (dbg flatten-one)
-        ;; (dbg list-string)
-        list-string
+        (dbg stage)
+        (dbg merge-sections)
+        (dbg wrap)
+        (dbg pad-sections)
+        (dbg flatten-one)
+        (dbg list-string)
+        ;;list-string
         ))))
 
 (def recall-expr (expr &key (dispatch t))
@@ -586,9 +587,9 @@ non-value data."
   (when dispatch (dispatch expr :log t :force nil))
   (let ((head (head expr)))
     (when (path-exists-p head)
-      (let* ((all-paths (deconstruct expr))
-             (active-paths (deconstruct* expr))
-             (sections (sections head)))
+      (let* ((sections (sections head))
+             (all-paths (deconstruct expr))
+             (active-paths (deconstruct* expr)))
         (cond ((head-only-paths-p all-paths)
                (distill head (reduce-sections sections)))
               (t (distill head (reduce-sections sections active-paths))))))))
@@ -763,13 +764,13 @@ non-value data."
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (when dispatch (dispatch expr :log t :force t))
-  (let* ((value (trim (%recall-value expr)))
-         (source-path (car (requests expr)))
-         (regex-path (ensure-regex-path source-path))
-         (regex-sets (regex-path-regexes regex-path)))
-    (cond (regex-sets (apply-regex-sets regex-sets value))
-          ((termsp value) (recall-value (terms-base value)))
-          (t value))))
+  (when-let ((value (%recall-value expr)))
+    (let* ((source-path (car (requests expr)))
+           (regex-path (ensure-regex-path source-path))
+           (regex-sets (regex-path-regexes regex-path)))
+      (cond (regex-sets (apply-regex-sets regex-sets value))
+            ((termsp value) (recall-value (terms-base value)))
+            (t value)))))
 
 (def recall-value* (expr)
   "Apply RECALL-VALUE without dispatching."
