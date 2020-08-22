@@ -217,7 +217,6 @@
       (cond
         ((∧ (empty-term-p term)
             (¬ force))
-         (dbg term)
          (return nil))
         (t (destructuring-bind (path &optional &rest params)
                term
@@ -259,15 +258,17 @@
   (block nil
     (when-let* ((parse (read-expr expr))
                 (terms (pre-process-terms parse)))
+      ;; note: resolve TERMS here, with RECALL-VALUE
+      ;; note: if one of the TERMS is NIL, bail out!
+      (dbg terms)
+      ;; note: find a way to call RECALL-VALUE from here
+
       (let ((value (mapcar (λ (term)
                              (let ((v (dispatch-term term :log log :force force)))
                                (if (null* v)
-                                   (progn
-                                     (dbg "dispatch-term is nil")
-                                     (return nil))
+                                   (return nil)
                                    v)))
                            terms)))
-        (dbg value)
         (when (null* value)
           (return nil))
         (when (∧ log (¬ (null* value)) (stringp expr))
