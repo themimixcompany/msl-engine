@@ -224,9 +224,11 @@ body contents of the parser function."
   "Return a new string from EXPR without the comment."
   (cl-ppcre:regex-replace-all " ?//.*[^)]" expr ""))
 
-(def path-exists-p (head)
-  "Return true if HEAD is a valid path.."
-  (gethash* head (atom-table *universe*)))
+(def path-exists-p (path)
+  "Return true if PATH exists in the main store."
+  (multiple-value-bind (value existsp)
+      (gethash* path (atom-table *universe*))
+    (∧ value existsp)))
 
 (def ensure-regex-path (path)
   "Return a path with regex from PATH."

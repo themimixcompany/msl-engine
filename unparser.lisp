@@ -565,14 +565,13 @@ non-value data."
              (pad-sections (pad-sections wrap))
              (flatten-one (flatten-one pad-sections))
              (list-string (list-string* flatten-one)))
-        (dbg stage)
-        (dbg merge-sections)
-        (dbg wrap)
-        (dbg pad-sections)
-        (dbg flatten-one)
-        (dbg list-string)
-        ;;list-string
-        ))))
+        ;; (dbg stage
+        ;;      merge-sections
+        ;;      wrap
+        ;;      pad-sections
+        ;;      flatten-one
+        ;;      list-string)
+        list-string))))
 
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
