@@ -52,7 +52,7 @@
   (∨ (null params)
      (every #'null params)))
 
-(defun empty-term-p (term)
+(def empty-term-p (term)
   "Return true if TERM is considered empty."
   (destructuring-bind (path &optional &rest params)
       term
@@ -62,6 +62,18 @@
 (defun find-table (table)
   "Return the table from the universe identified by TABLE."
   (funcall table *universe*))
+
+(def head-term (terms)
+  "Return the head term of TERMS."
+  (when (termsp terms)
+    (car terms)))
+
+(def term-value (term)
+  "Return the value of TERM."
+  (destructuring-bind (path &rest value)
+      term
+    (declare (ignore path))
+    value))
 
 (def head-term-p (term)
   "Return true if TERM is the main term."
@@ -86,6 +98,44 @@
     (declare (ignore value))
     (∧ (length= path 3)
        (string= (last* path) "/"))))
+
+(def atom-exists-p (terms)
+  "Return true if the main term in TERMS exists in the store."
+  (when (termsp terms)
+    (let* ((head (head-term terms))
+           (head-term (car head)))
+      (path-exists-p head-term))))
+
+(def value-term-p (term)
+  "Return true if TERM is a term for holding values. This predicate ignores whether the path exists
+in the store or not."
+  (∨ (head-term-p term)
+     (metadata-term-p term)))
+
+(def recallp (terms)
+  "Return true if TERMS is a pure recall."
+  (when terms
+    (let ((items (loop :for term :in terms
+                       :when (value-term-p term)
+                       :collect term)))
+      (every (λ (item)
+               (null* (term-value item)))
+             items))))
+
+(def paths-exist-p (terms)
+  "Return true if all paths in TERMS exist."
+  (every (λ (term)
+           (destructuring-bind (path &rest value)
+               term
+             (declare (ignore value))
+             (path-exists-p path)))
+         terms))
+
+(def valid-recall-p (terms)
+  "Return true if TERMS is a valid recall."
+  (∧ (recallp terms)
+     (atom-exists-p terms)
+     (paths-exist-p terms)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -258,16 +308,9 @@
   (block nil
     (when-let* ((parse (read-expr expr))
                 (terms (pre-process-terms parse)))
-      ;; note: resolve TERMS here, with RECALL-VALUE
-      ;; note: if one of the TERMS is NIL, bail out!
       (dbg terms)
-      ;; note: find a way to call RECALL-VALUE from here
-
       (let ((value (mapcar (λ (term)
-                             (let ((v (dispatch-term term :log log :force force)))
-                               (if (null* v)
-                                   (return nil)
-                                   v)))
+                             (dispatch-term term :log log :force force))
                            terms)))
         (when (null* value)
           (return nil))
