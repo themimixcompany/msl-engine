@@ -575,18 +575,19 @@ non-value data."
 
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
+  (block nil
+    ;; (dbg (read-expr expr))
+    ;; note: when DISPATCH says no, bail out.
+    (when dispatch (dispatch expr :log t :force nil))
 
-  ;; note: when DISPATCH says no, bail out.
-  (when dispatch (dispatch expr :log t :force nil))
-
-  (let ((head (head expr)))
-    (when (path-exists-p head)
-      (let* ((sections (deconstruct expr))
-             (all-paths (deconstruct* expr))
-             (active-paths (active-paths (deconstruct* expr))))
-        (cond ((head-only-paths-p all-paths)
-               (distill head (reduce-sections sections)))
-              (t (distill head (reduce-sections sections active-paths))))))))
+    (let ((head (head expr)))
+      (when (path-exists-p head)
+        (let* ((sections (deconstruct expr))
+               (all-paths (deconstruct* expr))
+               (active-paths (active-paths (deconstruct* expr))))
+          (cond ((head-only-paths-p all-paths)
+                 (distill head (reduce-sections sections)))
+                (t (distill head (reduce-sections sections active-paths)))))))))
 
 (def recall-expr* (expr)
   "Apply RECALL-EXPR without dispatching."
@@ -757,14 +758,16 @@ non-value data."
 
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  (when dispatch (dispatch expr :log t :force t))
-  (when-let ((value (%recall-value expr)))
-    (let* ((source-path (car (requests expr)))
-           (regex-path (ensure-regex-path source-path))
-           (regex-sets (regex-path-regexes regex-path)))
-      (cond (regex-sets (apply-regex-sets regex-sets value))
-            ((termsp value) (recall-value (terms-base value)))
-            (t value)))))
+  (block nil
+    ;; (dbg (read-expr expr))
+    (when dispatch (dispatch expr :log t :force t))
+    (when-let ((value (%recall-value expr)))
+      (let* ((source-path (car (requests expr)))
+             (regex-path (ensure-regex-path source-path))
+             (regex-sets (regex-path-regexes regex-path)))
+        (cond (regex-sets (apply-regex-sets regex-sets value))
+              ((termsp value) (recall-value (terms-base value)))
+              (t value))))))
 
 (def recall-value* (expr)
   "Apply RECALL-VALUE without dispatching."

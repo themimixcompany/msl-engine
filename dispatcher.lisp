@@ -131,6 +131,7 @@ in the store or not."
              (path-exists-p path)))
          terms))
 
+;;; note: this is a key function
 (def valid-recall-p (terms)
   "Return true if TERMS is a valid recall."
   (∧ (recallp terms)
@@ -308,7 +309,6 @@ in the store or not."
   (block nil
     (when-let* ((parse (read-expr expr))
                 (terms (pre-process-terms parse)))
-      (dbg terms)
       (let ((value (mapcar (λ (term)
                              (dispatch-term term :log log :force force))
                            terms)))
