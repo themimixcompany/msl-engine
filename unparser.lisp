@@ -139,19 +139,6 @@
                   (t value))))
     (flatten-one (mapcar #'fn list))))
 
-(defun make-regex (exprs)
-  "Return a list containing raw regex expressions from VALUE."
-  (flet ((fn (expr)
-           (destructuring-bind (regex &optional env val)
-               expr
-             (cat "/" regex "/" (or env "")
-                  (if val (cat " " val) "")))))
-    (mapcar #'fn exprs)))
-
-(defun make-transform (exprs)
-  (flet ((fn (expr) (cat "[" expr "]")))
-    (mapcar #'fn exprs)))
-
 (defun accumulate (keys acc &optional data)
   "Return an accumulator value suitable for CONSTRUCT."
   (flet ((fn (k a d)
@@ -576,8 +563,8 @@ non-value data."
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (block nil
-    ;; (dbg (read-expr expr))
-    ;; note: when DISPATCH says no, bail out.
+    (dbg (read-expr expr))
+
     (when dispatch (dispatch expr :log t :force nil))
 
     (let ((head (head expr)))
@@ -759,8 +746,10 @@ non-value data."
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (block nil
-    ;; (dbg (read-expr expr))
+    (dbg (read-expr expr))
+
     (when dispatch (dispatch expr :log t :force t))
+
     (when-let ((value (%recall-value expr)))
       (let* ((source-path (car (requests expr)))
              (regex-path (ensure-regex-path source-path))

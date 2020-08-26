@@ -255,3 +255,16 @@ body contents of the parser function."
 (def trim (string)
   "Return a new string from STRING without the leading and trailing whitespaces."
   (string-trim *whitespace* string))
+
+(def make-regex (exprs)
+  "Return a list containing raw regex expressions from VALUE."
+  (flet ((fn (expr)
+           (destructuring-bind (regex &optional env val)
+               expr
+             (cat "/" regex "/" (or env "")
+                  (if val (cat " " val) "")))))
+    (mapcar #'fn exprs)))
+
+(def make-transform (exprs)
+  (flet ((fn (expr) (cat "[" expr "]")))
+    (mapcar #'fn exprs)))

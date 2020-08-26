@@ -133,10 +133,28 @@ in the store or not."
 
 ;;; note: this is a key function
 (def valid-recall-p (terms)
-  "Return true if TERMS is a valid recall."
+  "Return true if TERMS is a valid recall from the store."
   (∧ (recallp terms)
      (atom-exists-p terms)
      (paths-exist-p terms)))
+
+(def metadata-terms (terms)
+  "Return all the metadata terms from TERMS."
+  (loop for term :in terms
+        :when (metadata-term-p term)
+        :collect term))
+
+;;; note: this is a key function
+(def valid-save-p (terms)
+  "Return true if TERMS is a valid save to the store."
+  (let ((head-value (term-value (head-term terms))))
+    (∨ (not (null* head-value))
+       (∧ (null* head-value)
+          (atom-exists-p terms)
+          (every (λ (term)
+                   (dbg term)
+                   (not (null* (term-value term))))
+                 (metadata-terms terms))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
