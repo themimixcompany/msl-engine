@@ -103,7 +103,7 @@
 
 (def log-path (&key (directory *log-directory*) (machine *machine*))
   "Return the most recent log path of MACHINE."
-  (last* (log-paths :directory directory :machine machine :sort t)))
+  (end (log-paths :directory directory :machine machine :sort t)))
 
 (defun update-log-date (universe)
   "Update the log date on UNIVERSE to the current one."

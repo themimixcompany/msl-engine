@@ -38,6 +38,24 @@
                  #\@ #\! #\$ #\& #\' #\* #\+
                  #\, #\; #\% #\=))))
 
+(def pad-thing (value)
+  "Conditionally add a trailing space to VALUE."
+  (cond ((null value)
+         value)
+        ((∧ (stringp value)
+            (∨ (length= value 0)
+               (not (char= (end value) #\space))))
+         (cat value " "))
+        (t value)))
+
+(def pad-things (things)
+  "Add conditional padding to items in THINGS."
+  (mapcar #'pad-thing things))
+
+(def denull (value)
+  "Remove the null items from VALUE."
+  (remove-if #'null* value))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; test parsers
@@ -335,38 +353,7 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list (list "[]") transform-list nil nil nil nil))))
-
-  (def-parser =literal-regex-selector ()
-    "Match and return the literal key sequence for /."
-    (=destructure
-        (regex-list)
-        (=list (%some (=destructure
-                          (_ regex _ env _ value)
-                          (=list (=regex-namespace)
-                                 (=subseq (%some (?satisfies 'regex-char-p)))
-                                 (=regex-namespace)
-                                 (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
-                                 (?blackspace)
-                                 (%maybe (=value)))
-                        (list regex env value))))
-      (when regex-list
-        (let ((value (loop :for regex :in regex-list :collect (mapcar #'trim regex))))
-          (make-regex value)))))
-
-  (def-parser =literal-bracketed-transform-selector ()
-    "Match and return the literal key sequence for []."
-    (=destructure
-        (transform-list)
-        (=list (%some
-                (=destructure
-                    (_ url _ _)
-                    (=list (?eq #\[)
-                           (=filespec)
-                           (?eq #\])
-                           (?blackspace)))))
-      (when transform-list
-        (make-transform transform-list)))))
+        (list (list "[]") transform-list nil nil nil nil)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -567,8 +554,38 @@
 (def-parser-form =format-form (=format-sequence) (=value))
 (def-parser-form =datatype-form (=datatype-sequence) (=value))
 
+(def-parser =literal-regex-selector ()
+  "Match and return the literal key sequence for /."
+  (=destructure
+      (&rest regex-list)
+      (%some (=destructure
+                 (_ regex _ env _ value)
+                 (=list (=regex-namespace)
+                        (=subseq (%some (?satisfies 'regex-char-p)))
+                        (=regex-namespace)
+                        (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                        (?blackspace)
+                        (%maybe (=value)))
+               (list regex env value)))
+    (when regex-list
+      (reduce #'cat (pad-things (make-regex regex-list))))))
+
+(def-parser =literal-bracketed-transform-selector ()
+  "Match and return the literal key sequence for []."
+  (=destructure
+      (transform-list)
+      (=list (%some
+              (=destructure
+                  (_ url _ _)
+                  (=list (?eq #\[)
+                         (=filespec)
+                         (?eq #\])
+                         (?blackspace)))))
+    (when transform-list
+      (reduce #'cat (pad-things (make-transform transform-list))))))
+
 (def-parser =literal-@-form ()
-  ""
+  "Return and match an @ form without non-value data."
   (=destructure
       (_ ns _ key _ atom-value atom-mods _)
       (=list (?expression-starter)
@@ -577,12 +594,15 @@
              (=key)
              (?blackspace)
              (=value)
-             (%any (%or 'regex-selector
-                        'bracketed-transform-selector
+             (%any (%or 'literal-regex-selector
+                        'literal-bracketed-transform-selector
                         'datatype-form
                         'format-form))
              (?expression-terminator))
-    (list ns key atom-value atom-mods)))
+    (let* ((mods (reduce #'cat (pad-things atom-mods)))
+           (list (list ns key atom-value mods))
+           (value (denull list)))
+      (pad-things value))))
 
 (def-parser =expression ()
   "Match and return an MSL expression."
