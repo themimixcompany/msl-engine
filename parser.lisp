@@ -559,35 +559,60 @@
 ;; literal parsers
 ;;--------------------------------------------------------------------------------------------------
 
-(def-parser =literal-regex-selector ()
-  "Match and return the literal key sequence for /."
-  (=destructure
-      (&rest regex-list)
-      (%some (=destructure
-                 (_ regex _ env _ value)
-                 (=list (=regex-namespace)
-                        (=subseq (%some (?satisfies 'regex-char-p)))
-                        (=regex-namespace)
-                        (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
-                        (?blackspace)
-                        (%maybe (=value)))
-               (list regex env value)))
-    (when regex-list
-      (reduce #'cat (pad-things (make-regex regex-list))))))
+(eval-always
+  (def-parser ?literal-value-terminator ()
+    "Define a literal parser for matching the end of a value."
+    (macrolet ((~seq (&rest data)
+                 `(?seq (?right-parenthesis) ,@data)))
+      (%or 'literal-regex-selector
+           'literal-bracketed-transform-selector
+           ;;'datatype-form
+           ;;'format-form
+           'hash
+           'comment
+           (~seq 'literal-regex-selector)
+           (~seq 'literal-bracketed-transform-selector)
+           ;; (~seq 'literal-datatype-form)
+           ;; (~seq 'literal-format-form)
+           (~seq 'hash)
+           (~seq 'comment)
+           (~seq (%some (?right-parenthesis)))
+           (~seq (?end))
+           (~seq 'value))))
 
-(def-parser =literal-bracketed-transform-selector ()
-  "Match and return the literal key sequence for []."
-  (=destructure
-      (transform-list)
-      (=list (%some
-              (=destructure
-                  (_ url _ _)
-                  (=list (?eq #\[)
-                         (=filespec)
-                         (?eq #\])
-                         (?blackspace)))))
-    (when transform-list
-      (reduce #'cat (pad-things (make-transform transform-list))))))
+  (def-parser =literal-value ()
+    "Match and return a raw value."
+    (=subseq (%some (?not (?literal-value-terminator)))))
+
+  (def-parser =literal-regex-selector ()
+    "Match and return the literal key sequence for /."
+    (=destructure
+        (&rest regex-list)
+        (%some (=destructure
+                   (_ regex _ env _ value)
+                   (=list (=regex-namespace)
+                          (=subseq (%some (?satisfies 'regex-char-p)))
+                          (=regex-namespace)
+                          (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                          (?blackspace)
+                          (%maybe (=literal-value)))
+                 (list regex env value)))
+      (when regex-list
+        (reduce #'cat (pad-things (make-regex regex-list))))))
+
+  (def-parser =literal-bracketed-transform-selector ()
+    "Match and return the literal key sequence for []."
+    (=destructure
+        (transform-list)
+        (=list (%some
+                (=destructure
+                    (_ url _ _)
+                    (=list (?eq #\[)
+                           (=filespec)
+                           (?eq #\])
+                           (?blackspace)))))
+      (when transform-list
+        (reduce #'cat (pad-things (make-transform transform-list)))))))
 
 (defm def-literal-parser-form (name ns value)
   "Define a macro for defining literal parsers."
@@ -611,7 +636,11 @@
               (value (denull list)))
          (pad-things value)))))
 
-(def-literal-parser-form =literal-@-form (=@-namespace) (=value))
+(def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
+(def-literal-parser-form =literal-c-form (=c-namespace) (=literal-value))
+(def-literal-parser-form =literal-grouping-form (=grouping-namespace) (=literal-value))
+(def-literal-parser-form =literal-format-form (=format-namespace) (=literal-value))
+(def-literal-parser-form =literal-datatype-form (=datatype-namespace) (=literal-value))
 
 
 ;;--------------------------------------------------------------------------------------------------
