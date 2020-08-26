@@ -232,7 +232,7 @@ body contents of the parser function."
 
 (def ensure-regex-path (path)
   "Return a path with regex from PATH."
-  (if (string= (last* path) "/")
+  (if (string= (end path) "/")
       path
       (append path '("/"))))
 
@@ -268,3 +268,11 @@ body contents of the parser function."
 (def make-transform (exprs)
   (flet ((fn (expr) (cat "[" expr "]")))
     (mapcar #'fn exprs)))
+
+(def list-string* (value)
+  "Apply LIST-STRING to VALUE, with a custom CONS combiner."
+  (flet ((fn (value)
+           (etypecase value
+             (cons (format nil "(~{~A~})" value))
+             (t (string* value)))))
+    (list-string value #'fn)))

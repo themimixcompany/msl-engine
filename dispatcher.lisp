@@ -97,7 +97,7 @@
       term
     (declare (ignore value))
     (∧ (length= path 3)
-       (string= (last* path) "/"))))
+       (string= (end path) "/"))))
 
 (def atom-exists-p (terms)
   "Return true if the main term in TERMS exists in the store."
@@ -189,7 +189,7 @@ in the store or not."
           term
         (declare (ignorable params))
         (let ((table (if (sub-atom-path-p path) sub-atom-table atom-table)))
-          (cond ((key-indicator-p (last* path)) (gethash* path table))
+          (cond ((key-indicator-p (end path)) (gethash* path table))
                 (t (fn path table))))))))
 
 (def read-path (path &optional

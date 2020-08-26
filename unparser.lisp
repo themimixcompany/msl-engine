@@ -428,14 +428,6 @@ unconditionally."
   "Apply REFINE-PART to PARTS."
   (mapcar #'refine-part parts))
 
-(def list-string* (value)
-  "Apply LIST-STRING to VALUE, with a custom CONS combiner."
-  (flet ((fn (value)
-           (etypecase value
-             (cons (format nil "(~{~A~})" value))
-             (t (string* value)))))
-    (list-string value #'fn)))
-
 (def reduce-parts (parts)
   "Return a string from running PARTS through filters."
   (let* ((value (refine-parts parts))
@@ -648,7 +640,7 @@ non-value data."
     (flet ((fn (term)
              (∨ (∧ (length= (car term) 2)
                    (null* (cadr term)))
-                (mem (last* (car term)) '("/" "[]")))))
+                (mem (end (car term)) '("/" "[]")))))
       (cond
         ;; top-level expression
         ((length= parse 1)
@@ -656,7 +648,7 @@ non-value data."
 
         ;; no main value, but there is regex
         ((∧ (null* (cdar parse))
-            (mem (last* (caadr parse)) '("/")))
+            (mem (end (caadr parse)) '("/")))
          (car-only (car parse)))
 
         ;; no main value, and the rest are either mods or transforms

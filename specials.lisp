@@ -123,7 +123,7 @@
   "Whether to print debugging information using a dedicated outputter.")
 
 (defv *restore-log*
-  t
+  nil
   "Whether to restore data from the log files.")
 
 (defv *whitespace*
