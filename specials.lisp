@@ -58,7 +58,7 @@
   "The list of strings used for setting end values.")
 
 (defv *log-directory*
-    (home (cat #\. +self+ #\/))
+    (~ (cat #\. +self+ #\/))
   "The path to the default configuration and storage directory.")
 
 (defc +log-file-suffix+

@@ -554,6 +554,11 @@
 (def-parser-form =format-form (=format-sequence) (=value))
 (def-parser-form =datatype-form (=datatype-sequence) (=value))
 
+
+;;--------------------------------------------------------------------------------------------------
+;; literal parsers
+;;--------------------------------------------------------------------------------------------------
+
 (def-parser =literal-regex-selector ()
   "Match and return the literal key sequence for /."
   (=destructure
@@ -584,25 +589,34 @@
     (when transform-list
       (reduce #'cat (pad-things (make-transform transform-list))))))
 
-(def-parser =literal-@-form ()
-  "Return and match an @ form without non-value data."
-  (=destructure
-      (_ ns _ key _ atom-value atom-mods _)
-      (=list (?expression-starter)
-             (=@-namespace)
-             (%maybe (?whitespace))
-             (=key)
-             (?blackspace)
-             (=value)
-             (%any (%or 'literal-regex-selector
-                        'literal-bracketed-transform-selector
-                        'datatype-form
-                        'format-form))
-             (?expression-terminator))
-    (let* ((mods (reduce #'cat (pad-things atom-mods)))
-           (list (list ns key atom-value mods))
-           (value (denull list)))
-      (pad-things value))))
+(defm def-literal-parser-form (name ns value)
+  "Define a macro for defining literal parsers."
+  `(def-parser ,name ()
+     (=destructure
+         (_ ns _ key _ atom-value atom-mods _)
+         (=list (?expression-starter)
+                ,ns
+                (%maybe (?whitespace))
+                (=key)
+                (?blackspace)
+                ,value
+                (%any (%or 'literal-regex-selector
+                           'literal-bracketed-transform-selector
+                           ;; 'literal-datatype-form
+                           ;; 'literal-format-form
+                           ))
+                (?expression-terminator))
+       (let* ((mods (reduce #'cat (pad-things atom-mods)))
+              (list (list ns key atom-value mods))
+              (value (denull list)))
+         (pad-things value)))))
+
+(def-literal-parser-form =literal-@-form (=@-namespace) (=value))
+
+
+;;--------------------------------------------------------------------------------------------------
+;; top-level
+;;--------------------------------------------------------------------------------------------------
 
 (def-parser =expression ()
   "Match and return an MSL expression."
