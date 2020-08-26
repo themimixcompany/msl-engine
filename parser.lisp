@@ -234,7 +234,8 @@
 (eval-always
   (def-parser =filespec ()
     "Match and return a URI filespec or URL."
-    (=subseq (%some (?satisfies 'filespec-char-p))))
+    ;;(=subseq (%some (?satisfies 'filespec-char-p)))
+    (=subseq (%some (?satisfies 'alphanumericp))))
 
   (def-parser =hash ()
     "Match and return a hash value."
@@ -334,7 +335,38 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list (list "[]") transform-list nil nil nil nil)))))
+        (list (list "[]") transform-list nil nil nil nil))))
+
+  (def-parser =literal-regex-selector ()
+    "Match and return the literal key sequence for /."
+    (=destructure
+        (regex-list)
+        (=list (%some (=destructure
+                          (_ regex _ env _ value)
+                          (=list (=regex-namespace)
+                                 (=subseq (%some (?satisfies 'regex-char-p)))
+                                 (=regex-namespace)
+                                 (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
+                                 (?blackspace)
+                                 (%maybe (=value)))
+                        (list regex env value))))
+      (when regex-list
+        (let ((value (loop :for regex :in regex-list :collect (mapcar #'trim regex))))
+          (make-regex value)))))
+
+  (def-parser =literal-bracketed-transform-selector ()
+    "Match and return the literal key sequence for []."
+    (=destructure
+        (transform-list)
+        (=list (%some
+                (=destructure
+                    (_ url _ _)
+                    (=list (?eq #\[)
+                           (=filespec)
+                           (?eq #\])
+                           (?blackspace)))))
+      (when transform-list
+        (make-transform transform-list)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -534,6 +566,23 @@
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
 (def-parser-form =format-form (=format-sequence) (=value))
 (def-parser-form =datatype-form (=datatype-sequence) (=value))
+
+(def-parser =literal-@-form ()
+  ""
+  (=destructure
+      (_ ns _ key _ atom-value atom-mods _)
+      (=list (?expression-starter)
+             (=@-namespace)
+             (%maybe (?whitespace))
+             (=key)
+             (?blackspace)
+             (=value)
+             (%any (%or 'regex-selector
+                        'bracketed-transform-selector
+                        'datatype-form
+                        'format-form))
+             (?expression-terminator))
+    (list ns key atom-value atom-mods)))
 
 (def-parser =expression ()
   "Match and return an MSL expression."

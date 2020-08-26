@@ -111,7 +111,7 @@
   ;; (uiop:os-cond
   ;;  ((uiop:os-windows-p) (system-version +self+))
   ;;  (t (asdf:system-version (system-object +self+))))
-  "2.4.22"
+  "2.4.23"
   "The introspected version of this system.")
 
 (defv *slynk-port*
