@@ -249,7 +249,7 @@
     "Match the end of a value."
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
-      (%or 'nested-atom-form
+      (%or 'literal-atom-form
            'metadata-sequence
            'regex-selector
            'bracketed-transform-selector
@@ -258,7 +258,7 @@
            'hash
            'comment
            'literal-value
-           (~seq 'nested-atom-form)
+           (~seq 'literal-atom-form)
            (~seq 'metadata-sequence)
            (~seq 'regex-selector)
            (~seq 'bracketed-transform-selector)
@@ -309,23 +309,23 @@
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (def-parser =nested-@-form ()
+  (def-parser =literal-@-form ()
     "Match and return a nested atom."
     (%or 'literal-@-form))
 
-  (def-parser =nested-c-form ()
+  (def-parser =literal-c-form ()
     "Match and return a nested atom."
     (%or 'c-form))
 
-  (def-parser =nested-grouping-form ()
+  (def-parser =literal-grouping-form ()
     "Match and return a nested atom."
     (%or 'grouping-form))
 
-  (def-parser =nested-atom-form ()
+  (def-parser =literal-atom-form ()
     "Match and return a nested atom."
     (%or 'literal-@-form
-         'c-form
-         'grouping-form)))
+         'literal-c-form
+         'literal-grouping-form)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -342,16 +342,18 @@
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
-    (%or 'nested-@-form
-         'nested-c-form
-         (=value)))
+    (%or 'literal-@-form
+         'literal-c-form
+         (=value)
+         'literal-value))
 
   (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or 'nested-@-form
-         'nested-c-form
-         'nested-grouping-form
-         (=value)))
+    (%or 'literal-@-form
+         'literal-c-form
+         'literal-grouping-form
+         (=value)
+         'literal-value))
 
   (def-parser =regex-selector ()
     "Match and return the key sequence for /."
