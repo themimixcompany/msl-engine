@@ -48,9 +48,29 @@
          (cat value " "))
         (t value)))
 
+(def unpad-thing (value)
+  "Conditionally remove space padding from VALUE."
+  (cond ((null value)
+         value)
+        ((∧ (stringp value)
+            (length>= value 1)
+            (char= (end value) #\space))
+         (string-right-trim '(#\space #\newline) value))
+        (t value)))
+
 (def pad-things (things)
   "Add conditional padding to items in THINGS."
-  (mapcar #'pad-thing things))
+  (flet* ((fn (args &optional acc)
+            (cond ((null args) (nreverse acc))
+                  ((not (null (cdr args)))
+                   (fn (cdr args)
+                       (cons (pad-thing (car args)) acc)))
+                  ((null (cdr args))
+                   (fn (cdr args)
+                       (cons (unpad-thing (car args)) acc)))
+                  (t (fn (cdr args)
+                         (cons (car args) acc))))))
+    (fn things)))
 
 (def denull (value)
   "Remove the null items from VALUE."
@@ -253,7 +273,8 @@
   (def-parser =filespec ()
     "Match and return a URI filespec or URL."
     ;;(=subseq (%some (?satisfies 'filespec-char-p)))
-    (=subseq (%some (?satisfies 'alphanumericp))))
+    ;;(=subseq (%some (?satisfies 'alphanumericp)))
+    (=subseq (%some (?not (?eq #\])))))
 
   (def-parser =hash ()
     "Match and return a hash value."
@@ -495,7 +516,7 @@
                             (%any ,value))
                 (%any (+metadata-mods))))
       (declare (ignore meta-sequence))
-      (let* ((mods (reduce-append meta-mods))
+      (let* ((mods (red-append meta-mods))
              (value (build-items %atom-sequence %meta-sequence meta-value mods)))
         value))))
 
@@ -519,7 +540,7 @@
      (list (list atom-sequence nil)
            (list (append atom-sequence metadata) nil))))
 
-(defmacro def-parser-form (name sequence value)
+(defm def-parser-form (name sequence value)
   "Define a macro for defining parsers."
   (macrolet ((~@-metadata ()
                `(if (equal name '=@-form)
@@ -542,9 +563,9 @@
                          (%maybe (=comment))
                          (?expression-terminator))
                 (let* ((head (list (list atom-sequence atom-value)))
-                       (mods (reduce-append atom-mods))
-                       (meta (reduce-append metadata))
-                       (value (reduce-append head mods meta hash)))
+                       (mods (red-append atom-mods))
+                       (meta (red-append metadata))
+                       (value (red-append head mods meta hash)))
                   value)))))))
 
 (def-parser-form =@-form (=@-sequence) (=@-value))
@@ -566,14 +587,14 @@
                  `(?seq (?right-parenthesis) ,@data)))
       (%or 'literal-regex-selector
            'literal-bracketed-transform-selector
-           ;;'datatype-form
-           ;;'format-form
+           'literal-datatype-form
+           'literal-format-form
            'hash
            'comment
            (~seq 'literal-regex-selector)
            (~seq 'literal-bracketed-transform-selector)
-           ;; (~seq 'literal-datatype-form)
-           ;; (~seq 'literal-format-form)
+           (~seq 'literal-datatype-form)
+           (~seq 'literal-format-form)
            (~seq 'hash)
            (~seq 'comment)
            (~seq (%some (?right-parenthesis)))
@@ -598,7 +619,7 @@
                           (%maybe (=literal-value)))
                  (list regex env value)))
       (when regex-list
-        (reduce #'cat (pad-things (make-regex regex-list))))))
+        (red-cat (pad-things (make-regex regex-list))))))
 
   (def-parser =literal-bracketed-transform-selector ()
     "Match and return the literal key sequence for []."
@@ -612,7 +633,27 @@
                            (?eq #\])
                            (?blackspace)))))
       (when transform-list
-        (reduce #'cat (pad-things (make-transform transform-list)))))))
+        (red-cat (pad-things (make-transform transform-list))))))
+
+  (def-parser =literal-atom-mods-1 ()
+    "Match and return key sequence for the the /, and [] nss."
+    (%or 'literal-regex-selector
+         'literal-bracketed-transform-selector))
+
+  (def-parser =literal-atom-mods-2 ()
+    "Match and return key sequence for the d, and f nss."
+    (%or 'literal-datatype-form
+         'literal-format-form))
+
+  (def-parser =literal-atom-mods ()
+    "Match and return atom mods."
+    (%or (=literal-atom-mods-1)
+         (=literal-atom-mods-2))))
+
+(def make-seq (ns key)
+  "Return a key sequence from NS and KEY."
+  (cond ((string= ns "@") (cat ns key))
+        (t (cat ns " " key))))
 
 (defm def-literal-parser-form (name ns value)
   "Define a macro for defining literal parsers."
@@ -625,16 +666,14 @@
                 (=key)
                 (?blackspace)
                 ,value
-                (%any (%or 'literal-regex-selector
-                           'literal-bracketed-transform-selector
-                           ;; 'literal-datatype-form
-                           ;; 'literal-format-form
-                           ))
+                (%any (=literal-atom-mods))
                 (?expression-terminator))
-       (let* ((mods (reduce #'cat (pad-things atom-mods)))
-              (list (list ns key atom-value mods))
-              (value (denull list)))
-         (pad-things value)))))
+       (let* ((seq (make-seq ns key))
+              (mods (red-cat (pad-things atom-mods)))
+              (list (list seq atom-value mods))
+              (value (denull list))
+              (things (pad-things value)))
+         (list-string* things)))))
 
 (def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
 (def-literal-parser-form =literal-c-form (=c-namespace) (=literal-value))
