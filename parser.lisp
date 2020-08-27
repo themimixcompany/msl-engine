@@ -134,8 +134,12 @@
     (=subseq (?eq #\/)))
 
   (def-parser =prelude-namespace ()
-    "Match and return the msl ns."
-    (=subseq (maxpc.char:?string "msl")))
+    "Match and return the MSL ns."
+    (=transform (=subseq (?satisfies (λ (string)
+                                       (cl-ppcre:scan "[mM][sS][lL]" string))
+                                     (=subseq (%some (?satisfies 'alphanumericp)))))
+                (λ (string)
+                  (string-upcase string))))
 
   (def-parser =metadata-namespace ()
     "Match and return the : ns."
@@ -568,10 +572,10 @@
                        (value (red-append head mods meta hash)))
                   value)))))))
 
+(def-parser-form =prelude-form (=prelude-sequence) (=value))
 (def-parser-form =@-form (=@-sequence) (=@-value))
 (def-parser-form =c-form (=c-sequence) (=c-value))
 (def-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
-(def-parser-form =prelude-form (=prelude-sequence) (=value))
 (def-parser-form =format-form (=format-sequence) (=value))
 (def-parser-form =datatype-form (=datatype-sequence) (=value))
 
@@ -703,7 +707,7 @@
   (%or (=literal-@-form)
        (=literal-c-form)
        (=literal-grouping-form)
-       (=literal-prelude-form)
+       (=prelude-form)
        (=literal-datatype-form)
        (=literal-format-form)
        (=literal-regex-selector)))
