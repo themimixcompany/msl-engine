@@ -34,7 +34,8 @@
   "Return true if CHAR is a valid regex character."
   (∨ (alphanumericp char)
      (mem char '(#\- #\. #\_ #\~ #\: #\/ #\? #\#
-                 #\[ #\] #\( #\)
+                 ;;#\[ #\]
+                 #\( #\)
                  #\@ #\! #\$ #\& #\' #\* #\+
                  #\, #\; #\% #\=))))
 
@@ -276,9 +277,8 @@
 (eval-always
   (def-parser =filespec ()
     "Match and return a URI filespec or URL."
-    ;;(=subseq (%some (?satisfies 'filespec-char-p)))
-    ;;(=subseq (%some (?satisfies 'alphanumericp)))
-    (=subseq (%some (?not (?eq #\])))))
+    (=subseq (%some (%and (?satisfies 'filespec-char-p)
+                          (?not (?eq #\]))))))
 
   (def-parser =hash ()
     "Match and return a hash value."
@@ -707,10 +707,8 @@
   (%or (=literal-@-form)
        (=literal-c-form)
        (=literal-grouping-form)
-       (=prelude-form)
-       (=literal-datatype-form)
        (=literal-format-form)
-       (=literal-regex-selector)))
+       (=literal-datatype-form)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -719,12 +717,12 @@
 
 (def-parser =expression ()
   "Match and return an MSL expression."
-  (%or (=@-form)
+  (%or (=prelude-form)
+       (=@-form)
        (=c-form)
        (=grouping-form)
-       (=prelude-form)
-       (=datatype-form)
        (=format-form)
+       (=datatype-form)
        (=regex-selector)))
 
 (def parse-msl (expr)
