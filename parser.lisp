@@ -690,7 +690,6 @@
               (list (list seq atom-value mods hash))
               (value (denull list))
               (things (pad-things value)))
-         ;;(dbg value)
          (list-string* things)))))
 
 (def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
@@ -698,6 +697,16 @@
 (def-literal-parser-form =literal-grouping-form (=grouping-namespace) (=literal-value))
 (def-literal-parser-form =literal-format-form (=format-namespace) (=literal-value))
 (def-literal-parser-form =literal-datatype-form (=datatype-namespace) (=literal-value))
+
+(def-parser =literal-expression ()
+  "Match and return a literal MSL expression."
+  (%or (=literal-@-form)
+       (=literal-c-form)
+       (=literal-grouping-form)
+       (=literal-prelude-form)
+       (=literal-datatype-form)
+       (=literal-format-form)
+       (=literal-regex-selector)))
 
 
 ;;--------------------------------------------------------------------------------------------------
