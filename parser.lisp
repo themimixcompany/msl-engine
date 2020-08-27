@@ -589,17 +589,17 @@
            'literal-bracketed-transform-selector
            'literal-datatype-form
            'literal-format-form
-           'hash
-           'comment
+           'literal-hash
+           'literal-comment
            (~seq 'literal-regex-selector)
            (~seq 'literal-bracketed-transform-selector)
            (~seq 'literal-datatype-form)
            (~seq 'literal-format-form)
-           (~seq 'hash)
-           (~seq 'comment)
+           (~seq 'literal-hash)
+           (~seq 'literal-comment)
            (~seq (%some (?right-parenthesis)))
            (~seq (?end))
-           (~seq 'value))))
+           (~seq 'literal-value))))
 
   (def-parser =literal-value ()
     "Match and return a raw value."
@@ -648,7 +648,22 @@
   (def-parser =literal-atom-mods ()
     "Match and return atom mods."
     (%or (=literal-atom-mods-1)
-         (=literal-atom-mods-2))))
+         (=literal-atom-mods-2)))
+
+  (def-parser =literal-hash ()
+    "Match and return a hash value."
+    (=destructure
+        (ns hash)
+        (=list (=subseq (?eq #\#))
+               (=sha256))
+      (cat ns hash)))
+
+  (def-parser =literal-comment ()
+    "Match a comment."
+    (=destructure
+        (_ comment)
+        (=list (maxpc.char:?string "//")
+               (=subseq (%some (?not (%or (?expression-terminator)))))))))
 
 (def make-seq (ns key)
   "Return a key sequence from NS and KEY."
@@ -659,7 +674,7 @@
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
      (=destructure
-         (_ ns _ key _ atom-value atom-mods _)
+         (_ ns _ key _ atom-value atom-mods hash _ _)
          (=list (?expression-starter)
                 ,ns
                 (%maybe (?whitespace))
@@ -667,12 +682,15 @@
                 (?blackspace)
                 ,value
                 (%any (=literal-atom-mods))
+                (%maybe (=literal-hash))
+                (%maybe (=literal-comment))
                 (?expression-terminator))
        (let* ((seq (make-seq ns key))
               (mods (red-cat (pad-things atom-mods)))
-              (list (list seq atom-value mods))
+              (list (list seq atom-value mods hash))
               (value (denull list))
               (things (pad-things value)))
+         ;;(dbg value)
          (list-string* things)))))
 
 (def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
