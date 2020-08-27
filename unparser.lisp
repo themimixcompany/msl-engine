@@ -544,18 +544,12 @@ non-value data."
              (pad-sections (pad-sections wrap))
              (flatten-one (flatten-one pad-sections))
              (list-string (list-string* flatten-one)))
-        ;; (dbg stage
-        ;;      merge-sections
-        ;;      wrap
-        ;;      pad-sections
-        ;;      flatten-one
-        ;;      list-string)
         list-string))))
 
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (block nil
-    (dbg (read-expr expr))
+    ;;(dbg (read-expr expr))
 
     (when dispatch (dispatch expr :log t :force nil))
 
@@ -580,9 +574,11 @@ non-value data."
 (def reduce-values (values)
   "Return a string concatenation of the items in VALUES."
   (let ((result (mapcar (λ (value)
-                          (cond ((stringp value) value)
-                                ((termsp value) (recall-value (terms-base value)))
-                                (t nil)))
+                          (cond
+                            ((parse-msl value) (recall-value value))
+                            ((stringp value) value)
+                            ;;((termsp value) (recall-value (terms-base value)))
+                            (t nil)))
                         values)))
     (join result "")))
 
@@ -738,9 +734,10 @@ non-value data."
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (block nil
-    (dbg (read-expr expr))
+    ;;(dbg (read-expr expr))
 
-    (when dispatch (dispatch expr :log t :force t))
+    (when dispatch
+      (dispatch expr :log t :force t))
 
     (when-let ((value (%recall-value expr)))
       (let* ((source-path (car (requests expr)))
