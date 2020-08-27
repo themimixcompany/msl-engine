@@ -257,6 +257,7 @@
            'format-form
            'hash
            'comment
+           'literal-value
            (~seq 'nested-atom-form)
            (~seq 'metadata-sequence)
            (~seq 'regex-selector)
@@ -267,7 +268,8 @@
            (~seq 'comment)
            (~seq (%some (?right-parenthesis)))
            (~seq (?end))
-           (~seq 'value)))))
+           (~seq 'value)
+           (~seq 'literal-value)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -309,7 +311,7 @@
 (eval-always
   (def-parser =nested-@-form ()
     "Match and return a nested atom."
-    (%or '@-form))
+    (%or 'literal-@-form))
 
   (def-parser =nested-c-form ()
     "Match and return a nested atom."
@@ -321,7 +323,7 @@
 
   (def-parser =nested-atom-form ()
     "Match and return a nested atom."
-    (%or '@-form
+    (%or 'literal-@-form
          'c-form
          'grouping-form)))
 
@@ -333,9 +335,10 @@
 (eval-always
   (def-parser =@-value ()
     "Match and return a valid value for @."
-    (%or 'nested-@-form
-         'nested-grouping-form
-         (=value)))
+    (%or 'literal-@-form
+         'literal-grouping-form
+         (=value)
+         'literal-value))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
@@ -684,7 +687,7 @@
                 (%maybe (?whitespace))
                 (=key)
                 (?blackspace)
-                ,value
+                (%maybe ,value)
                 (%any (=literal-atom-mods))
                 (%maybe (=literal-hash))
                 (%maybe (=literal-comment))
