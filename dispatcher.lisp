@@ -152,7 +152,6 @@ in the store or not."
        (∧ (null* head-value)
           (atom-exists-p terms)
           (every (λ (term)
-                   (dbg term)
                    (not (null* (term-value term))))
                  (metadata-terms terms))))))
 
