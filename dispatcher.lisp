@@ -293,7 +293,7 @@ in the store or not."
                     (values (write-term (list path params) atom-tab sub-atom-tab)))
                (when (consp values)
                  (loop :for value :in values
-                       :do (when (parse-msl value)
+                       :do (when (exprp value)
                              (let ((v (dispatch value :log log :force force)))
                                (if (null* v)
                                    (return nil)
