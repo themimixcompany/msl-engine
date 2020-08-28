@@ -573,13 +573,13 @@ non-value data."
 
 (def reduce-values (values)
   "Return a string concatenation of the items in VALUES."
-  (let ((result (mapcar (λ (value)
-                          (cond
-                            ((exprp value) (recall-value value))
-                            ((stringp value) value)
-                            (t nil)))
-                        values)))
-    (join result "")))
+  (flet ((fn (value)
+           (cond
+             ((exprp value) (recall-value value))
+             ((stringp value) value)
+             (t nil))))
+    (let ((result (mapcar #'fn values)))
+      (join result ""))))
 
 (def %extract-value (path)
   "Return the information specified by PATH."
