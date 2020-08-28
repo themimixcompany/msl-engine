@@ -257,7 +257,6 @@
            'format-form
            'hash
            'comment
-           'literal-value
            (~seq 'literal-atom-form)
            (~seq 'metadata-sequence)
            (~seq 'regex-selector)
@@ -268,8 +267,7 @@
            (~seq 'comment)
            (~seq (%some (?right-parenthesis)))
            (~seq (?end))
-           (~seq 'value)
-           (~seq 'literal-value)))))
+           (~seq 'value)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
