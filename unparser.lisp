@@ -155,8 +155,9 @@
 
 (def head (expr)
   "Return the ns and key sequence from EXPR."
-  (when-let ((parse (read-expr expr)))
-    (caar parse)))
+  (when-let* ((parse (read-expr expr))
+              (path (caar parse)))
+    (subseq path 0 2)))
 
 (def head-only-p (path)
   "Return true if PATH is exclusively a head."

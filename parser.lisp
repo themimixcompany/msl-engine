@@ -197,7 +197,7 @@
            (=key)))
 
   (def-parser =metadata-sequence ()
-    "Match and return key sequence for : ns, without a leading whitespace"
+    "Match and return key sequence for : ns."
     (=destructure
         (_ ns key)
         (=list (?blackspace)
@@ -249,7 +249,7 @@
     "Match the end of a value."
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
-      (%or 'literal-atom-form
+      (%or ;;'literal-atom-form
            'metadata-sequence
            'regex-selector
            'bracketed-transform-selector
@@ -257,17 +257,19 @@
            'format-form
            'hash
            'comment
-           (~seq 'literal-atom-form)
+           ;;(~seq 'literal-atom-form)
            (~seq 'metadata-sequence)
-           (~seq 'regex-selector)
-           (~seq 'bracketed-transform-selector)
+           ;;(~seq 'regex-selector)
+           ;;(~seq 'bracketed-transform-selector)
            (~seq 'datatype-form)
            (~seq 'format-form)
-           (~seq 'hash)
-           (~seq 'comment)
-           (~seq (%some (?right-parenthesis)))
+           ;;(~seq 'hash)
+           ;;(~seq 'comment)
+           ;;(~seq (%some (?right-parenthesis)))
+           (~seq (?eq #\right_parenthesis))
            (~seq (?end))
-           (~seq 'value)))))
+           ;; (~seq 'value)
+           ))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -333,10 +335,11 @@
 (eval-always
   (def-parser =@-value ()
     "Match and return a valid value for @."
-    (%or 'literal-@-form
+    (%or (=value)
+         'literal-@-form
          'literal-grouping-form
-         (=value)
-         'literal-value))
+         ;; 'literal-value
+         ))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
@@ -572,7 +575,10 @@
                 (let* ((head (list (list atom-sequence atom-value)))
                        (mods (red-append atom-mods))
                        (meta (red-append metadata))
-                       (value (red-append head mods meta hash)))
+                       (value (cond ((∧ (null atom-value)
+                                        metadata)
+                                     (red-append mods meta hash))
+                                    (t (red-append head mods meta hash)))))
                   value)))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
