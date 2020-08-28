@@ -747,3 +747,9 @@
   (if (consp value)
       value
       (parse-msl value)))
+
+(def exprp (value)
+  "Return true if VALUE is a parseable expression."
+  (etypecase value
+    (string (∧ (parse-msl value)))
+    (t nil)))

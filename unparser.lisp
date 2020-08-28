@@ -575,9 +575,8 @@ non-value data."
   "Return a string concatenation of the items in VALUES."
   (let ((result (mapcar (λ (value)
                           (cond
-                            ((parse-msl value) (recall-value value))
+                            ((exprp value) (recall-value value))
                             ((stringp value) value)
-                            ;;((termsp value) (recall-value (terms-base value)))
                             (t nil)))
                         values)))
     (join result "")))
