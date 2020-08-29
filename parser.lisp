@@ -325,21 +325,22 @@
 (eval-always
   (def-parser =@-value ()
     "Match and return a valid value for @."
-    (%or (=value)
-         'literal-atom-form))
+    (%or 'literal-@-form
+         'literal-grouping-form
+         (=value)))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
-    (%or (=value)
-         'literal-@-form
-         'literal-c-form))
+    (%or 'literal-@-form
+         'literal-c-form
+         (=value)))
 
   (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or (=value)
-         'literal-@-form
+    (%or 'literal-@-form
          'literal-c-form
-         'literal-grouping-form))
+         'literal-grouping-form
+         (=value)))
 
   (def-parser =regex-selector ()
     "Match and return the key sequence for /."
