@@ -295,30 +295,6 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; nested expressions parsers
-;;--------------------------------------------------------------------------------------------------
-
-(eval-always
-  (def-parser =literal-@-form ()
-    "Match and return a nested atom."
-    (%or 'literal-@-form))
-
-  (def-parser =literal-c-form ()
-    "Match and return a nested atom."
-    (%or 'c-form))
-
-  (def-parser =literal-grouping-form ()
-    "Match and return a nested atom."
-    (%or 'grouping-form))
-
-  (def-parser =literal-atom-form ()
-    "Match and return a nested atom."
-    (%or 'literal-@-form
-         'literal-c-form
-         'literal-grouping-form)))
-
-
-;;--------------------------------------------------------------------------------------------------
 ;; list of values parsers (return a list)
 ;;--------------------------------------------------------------------------------------------------
 
@@ -697,11 +673,15 @@
 (def-literal-parser-form =literal-format-form (=format-namespace) (=literal-value))
 (def-literal-parser-form =literal-datatype-form (=datatype-namespace) (=literal-value))
 
-(def-parser =literal-expression ()
-  "Match and return a literal MSL expression."
+(def-parser =literal-atom-form ()
+  "Match and return a nested atom."
   (%or (=literal-@-form)
        (=literal-c-form)
-       (=literal-grouping-form)
+       (=literal-grouping-form)))
+
+(def-parser =literal-expression ()
+  "Match and return a literal MSL expression."
+  (%or (=literal-atom-form)
        (=literal-format-form)
        (=literal-datatype-form)))
 
