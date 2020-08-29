@@ -258,7 +258,7 @@
          (?seq (?right-parenthesis) 'metadata-sequence)
          (?seq (?right-parenthesis) 'datatype-form)
          (?seq (?right-parenthesis) 'format-form)
-         (?seq (?right-parenthesis) (?right-parenthesis))
+         (?seq (?right-parenthesis) (%some (?right-parenthesis)))
          (?seq (?right-parenthesis) (?end)))))
 
 
@@ -558,23 +558,21 @@
 (eval-always
   (def-parser ?literal-value-terminator ()
     "Define a literal parser for matching the end of a value."
-    (macrolet ((~seq (&rest data)
-                 `(?seq (?right-parenthesis) ,@data)))
-      (%or 'literal-regex-selector
-           'literal-bracketed-transform-selector
-           'literal-datatype-form
-           'literal-format-form
-           'literal-hash
-           'literal-comment
-           (~seq 'literal-regex-selector)
-           (~seq 'literal-bracketed-transform-selector)
-           (~seq 'literal-datatype-form)
-           (~seq 'literal-format-form)
-           (~seq 'literal-hash)
-           (~seq 'literal-comment)
-           (~seq (%some (?right-parenthesis)))
-           (~seq (?end))
-           (~seq 'literal-value))))
+    (%or ;;;'metadata-sequence
+         'literal-regex-selector
+         'literal-bracketed-transform-selector
+         'literal-datatype-form
+         'literal-format-form
+         'literal-hash
+         'literal-comment
+         ;;;(?seq (?right-parenthesis) 'metadata-sequence)
+         (?seq (?right-parenthesis) 'literal-datatype-form)
+         (?seq (?right-parenthesis) 'literal-format-form)
+         (?seq (?right-parenthesis) (%some (?right-parenthesis)))
+         (?seq (?right-parenthesis) (?end))
+
+         ;; enables embedded forms, but breaks =LITERAL-EXPRESSION with another embedded forms
+         (?seq (?right-parenthesis) 'literal-value)))
 
   (def-parser =literal-value ()
     "Match and return a raw value."
@@ -684,6 +682,10 @@
   (%or (=literal-atom-form)
        (=literal-format-form)
        (=literal-datatype-form)))
+
+(def parse-literal-msl (expr)
+  "Parse a literal MSL expression."
+  (parse expr (=literal-expression)))
 
 
 ;;--------------------------------------------------------------------------------------------------
