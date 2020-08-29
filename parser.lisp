@@ -245,11 +245,30 @@
     "Match the end of an expression."
     (?seq (?right-parenthesis)))
 
+  ;; (def-parser ?value-terminator ()
+  ;;   "Match the end of a value."
+  ;;   (macrolet ((~seq (&rest data)
+  ;;                `(?seq (?right-parenthesis) ,@data)))
+  ;;     (%or 'literal-atom-form
+  ;;          'metadata-sequence
+  ;;          'regex-selector
+  ;;          'bracketed-transform-selector
+  ;;          'datatype-form
+  ;;          'format-form
+  ;;          'hash
+  ;;          'comment
+  ;;          (~seq 'metadata-sequence)
+  ;;          (~seq 'datatype-form)
+  ;;          (~seq 'format-form)
+  ;;          (~seq (?eq #\right_parenthesis))
+  ;;          (~seq (?end))
+  ;;          (~seq 'value))))
+
   (def-parser ?value-terminator ()
     "Match the end of a value."
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
-      (%or ;;'literal-atom-form
+      (%or 'literal-atom-form
            'metadata-sequence
            'regex-selector
            'bracketed-transform-selector
@@ -268,7 +287,7 @@
            ;;(~seq (%some (?right-parenthesis)))
            (~seq (?eq #\right_parenthesis))
            (~seq (?end))
-           ;; (~seq 'value)
+           ;;(~seq 'value)
            ))))
 
 
@@ -336,25 +355,24 @@
   (def-parser =@-value ()
     "Match and return a valid value for @."
     (%or (=value)
+         ;;'literal-value
          'literal-@-form
-         'literal-grouping-form
-         ;; 'literal-value
-         ))
+         'literal-grouping-form))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
-    (%or 'literal-@-form
-         'literal-c-form
-         (=value)
-         'literal-value))
+    (%or (=value)
+         ;;'literal-value
+         'literal-@-form
+         'literal-c-form))
 
   (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or 'literal-@-form
+    (%or (=value)
+         ;;'literal-value
+         'literal-@-form
          'literal-c-form
-         'literal-grouping-form
-         (=value)
-         'literal-value))
+         'literal-grouping-form))
 
   (def-parser =regex-selector ()
     "Match and return the key sequence for /."
