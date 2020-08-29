@@ -245,50 +245,21 @@
     "Match the end of an expression."
     (?seq (?right-parenthesis)))
 
-  ;; (def-parser ?value-terminator ()
-  ;;   "Match the end of a value."
-  ;;   (macrolet ((~seq (&rest data)
-  ;;                `(?seq (?right-parenthesis) ,@data)))
-  ;;     (%or 'literal-atom-form
-  ;;          'metadata-sequence
-  ;;          'regex-selector
-  ;;          'bracketed-transform-selector
-  ;;          'datatype-form
-  ;;          'format-form
-  ;;          'hash
-  ;;          'comment
-  ;;          (~seq 'metadata-sequence)
-  ;;          (~seq 'datatype-form)
-  ;;          (~seq 'format-form)
-  ;;          (~seq (?eq #\right_parenthesis))
-  ;;          (~seq (?end))
-  ;;          (~seq 'value))))
-
   (def-parser ?value-terminator ()
     "Match the end of a value."
-    (macrolet ((~seq (&rest data)
-                 `(?seq (?right-parenthesis) ,@data)))
-      (%or 'literal-atom-form
-           'metadata-sequence
-           'regex-selector
-           'bracketed-transform-selector
-           'datatype-form
-           'format-form
-           'hash
-           'comment
-           ;;(~seq 'literal-atom-form)
-           (~seq 'metadata-sequence)
-           ;;(~seq 'regex-selector)
-           ;;(~seq 'bracketed-transform-selector)
-           (~seq 'datatype-form)
-           (~seq 'format-form)
-           ;;(~seq 'hash)
-           ;;(~seq 'comment)
-           ;;(~seq (%some (?right-parenthesis)))
-           (~seq (?eq #\right_parenthesis))
-           (~seq (?end))
-           ;;(~seq 'value)
-           ))))
+    (%or 'literal-atom-form
+         'metadata-sequence
+         'regex-selector
+         'bracketed-transform-selector
+         'datatype-form
+         'format-form
+         'hash
+         'comment
+         (?seq (?right-parenthesis) 'metadata-sequence)
+         (?seq (?right-parenthesis) 'datatype-form)
+         (?seq (?right-parenthesis) 'format-form)
+         (?seq (?right-parenthesis) (?right-parenthesis))
+         (?seq (?right-parenthesis) (?end)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -355,21 +326,17 @@
   (def-parser =@-value ()
     "Match and return a valid value for @."
     (%or (=value)
-         ;;'literal-value
-         'literal-@-form
-         'literal-grouping-form))
+         'literal-atom-form))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
     (%or (=value)
-         ;;'literal-value
          'literal-@-form
          'literal-c-form))
 
   (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
     (%or (=value)
-         ;;'literal-value
          'literal-@-form
          'literal-c-form
          'literal-grouping-form))
