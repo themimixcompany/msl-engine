@@ -399,7 +399,11 @@
 
 (defmacro +value (value)
   "Define a variable capturing parser macro for values."
-  `(=transform (%any ,value)
+  `(=transform ;; (=destructure
+               ;;     (_ value)
+               ;;     (=list (?whitespace)
+               ;;            (%any ,value)))
+               (%any ,value)
                (λ (val)
                  (cond (val (setf %atom-value val))
                        (t (setf %atom-value nil))))))
@@ -518,7 +522,12 @@
 
 (defm def-parser-form (name sequence value)
   "Define a macro for defining parsers."
-  (macrolet ((~@-metadata ()
+  (macrolet ((~mod (symbol-1 symbol-2)
+               `(if (mem sequence '((=format-sequence)
+                                    (=datatype-sequence)))
+                    (list ',symbol-1 ',symbol-2)
+                    (list ',symbol-2)))
+             (~@-metadata ()
                `(if (equal name '=@-form)
                     '(+@-metadata)
                     '(?untrue))))
@@ -528,8 +537,8 @@
              (%meta-sequence))
          (%or ,(~@-metadata)
               (=destructure
-                  (_ atom-sequence atom-value atom-mods metadata hash _ _)
-                  (=list (?expression-starter)
+                  (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
+                  (=list ,@(~mod (?blackspace) (?expression-starter))
                          (+sequence ,sequence)
                          (+value ,value)
                          (+atom-mods)
@@ -541,6 +550,8 @@
                        (mods (red-append atom-mods))
                        (meta (red-append metadata))
                        (value (red-append head mods meta hash)))
+                  ;; (dbg atom-value
+                  ;;      value)
                   value)))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
@@ -653,7 +664,7 @@
          (_ atom-sequence atom-value atom-mods hash _ _)
          (=list (?expression-starter)
                 ,sequence
-                (%maybe ,value)         ;note: %ANY ?
+                (%any ,value)
                 (%any (=literal-atom-mods))
                 (%maybe (=literal-hash))
                 (%maybe (=literal-comment))
@@ -663,6 +674,11 @@
               (list (list seq atom-value mods hash))
               (value (denull list))
               (things (pad-things value)))
+         ;; (dbg seq
+         ;;      mods
+         ;;      atom-value
+         ;;      value
+         ;;      things)
          (list-string* things)))))
 
 (def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
