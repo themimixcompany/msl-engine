@@ -65,7 +65,7 @@
          (table-readers (loop :for item :in string-slots
                               :when (search "TABLE" item)
                               :collect item)))
-    (format t "UNIVERSE: ~A~%" universe)
+    (format t "UNIVERSE: ~A~%" (name universe))
     (loop :for table-reader :in table-readers
           :for table = (funcall (intern (string* table-reader)
                                         (find-package :streams/classes))

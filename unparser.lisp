@@ -154,10 +154,9 @@
               (t (cons data value)))))))
 
 (def head (expr)
-  "Return the ns and key sequence from EXPR."
-  (when-let* ((parse (read-expr expr))
-              (path (caar parse)))
-    (subseq path 0 2)))
+  "Return the namespace and key sequence from EXPR."
+  (when-let ((parse (parse-msl expr)))
+    (caar parse)))
 
 (def head-only-p (path)
   "Return true if PATH is exclusively a head."
@@ -451,11 +450,11 @@ non-value data."
                      (cons (car args) acc))))))
     (fn (deconstruct* expr))))
 
+
 (def reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
   (mapcar (λ (expr)
-            (cond ((termsp expr)
-                   (recall-expr (terms-base expr)))
+            (cond ((termsp expr) (recall-expr (terms-base expr)))
                   (t expr)))
           exprs))
 
@@ -550,10 +549,9 @@ non-value data."
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
   (block nil
-    ;;(dbg (read-expr expr))
-
-    (when dispatch (dispatch expr :log t :force nil))
-
+    (when dispatch
+      (unless (dispatch expr :log t :force t)
+        (return nil)))
     (let ((head (head expr)))
       (when (path-exists-p head)
         (let* ((sections (deconstruct expr))
@@ -704,12 +702,12 @@ non-value data."
       ;; there are no matching criteria
       (t nil))))
 
-(defun regex-path-regexes (regex-path)
+(def regex-path-regexes (regex-path)
   "Return the regex mods of the implied path in EXPR."
   (when-let ((value (gethash* regex-path (atom-table *universe*))))
     value))
 
-(defun apply-regex-set (regex-set value)
+(def apply-regex-set (regex-set value)
   "Apply the regexes from REGEX-SET to VALUE."
   (destructuring-bind (re flags consume)
       regex-set
@@ -723,7 +721,7 @@ non-value data."
       (cond (consume (funcall replace-fn regex value consume))
             (t (cl-ppcre:scan-to-strings regex value))))))
 
-(defun apply-regex-sets (regex-sets value)
+(def apply-regex-sets (regex-sets value)
   "Apply the regex sets from REGEX-SETS with value as the starting point."
   (flet* ((fn (args val)
             (cond ((null args) val)
@@ -734,17 +732,19 @@ non-value data."
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
   (block nil
-    ;;(dbg (read-expr expr))
-
     (when dispatch
-      (dispatch expr :log t :force t))
-
+      (unless (dispatch expr :log t :force t)
+        (return nil)))
     (when-let ((value (%recall-value expr)))
       (let* ((source-path (car (requests expr)))
              (regex-path (ensure-regex-path source-path))
              (regex-sets (regex-path-regexes regex-path)))
-        (cond (regex-sets (apply-regex-sets regex-sets value))
-              ((termsp value) (recall-value (terms-base value)))
+        (cond (regex-sets
+               (apply-regex-sets regex-sets value))
+
+              ((exprp value)
+               (recall-value value))
+
               (t value))))))
 
 (def recall-value* (expr)
@@ -763,12 +763,7 @@ non-value data."
           (recall-value expr :dispatch nil)))
 
 (def recall* (expr &key log)
-  "Return the results of expression and value recalls as multiple values if the value recall is not
-null."
-  (dispatch expr :log log :force nil)
-  (let ((value (recall-value expr :dispatch nil)))
-    (if (null value)
-        (values nil
-                nil)
-        (values (recall-expr expr :dispatch nil)
-                value))))
+  "Return the expr and value recall of EXPR."
+  (dispatch expr :log log :force t)
+  (values (recall-expr expr :dispatch nil)
+          (recall-value expr :dispatch nil)))
