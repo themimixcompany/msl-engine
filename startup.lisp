@@ -14,7 +14,7 @@
 
 (defun initialize-universe ()
   "Initialize the universe."
-  (setf *universe* (make-universe)))
+  (setf *universe* (make-universe "main")))
 
 (defun print-banner ()
   "Print information about the software."

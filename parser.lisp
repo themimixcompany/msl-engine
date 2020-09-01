@@ -324,8 +324,9 @@
         (regex-list)
         (=list (%some
                 (=destructure
-                    (_ regex _ env _ value)
-                    (=list (=regex-namespace)
+                    (_ _ regex _ env _ value)
+                    (=list (?whitespace)
+                           (=regex-namespace)
                            (=subseq (%some (?satisfies 'regex-char-p)))
                            (=regex-namespace)
                            (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
@@ -341,8 +342,9 @@
         (transform-list)
         (=list (%some
                 (=destructure
-                    (_ url _)
-                    (=list (?eq #\[)
+                    (_ _ url _)
+                    (=list (?whitespace)
+                           (?eq #\[)
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
@@ -422,8 +424,8 @@
 
 (defmacro +atom-mods ()
   "Define a parser for handling atom mods."
-  `(%or (+atom-mods-1)
-        (+atom-mods-2)))
+  `(%any (%or (+atom-mods-1)
+              (+atom-mods-2))))
 
 (defmacro +metadata-mods-1 ()
   "Define a variable capturing parser macro for type 1 metadata mods."
@@ -465,39 +467,41 @@
 
 (defmacro +metadata (value)
   "Define a variable capturing parser macro for metadata."
-  `(%some
-    (=destructure
-        (meta-sequence _ meta-value meta-mods)
-        (%or
-         ;; a value, with zero or more metadata mods
-         (=list (+metadata-sequence)
-                (?blackspace)
-                (%some ,value)
-                (%any (+metadata-mods)))
-         ;; zero or more values, with metadata mods
-         (=list (+metadata-sequence)
-                (?blackspace)
-                (%any ,value)
-                (%some (+metadata-mods)))
-         ;; no atom value, zero or more metadata mods; the birthday trap
-         (=list (+metadata-sequence)
-                (?blackspace)
-                (?satisfies (λ (_)
-                              (declare (ignore _))
-                              (unless %atom-value t))
-                            (%any ,value))
-                (%any (+metadata-mods))))
-      (declare (ignore meta-sequence))
-      (let* ((mods (red-append meta-mods))
-             (value (build-items %atom-sequence %meta-sequence meta-value mods)))
-        value))))
+  `(%maybe
+    (%some
+     (=destructure
+         (meta-sequence _ meta-value meta-mods)
+         (%or
+          ;; a value, with zero or more metadata mods
+          (=list (+metadata-sequence)
+                 (?blackspace)
+                 (%some ,value)
+                 (%any (+metadata-mods)))
+          ;; zero or more values, with metadata mods
+          (=list (+metadata-sequence)
+                 (?blackspace)
+                 (%any ,value)
+                 (%some (+metadata-mods)))
+          ;; no atom value, zero or more metadata mods; the birthday trap
+          (=list (+metadata-sequence)
+                 (?blackspace)
+                 (?satisfies (λ (_)
+                               (declare (ignore _))
+                               (unless %atom-value t))
+                             (%any ,value))
+                 (%any (+metadata-mods))))
+       (declare (ignore meta-sequence))
+       (let* ((mods (red-append meta-mods))
+              (value (build-items %atom-sequence %meta-sequence meta-value mods)))
+         value)))))
 
 (defmacro +hash ()
   "Define a variable capturing parser macro for hash."
-  `(=destructure
-       (hash-seq hash-value)
-       (=hash)
-     (list (list (append %atom-sequence hash-seq) hash-value))))
+  `(%maybe
+    (=destructure
+        (hash-seq hash-value)
+        (=hash)
+      (list (list (append %atom-sequence hash-seq) hash-value)))))
 
 (defmacro +@-metadata ()
   "Define a variable capturing parser macro for @ with a single abutted metadata recall."
@@ -524,23 +528,19 @@
              (%meta-sequence))
          (%or ,(~@-metadata)
               (=destructure
-                  (_ atom-sequence _ atom-value atom-mods metadata hash _ _)
+                  (_ atom-sequence atom-value atom-mods metadata hash _ _)
                   (=list (?expression-starter)
                          (+sequence ,sequence)
-                         (?blackspace)
                          (+value ,value)
-                         (%any (+atom-mods))
-                         (%maybe (+metadata ,value))
-                         (%maybe (+hash))
+                         (+atom-mods)
+                         (+metadata ,value)
+                         (+hash)
                          (%maybe (=comment))
                          (?expression-terminator))
                 (let* ((head (list (list atom-sequence atom-value)))
                        (mods (red-append atom-mods))
                        (meta (red-append metadata))
-                       (value (cond ((∧ (null atom-value)
-                                        metadata)
-                                     (red-append mods meta hash))
-                                    (t (red-append head mods meta hash)))))
+                       (value (red-append head mods meta hash)))
                   value)))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
@@ -571,7 +571,7 @@
          (?seq (?right-parenthesis) (%some (?right-parenthesis)))
          (?seq (?right-parenthesis) (?end))
 
-         ;; enables embedded forms, but breaks =LITERAL-EXPRESSION with another embedded forms
+         ;; note: enables embedded forms, but breaks =LITERAL-EXPRESSION with another embedded forms
          (?seq (?right-parenthesis) 'literal-value)))
 
   (def-parser =literal-value ()
@@ -583,8 +583,9 @@
     (=destructure
         (&rest regex-list)
         (%some (=destructure
-                   (_ regex _ env _ value)
-                   (=list (=regex-namespace)
+                   (_ _ regex _ env _ value)
+                   (=list (?whitespace)
+                          (=regex-namespace)
                           (=subseq (%some (?satisfies 'regex-char-p)))
                           (=regex-namespace)
                           (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
@@ -638,38 +639,37 @@
         (=list (maxpc.char:?string "//")
                (=subseq (%some (?not (%or (?expression-terminator)))))))))
 
-(def make-seq (ns key)
-  "Return a key sequence from NS and KEY."
-  (cond ((string= ns "@") (cat ns key))
-        (t (cat ns " " key))))
+(def make-seq (list)
+  "Return a key sequence from LIST."
+  (destructuring-bind (ns key)
+      list
+    (cond ((string= ns "@") (cat ns key))
+          (t (cat ns " " key)))))
 
-(defm def-literal-parser-form (name ns value)
+(defm def-literal-parser-form (name sequence value)
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
      (=destructure
-         (_ ns _ key _ atom-value atom-mods hash _ _)
+         (_ atom-sequence atom-value atom-mods hash _ _)
          (=list (?expression-starter)
-                ,ns
-                (%maybe (?whitespace))
-                (=key)
-                (?blackspace)
-                (%maybe ,value)
+                ,sequence
+                (%maybe ,value)         ;note: %ANY ?
                 (%any (=literal-atom-mods))
                 (%maybe (=literal-hash))
                 (%maybe (=literal-comment))
                 (?expression-terminator))
-       (let* ((seq (make-seq ns key))
+       (let* ((seq (make-seq atom-sequence))
               (mods (red-cat (pad-things atom-mods)))
               (list (list seq atom-value mods hash))
               (value (denull list))
               (things (pad-things value)))
          (list-string* things)))))
 
-(def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
-(def-literal-parser-form =literal-c-form (=c-namespace) (=literal-value))
-(def-literal-parser-form =literal-grouping-form (=grouping-namespace) (=literal-value))
-(def-literal-parser-form =literal-format-form (=format-namespace) (=literal-value))
-(def-literal-parser-form =literal-datatype-form (=datatype-namespace) (=literal-value))
+(def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
+(def-literal-parser-form =literal-c-form (=c-sequence) (=literal-value))
+(def-literal-parser-form =literal-grouping-form (=grouping-sequence) (=literal-value))
+(def-literal-parser-form =literal-format-form (=format-sequence) (=literal-value))
+(def-literal-parser-form =literal-datatype-form (=datatype-sequence) (=literal-value))
 
 (def-parser =literal-atom-form ()
   "Match and return a nested atom."

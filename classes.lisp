@@ -5,6 +5,7 @@
         #:streams/specials
         #:marie)
   (:export #:universe
+           #:name
 
            #:atom-counter
            #:atom-table
@@ -28,7 +29,11 @@
 (in-package #:streams/classes)
 
 (defclass universe ()
-  ((atom-counter :initarg :atom-counter
+  ((name :initarg :name
+         :initform (genstr "U")
+         :accessor name
+         :documentation "The name of the universe")
+   (atom-counter :initarg :atom-counter
                  :initform *atom-counter*
                  :accessor atom-counter
                  :documentation "The global integer counter for base atoms.")
@@ -158,9 +163,15 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
                        `(def-maker ,name :allocate ,allocate)))))
 (def-makers ((atom t) (sub-atom t)))
 
-(def make-universe ()
+(def make-universe (&optional name)
   "Return an instance of the universe class."
-  (make-instance 'universe))
+  (make-instance 'universe :name (or name (genstr "U"))))
+
+(defmethod print-object ((u universe) stream)
+  (print-unreadable-object (u stream :type t)
+    (with-slots (name)
+        u
+      (format stream "~A" name))))
 
 (defmethod print-object ((table hash-table) stream)
   (print-unreadable-object (table stream :type t)
