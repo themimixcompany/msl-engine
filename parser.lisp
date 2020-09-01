@@ -385,25 +385,13 @@
   "Define a variable capturing parser macro for sequences."
   `(=transform ,sequence
                (λ (seq)
-                 ;; note: this unconditionaly sets the atom sequence
-                 ;;(setf %atom-sequence seq)
-
-                 ;; note: are these all the right conditions?
-                 ;; note: it seems, that the conditions are not enough.
                  (cond ((null %meta-sequence)
                         (setf %atom-sequence seq))
-
-                       ;; note: this fixes the ghosting bug, but
-                       ;; yields the embedded atom in metadata bug
                        (t (setf %atom-sequence seq))))))
 
 (defmacro +value (value)
   "Define a variable capturing parser macro for values."
-  `(=transform ;; (=destructure
-               ;;     (_ value)
-               ;;     (=list (?whitespace)
-               ;;            (%any ,value)))
-               (%any ,value)
+  `(=transform (%any ,value)
                (λ (val)
                  (cond (val (setf %atom-value val))
                        (t (setf %atom-value nil))))))
@@ -550,8 +538,6 @@
                        (mods (red-append atom-mods))
                        (meta (red-append metadata))
                        (value (red-append head mods meta hash)))
-                  ;; (dbg atom-value
-                  ;;      value)
                   value)))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
@@ -661,10 +647,11 @@
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
      (=destructure
-         (_ atom-sequence atom-value atom-mods hash _ _)
+         (_ atom-sequence _ atom-value atom-mods hash _ _)
          (=list (?expression-starter)
                 ,sequence
-                (%any ,value)
+                (?whitespace)
+                (%maybe ,value)
                 (%any (=literal-atom-mods))
                 (%maybe (=literal-hash))
                 (%maybe (=literal-comment))
@@ -674,11 +661,12 @@
               (list (list seq atom-value mods hash))
               (value (denull list))
               (things (pad-things value)))
-         ;; (dbg seq
-         ;;      mods
-         ;;      atom-value
-         ;;      value
-         ;;      things)
+         (dbg atom-value
+              seq
+              mods
+              list
+              value
+              things)
          (list-string* things)))))
 
 (def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
