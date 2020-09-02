@@ -355,7 +355,6 @@ function."
               (t (fn (cdr args)
                      (cons (car args)
                            acc))))))
-    ;;(dispatch expr :log nil :force force)
     (mapcar #'fn (sections expr))))
 
 (def deconstruct* (expr &key (force t))
@@ -506,12 +505,9 @@ non-value data."
               ((null args)
                (nreverse acc))
 
-              ;; note: work on this
-              ;; ((∧ (is-mods-p (car args))
-              ;;     (is-mods-p (cadr args)))
-              ;;  (fn (cddr args)
-              ;;      (cons (cadr args)
-              ;;            (cons " " (cons (car args) acc)))))
+              ((is-mods-p (car args))
+               (fn (cdr args)
+                   (cons (cat " " (car args)) acc)))
 
               (t (fn (cdr args)
                      (cons (car args) acc))))))
@@ -520,15 +516,19 @@ non-value data."
 (def pad-sections (sections)
   "Add padding information to the items in SECTIONS."
   (flet ((fn (section)
+           (dbg section)
            (destructuring-bind (head &optional &rest body)
                (pad-items (pad-section section))
-             (cond ((∧ (base-ns-p (string (elt head 0)))
-                       (length> section 1))
-                    (cons (pad-value-right head) body))
-                   ((∧ (base-ns-p (string (elt head 0)))
-                       (length= section 1))
-                    (cons head body))
-                   (t (cons (pad-value head) body))))))
+             (cond
+               ((∧ (base-ns-p (string (elt head 0)))
+                   (length> section 1))
+                (cons (pad-value-right head) body))
+
+               ((∧ (base-ns-p (string (elt head 0)))
+                   (length= section 1))
+                (cons head body))
+
+               (t (cons (pad-value head) body))))))
     (mapcar #'fn sections)))
 
 (def distill (head sections)
@@ -741,10 +741,8 @@ non-value data."
              (regex-sets (regex-path-regexes regex-path)))
         (cond (regex-sets
                (apply-regex-sets regex-sets value))
-
               ((exprp value)
                (recall-value value))
-
               (t value))))))
 
 (def recall-value* (expr)
