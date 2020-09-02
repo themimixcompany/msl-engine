@@ -26,20 +26,20 @@
                #:find-port
                #:cl-json
                #:marie
-               "streams/specials"
-               "streams/classes"
-               "streams/common"
-               "streams/parser"
-               "streams/logger"
-               "streams/dispatcher"
-               "streams/unparser"
-               "streams/bridge"
-               "streams/admin-dispatcher"
-               "streams/json"
-               "streams/server"
-               "streams/builder"
-               "streams/startup"
-               "streams/driver")
+               #:streams/specials
+               #:streams/classes
+               #:streams/common
+               #:streams/parser
+               #:streams/logger
+               #:streams/dispatcher
+               #:streams/unparser
+               #:streams/bridge
+               #:streams/admin-dispatcher
+               #:streams/json
+               #:streams/server
+               #:streams/builder
+               #:streams/startup
+               #:streams/driver)
   :in-order-to ((test-op (test-op "streams-tests"))))
 
 (defmethod perform :after ((o load-op) (c (eql (find-system :slynk))))
