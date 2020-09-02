@@ -343,7 +343,7 @@
         (=list (%some
                 (=destructure
                     (_ _ url _)
-                    (=list (?whitespace)
+                    (=list (?blackspace)
                            (?eq #\[)
                            (=filespec)
                            (?eq #\])))))
@@ -553,7 +553,7 @@
                 (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
                 (=list ,@(~mod (?blackspace) (?expression-starter))
                        (+sequence ,sequence)
-                       (?whitespace)
+                       (%maybe (?whitespace))
                        (+value ,value)
                        (+atom-mods)
                        (+metadata ,value)
