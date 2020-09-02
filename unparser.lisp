@@ -473,15 +473,20 @@ non-value data."
             :if (consp section) :collect (reduce-exprs section)
             :else :collect section)))
 
-(def pad-value (value)
-  "Add padding information to VALUE."
+(def pad-value-left (value)
+  "Add padding information to the right side of VALUE."
   (let ((val (trim value)))
-    (cat " " val " ")))
+    (pad-string-left val)))
 
 (def pad-value-right (value)
   "Add padding information to the right side of VALUE."
   (let ((val (trim value)))
-    (cat val " ")))
+    (pad-string-right val)))
+
+(def pad-value (value)
+  "Add padding information to both sides of VALUE."
+  (let ((val (trim value)))
+    (pad-string value)))
 
 (def pad-items (items)
   "Pad the items in ITEMS."
@@ -507,16 +512,15 @@ non-value data."
 
               ((is-mods-p (car args))
                (fn (cdr args)
-                   (cons (cat " " (car args)) acc)))
+                   (cons (pad-string-left (car args)) acc)))
 
               (t (fn (cdr args)
                      (cons (car args) acc))))))
     (fn section)))
 
 (def pad-sections (sections)
-  "Add padding information to the items in SECTIONS."
+  "Add padding information to the items in SECTIONS. This function mostly deals with the head."
   (flet ((fn (section)
-           (dbg section)
            (destructuring-bind (head &optional &rest body)
                (pad-items (pad-section section))
              (cond

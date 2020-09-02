@@ -262,7 +262,7 @@ body contents of the parser function."
            (destructuring-bind (regex &optional env val)
                expr
              (cat "/" regex "/" (or env "")
-                  (if val (cat " " val) "")))))
+                  (if val (pad-string-left val) "")))))
     (mapcar #'fn exprs)))
 
 (def make-transform (exprs)
@@ -284,3 +284,14 @@ body contents of the parser function."
     (cond ((string= ns "@") (cat ns key))
           (t (cat ns " " key)))))
 
+(def pad-string-left (string &optional (pad " "))
+  "Add string padding to the left of STRING with PAD."
+  (cat pad string))
+
+(def pad-string-right (string &optional (pad " "))
+  "Add string padding to the right of STRING with PAD."
+  (cat string pad))
+
+(def pad-string (string &optional (pad " "))
+  "Add string padding to both sides of STRING."
+  (cat pad string pad))
