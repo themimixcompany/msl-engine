@@ -276,3 +276,11 @@ body contents of the parser function."
              (cons (format nil "(~{~A~})" value))
              (t (string* value)))))
     (list-string value #'fn)))
+
+(def make-seq (list)
+  "Return a key sequence from LIST."
+  (destructuring-bind (ns key)
+      list
+    (cond ((string= ns "@") (cat ns key))
+          (t (cat ns " " key)))))
+
