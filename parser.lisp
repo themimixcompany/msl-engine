@@ -508,37 +508,62 @@
      (list (list atom-sequence nil)
            (list (append atom-sequence metadata) nil))))
 
+(defmacro ~@-metadata ()
+  "Define a helper macro for handling abutted metadata in @ forms."
+  `(if (equal name '=@-form)
+       '(+@-metadata)
+       '(?untrue)))
+
+(defmacro +literal-@-metadata ()
+  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
+  `(=destructure
+       (_ atom-sequence metadata-sequence _ _ _)
+       (=list (?expression-starter)
+              (=@-sequence)
+              (=metadata-sequence)
+              (%maybe (=hash))
+              (%maybe (=comment))
+              (?expression-terminator))
+     (let* ((meta-seq (red-cat metadata-sequence))
+            (atom-seq (make-seq atom-sequence))
+            (value (list atom-seq meta-seq)))
+       (list-string* value))))
+
+(defmacro ~literal-@-metadata ()
+  "Define a helper macro for handling abutted metadata in @ forms."
+  `(if (equal name '=literal-@-form)
+       '(+literal-@-metadata)
+       '(?untrue)))
+
+(defmacro ~mod (symbol-1 symbol-2)
+  "Define a helper macro for handling format and datatype mods."
+  `(if (mem sequence '((=format-sequence)
+                       (=datatype-sequence)))
+       (list ',symbol-1 ',symbol-2)
+       (list ',symbol-2)))
+
 (defm def-parser-form (name sequence value)
   "Define a macro for defining parsers."
-  (macrolet ((~mod (symbol-1 symbol-2)
-               `(if (mem sequence '((=format-sequence)
-                                    (=datatype-sequence)))
-                    (list ',symbol-1 ',symbol-2)
-                    (list ',symbol-2)))
-             (~@-metadata ()
-               `(if (equal name '=@-form)
-                    '(+@-metadata)
-                    '(?untrue))))
-    `(def-parser ,name ()
-       (let ((%atom-value)
-             (%atom-sequence)
-             (%meta-sequence))
-         (%or ,(~@-metadata)
-              (=destructure
-                  (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
-                  (=list ,@(~mod (?blackspace) (?expression-starter))
-                         (+sequence ,sequence)
-                         (+value ,value)
-                         (+atom-mods)
-                         (+metadata ,value)
-                         (+hash)
-                         (%maybe (=comment))
-                         (?expression-terminator))
-                (let* ((head (list (list atom-sequence atom-value)))
-                       (mods (red-append atom-mods))
-                       (meta (red-append metadata))
-                       (value (red-append head mods meta hash)))
-                  value)))))))
+  `(def-parser ,name ()
+     (let ((%atom-value)
+           (%atom-sequence)
+           (%meta-sequence))
+       (%or ,(~@-metadata)
+            (=destructure
+                (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
+                (=list ,@(~mod (?blackspace) (?expression-starter))
+                       (+sequence ,sequence)
+                       (+value ,value)
+                       (+atom-mods)
+                       (+metadata ,value)
+                       (+hash)
+                       (%maybe (=comment))
+                       (?expression-terminator))
+              (let* ((head (list (list atom-sequence atom-value)))
+                     (mods (red-append atom-mods))
+                     (meta (red-append metadata))
+                     (value (red-append head mods meta hash)))
+                value))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
 (def-parser-form =@-form (=@-sequence) (=@-value))
@@ -636,38 +661,26 @@
         (=list (maxpc.char:?string "//")
                (=subseq (%some (?not (%or (?expression-terminator)))))))))
 
-(def make-seq (list)
-  "Return a key sequence from LIST."
-  (destructuring-bind (ns key)
-      list
-    (cond ((string= ns "@") (cat ns key))
-          (t (cat ns " " key)))))
-
 (defm def-literal-parser-form (name sequence value)
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
-     (=destructure
-         (_ atom-sequence _ atom-value atom-mods hash _ _)
-         (=list (?expression-starter)
-                ,sequence
-                (?whitespace)
-                (%maybe ,value)
-                (%any (=literal-atom-mods))
-                (%maybe (=literal-hash))
-                (%maybe (=literal-comment))
-                (?expression-terminator))
-       (let* ((seq (make-seq atom-sequence))
-              (mods (red-cat (pad-things atom-mods)))
-              (list (list seq atom-value mods hash))
-              (value (denull list))
-              (things (pad-things value)))
-         (dbg atom-value
-              seq
-              mods
-              list
-              value
-              things)
-         (list-string* things)))))
+     (%or ,(~literal-@-metadata)
+          (=destructure
+              (,@(~mod _ _) atom-sequence _ atom-value atom-mods hash _ _)
+              (=list ,@(~mod (?blackspace) (?expression-starter))
+                     ,sequence
+                     (?whitespace)
+                     (%maybe ,value)
+                     (%any (=literal-atom-mods))
+                     (%maybe (=literal-hash))
+                     (%maybe (=literal-comment))
+                     (?expression-terminator))
+            (let* ((seq (make-seq atom-sequence))
+                   (mods (red-cat (pad-things atom-mods)))
+                   (list (list seq atom-value mods hash))
+                   (value (denull list))
+                   (things (pad-things value)))
+              (list-string* things))))))
 
 (def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
 (def-literal-parser-form =literal-c-form (=c-sequence) (=literal-value))
