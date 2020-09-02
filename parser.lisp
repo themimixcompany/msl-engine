@@ -325,7 +325,7 @@
         (=list (%some
                 (=destructure
                     (_ _ regex _ env _ value)
-                    (=list (?whitespace)
+                    (=list (?blackspace)
                            (=regex-namespace)
                            (=subseq (%some (?satisfies 'regex-char-p)))
                            (=regex-namespace)
@@ -550,9 +550,10 @@
            (%meta-sequence))
        (%or ,(~@-metadata)
             (=destructure
-                (,@(~mod _ _) atom-sequence atom-value atom-mods metadata hash _ _)
+                (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
                 (=list ,@(~mod (?blackspace) (?expression-starter))
                        (+sequence ,sequence)
+                       (?whitespace)
                        (+value ,value)
                        (+atom-mods)
                        (+metadata ,value)
