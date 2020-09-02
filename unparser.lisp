@@ -760,6 +760,12 @@ non-value data."
 
 (def recall (expr &key log)
   "Return the expr and value recall of EXPR."
-  (dispatch expr :log log :force t)
-  (values (recall-expr expr :dispatch nil)
-          (recall-value expr :dispatch nil)))
+  (block nil
+    (unless (dispatch expr :log log :force t)
+      (return nil))
+    (let ((value (recall-value expr :dispatch nil)))
+      (if (null value)
+          (values nil
+                  nil)
+          (values (recall-expr expr :dispatch nil)
+                  value)))))
