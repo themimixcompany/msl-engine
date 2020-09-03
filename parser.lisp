@@ -77,9 +77,15 @@
   "Remove the null items from VALUE."
   (remove-if #'null* value))
 
+(defmacro ~mod (symbol-1 symbol-2)
+  "Define a helper macro for handling format and datatype mods."
+  `(if (mem sequence '((=format-sequence)
+                       (=datatype-sequence)))
+       (list ',symbol-1 ',symbol-2)
+       (list ',symbol-2)))
 
 ;;--------------------------------------------------------------------------------------------------
-;; test parsers
+;; common parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
@@ -115,25 +121,29 @@
     "Match and return a valid MSL key."
     (=subseq (?seq (%some (?satisfies 'alphanumericp))
                    (%any (?seq (%maybe (?eq #\-))
-                               (%some (?satisfies 'alphanumericp))))))))
+                               (%some (?satisfies 'alphanumericp)))))))
+
+  (def-parser ?left-parenthesis ()
+    "Match a left parenthesis."
+    (?eq #\left_parenthesis))
+
+  (def-parser ?right-parenthesis ()
+    "Match a right parenthesis."
+    (?eq #\right_parenthesis))
+
+  (def-parser ?expression-starter ()
+    "Match the end of an expression."
+    (?seq (?left-parenthesis)))
+
+  (def-parser ?expression-terminator ()
+    "Match the end of an expression."
+    (?seq (?right-parenthesis))))
 
 ;;--------------------------------------------------------------------------------------------------
 ;; ns parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (def-parser =@-namespace ()
-    "Match and return the @ ns."
-    (=subseq (?eq #\@)))
-
-  (def-parser =grouping-namespace ()
-    "Match and return m w s v ns."
-    (=subseq (?satisfies (λ (c) (member c '(#\m #\w #\s #\v))))))
-
-  (def-parser =regex-namespace ()
-    "Match and return the / ns."
-    (=subseq (?eq #\/)))
-
   (def-parser =prelude-namespace ()
     "Match and return the MSL ns."
     (=transform (=subseq (?satisfies (λ (string)
@@ -142,13 +152,25 @@
                 (λ (string)
                   (string-upcase string))))
 
+  (def-parser =regex-namespace ()
+    "Match and return the / ns."
+    (=subseq (?eq #\/)))
+
   (def-parser =metadata-namespace ()
     "Match and return the : ns."
     (=subseq (?eq #\:)))
 
+  (def-parser =@-namespace ()
+    "Match and return the @ ns."
+    (=subseq (?eq #\@)))
+
   (def-parser =c-namespace ()
     "Match and return the c ns."
     (=subseq (?eq #\c)))
+
+  (def-parser =grouping-namespace ()
+    "Match and return m w s v ns."
+    (=subseq (?satisfies (λ (c) (member c '(#\m #\w #\s #\v))))))
 
   (def-parser =datatype-namespace ()
     "Match and return the d ns."
@@ -160,34 +182,10 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; ns sequences
+;; sequences
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (def-parser =@-sequence ()
-    "Match and return the key sequence for an @."
-    (=list (=destructure
-               (ns _)
-               (=list (=@-namespace)
-                      (%maybe (?whitespace))))
-           (=key)))
-
-  (def-parser =grouping-sequence ()
-    "Match and return the key sequence for an atom."
-    (=list (=destructure
-               (ns _)
-               (=list (=grouping-namespace)
-                      (?whitespace)))
-           (=key)))
-
-  (def-parser =c-sequence ()
-    "Match and return the key sequence for canon."
-    (=list (=destructure
-               (ns _)
-               (=list (=c-namespace)
-                      (?whitespace)))
-           (=key)))
-
   (def-parser =prelude-sequence ()
     "Match and return the key sequence for a prelude."
     (=list (=destructure
@@ -205,6 +203,30 @@
                (=key))
       (list ns key)))
 
+  (def-parser =@-sequence ()
+    "Match and return the key sequence for an @."
+    (=list (=destructure
+               (ns _)
+               (=list (=@-namespace)
+                      (%maybe (?whitespace))))
+           (=key)))
+
+  (def-parser =c-sequence ()
+    "Match and return the key sequence for canon."
+    (=list (=destructure
+               (ns _)
+               (=list (=c-namespace)
+                      (?whitespace)))
+           (=key)))
+
+  (def-parser =grouping-sequence ()
+    "Match and return the key sequence for an atom."
+    (=list (=destructure
+               (ns _)
+               (=list (=grouping-namespace)
+                      (?whitespace)))
+           (=key)))
+
   (def-parser =datatype-sequence ()
     "Match and return key sequence for d."
     (=destructure
@@ -221,29 +243,27 @@
         (=list (=format-namespace)
                (?whitespace)
                (=key))
-      (list atom key))))
+      (list atom key)))
+
+  (def-parser =filespec ()
+    "Match and return a URI filespec or URL."
+    (=subseq (%some (%and (?satisfies 'filespec-char-p)
+                          (?not (?eq #\])))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; test parsers (don't return a value)
+;; mil parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (def-parser ?left-parenthesis ()
-    "Match a left parenthesis."
-    (?eq #\left_parenthesis))
-
-  (def-parser ?right-parenthesis ()
-    "Match a right parenthesis."
-    (?eq #\right_parenthesis))
-
-  (def-parser ?expression-starter ()
-    "Match the end of an expression."
-    (?seq (?left-parenthesis)))
-
-  (def-parser ?expression-terminator ()
-    "Match the end of an expression."
-    (?seq (?right-parenthesis)))
+  (def-parser =hash ()
+    "Match and return a hash value."
+    (=destructure
+        (_ ns hash)
+        (=list (?whitespace)
+               (=subseq (?eq #\#))
+               (=sha256))
+      (list (list ns) (list hash))))
 
   (def-parser ?value-terminator ()
     "Match the end of a value."
@@ -260,27 +280,7 @@
      (?seq (?right-parenthesis) 'datatype-form)
      (?seq (?right-parenthesis) 'format-form)
      (?seq (?right-parenthesis) (%some (?right-parenthesis)))
-     (?seq (?right-parenthesis) (?end)))))
-
-
-;;--------------------------------------------------------------------------------------------------
-;; single-value parsers (return one value.)
-;;--------------------------------------------------------------------------------------------------
-
-(eval-always
-  (def-parser =filespec ()
-    "Match and return a URI filespec or URL."
-    (=subseq (%some (%and (?satisfies 'filespec-char-p)
-                          (?not (?eq #\]))))))
-
-  (def-parser =hash ()
-    "Match and return a hash value."
-    (=destructure
-        (_ ns hash)
-        (=list (?whitespace)
-               (=subseq (?eq #\#))
-               (=sha256))
-      (list (list ns) (list hash))))
+     (?seq (?right-parenthesis) (?end))))
 
   (def-parser =value ()
     "Match and return a raw value."
@@ -292,14 +292,8 @@
         (_ _ comment)
         (=list (?whitespace)
                (maxpc.char:?string "//")
-               (=subseq (%some (?not (%or (?expression-terminator)))))))))
+               (=subseq (%some (?not (%or (?expression-terminator))))))))
 
-
-;;--------------------------------------------------------------------------------------------------
-;; list of values parsers (return a list)
-;;--------------------------------------------------------------------------------------------------
-
-(eval-always
   (def-parser =@-value ()
     "Match and return a valid value for @."
     (%or 'literal-@-form
@@ -349,14 +343,8 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list '("[]") transform-list)))))
+        (list '("[]") transform-list))))
 
-
-;;--------------------------------------------------------------------------------------------------
-;; mods
-;;--------------------------------------------------------------------------------------------------
-
-(eval-always
   (def-parser =atom-mods-1 ()
     "Match and return key sequence for the the /, and [] nss."
     (%or 'regex-selector
@@ -375,129 +363,124 @@
 
   (def-parser =datatype-mods ()
     "Match and return key sequence for the / ns."
-    (%or 'regex-selector)))
+    (%or 'regex-selector))
 
+  (defmacro +sequence (sequence)
+    "Define a variable capturing parser macro for sequences."
+    `(=transform ,sequence
+                 (λ (seq)
+                   (cond ((null %meta-sequence)
+                          (setf %atom-sequence seq))
+                         (t (setf %atom-sequence seq))))))
 
-;;--------------------------------------------------------------------------------------------------
-;; atom forms (single-setter)
-;;--------------------------------------------------------------------------------------------------
+  (defmacro +value (value)
+    "Define a variable capturing parser macro for values."
+    `(=transform (%any ,value)
+                 (λ (val)
+                   (cond (val (setf %atom-value val))
+                         (t (setf %atom-value nil))))))
 
-(defmacro +sequence (sequence)
-  "Define a variable capturing parser macro for sequences."
-  `(=transform ,sequence
-               (λ (seq)
-                 (cond ((null %meta-sequence)
-                        (setf %atom-sequence seq))
-                       (t (setf %atom-sequence seq))))))
+  (defmacro +atom-mods-1 ()
+    "Define a variable capturing parser macro for type 1 atom mods."
+    `(=destructure
+         (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+         (=atom-mods-1)
+       (list (list (append %atom-sequence mod-sequence)
+                   mod-value mod-mods mod-meta mod-hash mod-comment))))
 
-(defmacro +value (value)
-  "Define a variable capturing parser macro for values."
-  `(=transform (%any ,value)
-               (λ (val)
-                 (cond (val (setf %atom-value val))
-                       (t (setf %atom-value nil))))))
+  (defmacro +atom-mods-2 ()
+    "Define a variable capturing parser macro for type 2 atom mods."
+    `(=transform (=destructure
+                     (_ atom-mods)
+                     (=list (=blackspace)
+                            (=atom-mods-2)))
+                 (λ (terms)
+                   (let ((value (prefix-terms %atom-sequence terms)))
+                     value))))
 
-(defmacro +atom-mods-1 ()
-  "Define a variable capturing parser macro for type 1 atom mods."
-  `(=destructure
-       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-       (=atom-mods-1)
-     (list (list (append %atom-sequence mod-sequence)
-                 mod-value mod-mods mod-meta mod-hash mod-comment))))
+  (defmacro +atom-mods ()
+    "Define a parser for handling atom mods."
+    `(%any (%or (+atom-mods-1)
+                (+atom-mods-2))))
 
-(defmacro +atom-mods-2 ()
-  "Define a variable capturing parser macro for type 2 atom mods."
-  `(=transform (=destructure
-                   (_ atom-mods)
-                   (=list (=blackspace)
-                          (=atom-mods-2)))
-               (λ (terms)
-                 (let ((value (prefix-terms %atom-sequence terms)))
-                   value))))
+  (defmacro +metadata-mods-1 ()
+    "Define a variable capturing parser macro for type 1 metadata mods."
+    `(=destructure
+         (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+         (=atom-mods-1)
+       (list (list (append %atom-sequence %meta-sequence mod-sequence)
+                   mod-value mod-mods mod-meta mod-hash mod-comment))))
 
-(defmacro +atom-mods ()
-  "Define a parser for handling atom mods."
-  `(%any (%or (+atom-mods-1)
-              (+atom-mods-2))))
+  (defmacro +metadata-mods-2 ()
+    "Define a variable capturing parser macro for type 2 metadata mods."
+    `(=transform (=destructure
+                     (_ atom-mods)
+                     (=list (=blackspace)
+                            (=atom-mods-2)))
+                 (λ (terms)
+                   (prefix-terms (append %atom-sequence %meta-sequence)
+                                 terms))))
 
-(defmacro +metadata-mods-1 ()
-  "Define a variable capturing parser macro for type 1 metadata mods."
-  `(=destructure
-       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
-       (=atom-mods-1)
-     (list (list (append %atom-sequence %meta-sequence mod-sequence)
-                 mod-value mod-mods mod-meta mod-hash mod-comment))))
+  (defmacro +metadata-mods ()
+    "Define a parser for handling metadata mods."
+    `(%or (+metadata-mods-1)
+          (+metadata-mods-2)))
 
-(defmacro +metadata-mods-2 ()
-  "Define a variable capturing parser macro for type 2 metadata mods."
-  `(=transform (=destructure
-                   (_ atom-mods)
-                   (=list (=blackspace)
-                          (=atom-mods-2)))
-               (λ (terms)
-                 (prefix-terms (append %atom-sequence %meta-sequence)
-                               terms))))
+  (defmacro +metadata-sequence ()
+    "Define a variable capturing parser macro for metadata sequence"
+    `(=transform (=destructure
+                     (_ atom-mods)
+                     (=list (=blackspace)
+                            (=metadata-sequence)))
+                 (λ (seq)
+                   (setf %meta-sequence seq))))
 
-(defmacro +metadata-mods ()
-  "Define a parser for handling metadata mods."
-  `(%or (+metadata-mods-1)
-        (+metadata-mods-2)))
+  (defun build-items (atom-sequence meta-sequence meta-value meta-mods)
+    "Return a list for +METADATA processing."
+    (cons (list (append atom-sequence meta-sequence)
+                meta-value)
+          meta-mods))
 
-(defmacro +metadata-sequence ()
-  "Define a variable capturing parser macro for metadata sequence"
-  `(=transform (=destructure
-                   (_ atom-mods)
-                   (=list (=blackspace)
-                          (=metadata-sequence)))
-               (λ (seq)
-                 (setf %meta-sequence seq))))
+  (defmacro +metadata (value)
+    "Define a variable capturing parser macro for metadata."
+    `(%maybe
+      (%some
+       (=destructure
+           (_ meta-sequence _ meta-value meta-mods)
+           (%or
+            ;; a value, with zero or more metadata mods
+            (=list (?whitespace)
+                   (+metadata-sequence)
+                   (?blackspace)
+                   (%some ,value)
+                   (%any (+metadata-mods)))
+            ;; zero or more values, with metadata mods
+            (=list (?whitespace)
+                   (+metadata-sequence)
+                   (?blackspace)
+                   (%any ,value)
+                   (%some (+metadata-mods)))
+            ;; no atom value, zero or more metadata mods; the birthday trap
+            (=list (?whitespace)
+                   (+metadata-sequence)
+                   (?blackspace)
+                   (?satisfies (λ (_)
+                                 (declare (ignore _))
+                                 (unless %atom-value t))
+                               (%any ,value))
+                   (%any (+metadata-mods))))
+         (declare (ignore meta-sequence))
+         (let* ((mods (red-append meta-mods))
+                (value (build-items %atom-sequence %meta-sequence meta-value mods)))
+           value)))))
 
-(defun build-items (atom-sequence meta-sequence meta-value meta-mods)
-  "Return a list for +METADATA processing."
-  (cons (list (append atom-sequence meta-sequence)
-              meta-value)
-        meta-mods))
-
-(defmacro +metadata (value)
-  "Define a variable capturing parser macro for metadata."
-  `(%maybe
-    (%some
-     (=destructure
-         (_ meta-sequence _ meta-value meta-mods)
-         (%or
-          ;; a value, with zero or more metadata mods
-          (=list (?whitespace)
-                 (+metadata-sequence)
-                 (?blackspace)
-                 (%some ,value)
-                 (%any (+metadata-mods)))
-          ;; zero or more values, with metadata mods
-          (=list (?whitespace)
-                 (+metadata-sequence)
-                 (?blackspace)
-                 (%any ,value)
-                 (%some (+metadata-mods)))
-          ;; no atom value, zero or more metadata mods; the birthday trap
-          (=list (?whitespace)
-                 (+metadata-sequence)
-                 (?blackspace)
-                 (?satisfies (λ (_)
-                               (declare (ignore _))
-                               (unless %atom-value t))
-                             (%any ,value))
-                 (%any (+metadata-mods))))
-       (declare (ignore meta-sequence))
-       (let* ((mods (red-append meta-mods))
-              (value (build-items %atom-sequence %meta-sequence meta-value mods)))
-         value)))))
-
-(defmacro +hash ()
-  "Define a variable capturing parser macro for hash."
-  `(%maybe
-    (=destructure
-        (hash-seq hash-value)
-        (=hash)
-      (list (list (append %atom-sequence hash-seq) hash-value)))))
+  (defmacro +hash ()
+    "Define a variable capturing parser macro for hash."
+    `(%maybe
+      (=destructure
+          (hash-seq hash-value)
+          (=hash)
+        (list (list (append %atom-sequence hash-seq) hash-value))))))
 
 (defmacro +@-metadata ()
   "Define a variable capturing parser macro for @ with a single abutted metadata recall."
@@ -517,13 +500,6 @@
   `(if (equal name '=@-form)
        '(+@-metadata)
        '(?untrue)))
-
-(defmacro ~mod (symbol-1 symbol-2)
-  "Define a helper macro for handling format and datatype mods."
-  `(if (mem sequence '((=format-sequence)
-                       (=datatype-sequence)))
-       (list ',symbol-1 ',symbol-2)
-       (list ',symbol-2)))
 
 (defm def-parser-form (name sequence value)
   "Define a macro for defining parsers."
@@ -555,6 +531,22 @@
 (def-parser-form =grouping-form (=grouping-sequence) (=grouping-value))
 (def-parser-form =format-form (=format-sequence) (=value))
 (def-parser-form =datatype-form (=datatype-sequence) (=value))
+
+(def-parser =literal-atom-form ()
+  "Match and return a nested atom."
+  (%or (=@-form)
+       (=c-form)
+       (=grouping-form)))
+
+(def-parser =expression ()
+  "Match and return an MSL expression."
+  (%or (=prelude-form)
+       (=@-form)
+       (=c-form)
+       (=grouping-form)
+       (=format-form)
+       (=datatype-form)
+       (=regex-selector)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -663,37 +655,37 @@
   (def-parser =literal-metadata ()
     "Define a literal parser macro for metadata."
     (%some
-       (=destructure
-           (_ meta-sequence _ meta-value meta-mods)
-           (%or
-            ;; a value, with zero or more metadata mods
-            (=list (?whitespace)
-                   (=literal-metadata-sequence)
-                   (?whitespace)
-                   (%maybe (=literal-value))
-                   (%any (=literal-metadata-mods)))
-            ;; zero or more values, with metadata mods
-            (=list (?whitespace)
-                   (=literal-metadata-sequence)
-                   (?whitespace)
-                   (%maybe (=literal-value))
-                   (%some (=literal-metadata-mods)))
-            ;; no atom value, zero or more metadata mods; the birthday trap
-            (=list (?whitespace)
-                   (=literal-metadata-sequence)
-                   (?whitespace)
-                   (?satisfies (λ (_)
-                                 (declare (ignore _)))
-                               (%any (=literal-value)))
-                   (%any (=literal-metadata-mods))))
-         (let* ((seq meta-sequence)
-                (val meta-value)
-                (mods (red-cat meta-mods))
-                (list (list seq val mods))
-                (value (denull list))
-                (things (pad-things value))
-                (val (red-cat things)))
-           val)))))
+     (=destructure
+         (_ meta-sequence _ meta-value meta-mods)
+         (%or
+          ;; a value, with zero or more metadata mods
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (%maybe (=literal-value))
+                 (%any (=literal-metadata-mods)))
+          ;; zero or more values, with metadata mods
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (%maybe (=literal-value))
+                 (%some (=literal-metadata-mods)))
+          ;; no atom value, zero or more metadata mods; the birthday trap
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (?satisfies (λ (_)
+                               (declare (ignore _)))
+                             (%any (=literal-value)))
+                 (%any (=literal-metadata-mods))))
+       (let* ((seq meta-sequence)
+              (val meta-value)
+              (mods (red-cat meta-mods))
+              (list (list seq val mods))
+              (value (denull list))
+              (things (pad-things value))
+              (val (red-cat things)))
+         val)))))
 
 (defmacro +literal-@-metadata ()
   "Define a variable capturing parser macro for @ with a single abutted metadata recall."
@@ -757,28 +749,18 @@
        (=literal-format-form)
        (=literal-datatype-form)))
 
-(def parse-literal-msl (expr)
-  "Parse a literal MSL expression."
-  (parse expr (=literal-expression)))
-
 
 ;;--------------------------------------------------------------------------------------------------
 ;; top-level
 ;;--------------------------------------------------------------------------------------------------
 
-(def-parser =expression ()
-  "Match and return an MSL expression."
-  (%or (=prelude-form)
-       (=@-form)
-       (=c-form)
-       (=grouping-form)
-       (=format-form)
-       (=datatype-form)
-       (=regex-selector)))
-
 (def parse-msl (expr)
   "Parse an MSL expression."
   (parse expr (=expression)))
+
+(def parse-literal-msl (expr)
+  "Parse a literal MSL expression."
+  (parse expr (=literal-expression)))
 
 (def parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
