@@ -247,19 +247,20 @@
 
   (def-parser ?value-terminator ()
     "Match the end of a value."
-    (%or 'literal-atom-form
-         'metadata-sequence
-         'regex-selector
-         'bracketed-transform-selector
-         'datatype-form
-         'format-form
-         'hash
-         'comment
-         (?seq (?right-parenthesis) 'metadata-sequence)
-         (?seq (?right-parenthesis) 'datatype-form)
-         (?seq (?right-parenthesis) 'format-form)
-         (?seq (?right-parenthesis) (%some (?right-parenthesis)))
-         (?seq (?right-parenthesis) (?end)))))
+    (%or
+     'literal-atom-form
+     'metadata-sequence
+     'regex-selector
+     'bracketed-transform-selector
+     'datatype-form
+     'format-form
+     'hash
+     'comment
+     (?seq (?right-parenthesis) 'metadata-sequence)
+     (?seq (?right-parenthesis) 'datatype-form)
+     (?seq (?right-parenthesis) 'format-form)
+     (?seq (?right-parenthesis) (%some (?right-parenthesis)))
+     (?seq (?right-parenthesis) (?end)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -462,20 +463,23 @@
   `(%maybe
     (%some
      (=destructure
-         (meta-sequence _ meta-value meta-mods)
+         (_ meta-sequence _ meta-value meta-mods)
          (%or
           ;; a value, with zero or more metadata mods
-          (=list (+metadata-sequence)
+          (=list (?whitespace)
+                 (+metadata-sequence)
                  (?blackspace)
                  (%some ,value)
                  (%any (+metadata-mods)))
           ;; zero or more values, with metadata mods
-          (=list (+metadata-sequence)
+          (=list (?whitespace)
+                 (+metadata-sequence)
                  (?blackspace)
                  (%any ,value)
                  (%some (+metadata-mods)))
           ;; no atom value, zero or more metadata mods; the birthday trap
-          (=list (+metadata-sequence)
+          (=list (?whitespace)
+                 (+metadata-sequence)
                  (?blackspace)
                  (?satisfies (λ (_)
                                (declare (ignore _))
@@ -512,27 +516,6 @@
   "Define a helper macro for handling abutted metadata in @ forms."
   `(if (equal name '=@-form)
        '(+@-metadata)
-       '(?untrue)))
-
-(defmacro +literal-@-metadata ()
-  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
-  `(=destructure
-       (_ atom-sequence metadata-sequence _ _ _)
-       (=list (?expression-starter)
-              (=@-sequence)
-              (=metadata-sequence)
-              (%maybe (=hash))
-              (%maybe (=comment))
-              (?expression-terminator))
-     (let* ((meta-seq (red-cat metadata-sequence))
-            (atom-seq (make-seq atom-sequence))
-            (value (list atom-seq meta-seq)))
-       (list-string* value))))
-
-(defmacro ~literal-@-metadata ()
-  "Define a helper macro for handling abutted metadata in @ forms."
-  `(if (equal name '=literal-@-form)
-       '(+literal-@-metadata)
        '(?untrue)))
 
 (defmacro ~mod (symbol-1 symbol-2)
@@ -581,21 +564,22 @@
 (eval-always
   (def-parser ?literal-value-terminator ()
     "Define a literal parser for matching the end of a value."
-    (%or ;;;'metadata-sequence
-         'literal-regex-selector
-         'literal-bracketed-transform-selector
-         'literal-datatype-form
-         'literal-format-form
-         'literal-hash
-         'literal-comment
-         ;;;(?seq (?right-parenthesis) 'metadata-sequence)
-         (?seq (?right-parenthesis) 'literal-datatype-form)
-         (?seq (?right-parenthesis) 'literal-format-form)
-         (?seq (?right-parenthesis) (%some (?right-parenthesis)))
-         (?seq (?right-parenthesis) (?end))
+    (%or
+     'literal-metadata-sequence
+     'literal-regex-selector
+     'literal-bracketed-transform-selector
+     'literal-datatype-form
+     'literal-format-form
+     'literal-hash
+     'literal-comment
+     (?seq (?right-parenthesis) 'literal-metadata-sequence)
+     (?seq (?right-parenthesis) 'literal-datatype-form)
+     (?seq (?right-parenthesis) 'literal-format-form)
+     (?seq (?right-parenthesis) (%some (?right-parenthesis)))
+     (?seq (?right-parenthesis) (?end))
 
-         ;; note: enables embedded forms, but breaks =LITERAL-EXPRESSION with another embedded forms
-         (?seq (?right-parenthesis) 'literal-value)))
+     ;; note: enables embedded forms, but breaks =LITERAL-EXPRESSION with another embedded forms
+     (?seq (?right-parenthesis) 'literal-value)))
 
   (def-parser =literal-value ()
     "Match and return a raw value."
@@ -632,6 +616,15 @@
       (when transform-list
         (red-cat (pad-things (make-transform transform-list))))))
 
+  (def-parser =literal-metadata-sequence ()
+    "Match and return key sequence for literal : ns."
+    (=destructure
+        (_ ns key)
+        (=list (?blackspace)
+               (=metadata-namespace)
+               (=key))
+      (cat ns key)))
+
   (def-parser =literal-atom-mods-1 ()
     "Match and return key sequence for the the /, and [] nss."
     (%or 'literal-regex-selector
@@ -644,8 +637,8 @@
 
   (def-parser =literal-atom-mods ()
     "Match and return atom mods."
-    (%or (=literal-atom-mods-1)
-         (=literal-atom-mods-2)))
+    (%or 'literal-atom-mods-1
+         'literal-atom-mods-2))
 
   (def-parser =literal-hash ()
     "Match and return a hash value."
@@ -660,25 +653,88 @@
     (=destructure
         (_ comment)
         (=list (maxpc.char:?string "//")
-               (=subseq (%some (?not (%or (?expression-terminator)))))))))
+               (=subseq (%some (?not (%or (?expression-terminator))))))))
+
+  (def-parser =literal-metadata-mods ()
+    "Define a literal parser for handling metadata mods."
+    (%or 'literal-atom-mods-1
+         'literal-atom-mods-2))
+
+  (def-parser =literal-metadata ()
+    "Define a literal parser macro for metadata."
+    (%some
+       (=destructure
+           (_ meta-sequence _ meta-value meta-mods)
+           (%or
+            ;; a value, with zero or more metadata mods
+            (=list (?whitespace)
+                   (=literal-metadata-sequence)
+                   (?whitespace)
+                   (%maybe (=literal-value))
+                   (%any (=literal-metadata-mods)))
+            ;; zero or more values, with metadata mods
+            (=list (?whitespace)
+                   (=literal-metadata-sequence)
+                   (?whitespace)
+                   (%maybe (=literal-value))
+                   (%some (=literal-metadata-mods)))
+            ;; no atom value, zero or more metadata mods; the birthday trap
+            (=list (?whitespace)
+                   (=literal-metadata-sequence)
+                   (?whitespace)
+                   (?satisfies (λ (_)
+                                 (declare (ignore _)))
+                               (%any (=literal-value)))
+                   (%any (=literal-metadata-mods))))
+         (let* ((seq meta-sequence)
+                (val meta-value)
+                (mods (red-cat meta-mods))
+                (list (list seq val mods))
+                (value (denull list))
+                (things (pad-things value))
+                (val (red-cat things)))
+           val)))))
+
+(defmacro +literal-@-metadata ()
+  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
+  `(=destructure
+       (_ atom-sequence metadata-sequence _ _ _)
+       (=list (?expression-starter)
+              (=@-sequence)
+              (=metadata-sequence)
+              (%maybe (=hash))
+              (%maybe (=comment))
+              (?expression-terminator))
+     (let* ((meta-seq (red-cat metadata-sequence))
+            (atom-seq (make-seq atom-sequence))
+            (value (list atom-seq meta-seq)))
+       (list-string* value))))
+
+(defmacro ~literal-@-metadata ()
+  "Define a helper macro for handling abutted metadata in @ forms."
+  `(if (equal name '=literal-@-form)
+       '(+literal-@-metadata)
+       '(?untrue)))
 
 (defm def-literal-parser-form (name sequence value)
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
      (%or ,(~literal-@-metadata)
           (=destructure
-              (,@(~mod _ _) atom-sequence _ atom-value atom-mods hash _ _)
+              (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
               (=list ,@(~mod (?blackspace) (?expression-starter))
                      ,sequence
                      (?whitespace)
                      (%maybe ,value)
                      (%any (=literal-atom-mods))
+                     (%maybe (=literal-metadata))
                      (%maybe (=literal-hash))
                      (%maybe (=literal-comment))
                      (?expression-terminator))
             (let* ((seq (make-seq atom-sequence))
                    (mods (red-cat (pad-things atom-mods)))
-                   (list (list seq atom-value mods hash))
+                   (meta (red-cat (pad-things metadata)))
+                   (list (list seq atom-value mods meta hash))
                    (value (denull list))
                    (things (pad-things value)))
               (list-string* things))))))
