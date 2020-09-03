@@ -335,7 +335,7 @@
                            (%maybe (=value)))
                   (list regex env value))))
       (when regex-list
-        (list (list "/") regex-list nil nil nil nil))))
+        (list '("/") regex-list))))
 
   (def-parser =bracketed-transform-selector ()
     "Match and return the key sequence for []."
@@ -349,7 +349,7 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list (list "[]") transform-list nil nil nil nil)))))
+        (list '("[]") transform-list)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
