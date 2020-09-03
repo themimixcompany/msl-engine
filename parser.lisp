@@ -724,7 +724,7 @@
               (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
               (=list ,@(~mod (?blackspace) (?expression-starter))
                      ,sequence
-                     (?whitespace)
+                     (%maybe (?whitespace))
                      (%maybe ,value)
                      (%any (=literal-atom-mods))
                      (%maybe (=literal-metadata))
