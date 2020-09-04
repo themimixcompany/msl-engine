@@ -339,9 +339,8 @@ function."
             :finally (let ((value (cons items (nthcdr limit stage))))
                        (return (post-sections value)))))))
 
-(def deconstruct (expr &key force)
-  "Return the full deconstruct of EXPR. If FORCE is true, dispatch EXPR unconditionally."
-  ;; note: this will fail to go if there are errors in EXPR
+(def deconstruct (expr)
+  "Return the full sections of dispatched EXPR."
   (flet* ((fn (args &optional acc)
             (cond
               ((null args)
@@ -357,12 +356,11 @@ function."
                            acc))))))
     (mapcar #'fn (sections expr))))
 
-(def deconstruct* (expr &key (force t))
-  "Return the full deconstruct of EXPR from a fresh universe. If FORCE is true, dispatch EXPR
-unconditionally."
+(def deconstruct* (expr)
+  "Return the full sections of forced dispatched EXPR from a separate universe."
   (with-fresh-universe ()
-    (dispatch expr :log nil :force force)
-    (deconstruct expr :force force)))
+    (dispatch expr :log nil :force t)
+    (deconstruct expr)))
 
 (def active-paths (sections)
   "Return only sections from SECTIONS that contain valid value information."
@@ -559,9 +557,9 @@ non-value data."
     (let ((head (head expr)))
       (when (path-exists-p head)
         (let* ((sections (deconstruct expr))
-               (all-paths (deconstruct* expr))
+               (paths (deconstruct* expr))
                (active-paths (active-paths (deconstruct* expr))))
-          (cond ((head-only-paths-p all-paths)
+          (cond ((head-only-paths-p paths)
                  (distill head (reduce-sections sections)))
                 (t (distill head (reduce-sections sections active-paths)))))))))
 
