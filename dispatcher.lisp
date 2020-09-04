@@ -295,7 +295,7 @@ in the store or not."
                  (loop :for value :in values
                        :do (when (exprp value)
                              (let ((v (dispatch value :log log :force force)))
-                               (if (null* v)
+                               (if (map-and #'null force v)
                                    (return nil)
                                    v))))
                  values))))))))
@@ -329,7 +329,7 @@ in the store or not."
                 (terms (pre-process-terms parse)))
       (let ((value (mapcar (λ (term)
                              (let ((v (dispatch-term term :log log :force force)))
-                               (if (null* v)
+                               (if (map-and #'null force v)
                                    (return nil)
                                    v)))
                            terms)))
