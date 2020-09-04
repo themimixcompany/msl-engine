@@ -345,6 +345,3 @@ in the store or not."
   "Clear the universe prior to calling DISPATCH*."
   (clear-universe)
   (apply #'dispatch (append args '(:log nil :force nil))))
-
-(def dispatch-terms (terms)
-  terms)
