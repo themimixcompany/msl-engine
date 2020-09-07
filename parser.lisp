@@ -177,11 +177,9 @@
 
   (def-parser =prelude-namespace ()
     "Match and return the MSL ns."
-    (=transform (=subseq (?satisfies (λ (string)
-                                       (cl-ppcre:scan "[mM][sS][lL]" string))
-                                     (=subseq (%some (?satisfies 'alphanumericp)))))
-                (λ (string)
-                  (string-upcase string))))
+    (=subseq (?satisfies (λ (string)
+                           (cl-ppcre:scan "[mM][sS][lL]" string))
+                         (=subseq (%some (?satisfies 'alphanumericp))))))
 
   (def-parser =metadata-namespace ()
     "Match and return the : ns."
@@ -375,7 +373,7 @@
                            (%maybe (=value)))
                   (list regex env value))))
       (when regex-list
-        (list (list "/") regex-list))))
+        (list '("/") regex-list))))
 
   (def-parser =bracketed-transform-selector ()
     "Match and return the key sequence for []."
@@ -389,7 +387,7 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list (list "[]") transform-list)))))
+        (list '("[]") transform-list)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
