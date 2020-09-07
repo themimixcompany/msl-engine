@@ -45,6 +45,7 @@
      (key-member-p ',items path)))
 
 (def-key-predicate @p "@")
+(def-key-predicate groupp ("m" "w" "s" "v"))
 (def-key-predicate metadatap ":")
 (def-key-predicate modsp ("d" "f"))
 (def-key-predicate hashp "#")
@@ -91,7 +92,21 @@
            (if (rmap-or section #'@p #'metadatap)
                (cons (cat (car section) (cadr section))
                      (cddr section))
-               section)))
+               section)
+           ;; (dbg section)
+           ;; (cond ((∧ (length= section 2)
+           ;;           (rmap-or section #'groupp))
+           ;;        section)
+           ;;       ((∧ (length> section 2)
+           ;;           (rmap-or section #'@p #'metadatap))
+           ;;        (cons (cat (car section) (cadr section))
+           ;;              (cddr section)))
+           ;;       ((∧ (length= section 2)
+           ;;           (rmap-or section #'@p #'metadatap))
+           ;;        (cons (cat (car section) (cadr section) " ")
+           ;;              (cddr section)))
+           ;;       (t section))
+           ))
     (mapcar #'fn sections)))
 
 (def wrap (items)
@@ -108,7 +123,6 @@
     (let ((value (mapcar #'fn items)))
       value)))
 
-;;; note: examine this function
 (def stage (sections)
   "Return a new list with preprocessed elements for wrapping and joining."
   (flet* ((fn (args &optional acc)
