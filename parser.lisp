@@ -111,6 +111,13 @@
   "Remove the null items from VALUE."
   (remove-if #'null* value))
 
+(defmacro ~mod (symbol-1 symbol-2)
+  "Define a capturing helper macro for handling format and datatype mods."
+  `(if (mem sequence '((=format-sequence)
+                       (=datatype-sequence)))
+       (list ',symbol-1 ',symbol-2)
+       (list ',symbol-2)))
+
 
 ;;--------------------------------------------------------------------------------------------------
 ;; test parsers
@@ -450,7 +457,7 @@
   "Define a variable capturing parser macro for type 2 atom mods."
   `(=transform (=destructure
                    (_ atom-mods)
-                   (=list (=blackspace)
+                   (=list (?blackspace)
                           (=atom-mods-2)))
                (λ (terms)
                  (let ((value (prefix-terms %atom-sequence terms)))
@@ -548,33 +555,35 @@
      (list (list atom-sequence nil)
            (list (append atom-sequence metadata) nil))))
 
+(defmacro ~@-metadata ()
+  "Define a capturing helper macro for handling abutted metadata in @ forms."
+  `(if (equal name '=@-form)
+       '(+@-metadata)
+       '(?untrue)))
+
 (defm def-parser-form (name sequence value)
   "Define a macro for defining parsers."
-  (macrolet ((~@-metadata ()
-               `(if (equal name '=@-form)
-                    '(+@-metadata)
-                    '(?untrue))))
-    `(def-parser ,name ()
-       (let ((%atom-value)
-             (%atom-sequence)
-             (%meta-sequence))
-         (%or ,(~@-metadata)
-              (=destructure
-                  (_ atom-sequence _ atom-value atom-mods metadata hash _ _)
-                  (=list (?expression-starter)
-                         (+sequence ,sequence)
-                         (%maybe (?whitespace))
-                         (+value ,value)
-                         (%any (+atom-mods))
-                         (%maybe (+metadata ,value))
-                         (%maybe (+hash))
-                         (%maybe (=comment))
-                         (?expression-terminator))
-                (let* ((head (list (list atom-sequence atom-value)))
-                       (mods (red-append atom-mods))
-                       (meta (red-append metadata))
-                       (value (red-append head mods meta hash)))
-                  value)))))))
+  `(def-parser ,name ()
+     (let ((%atom-value)
+           (%atom-sequence)
+           (%meta-sequence))
+       (%or ,(~@-metadata)
+            (=destructure
+                (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
+                (=list ,@(~mod (?blackspace) (?expression-starter))
+                       (+sequence ,sequence)
+                       (%maybe (?whitespace))
+                       (+value ,value)
+                       (%any (+atom-mods))
+                       (%maybe (+metadata ,value))
+                       (%maybe (+hash))
+                       (%maybe (=comment))
+                       (?expression-terminator))
+              (let* ((head (list (list atom-sequence atom-value)))
+                     (mods (red-append atom-mods))
+                     (meta (red-append metadata))
+                     (value (red-append head mods meta hash)))
+                value))))))
 
 (def-parser-form =prelude-form (=prelude-sequence) (=value))
 (def-parser-form =@-form (=@-sequence) (=@-value))
@@ -593,12 +602,14 @@
     "Define a literal parser for matching the end of a value."
     (macrolet ((~seq (&rest data)
                  `(?seq (?right-parenthesis) ,@data)))
-      (%or 'literal-regex-selector
+      (%or 'literal-metadata-sequence
+           'literal-regex-selector
            'literal-bracketed-transform-selector
            'literal-datatype-form
            'literal-format-form
            'literal-hash
            'literal-comment
+           (?seq (?right-parenthesis) 'literal-metadata-sequence)
            (~seq 'literal-regex-selector)
            (~seq 'literal-bracketed-transform-selector)
            (~seq 'literal-datatype-form)
@@ -643,6 +654,15 @@
       (when transform-list
         (red-cat (pad-things (make-transform transform-list))))))
 
+  (def-parser =literal-metadata-sequence ()
+    "Match and return key sequence for literal : ns."
+    (=destructure
+        (_ ns key)
+        (=list (?blackspace)
+               (=metadata-namespace)
+               (=key))
+      (cat ns key)))
+
   (def-parser =literal-atom-mods-1 ()
     "Match and return key sequence for the the /, and [] nss."
     (%or 'literal-regex-selector
@@ -671,40 +691,100 @@
     (=destructure
         (_ comment)
         (=list (maxpc.char:?string "//")
-               (=subseq (%some (?not (%or (?expression-terminator)))))))))
+               (=subseq (%some (?not (%or (?expression-terminator))))))))
 
-(def make-seq (ns key)
-  "Return a key sequence from NS and KEY."
-  (cond ((string= ns "@") (cat ns key))
-        (t (cat ns " " key))))
+  (def-parser =literal-metadata-mods ()
+    "Define a literal parser for handling metadata mods."
+    (%or 'literal-atom-mods-1
+         'literal-atom-mods-2))
 
-(defm def-literal-parser-form (name ns value)
+  (def-parser =literal-metadata ()
+    "Define a literal parser macro for metadata."
+    (%some
+     (=destructure
+         (_ meta-sequence _ meta-value meta-mods)
+         (%or
+          ;; a value, with zero or more metadata mods
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (%maybe (=literal-value))
+                 (%any (=literal-metadata-mods)))
+          ;; zero or more values, with metadata mods
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (%maybe (=literal-value))
+                 (%some (=literal-metadata-mods)))
+          ;; no atom value, zero or more metadata mods; the birthday trap
+          (=list (?whitespace)
+                 (=literal-metadata-sequence)
+                 (?whitespace)
+                 (?satisfies (λ (_)
+                               (declare (ignore _)))
+                             (%any (=literal-value)))
+                 (%any (=literal-metadata-mods))))
+       (let* ((seq meta-sequence)
+              (val meta-value)
+              (mods (red-cat meta-mods))
+              (list (list seq val mods))
+              (value (denull list))
+              (things (pad-things value))
+              (val (red-cat things)))
+         val)))))
+
+(defmacro +literal-@-metadata ()
+  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
+  `(=destructure
+       (_ atom-sequence metadata-sequence _ _ _)
+       (=list (?expression-starter)
+              (=@-sequence)
+              (=metadata-sequence)
+              (%maybe (=hash))
+              (%maybe (=comment))
+              (?expression-terminator))
+     (let* ((meta-seq (red-cat metadata-sequence))
+            (atom-seq (make-seq atom-sequence))
+            (value (list atom-seq meta-seq)))
+       (list-string* value))))
+
+(defmacro ~literal-@-metadata ()
+  "Define a helper macro for handling abutted metadata in @ forms."
+  `(if (equal name '=literal-@-form)
+       '(+literal-@-metadata)
+       '(?untrue)))
+
+(defm def-literal-parser-form (name sequence value)
   "Define a macro for defining literal parsers."
   `(def-parser ,name ()
-     (=destructure
-         (_ ns _ key _ atom-value atom-mods hash _ _)
-         (=list (?expression-starter)
-                ,ns
-                (%maybe (?whitespace))
-                (=key)
-                (?blackspace)
-                (%maybe ,value)
-                (%any (=literal-atom-mods))
-                (%maybe (=literal-hash))
-                (%maybe (=literal-comment))
-                (?expression-terminator))
-       (let* ((seq (make-seq ns key))
-              (mods (red-cat (pad-things atom-mods)))
-              (list (list seq atom-value mods hash))
-              (value (denull list))
-              (things (pad-things value)))
-         (list-string* things)))))
+     (%or ,(~literal-@-metadata)
+          (=destructure
+              (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
+              (=list ,@(~mod (?blackspace) (?expression-starter))
+                     ,sequence
+                     (%maybe (?whitespace))
+                     (%maybe ,value)
+                     (%any (=literal-atom-mods))
+                     (%maybe (=literal-metadata))
+                     (%maybe (=literal-hash))
+                     (%maybe (=literal-comment))
+                     (?expression-terminator))
+            (let* ((seq (make-seq atom-sequence))
+                   (mods (red-cat (pad-things atom-mods)))
+                   (meta (red-cat (pad-things metadata)))
+                   (list (list seq atom-value mods meta hash))
+                   (value (denull list))
+                   (things (pad-things value)))
+              ;; (dbg atom-mods
+              ;;      metadata
+              ;;      list)
+              (list-string* things))))))
 
-(def-literal-parser-form =literal-@-form (=@-namespace) (=literal-value))
-(def-literal-parser-form =literal-c-form (=c-namespace) (=literal-value))
-(def-literal-parser-form =literal-grouping-form (=grouping-namespace) (=literal-value))
-(def-literal-parser-form =literal-format-form (=format-namespace) (=literal-value))
-(def-literal-parser-form =literal-datatype-form (=datatype-namespace) (=literal-value))
+(def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
+(def-literal-parser-form =literal-c-form (=c-sequence) (=literal-value))
+(def-literal-parser-form =literal-grouping-form (=grouping-sequence) (=literal-value))
+(def-literal-parser-form =literal-format-form (=format-sequence) (=literal-value))
+(def-literal-parser-form =literal-datatype-form (=datatype-sequence) (=literal-value))
 
 (def-parser =literal-atom-form ()
   "Match and return a nested atom."
@@ -736,6 +816,10 @@
 (def parse-msl (expr)
   "Parse an MSL expression."
   (parse expr (=expression)))
+
+(def parse-literal-msl (expr)
+  "Parse an MSL expression."
+  (parse expr (=literal-expression)))
 
 (def parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
