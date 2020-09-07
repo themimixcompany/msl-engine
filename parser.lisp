@@ -448,10 +448,10 @@
 (defmacro +atom-mods-1 ()
   "Define a variable capturing parser macro for type 1 atom mods."
   `(=destructure
-       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+       (mod-sequence &optional mod-value)
        (=atom-mods-1)
      (list (list (append %atom-sequence mod-sequence)
-                 mod-value mod-mods mod-meta mod-hash mod-comment))))
+                 mod-value))))
 
 (defmacro +atom-mods-2 ()
   "Define a variable capturing parser macro for type 2 atom mods."
@@ -471,10 +471,10 @@
 (defmacro +metadata-mods-1 ()
   "Define a variable capturing parser macro for type 1 metadata mods."
   `(=destructure
-       (mod-sequence &optional mod-value mod-mods mod-meta mod-hash mod-comment)
+       (mod-sequence &optional mod-value)
        (=atom-mods-1)
      (list (list (append %atom-sequence %meta-sequence mod-sequence)
-                 mod-value mod-mods mod-meta mod-hash mod-comment))))
+                 mod-value))))
 
 (defmacro +metadata-mods-2 ()
   "Define a variable capturing parser macro for type 2 metadata mods."
