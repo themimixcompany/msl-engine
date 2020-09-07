@@ -375,7 +375,7 @@
                            (%maybe (=value)))
                   (list regex env value))))
       (when regex-list
-        (list (list "/") regex-list nil nil nil nil))))
+        (list (list "/") regex-list))))
 
   (def-parser =bracketed-transform-selector ()
     "Match and return the key sequence for []."
@@ -389,7 +389,7 @@
                            (=filespec)
                            (?eq #\])))))
       (when transform-list
-        (list (list "[]") transform-list nil nil nil nil)))))
+        (list (list "[]") transform-list)))))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -775,9 +775,6 @@
                    (list (list seq atom-value mods meta hash))
                    (value (denull list))
                    (things (pad-things value)))
-              ;; (dbg atom-mods
-              ;;      metadata
-              ;;      list)
               (list-string* things))))))
 
 (def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
