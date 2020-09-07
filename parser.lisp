@@ -23,12 +23,46 @@
   "Return true if VALUE is 64 characters long."
   (length= value 64))
 
+(defun inp (integer start &optional end)
+  "Return true if INTEGER is within START and END, inclusively."
+  (if end
+      (and (>= integer start)
+           (<= integer end))
+      (= integer start)))
+
+(defun extra-char-p (char)
+  "Return true if CHAR is one of supplementary characters."
+  (let ((code (char-code char)))
+    (or (inp code #x21 #x22)            ; #\! #\"
+        (inp code #x23 #x27)            ; #\# #\$ #\% #\& #\'
+        (inp code #x2A #x2F)            ; #\* #\+ #\, #\- #\. #\/
+        (inp code #x3A #x40)            ; #\: #\; #\< #\= #\> #\? #\@
+        (inp code #x5B #x60)            ; #\[ #\\ #\] #\^ #\_ #\`
+        (inp code #x7B #x7E)            ; #\{ #\| #\} #\~
+        (>= code #x7F))))
+
+(defun in-char-range-p (char start &optional end)
+  "Return true if the code of CHAR is within START and END, inclusively."
+  (inp (char-code char) start end))
+
+(defun whitespace-char-p (char)
+  "Return true if CHAR is one of the whitespace characters."
+  (mem char '(#\space #\tab #\newline #\page #\linefeed #\return #\rubout)))
+
 (defun regex-char-p (char)
   "Return true if CHAR is a valid regex character."
   (∨ (alphanumericp char)
-     (mem char '(#\\ #\+ #\* #\^ #\? #\| #\$ #\.
-                 #\left_parenthesis #\right_parenthesis
-                 #\[ #\] #\{ #\}))))
+     (whitespace-char-p char)
+     (in-char-range-p char #x21 #x22)   ; #\! #\"
+     (in-char-range-p char #x23 #x29)   ; #\# #\$ #\% #\& #\' #\( #\)
+
+     ;; excludes #x2F #\/
+     (in-char-range-p char #x2A #x2E)   ; #\* #\+ #\, #\- #\.
+
+     (in-char-range-p char #x3A #x40)   ; #\: #\; #\< #\= #\> #\? #\@
+     (in-char-range-p char #x5B #x60)   ; #\[ #\\ #\] #\^ #\_ #\`
+     (in-char-range-p char #x7B #x7E)   ; #\{ #\| #\} #\~
+     (>= (char-code char) #x7F)))
 
 (defun filespec-char-p (char)
   "Return true if CHAR is a valid regex character."
