@@ -697,19 +697,19 @@
          (_ meta-sequence _ meta-value meta-mods)
          (%or
           ;; a value, with zero or more metadata mods
-          (=list (?whitespace)
+          (=list (%maybe (?whitespace))
                  (=literal-metadata-sequence)
                  (?whitespace)
                  (%maybe (=literal-value))
                  (%any (=literal-metadata-mods)))
           ;; zero or more values, with metadata mods
-          (=list (?whitespace)
+          (=list (%maybe (?whitespace))
                  (=literal-metadata-sequence)
                  (?whitespace)
                  (%maybe (=literal-value))
                  (%some (=literal-metadata-mods)))
           ;; no atom value, zero or more metadata mods; the birthday trap
-          (=list (?whitespace)
+          (=list (%maybe (?whitespace))
                  (=literal-metadata-sequence)
                  (?whitespace)
                  (?satisfies (λ (_)
