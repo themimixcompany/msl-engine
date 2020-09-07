@@ -508,20 +508,23 @@
   "Define a variable capturing parser macro for metadata."
   `(%some
     (=destructure
-        (meta-sequence _ meta-value meta-mods)
+        (_ meta-sequence _ meta-value meta-mods)
         (%or
          ;; a value, with zero or more metadata mods
-         (=list (+metadata-sequence)
+         (=list (%maybe (?whitespace))
+                (+metadata-sequence)
                 (?blackspace)
                 (%some ,value)
                 (%any (+metadata-mods)))
          ;; zero or more values, with metadata mods
-         (=list (+metadata-sequence)
+         (=list (%maybe (?whitespace))
+                (+metadata-sequence)
                 (?blackspace)
                 (%any ,value)
                 (%some (+metadata-mods)))
          ;; no atom value, zero or more metadata mods; the birthday trap
-         (=list (+metadata-sequence)
+         (=list (%maybe (?whitespace))
+                (+metadata-sequence)
                 (?blackspace)
                 (?satisfies (λ (_)
                               (declare (ignore _))
