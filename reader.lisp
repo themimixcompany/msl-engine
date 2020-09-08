@@ -284,7 +284,7 @@
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
 
-(defun sections (expr)
+(defun %sections (expr)
   "Return the original expressions from EXPR. EXPR must already be evaluated prior to calling this
 function."
   (destructuring-bind (&optional key &rest keys)
@@ -302,28 +302,29 @@ function."
             :finally (let ((value (cons items (nthcdr limit stage))))
                        (return (post-sections value)))))))
 
-(def deconstruct (expr)
+(def sections (expr)
   "Return the full sections of dispatched EXPR."
   (flet* ((fn (args &optional acc)
             (cond
               ((null args)
                (nreverse acc))
 
+              ;; note: work on this
               ((termsp (car args))
                (fn (cdr args)
-                   (cons (mapcar #'fn (sections (car args)))
+                   (cons (mapcar #'fn (%sections (car args)))
                          acc)))
 
               (t (fn (cdr args)
                      (cons (car args)
                            acc))))))
-    (mapcar #'fn (sections expr))))
+    (mapcar #'fn (%sections expr))))
 
-(def deconstruct* (expr)
+(def sections* (expr)
   "Return the full sections of forced dispatched EXPR from a separate universe."
   (with-fresh-universe ()
     (dispatch expr :log nil :force t)
-    (deconstruct expr)))
+    (sections expr)))
 
 (def active-paths (sections)
   "Return only sections from SECTIONS that contain valid value information."
@@ -332,12 +333,15 @@ function."
       (cdr sections)
       sections))
 
-;;; note: work on this
 (def reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
   (mapcar (λ (expr)
-            (cond ((termsp expr) (recall-expr (terms-base expr)))
-                  (t expr)))
+            (cond
+              ;; note: work on this
+              ((termsp expr)
+               (recall-expr (terms-base expr)))
+
+              (t expr)))
           exprs))
 
 (defun section-match-p (path section)
@@ -380,14 +384,35 @@ function."
           items))
 
 (def is-mods-p (value)
-  "Return true is STRING is a mod."
+  "Return true is VALUE is a mod."
   (etypecase value
     (string (mem (elt value 0) '(#\/ #\[)))
     (cons (modsp value))
     (t nil)))
 
+(def is-regex-selector-p (value)
+  "Return true is VALUE is a bracketed transform selector."
+  (etypecase value
+    (string (mem (elt value 0) '(#\/)))
+    (cons (regexp value))
+    (t nil)))
+
+(def is-bracketed-transform-selector-p (value)
+  "Return true is VALUE is a bracketed transform selector."
+  (etypecase value
+    (string (mem (elt value 0) '(#\[)))
+    (cons (transformp value))
+    (t nil)))
+
+(def is-metadata-p (value)
+  "Return true if VALUE is a metadata."
+  (etypecase value
+    (string (mem (elt value 0) '(#\:)))
+    (cons (metadatap value))
+    (t nil)))
+
 (def pad-section (section)
-  "Do additiol padding on ITEMS."
+  "Do additional padding on ITEMS."
   (flet* ((fn (args &optional acc)
             (cond
               ((null args)
@@ -424,6 +449,10 @@ function."
                    (length= section 1))
                 (cons head body))
 
+               ((∧ (metadata-ns-p (string (elt head 0)))
+                   (is-bracketed-transform-selector-p (subseq (car body) 1)))
+                (cons (pad-value-left head) body))
+
                (t (cons (pad-value head) body))))))
     (mapcar #'fn sections)))
 
@@ -450,9 +479,9 @@ function."
         (return nil)))
     (let ((head (head expr)))
       (when (path-exists-p head)
-        (let* ((sections (deconstruct expr))
-               (paths (deconstruct* expr))
-               (active-paths (active-paths (deconstruct* expr))))
+        (let* ((sections (sections expr))
+               (paths (sections* expr))
+               (active-paths (active-paths (sections* expr))))
           (cond ((head-only-paths-p paths)
                  (distill head (reduce-sections sections)))
                 (t (distill head (reduce-sections sections active-paths)))))))))
@@ -550,16 +579,11 @@ function."
                    (cdr parse)))
          (car-only (car parse)))
 
-        ;; ;; no main value, there is at least one mod, and there are no metadata
-        ;; ((∧ (null* (cdar parse))
-        ;;     (find-if #'has-mods-p parse :key #'car)
-        ;;     (find-if-not #'has-metadata-p parse :key #'car))
-        ;;  (car-only (cadr parse)))
-
         ;; no main value, there is at least one mod
         ((∧ (null* (cdar parse))
             (some (λ (term)
-                    (rmap-and (car term) #'has-mods-p))
+                    (rmap-and (car term)
+                              #'has-mods-p))
                   parse))
          (car-only (cadr parse)))
 
