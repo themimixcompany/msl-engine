@@ -28,11 +28,12 @@
     "The list of @ nss.")
 
   (defc +atom-ns-list+
-      '(("c" . "canon")
-        ("m" . "machine")
-        ("w" . "world")
-        ("s" . "stream")
-        ("v" . "view"))
+      '(("msl" . "prelude")
+        ("c"   . "canon")
+        ("m"   . "machine")
+        ("w"   . "world")
+        ("s"   . "stream")
+        ("v"   . "view"))
     "The list of atom nss.")
 
   (defc +base-ns-list+
@@ -111,7 +112,7 @@
   ;; (uiop:os-cond
   ;;  ((uiop:os-windows-p) (system-version +self+))
   ;;  (t (asdf:system-version (system-object +self+))))
-  "2.4.35"
+  "2.4.36"
   "The introspected version of this system.")
 
 (defv *slynk-port*

@@ -25,15 +25,6 @@
           (append (remove* ex keys) ex)
           keys))))
 
-(defun children (table &optional object)
-  "Return all items in TABLE using KEY that are also tables."
-  (when (hash-table-p table)
-    (let ((keys (table-keys table)))
-      (loop :for key :in keys
-            :for value = (gethash key table)
-            :when (hash-table-p value)
-            :collect (if object value key)))))
-
 (defun key-member-p (keys path)
   "Return true if KEYS is part of PATH."
   (∧ (consp path)
@@ -84,6 +75,7 @@
                      (cons (car args) acc))))))
     (cond ((∧ (consp value) (¬ (termsp value)))
            (fn value))
+
           (t value))))
 
 (def merge-sections (sections)
@@ -92,21 +84,7 @@
            (if (rmap-or section #'@p #'metadatap)
                (cons (cat (car section) (cadr section))
                      (cddr section))
-               section)
-           ;; (dbg section)
-           ;; (cond ((∧ (length= section 2)
-           ;;           (rmap-or section #'groupp))
-           ;;        section)
-           ;;       ((∧ (length> section 2)
-           ;;           (rmap-or section #'@p #'metadatap))
-           ;;        (cons (cat (car section) (cadr section))
-           ;;              (cddr section)))
-           ;;       ((∧ (length= section 2)
-           ;;           (rmap-or section #'@p #'metadatap))
-           ;;        (cons (cat (car section) (cadr section) " ")
-           ;;              (cddr section)))
-           ;;       (t section))
-           ))
+               section)))
     (mapcar #'fn sections)))
 
 (def wrap (items)
@@ -115,7 +93,6 @@
            (cond ((∨ (atom item)
                      (∧ (consp item)
                         (¬ (metamodsp item))
-                        ;; note: what are the exact consequences of these?
                         (¬ (stringp (car item)))
                         (¬ (consp (car item)))))
                   (list item))
@@ -262,34 +239,6 @@
     (cond ((termsp terms #'base-ns-p) (fn terms))
           (t terms))))
 
-(def %collect (table children keys)
-  "Return the raw original complete expressions in TABLE that matches CHILDREN and KEYS, where
-CHILDREN is a list of top-level keys as strings, and KEYS is a list of keys as strings under
-CHILDREN."
-  (loop :for child :in children
-        :with cache
-        :nconc (loop :for terms :in (construct table child keys)
-                     :unless (mem (list-string terms) cache)
-                     :collect (loop :for term :in terms
-                                    :for v = (convert term)
-                                    :when (termsp term #'base-ns-p)
-                                    :do (pushnew (list-string v) cache :test #'equalp)
-                                    :collect v))))
-
-(def collect (&rest keys)
-  "Return the original expressions in TABLE. This is mostly a user function to check if the
-expressions can be read from the store."
-  (declare (ignorable keys))
-  (let* ((table (atom-table *universe*))
-         (children (children table)))
-    (mapcar #'list-string (%collect table children keys))))
-
-(def clear-expr (expr)
-  "Remove the expression under EXPR."
-  (let ((head (head expr)))
-    (when head
-      (clear-path (atom-table *universe*) head))))
-
 (def head-only-paths-p (value)
   "Return true if there’s only one path in PATHS and that there’s only a head."
   (when (length= value 1)
@@ -383,85 +332,7 @@ function."
       (cdr sections)
       sections))
 
-(defm def-checker (name)
-  "Define a predicate for testing nss."
-  (let* ((part-name (hyphenate-intern nil name "part-p"))
-         (ns-name (hyphenate-intern nil name "ns-p")))
-    `(def ,part-name (part)
-       (destructuring-bind (ns &optional &rest _)
-           part
-         (declare (ignore _))
-         (,ns-name ns)))))
-(mapply def-checker @ atom sub metadata)
-
-(defm def-spacer (name)
-  "Define a helper for inserting spaces."
-  (destructuring-bind (_ position)
-      (uiop:split-string (string name) :separator '(#\-))
-    (declare (ignore _))
-    (let ((fn-name (hyphenate-intern nil "insert" position)))
-      `(def ,name (list &rest indexes)
-         (flet* ((fn (list args)
-                   (cond ((null args) list)
-                         (t (fn (,fn-name list (car args) " ")
-                                (cdr args))))))
-           (fn list indexes))))))
-(mapply def-spacer space-before space-after)
-
-(def trim-items (items)
-  "Remove the extraneous whitespace from the items in ITEMS."
-  (mapcar #'trim items))
-
-(def refine-part (part)
-  "Conditionally perform additional processing on PART."
-  (macrolet ((~m (&body body)
-               `(∧ (consp part)
-                   ,@body)))
-    (cond
-      ((~m (@-part-p part) (length> part 2))
-       (space-after part 1))
-
-      ((~m (atom-part-p part) (length= part 2))
-       (space-after part 0))
-
-      ((~m (atom-part-p part) (length> part 2))
-       (space-after part 0 2))
-
-      ((~m (sub-part-p part))
-       (list-string (trim-items (merge-colons part))))
-
-      ((~m (metadata-part-p part))
-       (space-before part 0 3))
-
-      (t part))))
-
-(def refine-parts (parts)
-  "Apply REFINE-PART to PARTS."
-  (mapcar #'refine-part parts))
-
-(def reduce-parts (parts)
-  "Return a string from running PARTS through filters."
-  (let* ((value (refine-parts parts))
-         (stage (flatten-one (wrap (merge-sections (stage value))))))
-    (list-string* stage)))
-
-(def reduce-expr (expr)
-  "Reduce EXPR to the closest approximate original expression, removing comments and other
-non-value data."
-  (flet* ((fn (args &optional acc)
-            (cond
-              ((null args)
-               (reduce-parts (nreverse acc)))
-
-              ((termsp (car args))
-               (fn (cdr args)
-                   (cons (fn (car args)) acc)))
-
-              (t (fn (cdr args)
-                     (cons (car args) acc))))))
-    (fn (deconstruct* expr))))
-
-
+;;; note: work on this
 (def reduce-exprs (exprs)
   "Return a list of values that corresponding to expressions, including terms reduction."
   (mapcar (λ (expr)
@@ -536,11 +407,20 @@ non-value data."
            (destructuring-bind (head &optional &rest body)
                (pad-items (pad-section section))
              (cond
-               ((∧ (base-ns-p (string (elt head 0)))
+               ((∧ (atom-ns-p head)
+                   (length> section 2))
+                (append (mapcar #'pad-value-right (subseq section 0 2))
+                        (cddr section)))
+
+               ((∧ (atom-ns-p head)
+                   (length= section 2))
+                (cons (pad-value-right head) body))
+
+               ((∧ (@-ns-p (string (elt head 0)))
                    (length> section 1))
                 (cons (pad-value-right head) body))
 
-               ((∧ (base-ns-p (string (elt head 0)))
+               ((∧ (@-ns-p (string (elt head 0)))
                    (length= section 1))
                 (cons head body))
 
