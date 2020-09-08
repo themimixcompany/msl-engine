@@ -6,8 +6,8 @@
         #:streams/classes
         #:streams/common
         #:streams/parser
-        #:streams/unparser
-        #:streams/dispatcher
+        #:streams/reader
+        #:streams/writer
         #:streams/json
         #:marie))
 

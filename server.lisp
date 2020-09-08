@@ -7,8 +7,8 @@
         #:streams/classes
         #:streams/common
         #:streams/parser
-        #:streams/unparser
-        #:streams/admin-dispatcher
+        #:streams/reader
+        #:streams/admin-writer
         #:streams/json
         #:marie)
   (:export #:server))

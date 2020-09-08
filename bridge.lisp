@@ -6,7 +6,7 @@
         #:streams/classes
         #:streams/common
         #:streams/logger
-        #:streams/dispatcher
+        #:streams/writer
         #:marie))
 
 (in-package #:streams/bridge)
