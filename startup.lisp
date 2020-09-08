@@ -6,7 +6,7 @@
         #:streams/classes
         #:streams/common
         #:streams/logger
-        #:streams/dispatcher
+        #:streams/writer
         #:streams/bridge
         #:marie))
 

@@ -1,6 +1,6 @@
-;;;; dispatcher.lisp
+;;;; writer.lisp
 
-(uiop:define-package #:streams/dispatcher
+(uiop:define-package #:streams/writer
   (:use #:cl
         #:streams/specials
         #:streams/classes
@@ -9,7 +9,7 @@
         #:streams/logger
         #:marie))
 
-(in-package #:streams/dispatcher)
+(in-package #:streams/writer)
 
 
 ;;--------------------------------------------------------------------------------------------------

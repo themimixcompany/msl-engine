@@ -9,10 +9,10 @@
                  #:streams/common
                  #:streams/parser
                  #:streams/logger
-                 #:streams/dispatcher
-                 #:streams/unparser
+                 #:streams/writer
+                 #:streams/reader
                  #:streams/bridge
-                 #:streams/admin-dispatcher
+                 #:streams/admin-writer
                  #:streams/json
                  #:streams/server
                  #:streams/builder

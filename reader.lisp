@@ -1,15 +1,15 @@
-;;;; unparser.lisp
+;;;; reader.lisp
 
-(uiop:define-package #:streams/unparser
+(uiop:define-package #:streams/reader
   (:use #:cl
         #:streams/specials
         #:streams/classes
         #:streams/common
         #:streams/parser
-        #:streams/dispatcher
+        #:streams/writer
         #:marie))
 
-(in-package #:streams/unparser)
+(in-package #:streams/reader)
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -335,7 +335,7 @@ expressions can be read from the store."
          (lead (list (append (car start) (cdr start)))))
     (append lead metadata hash-value)))
 
-(def sections (expr)
+(defun sections (expr)
   "Return the original expressions from EXPR. EXPR must already be evaluated prior to calling this
 function."
   (destructuring-bind (&optional key &rest keys)

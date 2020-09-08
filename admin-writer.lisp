@@ -1,18 +1,18 @@
-;;;; admin-dispatcher.lisp
+;;;; admin-writer.lisp
 
-(uiop:define-package #:streams/admin-dispatcher
+(uiop:define-package #:streams/admin-writer
   (:use #:cl
         #:streams/specials
         #:streams/classes
         #:streams/common
         #:streams/parser
-        #:streams/unparser
+        #:streams/reader
         #:streams/logger
-        #:streams/dispatcher
+        #:streams/writer
         #:streams/bridge
         #:marie))
 
-(in-package #:streams/admin-dispatcher)
+(in-package #:streams/admin-writer)
 
 
 ;;--------------------------------------------------------------------------------------------------
