@@ -513,7 +513,11 @@ function."
                        (gethash (car path) table)
                      (when existsp
                        (cond ((hash-table-p val) val)
-                             ((listp val)
+                             ((∧ (listp val)
+                                 (string= (end path) "[]"))
+                              val)
+                             ((∧ (listp val)
+                                 (¬ (string= (end path) "[]")))
                               (reduce-values val))
                              (t val)))))
                   ((hash-table-p (gethash (car path) table))
@@ -523,8 +527,13 @@ function."
 
 (def extract-value (path)
   "Return the value specified in PATH."
-  (let ((value (append path '("="))))
-    (%extract-value value)))
+  (let ((default-path (append path '("="))))
+    (cond
+      ((∧ (has-metadata-p path)
+          (¬ (path-exists-p default-path))
+          (path-exists-p (append path '("[]"))))
+       (car (%extract-value (append path '("[]")))))
+      (t (%extract-value default-path)))))
 
 (def car-only (sequence)
   "Return a new sequence with only the first element in SEQUENCE."
