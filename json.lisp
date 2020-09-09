@@ -54,22 +54,17 @@
   (cond ((json-object-p message) (lisp-to-json (list lisp-data js-data)))
         (t (string* lisp-data))))
 
-(defv *json-tests*
-  "tests.json"
-  "The basename of the JSON tests source file.")
-
-(defun json-tests-path ()
+(def json-test-path (path)
   "Return the path for the JSON tests."
   (let* ((system (asdf:find-system (intern +self+ (find-package :keyword))))
          (source-directory (asdf:system-source-directory system))
-         (file-path (uiop:merge-pathnames* *json-tests* source-directory)))
+         (file-path (uiop:merge-pathnames* source-directory path)))
     (when (uiop:file-exists-p file-path)
       file-path)))
 
-(def read-json-tests ()
-  "Return a string from reading the JSON tests."
-  (when-let* ((path (json-tests-path))
-              (value (uiop:read-file-string path)))
+(def read-json-test (path)
+  "Return a string from reading a JSON file from PATH."
+  (when-let* ((value (uiop:read-file-string path)))
     (json-to-lisp value)))
 
 (defun read-location (path set)

@@ -333,17 +333,6 @@ function."
       (cdr sections)
       sections))
 
-(def reduce-exprs (exprs)
-  "Return a list of values that corresponding to expressions, including terms reduction."
-  (mapcar (λ (expr)
-            (cond
-              ;; note: work on this
-              ((termsp expr)
-               (recall-expr (terms-base expr)))
-
-              (t expr)))
-          exprs))
-
 (defun section-match-p (path section)
   "Return true if PATH matches SECTION."
   (when (consp path)
@@ -355,10 +344,8 @@ function."
       (loop :for path :in paths
             :nconc (loop :for section :in sections
                          :when (section-match-p path section)
-                         :collect (reduce-exprs section)))
-      (loop :for section :in sections
-            :if (consp section) :collect (reduce-exprs section)
-            :else :collect section)))
+                         :collect section))
+      sections))
 
 (def pad-value-left (value)
   "Add padding information to the right side of VALUE."
@@ -481,7 +468,7 @@ function."
       (when (path-exists-p head)
         (let* ((sections (sections expr))
                (paths (sections* expr))
-               (active-paths (active-paths (sections* expr))))
+               (active-paths (active-paths paths)))
           (cond ((head-only-paths-p paths)
                  (distill head (reduce-sections sections)))
                 (t (distill head (reduce-sections sections active-paths)))))))))
