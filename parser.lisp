@@ -543,19 +543,22 @@
        (=hash)
      (list (list (append %atom-sequence hash-seq) hash-value))))
 
-(defmacro +@-metadata ()
-  "Define a variable capturing parser macro for @ with a single abutted metadata recall."
+(defm +@-metadata ()
+  "Define a variable capturing parser macro for @ with a single abutted metadata recall or set."
   `(=destructure
-       (_ atom-sequence metadata _ _ _)
+       (_ atom-sequence meta-sequence _ meta-value _ _ _)
        (=list (?expression-starter)
               (=@-sequence)
               (=metadata-sequence)
+              (%maybe (?whitespace))
+              (%maybe (=@-value))
               (%maybe (+hash))
               (%maybe (=comment))
               (?expression-terminator))
-     (list (list atom-sequence nil)
-           (list (append atom-sequence metadata) nil))))
-
+     (let ((value (if meta-value (list meta-value) nil)))
+       (list (list atom-sequence nil)
+             (list (append atom-sequence meta-sequence)
+                   value)))))
 (defmacro ~@-metadata ()
   "Define a capturing helper macro for handling abutted metadata in @ forms."
   `(if (equal name '=@-form)
