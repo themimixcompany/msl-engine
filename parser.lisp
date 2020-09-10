@@ -286,7 +286,7 @@
 
   (def-parser ?value-terminator ()
     "Match the end of a value."
-    (%or 'literal-expression
+    (%or 'nested-expression
          'metadata-sequence
          'regex-selector
          'bracketed-transform-selector
@@ -340,21 +340,21 @@
 (eval-always
   (def-parser =@-value ()
     "Match and return a valid value for @."
-    (%or 'literal-@-form
-         'literal-grouping-form
+    (%or 'nested-@-form
+         'nested-grouping-form
          (=value)))
 
   (def-parser =c-value ()
     "Match and return a valid value for c."
-    (%or 'literal-@-form
-         'literal-c-form
+    (%or 'nested-@-form
+         'nested-c-form
          (=value)))
 
   (def-parser =grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or 'literal-@-form
-         'literal-c-form
-         'literal-grouping-form
+    (%or 'nested-@-form
+         'nested-c-form
+         'nested-grouping-form
          (=value)))
 
   (def-parser =regex-selector ()
@@ -598,51 +598,51 @@
 
 
 ;;--------------------------------------------------------------------------------------------------
-;; literal parsers
+;; nested parsers
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (def-parser ?literal-value-terminator ()
-    "Define a literal parser for matching the end of a value."
-    (%or 'literal-metadata-sequence
-         'literal-regex-selector
-         'literal-bracketed-transform-selector
-         'literal-datatype-form
-         'literal-format-form
-         'literal-hash
-         'literal-comment
-         (?seq (?right-parenthesis) 'literal-value)
-         (?seq (?right-parenthesis) 'literal-metadata-sequence)
-         (?seq (?right-parenthesis) 'literal-datatype-form)
-         (?seq (?right-parenthesis) 'literal-format-form)
+  (def-parser ?nested-value-terminator ()
+    "Define a nested parser for matching the end of a value."
+    (%or 'nested-metadata-sequence
+         'nested-regex-selector
+         'nested-bracketed-transform-selector
+         'nested-datatype-form
+         'nested-format-form
+         'nested-hash
+         'nested-comment
+         (?seq (?right-parenthesis) 'nested-value)
+         (?seq (?right-parenthesis) 'nested-metadata-sequence)
+         (?seq (?right-parenthesis) 'nested-datatype-form)
+         (?seq (?right-parenthesis) 'nested-format-form)
          (?seq (?right-parenthesis) (?right-parenthesis))
          (?seq (?right-parenthesis) (?end))))
 
-  (def-parser =literal-@-value ()
+  (def-parser =nested-@-value ()
     "Match and return a valid value for @."
-    (%or 'literal-@-form
-         'literal-grouping-form
-         'literal-value))
+    (%or 'nested-@-form
+         'nested-grouping-form
+         'nested-value))
 
-  (def-parser =literal-c-value ()
+  (def-parser =nested-c-value ()
     "Match and return a valid value for c."
-    (%or 'literal-@-form
-         'literal-c-form
-         'literal-value))
+    (%or 'nested-@-form
+         'nested-c-form
+         'nested-value))
 
-  (def-parser =literal-grouping-value ()
+  (def-parser =nested-grouping-value ()
     "Match and return a valid value for m w s v."
-    (%or 'literal-@-form
-         'literal-c-form
-         'literal-grouping-form
-         'literal-value))
+    (%or 'nested-@-form
+         'nested-c-form
+         'nested-grouping-form
+         'nested-value))
 
-  (def-parser =literal-value ()
+  (def-parser =nested-value ()
     "Match and return a raw value."
-    (=subseq (%some (?not (?literal-value-terminator)))))
+    (=subseq (%some (?not (?nested-value-terminator)))))
 
-  (def-parser =literal-regex-selector ()
-    "Match and return the literal key sequence for /."
+  (def-parser =nested-regex-selector ()
+    "Match and return the nested key sequence for /."
     (=destructure
         (&rest regex-list)
         (%some (=destructure
@@ -652,13 +652,13 @@
                           (=regex-namespace)
                           (%maybe (=subseq (%some (?satisfies 'alphanumericp))))
                           (?blackspace)
-                          (%maybe (=literal-value)))
+                          (%maybe (=nested-value)))
                  (list regex env value)))
       (when regex-list
         (red-cat (pad-things (make-regex regex-list))))))
 
-  (def-parser =literal-bracketed-transform-selector ()
-    "Match and return the literal key sequence for []."
+  (def-parser =nested-bracketed-transform-selector ()
+    "Match and return the nested key sequence for []."
     (=destructure
         (transform-list)
         (=list (%some
@@ -671,8 +671,8 @@
       (when transform-list
         (red-cat (pad-things (make-transform transform-list))))))
 
-  (def-parser =literal-metadata-sequence ()
-    "Match and return key sequence for literal : ns."
+  (def-parser =nested-metadata-sequence ()
+    "Match and return key sequence for nested : ns."
     (=destructure
         (_ ns key)
         (=list (?blackspace)
@@ -680,22 +680,22 @@
                (=key))
       (cat ns key)))
 
-  (def-parser =literal-atom-mods-1 ()
+  (def-parser =nested-atom-mods-1 ()
     "Match and return key sequence for the the /, and [] nss."
-    (%or 'literal-regex-selector
-         'literal-bracketed-transform-selector))
+    (%or 'nested-regex-selector
+         'nested-bracketed-transform-selector))
 
-  (def-parser =literal-atom-mods-2 ()
+  (def-parser =nested-atom-mods-2 ()
     "Match and return key sequence for the d, and f nss."
-    (%or 'literal-datatype-form
-         'literal-format-form))
+    (%or 'nested-datatype-form
+         'nested-format-form))
 
-  (def-parser =literal-atom-mods ()
+  (def-parser =nested-atom-mods ()
     "Match and return atom mods."
-    (%or (=literal-atom-mods-1)
-         (=literal-atom-mods-2)))
+    (%or (=nested-atom-mods-1)
+         (=nested-atom-mods-2)))
 
-  (def-parser =literal-hash ()
+  (def-parser =nested-hash ()
     "Match and return a hash value."
     (=destructure
         (ns hash)
@@ -703,44 +703,44 @@
                (=sha256))
       (cat ns hash)))
 
-  (def-parser =literal-comment ()
+  (def-parser =nested-comment ()
     "Match a comment."
     (=destructure
         (_ comment)
         (=list (maxpc.char:?string "//")
                (=subseq (%some (?not (%or (?expression-terminator))))))))
 
-  (def-parser =literal-metadata-mods ()
-    "Define a literal parser for handling metadata mods."
-    (%or 'literal-atom-mods-1
-         'literal-atom-mods-2))
+  (def-parser =nested-metadata-mods ()
+    "Define a nested parser for handling metadata mods."
+    (%or 'nested-atom-mods-1
+         'nested-atom-mods-2))
 
-  (def-parser =literal-metadata ()
-    "Define a literal parser macro for metadata."
+  (def-parser =nested-metadata ()
+    "Define a nested parser macro for metadata."
     (%some
      (=destructure
          (_ meta-sequence _ meta-value meta-mods)
          (%or
           ;; a value, with zero or more metadata mods
           (=list (%maybe (?whitespace))
-                 (=literal-metadata-sequence)
+                 (=nested-metadata-sequence)
                  (?whitespace)
-                 (%maybe (=literal-value))
-                 (%any (=literal-metadata-mods)))
+                 (%maybe (=nested-value))
+                 (%any (=nested-metadata-mods)))
           ;; zero or more values, with metadata mods
           (=list (%maybe (?whitespace))
-                 (=literal-metadata-sequence)
+                 (=nested-metadata-sequence)
                  (?whitespace)
-                 (%maybe (=literal-value))
-                 (%some (=literal-metadata-mods)))
+                 (%maybe (=nested-value))
+                 (%some (=nested-metadata-mods)))
           ;; no atom value, zero or more metadata mods; the birthday trap
           (=list (%maybe (?whitespace))
-                 (=literal-metadata-sequence)
+                 (=nested-metadata-sequence)
                  (?whitespace)
                  (?satisfies (λ (_)
                                (declare (ignore _)))
-                             (%any (=literal-value)))
-                 (%any (=literal-metadata-mods))))
+                             (%any (=nested-value)))
+                 (%any (=nested-metadata-mods))))
        (let* ((seq meta-sequence)
               (val meta-value)
               (mods (red-cat meta-mods))
@@ -750,7 +750,7 @@
               (val (red-cat things)))
          val)))))
 
-(defmacro +literal-@-metadata ()
+(defmacro +nested-@-metadata ()
   "Define a variable capturing parser macro for @ with a single abutted metadata recall."
   `(=destructure
        (_ atom-sequence metadata-sequence _ _ _)
@@ -765,26 +765,26 @@
             (value (list atom-seq meta-seq)))
        (list-string* value))))
 
-(defmacro ~literal-@-metadata ()
+(defmacro ~nested-@-metadata ()
   "Define a helper macro for handling abutted metadata in @ forms."
-  `(if (equal name '=literal-@-form)
-       '(+literal-@-metadata)
+  `(if (equal name '=nested-@-form)
+       '(+nested-@-metadata)
        '(?untrue)))
 
-(defm def-literal-parser-form (name sequence value)
-  "Define a macro for defining literal parsers."
+(defm def-nested-parser-form (name sequence value)
+  "Define a macro for defining nested parsers."
   `(def-parser ,name ()
-     (%or ,(~literal-@-metadata)
+     (%or ,(~nested-@-metadata)
           (=destructure
               (,@(~mod _ _) atom-sequence _ atom-value atom-mods metadata hash _ _)
               (=list ,@(~mod (?blackspace) (?expression-starter))
                      ,sequence
                      (%maybe (?whitespace))
                      (%maybe ,value)
-                     (%any (=literal-atom-mods))
-                     (%maybe (=literal-metadata))
-                     (%maybe (=literal-hash))
-                     (%maybe (=literal-comment))
+                     (%any (=nested-atom-mods))
+                     (%maybe (=nested-metadata))
+                     (%maybe (=nested-hash))
+                     (%maybe (=nested-comment))
                      (?expression-terminator))
             (let* ((seq (make-seq atom-sequence))
                    (mods (red-cat (pad-things atom-mods)))
@@ -794,25 +794,25 @@
                    (things (pad-things value)))
               (list-string* things))))))
 
-(def-literal-parser-form =literal-@-form (=@-sequence) (=literal-@-value))
-(def-literal-parser-form =literal-c-form (=c-sequence) (=literal-c-value))
-(def-literal-parser-form =literal-grouping-form (=grouping-sequence) (=literal-grouping-value))
-(def-literal-parser-form =literal-format-form (=format-sequence) (=literal-value))
-(def-literal-parser-form =literal-datatype-form (=datatype-sequence) (=literal-value))
+(def-nested-parser-form =nested-@-form (=@-sequence) (=nested-@-value))
+(def-nested-parser-form =nested-c-form (=c-sequence) (=nested-c-value))
+(def-nested-parser-form =nested-grouping-form (=grouping-sequence) (=nested-grouping-value))
+(def-nested-parser-form =nested-format-form (=format-sequence) (=nested-value))
+(def-nested-parser-form =nested-datatype-form (=datatype-sequence) (=nested-value))
 
-(def-parser =literal-atom-form ()
+(def-parser =nested-atom-form ()
   "Match and return a nested atom."
-  (%or (=literal-@-form)
-       (=literal-c-form)
-       (=literal-grouping-form)))
+  (%or (=nested-@-form)
+       (=nested-c-form)
+       (=nested-grouping-form)))
 
-(def-parser =literal-expression ()
-  "Match and return a literal MSL expression."
-  (%or (=literal-@-form)
-       (=literal-c-form)
-       (=literal-grouping-form)
-       (=literal-format-form)
-       (=literal-datatype-form)))
+(def-parser =nested-expression ()
+  "Match and return a nested MSL expression."
+  (%or (=nested-@-form)
+       (=nested-c-form)
+       (=nested-grouping-form)
+       (=nested-format-form)
+       (=nested-datatype-form)))
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -833,9 +833,9 @@
   "Parse an MSL expression."
   (parse expr (=expression)))
 
-(def parse-literal-msl (expr)
+(def parse-nested-msl (expr)
   "Parse an MSL expression."
-  (parse expr (=literal-expression)))
+  (parse expr (=nested-expression)))
 
 (def parse-setters (expr)
   "Parse an MSL expression and explain as MIL single-setters."
