@@ -297,7 +297,7 @@
          (?seq (?right-parenthesis) 'metadata-sequence)
          (?seq (?right-parenthesis) 'datatype-form)
          (?seq (?right-parenthesis) 'format-form)
-         (?seq (?right-parenthesis) (?right-parenthesis))
+         (?seq (?right-parenthesis) (%any (?right-parenthesis)))
          (?seq (?right-parenthesis) (?end)))))
 
 
@@ -615,7 +615,7 @@
          (?seq (?right-parenthesis) 'nested-metadata-sequence)
          (?seq (?right-parenthesis) 'nested-datatype-form)
          (?seq (?right-parenthesis) 'nested-format-form)
-         (?seq (?right-parenthesis) (?right-parenthesis))
+         (?seq (?right-parenthesis) (%any (?right-parenthesis)))
          (?seq (?right-parenthesis) (?end))))
 
   (def-parser =nested-@-value ()
