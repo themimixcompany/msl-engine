@@ -286,7 +286,7 @@
 
   (def-parser ?value-terminator ()
     "Match the end of a value."
-    (%or 'literal-atom-form
+    (%or 'literal-expression
          'metadata-sequence
          'regex-selector
          'bracketed-transform-selector
@@ -611,12 +611,31 @@
          'literal-format-form
          'literal-hash
          'literal-comment
+         (?seq (?right-parenthesis) 'literal-value)
          (?seq (?right-parenthesis) 'literal-metadata-sequence)
          (?seq (?right-parenthesis) 'literal-datatype-form)
          (?seq (?right-parenthesis) 'literal-format-form)
          (?seq (?right-parenthesis) (?right-parenthesis))
-         (?seq (?right-parenthesis) (?end))
-         (?seq (?right-parenthesis) 'literal-value)))
+         (?seq (?right-parenthesis) (?end))))
+
+  (def-parser =literal-@-value ()
+    "Match and return a valid value for @."
+    (%or 'literal-@-form
+         'literal-grouping-form
+         'literal-value))
+
+  (def-parser =literal-c-value ()
+    "Match and return a valid value for c."
+    (%or 'literal-@-form
+         'literal-c-form
+         'literal-value))
+
+  (def-parser =literal-grouping-value ()
+    "Match and return a valid value for m w s v."
+    (%or 'literal-@-form
+         'literal-c-form
+         'literal-grouping-form
+         'literal-value))
 
   (def-parser =literal-value ()
     "Match and return a raw value."
@@ -775,9 +794,9 @@
                    (things (pad-things value)))
               (list-string* things))))))
 
-(def-literal-parser-form =literal-@-form (=@-sequence) (=literal-value))
-(def-literal-parser-form =literal-c-form (=c-sequence) (=literal-value))
-(def-literal-parser-form =literal-grouping-form (=grouping-sequence) (=literal-value))
+(def-literal-parser-form =literal-@-form (=@-sequence) (=literal-@-value))
+(def-literal-parser-form =literal-c-form (=c-sequence) (=literal-c-value))
+(def-literal-parser-form =literal-grouping-form (=grouping-sequence) (=literal-grouping-value))
 (def-literal-parser-form =literal-format-form (=format-sequence) (=literal-value))
 (def-literal-parser-form =literal-datatype-form (=datatype-sequence) (=literal-value))
 
@@ -789,7 +808,9 @@
 
 (def-parser =literal-expression ()
   "Match and return a literal MSL expression."
-  (%or (=literal-atom-form)
+  (%or (=literal-@-form)
+       (=literal-c-form)
+       (=literal-grouping-form)
        (=literal-format-form)
        (=literal-datatype-form)))
 
