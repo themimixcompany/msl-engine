@@ -713,42 +713,42 @@
   (def-parser =nested-metadata-mods ()
     "Define a nested parser for handling metadata mods."
     (%or 'nested-atom-mods-1
-         'nested-atom-mods-2))
+         'nested-atom-mods-2)))
 
-  (def-parser =nested-metadata ()
-    "Define a nested parser macro for metadata."
-    (%some
-     (=destructure
-         (_ meta-sequence _ meta-value meta-mods)
-         (%or
-          ;; a value, with zero or more metadata mods
-          (=list (%maybe (?whitespace))
-                 (=nested-metadata-sequence)
-                 (?whitespace)
-                 (%maybe (=nested-value))
-                 (%any (=nested-metadata-mods)))
-          ;; zero or more values, with metadata mods
-          (=list (%maybe (?whitespace))
-                 (=nested-metadata-sequence)
-                 (?whitespace)
-                 (%maybe (=nested-value))
-                 (%some (=nested-metadata-mods)))
-          ;; no atom value, zero or more metadata mods; the birthday trap
-          (=list (%maybe (?whitespace))
-                 (=nested-metadata-sequence)
-                 (?whitespace)
-                 (?satisfies (λ (_)
-                               (declare (ignore _)))
-                             (%any (=nested-value)))
-                 (%any (=nested-metadata-mods))))
-       (let* ((seq meta-sequence)
-              (val meta-value)
-              (mods (red-cat meta-mods))
-              (list (list seq val mods))
-              (value (denull list))
-              (things (pad-things value))
-              (val (red-cat things)))
-         val)))))
+(defmacro +nested-metadata (value)
+  "Define a nested parser macro for metadata."
+  `(%some
+   (=destructure
+       (_ meta-sequence _ meta-value meta-mods)
+       (%or
+        ;; a value, with zero or more metadata mods
+        (=list (%maybe (?whitespace))
+               (=nested-metadata-sequence)
+               (?whitespace)
+               (%maybe ,value)
+               (%any (=nested-metadata-mods)))
+        ;; zero or more values, with metadata mods
+        (=list (%maybe (?whitespace))
+               (=nested-metadata-sequence)
+               (?whitespace)
+               (%maybe ,value)
+               (%some (=nested-metadata-mods)))
+        ;; no atom value, zero or more metadata mods; the birthday trap
+        (=list (%maybe (?whitespace))
+               (=nested-metadata-sequence)
+               (?whitespace)
+               (?satisfies (λ (_)
+                             (declare (ignore _)))
+                           (%any ,value))
+               (%any (=nested-metadata-mods))))
+     (let* ((seq meta-sequence)
+            (val meta-value)
+            (mods (red-cat meta-mods))
+            (list (list seq val mods))
+            (value (denull list))
+            (things (pad-things value))
+            (val (red-cat things)))
+       val))))
 
 (defmacro +nested-@-metadata ()
   "Define a variable capturing parser macro for @ with a single abutted metadata recall."
@@ -782,7 +782,7 @@
                      (%maybe (?whitespace))
                      (%maybe ,value)
                      (%any (=nested-atom-mods))
-                     (%maybe (=nested-metadata))
+                     (%maybe (+nested-metadata ,value))
                      (%maybe (=nested-hash))
                      (%maybe (=nested-comment))
                      (?expression-terminator))
