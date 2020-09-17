@@ -62,7 +62,6 @@
               ((null args)
                (nreverse acc))
 
-              ;; note: evaluate the consequences of this
               ((consp (car args))
                (fn (cdr args)
                    (cons (car args) acc)))
@@ -309,7 +308,6 @@ function."
               ((null args)
                (nreverse acc))
 
-              ;; note: work on this
               ((termsp (car args))
                (fn (cdr args)
                    (cons (mapcar #'fn (%sections (car args)))
@@ -670,7 +668,7 @@ function."
 ;; entrypoints
 ;;--------------------------------------------------------------------------------------------------
 
-(def recall (expr &key log)
+(def recall (expr &key (log t))
   "Return the expr and value recall of EXPR."
   (block nil
     (unless (dispatch expr :log log :force t)
