@@ -35,3 +35,6 @@ test.lisp
 \.\#*
 \#*#
 
+streams_unix_X64
+streams_macos_X64
+streams_windows_X64.exe

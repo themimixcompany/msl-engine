@@ -131,7 +131,6 @@ in the store or not."
              (path-exists-p path)))
          terms))
 
-;;; note: this is a key function
 (def valid-recall-p (terms)
   "Return true if TERMS is a valid recall from the store."
   (∧ (recallp terms)
@@ -144,7 +143,6 @@ in the store or not."
         :when (metadata-term-p term)
         :collect term))
 
-;;; note: this is a key function
 (def valid-save-p (terms)
   "Return true if TERMS is a valid save to the store."
   (let ((head-value (term-value (head-term terms))))

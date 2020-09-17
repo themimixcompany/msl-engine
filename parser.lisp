@@ -424,16 +424,8 @@
   "Define a variable capturing parser macro for sequences."
   `(=transform ,sequence
                (λ (seq)
-                 ;; note: this unconditionaly sets the atom sequence
-                 ;;(setf %atom-sequence seq)
-
-                 ;; note: are these all the right conditions?
-                 ;; note: it seems, that the conditions are not enough.
                  (cond ((null %meta-sequence)
                         (setf %atom-sequence seq))
-
-                       ;; note: this fixes the ghosting bug, but
-                       ;; yields the embedded atom in metadata bug
                        (t (setf %atom-sequence seq))))))
 
 (defmacro +value (value)
