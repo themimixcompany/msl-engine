@@ -270,11 +270,11 @@
 (eval-always
   (def-parser ?left-parenthesis ()
     "Match a left parenthesis."
-    (?eq #\left_parenthesis))
+    (?eq #+ccl #\( #-ccl #\left_parenthesis))
 
   (def-parser ?right-parenthesis ()
     "Match a right parenthesis."
-    (?eq #\right_parenthesis))
+    (?eq #+ccl #\) #-ccl #\right_parenthesis))
 
   (def-parser ?expression-starter ()
     "Match the end of an expression."
