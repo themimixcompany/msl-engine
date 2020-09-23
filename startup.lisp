@@ -16,10 +16,6 @@
   "Initialize the universe."
   (setf *universe* (make-universe "main")))
 
-(defun print-banner ()
-  "Print information about the software."
-  (debug-print (fmt "streams v~A" *system-version*)))
-
 (defun restore-log-data ()
   "Restore the most recent log log file."
   (ensure-log-file-exists)
