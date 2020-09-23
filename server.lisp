@@ -199,6 +199,7 @@
 
 (defun start-servers ()
   "Start all the servers."
+  (print-banner)
   (debug-print "Loading servers...")
   (start-admin-server)
   (start-msl-server))

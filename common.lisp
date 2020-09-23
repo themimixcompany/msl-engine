@@ -295,3 +295,7 @@ body contents of the parser function."
 (def pad-string (string &optional (pad " "))
   "Add string padding to both sides of STRING."
   (cat pad string pad))
+
+(def print-banner ()
+  "Print information about the software."
+  (debug-print (fmt "streams v~A" *system-version*)))
