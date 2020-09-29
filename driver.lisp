@@ -16,7 +16,8 @@
                  #:streams/json
                  #:streams/server
                  #:streams/builder
-                 #:streams/startup))
+                 #:streams/startup
+                 #:streams/hooks))
 
 (provide "streams")
 (provide "STREAMS")

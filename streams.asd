@@ -39,6 +39,7 @@
                #:streams/server
                #:streams/builder
                #:streams/startup
+               #:streams/hooks
                #:streams/driver)
   :in-order-to ((test-op (test-op "streams-tests"))))
 
