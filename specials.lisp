@@ -109,10 +109,9 @@
   "The default name to use as the machine name.")
 
 (defv *system-version*
-  ;; (uiop:os-cond
-  ;;  ((uiop:os-windows-p) (system-version +self+))
-  ;;  (t (asdf:system-version (system-object +self+))))
-  "2.4.41"
+  (uiop:os-cond
+   ((uiop:os-windows-p) (system-version +self+))
+   (t (asdf:system-version (system-object +self+))))
   "The introspected version of this system.")
 
 (defv *slynk-port*
