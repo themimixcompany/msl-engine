@@ -458,7 +458,6 @@ function."
 
 (def recall-expr (expr &key (dispatch t))
   "Return the matching expression from the store with EXPR."
-  (debug-print (fmt "RECALL-EXPR received: ~S" expr))
   (block nil
     (when dispatch
       (unless (dispatch expr :log t :force t)
@@ -646,7 +645,6 @@ function."
 
 (def recall-value (expr &key (dispatch t))
   "Return the value implied by EXPR."
-  (debug-print (fmt "RECALL-VALUE received: ~S" expr))
   (block nil
     (when dispatch
       (unless (dispatch expr :log t :force t)
@@ -676,11 +674,9 @@ function."
     (unless (dispatch expr :log log :force t)
       (return nil))
     (let ((value (recall-value expr :dispatch nil)))
-      (debug-print (fmt "RECALL-VALUE returned: ~S" value))
       (if (null value)
           (values nil
                   nil)
           (let ((expr (recall-expr expr :dispatch nil)))
-            (debug-print (fmt "RECALL-EXPR returned: ~S" expr))
             (values expr
                     value))))))
