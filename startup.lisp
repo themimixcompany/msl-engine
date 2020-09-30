@@ -12,11 +12,11 @@
 
 (in-package #:streams/startup)
 
-(defun initialize-universe ()
+(def initialize-universe ()
   "Initialize the universe."
   (setf *universe* (make-universe "main")))
 
-(defun restore-log-data ()
+(def restore-log-data ()
   "Restore the most recent log log file."
   (ensure-log-file-exists)
   (restore-log))

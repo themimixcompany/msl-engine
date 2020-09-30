@@ -181,6 +181,7 @@
     (destructuring-bind (&optional expr js-data)
         (message-data message)
       (when expr
+        (debug-print "Before RECALL...")
         (multiple-value-bind (expr value)
             (recall expr)
           (flet ((fn (val)
@@ -204,9 +205,6 @@
   (start-admin-server)
   (start-msl-server))
 
-(push #'start-servers #+sbcl sb-ext:*init-hooks*
-                      #+ccl ccl:*lisp-startup-functions*)
-
 (defun stop-servers ()
   "Stop all the servers."
   (debug-print "Stopping servers...")
@@ -214,8 +212,11 @@
   (stop-admin-server)
   (uiop:quit))
 
-(push #'stop-servers #+sbcl sb-ext:*save-hooks*
-                     #+ccl ccl:*save-exit-functions*)
+;; (push #'start-servers #+sbcl sb-ext:*init-hooks*
+;;                       #+ccl ccl:*lisp-startup-functions*)
+
+;; (push #'stop-servers #+sbcl sb-ext:*save-hooks*
+;;                      #+ccl ccl:*save-exit-functions*)
 
 (defun find-open-port ()
   "Return an open for slynk."
