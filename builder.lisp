@@ -2,9 +2,22 @@
 
 (uiop:define-package #:streams/builder
   (:use #:cl
+        #:streams/specials
+        #:streams/logger
+        #:streams/bridge
+        #:streams/startup
+        #:streams/server
         #:marie))
 
 (in-package #:streams/builder)
+
+(def startup-and-serve ()
+  "Initialize the universe, restore log data, and start the server."
+  (initialize-universe)
+  (ensure-log-file-exists)
+  (when *restore-log*
+    (restore-log))
+  (serve))
 
 (def build (&optional (root *default-pathname-defaults*))
   "Build the executable of streams for different platforms."
@@ -21,7 +34,7 @@
                (path (uiop:subpathname* root base-name)))
           (uiop:ensure-all-directories-exist (list (namestring path)))
           #+sbcl
-          (sb-ext:save-lisp-and-die path :toplevel #'streams/server:serve
+          (sb-ext:save-lisp-and-die path :toplevel #'startup-and-serve
                                          :executable t
                                          :compression nil)
           #+ccl

@@ -15,9 +15,8 @@
                  #:streams/admin-writer
                  #:streams/json
                  #:streams/server
-                 #:streams/builder
                  #:streams/startup
-                 #:streams/hooks))
+                 #:streams/builder))
 
 (provide "streams")
 (provide "STREAMS")
