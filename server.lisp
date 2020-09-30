@@ -204,12 +204,18 @@
   (start-admin-server)
   (start-msl-server))
 
+(push #'start-servers #+sbcl sb-ext:*init-hooks*
+                      #+ccl ccl:*lisp-startup-functions*)
+
 (defun stop-servers ()
   "Stop all the servers."
   (debug-print "Stopping servers...")
   (stop-msl-server)
   (stop-admin-server)
   (uiop:quit))
+
+(push #'stop-servers #+sbcl sb-ext:*save-hooks*
+                     #+ccl ccl:*save-exit-functions*)
 
 (defun find-open-port ()
   "Return an open for slynk."
