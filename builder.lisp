@@ -11,7 +11,7 @@
 
 (in-package #:streams/builder)
 
-(def startup-and-serve ()
+(defun launch ()
   "Initialize the universe, restore log data, and start the server."
   (initialize-universe)
   (ensure-log-file-exists)
@@ -34,13 +34,9 @@
                (path (uiop:subpathname* root base-name)))
           (uiop:ensure-all-directories-exist (list (namestring path)))
           #+sbcl
-          (sb-ext:save-lisp-and-die path :toplevel #'startup-and-serve
+          (sb-ext:save-lisp-and-die path :toplevel #'launch
                                          :executable t
                                          :compression nil)
           #+ccl
-          (ccl:save-application path :toplevel-function #'streams/server:serve
-                                     :prepend-kernel t)
-          #+clisp
-          (ext:saveinitmem path :init-function (λ () (funcall 'streams/server:serve) (ext:exit))
-                                :executable t
-                                :norc t))))))
+          (ccl:save-application path :toplevel-function #'launch
+                                     :prepend-kernel t))))))
