@@ -15,8 +15,7 @@
   "Initialize the universe, restore log data, and start the server."
   (initialize-universe)
   (ensure-log-file-exists)
-  (when *restore-log*
-    (restore-log))
+  (restore-log)
   (serve))
 
 (def build (&optional (root *default-pathname-defaults*))
