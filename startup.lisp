@@ -16,16 +16,11 @@
   "Initialize the universe."
   (setf *universe* (make-universe "main")))
 
-(def restore-log-data ()
-  "Restore the most recent log log file."
-  (ensure-log-file-exists)
-  (restore-log))
-
 (defun load-module ()
   "Run the module."
   (initialize-universe)
   (print-banner)
-  (when *restore-log*
-    (restore-log-data)))
+  (ensure-log-file-exists)
+  (restore-log))
 
 (load-module)
