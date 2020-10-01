@@ -122,7 +122,8 @@
 
 (def ensure-log-directory-exists ()
   "Create the log directory if it doesn’t exist, yet."
-  (uiop:ensure-all-directories-exist (list *log-directory*)))
+  (unless (uiop:directory-exists-p *log-directory*)
+    (uiop:ensure-all-directories-exist (list *log-directory*))))
 
 (def ensure-log-file-exists ()
   "Create a base log file if none exists."
