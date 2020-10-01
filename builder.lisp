@@ -38,4 +38,7 @@
                                          :compression nil)
           #+ccl
           (ccl:save-application path :toplevel-function #'launch
-                                     :prepend-kernel t))))))
+                                     :prepend-kernel t)
+
+          #-(or sbcl ccl)
+          (error "Building for ~A is currently not supported." (lisp-implementation-type)))))))
