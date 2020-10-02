@@ -19,8 +19,8 @@
 
 (def restore-log (&key (machine *machine*))
   "Re-initialize the universe"
-  (when *restore-log*
-    (let* ((path (log-path :machine machine))
-           (exprs (read-log path))
-           (length (length exprs)))
-      (debug-print (fmt "Read ~A expressions from history." length)))))
+  (ensure-log-file-exists)
+  (let* ((path (log-path :machine machine))
+         (exprs (read-log path))
+         (length (length exprs)))
+    (debug-print (fmt "Read ~A expressions from history." length))))

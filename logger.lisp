@@ -18,9 +18,13 @@
   (when (uiop:file-exists-p path)
     (> (file-size path) *maximum-log-size*)))
 
+(defun log-directory ()
+  "Return the path to the default configuration and storage directory."
+  (~ (cat #\. +self+ #\/)))
+
 (defun build-path (path)
   "Return a new path based from the base directory."
-  (uiop:merge-pathnames* *log-directory* path))
+  (uiop:merge-pathnames* (log-directory) path))
 
 (defun make-log-file-path (path)
   "Return a log file pathname from PATH."
@@ -91,17 +95,17 @@
                                     name)))
                  files))
 
-(def log-paths (&key (directory *log-directory*) (machine *machine*) sort)
+(def log-paths (&key (directory (log-directory)) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (build-paths directory))
          (entries (filter-paths machine files)))
     (if sort
         (mapcar (λ (path)
-                  (uiop:merge-pathnames* *log-directory* path))
+                  (uiop:merge-pathnames* (log-directory) path))
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(def log-path (&key (directory *log-directory*) (machine *machine*))
+(def log-path (&key (directory (log-directory)) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (end (log-paths :directory directory :machine machine :sort t)))
 
@@ -122,8 +126,8 @@
 
 (def ensure-log-directory-exists ()
   "Create the log directory if it doesn’t exist, yet."
-  (unless (uiop:directory-exists-p *log-directory*)
-    (uiop:ensure-all-directories-exist (list *log-directory*))))
+  (unless (uiop:directory-exists-p (log-directory))
+    (uiop:ensure-all-directories-exist (list (log-directory)))))
 
 (def ensure-log-file-exists ()
   "Create a base log file if none exists."

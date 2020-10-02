@@ -7,7 +7,9 @@
         #:streams/classes
         #:streams/common
         #:streams/parser
+        #:streams/logger
         #:streams/reader
+        #:streams/bridge
         #:streams/admin-writer
         #:streams/json
         #:marie)
@@ -106,7 +108,7 @@
          (port port)
          (value (clack:clackup server-name :server server :address address :port port :silent t)))
     (when value
-      (debug-print (fmt "~A server is started." (string-capitalize (string* server))))
+      (debug-print (fmt "Web server is started." (string-capitalize (string* server))))
       (debug-print (fmt "Listening on ~A:~A." address port))
       value)))
 
@@ -181,7 +183,6 @@
     (destructuring-bind (&optional expr js-data)
         (message-data message)
       (when expr
-        (debug-print "Before RECALL...")
         (multiple-value-bind (expr value)
             (recall expr)
           (flet ((fn (val)
@@ -212,12 +213,6 @@
   (stop-admin-server)
   (uiop:quit))
 
-;; (push #'start-servers #+sbcl sb-ext:*init-hooks*
-;;                       #+ccl ccl:*lisp-startup-functions*)
-
-;; (push #'stop-servers #+sbcl sb-ext:*save-hooks*
-;;                      #+ccl ccl:*save-exit-functions*)
-
 (defun find-open-port ()
   "Return an open for slynk."
   (find-port:find-port :min 40000 :max 50000))
@@ -242,6 +237,7 @@
 
 (def serve (&key slynk)
   "The main entrypoint of the server."
+  (when *restore-log* (restore-log))
   (flet ((find-threads (query)
            (bt:join-thread (find-if (λ (thread)
                                       (search query (bt:thread-name thread)))
