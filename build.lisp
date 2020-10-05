@@ -4,10 +4,6 @@
 
 (load-all-patches)
 
-(let ((asdf #P"./scripts/asdf.lisp"))
-  (when (probe-file asdf)
-    (hcl:compile-file-if-needed asdf :load t)))
-
 #-asdf
 (let ((asdf-init
 	(merge-pathnames ".quicklisp/local-projects/asdf.lisp" (user-homedir-pathname))))
