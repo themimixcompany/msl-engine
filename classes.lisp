@@ -173,11 +173,20 @@ instantiated. ALLOCATE is a boolean whether to allocate the instance on the univ
         u
       (format stream "~A" name))))
 
+#+lispworks
+(eval-when (:compile-toplevel :load-toplevel)
+  (defvar *lw-saved-handle-warn-on-redefinition* lw:*handle-warn-on-redefinition*)
+  (setq lw:*handle-warn-on-redefinition* :quiet))
+
 (defmethod print-object ((table hash-table) stream)
   (print-unreadable-object (table stream :type t)
     (let ((test (hash-table-test table))
           (count (hash-table-count table)))
       (format stream "~A ~A" test count))))
+
+#+lispworks
+(eval-when (:compile-toplevel :load-toplevel)
+  (setq lw:*handle-warn-on-redefinition* *lw-saved-handle-warn-on-redefinition*))
 
 (defclass register ()
   ((id :initarg :id
