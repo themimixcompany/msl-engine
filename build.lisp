@@ -6,13 +6,13 @@
 
 #-asdf
 (let ((asdf-init
-	(merge-pathnames ".quicklisp/local-projects/asdf.lisp" (user-homedir-pathname))))
+	(merge-pathnames #P"quicklisp/local-projects/asdf.lisp" (user-homedir-pathname))))
   (when (probe-file asdf-init)
     (hcl:compile-file-if-needed asdf-init :load t)))
 
 #-quicklisp
 (let ((quicklisp-init
-        (merge-pathnames #P".quicklisp/setup.lisp" (user-homedir-pathname))))
+        (merge-pathnames #P"quicklisp/setup.lisp" (user-homedir-pathname))))
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
