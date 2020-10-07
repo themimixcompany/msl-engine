@@ -36,6 +36,9 @@
           #+ccl
           (ccl:save-application path :toplevel-function #'load-streams-serve
                                      :prepend-kernel t)
-
-          #-(or sbcl ccl)
+          #+lispworks
+          (lw:deliver #'load-streams-serve path 0
+                      :multiprocessing t
+                      :keep-pretty-printer t)
+          #-(or sbcl ccl lispworks)
           (error "Building for ~A is currently not supported." (lisp-implementation-type)))))))
