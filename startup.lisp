@@ -1,20 +1,20 @@
 ;;;; startup.lisp
 
-(uiop:define-package #:streams/startup
+(uiop:define-package #:msl-engine/startup
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
         #:marie))
 
-(in-package #:streams/startup)
+(in-package #:msl-engine/startup)
 
 (def initialize-universe ()
   "Initialize the universe."
   (setf *universe* (make-universe "main")))
 
-(def load-streams ()
+(def load-msl-engine ()
   "Call the base initialization functions."
   (initialize-universe))
 
-(load-streams)
+(load-msl-engine)

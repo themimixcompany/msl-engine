@@ -1,8 +1,8 @@
 ;;;; classes.lisp
 
-(uiop:define-package #:streams/classes
+(uiop:define-package #:msl-engine/classes
   (:use #:cl
-        #:streams/specials
+        #:msl-engine/specials
         #:marie)
   (:export #:universe
            #:name
@@ -26,7 +26,7 @@
            #:table
            #:date))
 
-(in-package #:streams/classes)
+(in-package #:msl-engine/classes)
 
 (defclass universe ()
   ((name :initarg :name

@@ -1,18 +1,18 @@
 ;;;; admin-writer.lisp
 
-(uiop:define-package #:streams/admin-writer
+(uiop:define-package #:msl-engine/admin-writer
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
-        #:streams/parser
-        #:streams/reader
-        #:streams/logger
-        #:streams/writer
-        #:streams/bridge
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/parser
+        #:msl-engine/reader
+        #:msl-engine/logger
+        #:msl-engine/writer
+        #:msl-engine/bridge
         #:marie))
 
-(in-package #:streams/admin-writer)
+(in-package #:msl-engine/admin-writer)
 
 
 ;;--------------------------------------------------------------------------------------------------

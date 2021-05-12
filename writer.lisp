@@ -1,15 +1,15 @@
 ;;;; writer.lisp
 
-(uiop:define-package #:streams/writer
+(uiop:define-package #:msl-engine/writer
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
-        #:streams/parser
-        #:streams/logger
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/parser
+        #:msl-engine/logger
         #:marie))
 
-(in-package #:streams/writer)
+(in-package #:msl-engine/writer)
 
 
 ;;--------------------------------------------------------------------------------------------------

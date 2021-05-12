@@ -1,13 +1,13 @@
 ;;;; specials.lisp
 
-(uiop:define-package #:streams/specials
+(uiop:define-package #:msl-engine/specials
   (:use #:cl
         #:marie))
 
-(in-package #:streams/specials)
+(in-package #:msl-engine/specials)
 
 (defv +self+
-  "streams"
+  "msl-engine"
   "The base name of the system.")
 
 (defv *universe* nil
@@ -99,15 +99,10 @@
          (forms (uiop:read-file-forms (uiop:merge-pathnames* asdf-base-name source-directory))))
     (getf (assoc 'defsystem forms :test #'equal) :version)))
 
-(defv *machine*
-  ;;(uiop:hostname)
-  "my-machine"
-  "The default name to use as the machine name.")
-
 (defv *system-version*
-  (uiop:os-cond
-   ((uiop:os-windows-p) (system-version +self+))
-   (t (asdf:system-version (system-object +self+))))
+    (uiop:os-cond
+     ((uiop:os-windows-p) (system-version +self+))
+     (t (asdf:system-version (system-object +self+))))
   "The introspected version of this system.")
 
 (defv *slynk-port*
@@ -125,3 +120,9 @@
 (defv *whitespace*
     '(#\space #\tab #\newline #\rubout)
   "The list of whitespace characters.")
+
+(defv *machine*
+    (let ((regex "[ 	]")
+          (hostname (uiop:hostname)))
+      (string-downcase (cl-ppcre:regex-replace-all regex hostname "")))
+  "The default name to use as the machine name.")

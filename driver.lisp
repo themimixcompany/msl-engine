@@ -1,22 +1,23 @@
 ;;;; driver.lisp
 
-(uiop:define-package :streams/driver
-  (:nicknames #:streams)
+(uiop:define-package :msl-engine/driver
+  (:nicknames #:msl-engine)
   (:use #:uiop/common-lisp
         #:marie)
-  (:use-reexport #:streams/specials
-                 #:streams/classes
-                 #:streams/common
-                 #:streams/parser
-                 #:streams/logger
-                 #:streams/writer
-                 #:streams/reader
-                 #:streams/bridge
-                 #:streams/admin-writer
-                 #:streams/json
-                 #:streams/server
-                 #:streams/startup
-                 #:streams/builder))
+  (:use-reexport #:msl-engine/specials
+                 #:msl-engine/config
+                 #:msl-engine/classes
+                 #:msl-engine/common
+                 #:msl-engine/parser
+                 #:msl-engine/logger
+                 #:msl-engine/writer
+                 #:msl-engine/reader
+                 #:msl-engine/bridge
+                 #:msl-engine/admin-writer
+                 #:msl-engine/json
+                 #:msl-engine/server
+                 #:msl-engine/startup
+                 #:msl-engine/builder))
 
-(provide "streams")
-(provide "STREAMS")
+(provide "msl-engine")
+(provide "MSL-ENGINE")

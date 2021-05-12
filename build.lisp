@@ -27,5 +27,5 @@
 (lw:set-default-character-element-type 'character)
 (fli:set-locale)
 
-(asdf:load-system :streams :force t)
-(streams:build)
+(asdf:load-system :msl-engine :force t)
+(msl-engine:build)

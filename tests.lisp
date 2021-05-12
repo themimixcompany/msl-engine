@@ -1,17 +1,17 @@
 ;;;; tests.lisp
 
-(uiop:define-package #:streams/tests
+(uiop:define-package #:msl-engine/tests
   (:use #:cl
         #:fiveam
-        #:streams/classes
-        #:streams/common
-        #:streams/parser
-        #:streams/reader
-        #:streams/writer
-        #:streams/json
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/parser
+        #:msl-engine/reader
+        #:msl-engine/writer
+        #:msl-engine/json
         #:marie))
 
-(in-package #:streams/tests)
+(in-package #:msl-engine/tests)
 
 (def-suite all-tests)
 (in-suite all-tests)

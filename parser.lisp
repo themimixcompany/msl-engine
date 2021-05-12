@@ -1,12 +1,12 @@
 ;;;; parser.lisp
 
-(uiop:define-package #:streams/parser
+(uiop:define-package #:msl-engine/parser
   (:use #:cl
-        #:streams/common
+        #:msl-engine/common
         #:maxpc
         #:marie))
 
-(in-package #:streams/parser)
+(in-package #:msl-engine/parser)
 
 
 ;;--------------------------------------------------------------------------------------------------

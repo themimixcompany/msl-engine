@@ -24,7 +24,7 @@
 # End of https://www.gitignore.io/api/commonlisp
 
 *~
-/streams_*
+/msl-engine_*
 /TODO*
 /NOTES*
 scratch.lisp
@@ -35,6 +35,6 @@ test.lisp
 \.\#*
 \#*#
 
-streams_unix_X64
-streams_macos_X64
-streams_windows_X64.exe
+msl-engine_unix_X64
+msl-engine_macos_X64
+msl-engine_windows_X64.exe

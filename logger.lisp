@@ -1,13 +1,14 @@
 ;;;; logger.lisp
 
-(uiop:define-package #:streams/logger
+(uiop:define-package #:msl-engine/logger
   (:use #:cl
-        #:streams/common
-        #:streams/specials
-        #:streams/classes
+        #:msl-engine/common
+        #:msl-engine/specials
+        #:msl-engine/config
+        #:msl-engine/classes
         #:marie))
 
-(in-package #:streams/logger)
+(in-package #:msl-engine/logger)
 
 (defun file-size (path)
   "Return the size of file indicated in PATH."
@@ -18,13 +19,9 @@
   (when (uiop:file-exists-p path)
     (> (file-size path) *maximum-log-size*)))
 
-(defun log-directory ()
-  "Return the path to the default configuration and storage directory."
-  (~ (cat #\. +self+ #\/)))
-
 (defun build-path (path)
   "Return a new path based from the base directory."
-  (uiop:merge-pathnames* (log-directory) path))
+  (uiop:merge-pathnames* (config-directory) path))
 
 (defun make-log-file-path (path)
   "Return a log file pathname from PATH."
@@ -95,17 +92,17 @@
                                     name)))
                  files))
 
-(def log-paths (&key (directory (log-directory)) (machine *machine*) sort)
+(def log-paths (&key (directory (config-directory)) (machine *machine*) sort)
   "Return all the log files in DIRECTORY."
   (let* ((files (build-paths directory))
          (entries (filter-paths machine files)))
     (if sort
         (mapcar (λ (path)
-                  (uiop:merge-pathnames* (log-directory) path))
+                  (uiop:merge-pathnames* (config-directory) path))
                 (sort (mapcar #'file-namestring entries) #'string<))
         entries)))
 
-(def log-path (&key (directory (log-directory)) (machine *machine*))
+(def log-path (&key (directory (config-directory)) (machine *machine*))
   "Return the most recent log path of MACHINE."
   (end (log-paths :directory directory :machine machine :sort t)))
 
@@ -124,14 +121,14 @@
              (fn (make-machine-log-path *machine* (log-date *universe*))))
             (t (fn (log-path)))))))
 
-(def ensure-log-directory-exists ()
+(def ensure-config-directory-exists ()
   "Create the log directory if it doesn’t exist, yet."
-  (unless (uiop:directory-exists-p (log-directory))
-    (uiop:ensure-all-directories-exist (list (log-directory)))))
+  (unless (uiop:directory-exists-p (config-directory))
+    (uiop:ensure-all-directories-exist (list (config-directory)))))
 
 (def ensure-log-file-exists ()
   "Create a base log file if none exists."
-  (ensure-log-directory-exists)
+  (ensure-config-directory-exists)
   (let ((paths (log-paths))
         (path (make-log-path)))
     (unless paths

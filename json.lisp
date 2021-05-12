@@ -1,13 +1,13 @@
 ;;;; json.lisp
 
-(uiop:define-package #:streams/json
+(uiop:define-package #:msl-engine/json
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
         #:marie))
 
-(in-package #:streams/json)
+(in-package #:msl-engine/json)
 
 
 ;;--------------------------------------------------------------------------------------------------

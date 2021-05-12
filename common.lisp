@@ -1,12 +1,12 @@
 ;;;; common.lisp
 
-(uiop:define-package #:streams/common
+(uiop:define-package #:msl-engine/common
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
+        #:msl-engine/specials
+        #:msl-engine/classes
         #:marie))
 
-(in-package #:streams/common)
+(in-package #:msl-engine/common)
 
 (defun ns-member-p (elem ns-list)
   "Return true if elem is a MEMBER of NS-LIST by CAR."
@@ -68,7 +68,7 @@
     (format t "UNIVERSE: ~A~%" (name universe))
     (loop :for table-reader :in table-readers
           :for table = (funcall (intern (string* table-reader)
-                                        (find-package :streams/classes))
+                                        (find-package :msl-engine/classes))
                                 universe)
           :do (progn
                 (format t "~%~A:~%" table-reader)
@@ -217,7 +217,7 @@ body contents of the parser function."
 
 (defm with-fresh-universe ((&optional) &body body)
   "Evaluate BODY in a separate universe."
-  `(let ((streams/specials:*universe* (streams/classes:make-universe)))
+  `(let ((msl-engine/specials:*universe* (msl-engine/classes:make-universe)))
      ,@body))
 
 (def uncomment (expr)
@@ -298,4 +298,4 @@ body contents of the parser function."
 
 (def print-banner ()
   "Print information about the software."
-  (debug-print (fmt "streams v~A" *system-version*)))
+  (debug-print (fmt "msl-engine v~A" *system-version*)))

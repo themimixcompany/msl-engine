@@ -1,15 +1,15 @@
 ;;;; reader.lisp
 
-(uiop:define-package #:streams/reader
+(uiop:define-package #:msl-engine/reader
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
-        #:streams/parser
-        #:streams/writer
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/parser
+        #:msl-engine/writer
         #:marie))
 
-(in-package #:streams/reader)
+(in-package #:msl-engine/reader)
 
 
 ;;--------------------------------------------------------------------------------------------------

@@ -1,15 +1,15 @@
 ;;;; bridge.lisp
 
-(uiop:define-package #:streams/bridge
+(uiop:define-package #:msl-engine/bridge
   (:use #:cl
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
-        #:streams/logger
-        #:streams/writer
+        #:msl-engine/specials
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/logger
+        #:msl-engine/writer
         #:marie))
 
-(in-package #:streams/bridge)
+(in-package #:msl-engine/bridge)
 
 (def read-log (path)
   "Read the log file specified under PATH."

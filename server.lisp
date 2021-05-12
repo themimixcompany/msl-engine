@@ -1,17 +1,18 @@
 ;;;; server.lisp
 
-(uiop:define-package #:streams/server
+(uiop:define-package #:msl-engine/server
   (:use #:cl
         #:websocket-driver
-        #:streams/specials
-        #:streams/classes
-        #:streams/common
-        #:streams/parser
-        #:streams/logger
-        #:streams/reader
-        #:streams/bridge
-        #:streams/admin-writer
-        #:streams/json
+        #:msl-engine/specials
+        #:msl-engine/config
+        #:msl-engine/classes
+        #:msl-engine/common
+        #:msl-engine/parser
+        #:msl-engine/logger
+        #:msl-engine/reader
+        #:msl-engine/bridge
+        #:msl-engine/admin-writer
+        #:msl-engine/json
         #:marie)
   (:export #:server))
 
@@ -28,7 +29,7 @@
       (values nil c))))
 
 
-(in-package #:streams/server)
+(in-package #:msl-engine/server)
 
 
 ;;--------------------------------------------------------------------------------------------------
@@ -101,10 +102,12 @@
 (defvar *servers* nil
   "The list of active servers.")
 
+(defv *listen-address* (config-value 'listen-address))
+
 (defun clack-start (server-name port)
   "Start the clack server SERVER under port PORT."
   (let* ((server :hunchentoot)
-         (address "127.0.0.1")
+         (address *listen-address*)
          (port port)
          (value (clack:clackup server-name :server server :address address :port port :silent t)))
     (when value
@@ -244,8 +247,8 @@
                                     (bt:all-threads)))))
     (handler-bind ((#+sbcl sb-sys:interactive-interrupt
                     #+ccl ccl:interrupt-signal-condition
-                    #+clisp system::simple-interrupt-condition
                     #+ecl ext:interactive-interrupt
+                    #+clisp system::simple-interrupt-condition
                     #+allegro excl:interrupt-signal
                     #+lispworks mp:process-interrupt
                     (λ (c)
