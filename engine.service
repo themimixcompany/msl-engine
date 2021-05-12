@@ -1,0 +1,13 @@
+[Unit]
+Description=Hook
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/mimix
+User=mimix
+ExecStart=/usr/bin/sbcl --noinform --eval '(ql:quickload :msl-engine)' --eval '(streams:msl-engine)'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
