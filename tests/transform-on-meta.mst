@@ -1,3 +1,4 @@
+(@CLEAR)
 (@WALT Walt Disney) → Walt Disney
 (@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → (@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → Vinyl Leaves
 (@WALT :bio) → (@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → Vinyl Leaves

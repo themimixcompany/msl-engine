@@ -1,3 +1,4 @@
+(@CLEAR)
 (@WALT Walt Disney) → Walt Disney
 (@WALT :birthplace Chicago, IL /[^,]+/) → Chicago
 (@WALT :birthplace Baton Rouge, LA) → Baton Rouge, LA

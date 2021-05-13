@@ -1,3 +1,4 @@
+(@CLEAR)
 (@DONALD  Donald Duck :gf (@DAISY Daisy Duck :bf (@DONALD))) → Donald Duck
 (@DAISY) → Daisy Duck
 (@DONALD) → Donald Duck

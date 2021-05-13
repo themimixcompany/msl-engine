@@ -23,16 +23,13 @@
 (in-suite all-tests)
 
 
-
 ;;--------------------------------------------------------------------------------------------------
 ;; combined
 ;;--------------------------------------------------------------------------------------------------
 
 (eval-always
-  (defun extract (expr &optional clear)
+  (defun extract (expr)
     "Return the string representation of EXPR after dispatching it. If optional argument CLEAR is true, clear the universe prior to evaluation."
-    (when clear (clear))
-    (dispatch expr :log nil)
     (recall expr :log nil))
 
   (defun tests-directory ()
@@ -61,7 +58,11 @@
       (when expression
         (multiple-value-bind (extract-expr extract-value)
             (extract expression)
-          (dbg expression extract-expr extract-value)
+          (if (¬ value)
+              (format t "~&|> MSL: ~S~%—> VAL: ~S~%<— VAL: ~S~%"
+                      expression expr extract-value)
+              (format t "~&|> MSL: ~S~%—> EXP: ~S~%<— EXP: ~S~%—> VAL: ~S~%<— VAL: ~S~%"
+                      expression expr extract-expr value extract-value))
           (cond
             ;; both the expected expression and value are specified in the test
             ((∧ expr value)
@@ -72,14 +73,13 @@
              (string= expr extract-value))
             ;; neither the expected expression nor the expected value are specified in the test
             ((∧ (¬ expr) (¬ value))
-             nil)
+             t)
             ;; fallback
             (t nil))))))
 
   (defm define-test (name description)
     "Define a macro for creating tests."
     `(progn
-       (clear)
        (test ,name ,description
          ,@(loop :for test-expr :in (read-test-file (string-downcase (string name)))
                  :collect `(is (test-expr-passes-p ,test-expr)))))))
@@ -91,26 +91,22 @@
 
 (define-test walt "Basic build-up of an atom and its metadata")
 (define-test abstract-over-embed "Abstracting over an embedded atom and metadata")
+(define-test abstract-over-metadata "Abstracting over an embedded atom and metadata")
+(define-test chi-town-regex-currying "Regex currying")
+(define-test circular-references "Circularity of two atoms which refer to each other")
 (define-test complex-regex "Regex with inner expression or spaces")
+(define-test data-types-formats "Datatypes and formats")
 (define-test regex-on-embedding "Regex inside an embedded atom")
+(define-test self-ref-complex "A single expression refers to itself using complex regex")
 (define-test single-circular-reference "A single atom which refers to itself")
 (define-test transform-on-meta "Using a bracketed transform in a metadata value, with and without a literal <value")
-
-;(define-test abstract-over-metadata "Abstracting over an embedded atom and metadata")
-
-;;(define-test chi-town-regex-currying "Regex currying")
-;;(define-test circular-references "Circularity of two atoms which refer to each other")
-;;(define-test data-types-formats "Datatypes and formats")
-;;(define-test lost-attractions "Lost Attractions")
 ;;(define-test multiple-d-or-f "Multiple (d) or (f) in the same expression")
-;;(define-test self-ref-complex "A single expression refers to itself using complex regex")
 
-(defun call/fresh-universe (test)
+(defun run-with-fresh-universe (test)
   (with-fresh-universe ()
     (run! test)))
 
 (def run-tests ()
   "Run all the tests defined in the suite."
-  ;;(call/fresh-universe 'all-tests)
-  (call/fresh-universe 'walt))
-
+  ;;(run-with-fresh-universe 'all-tests)
+  (run! 'all-tests))

@@ -1,3 +1,4 @@
+(@CLEAR)
 (@WALT Walt Disney :birthplace Chicago, IL :city (@WALT:birthplace) /[^,]+/) → Walt Disney
 (@WALT:birthplace) → Chicago, IL
 (@WALT:city) → Chicago

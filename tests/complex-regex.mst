@@ -1,2 +1,3 @@
+(@CLEAR)
 (@CHICAGO Chicago, IL /[^,]+/) → Chicago
 (@WALT Walter Elias Disney /Walter Elias/ Walt) → Walt Disney
