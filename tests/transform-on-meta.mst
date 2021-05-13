@@ -1,0 +1,6 @@
+(@WALT Walt Disney) → Walt Disney
+(@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → (@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → Vinyl Leaves
+(@WALT :bio) → (@WALT :bio Vinyl Leaves [http://mimix.io/vinyl-leaves.pdf]) → Vinyl Leaves
+(@WALT :thumbnail [file:///images/walt-headshot.png] [file:///images/alternate-headshot.png]) → (@WALT :thumbnail [file:///images/walt-headshot.png] [file:///images/alternate-headshot.png]) → file:///images/walt-headshot.png
+(@WALT :pdf [http://mimix.io/walt.pdf]) → (@WALT :pdf [http://mimix.io/walt.pdf]) → http://mimix.io/walt.pdf
+(@WALT A PDF About Walt :pdf [http://mimix.io/walt.pdf]) → (@WALT A PDF About Walt :pdf [http://mimix.io/walt.pdf]) → A PDF About Walt

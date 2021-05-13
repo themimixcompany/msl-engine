@@ -1,0 +1,6 @@
+(@WALT Walt Disney (d person))
+(@WALT (f bio))
+(@WALT)
+(@WALT :city (f map))
+(@WALT)
+(@WALT :city)

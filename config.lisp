@@ -37,4 +37,4 @@
 (def config-value (index)
   "Return the value associated with an index."
   (let ((config (read-config)))
-    (assoc-value index config)))
+    (car (assoc-value index config))))

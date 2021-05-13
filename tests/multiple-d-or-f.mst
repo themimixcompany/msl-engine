@@ -1,0 +1,2 @@
+(@WALT Walt Disney (d person) (f bio)) → (@WALT Walt Disney (d person) (f bio)) → Walt Disney
+(@DONALD Donald Duck (f img) (d animated)) → (@DONALD Donald Duck (f img) (d animated)) → Donald Duck

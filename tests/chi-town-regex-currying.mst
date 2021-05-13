@@ -1,0 +1,2 @@
+(@WINDY-CITY Chicago, IL /[^,]+/ /cago/ -Town)
+(@WINDY-CITY) → Chi-Town

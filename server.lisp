@@ -102,7 +102,8 @@
 (defvar *servers* nil
   "The list of active servers.")
 
-(defv *listen-address* (config-value 'listen-address))
+(defv *listen-address* (config-value 'listen-address)
+  "The address to listen to on this machine.")
 
 (defun clack-start (server-name port)
   "Start the clack server SERVER under port PORT."

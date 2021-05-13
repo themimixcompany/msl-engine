@@ -1,0 +1,2 @@
+(@p1 (@WALT Walt Disney) was born in (@CHICAGO Chicago, IL /[^,]+/).) → (@p1 (@WALT Walt Disney) was born in (@CHICAGO Chicago, IL /[^,]+/).) → Walt Disney was born in Chicago.
+(@CHICAGO) → Chicago

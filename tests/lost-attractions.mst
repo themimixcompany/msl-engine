@@ -1,0 +1,46 @@
+(@GRANDADVENTURES MGM Grand Adventures
+  :photo [https://www.reviewjournal.com/wp-content/uploads/2018/12/11548799_web1_MGM-25TH-ANNIVERSARY_011.jpg]
+  :wiki [https://en.wikipedia.org/wiki/MGM_Grand_Adventures_Theme_Park]
+  :opened 1993
+  :closed 2002)
+
+(@GRANDADVENTURES-NOTES (@GRANDADVENTURES) was a theme park at the MGM Grand Hotel in Las Vegas. I visited this park in perhaps 1995. It was later removed from the resort for being less profitable than hotel rooms and was replaced by The Villas at MGM Grand. The best part of the park was the river rafting ride.)
+
+(@GRANDADVENTURES:notes (@GRANDADVENTURES-NOTES))
+
+(@SPEED Speed The Ride
+  :photo [https://coasterbuzz.com/CoasterPhoto/CoasterPhotoImage/2581]
+  :wiki [https://en.wikipedia.org/wiki/Speed_%E2%80%93_The_Ride]
+  :opened 2000
+  :closed 2011)
+
+(@SPEED-NOTES (@SPEED Speed) was a roller coaster built at the Sahara during its final days in Las Vegas as part of an attempt to revitalize the failing hotel. The ride was notable for exiting from the sidewalk from underground and returning there. It also made me violently ill, a first for a coaster, and I didn't ride coasters for many years afterword!)
+
+(@SPEED:notes (@SPEED-NOTES))
+
+(@DESPERADO Desperado :photo https://i.pinimg.com/originals/68/b5/60/68b5609f13f5215c4a120ef2e504c897.jpg :wiki [https://en.wikipedia.org/wiki/Desperado_(roller_coaster)] :opened 1994 :closed 2019)
+
+(@DESPERADO-NOTES (@DESPERADO) was a "bucket list" coaster for me, the tallest and fastest in the world when it was built. I rode it in (@DESPERADO:opened) when it opened. Designed by Ron Toomer from Arrow Dynamics (of Disneyland fame), the coaster proved expensive to maintain and unprofitable for the Buffalo Bill's resort where it was installed. As of 2019, it sits in non-operating condition astride the casino hotel.)
+
+(@DESPERADO:notes (@DESPERADO-NOTES))
+
+(@ATIS Adventure Thru Inner Space :photo [http://3.bp.blogspot.com/-j0DT-RCebHU/UQ-6OUlUlKI/AAAAAAAAAD0/_jqvSNHHayA/s1600/Adventure+Thru+Inner+Space+4.jpg] :wiki [https://en.wikipedia.org/wiki/Adventure_Thru_Inner_Space] :opened 1967 :closed 1985)
+
+(@ATIS-NOTES (@ATIS) was a ride that changed my life. Sponsored by Monsanto, it simulated a trip inside "The Mighty Microscope," inspiring my interest in technology and science. (@ATIS ATIS) was the first Disney attraction to use the Omnimover ride system, first demonstrated at the (@NY-WORLDS-FAIR 1964 New York World's Fair).)
+
+(@ATIS:notes (@ATIS-NOTES))
+
+(@MINE-TRAIN Mine Train Through Nature's Wonderland :photo [https://losttransmission1.files.wordpress.com/2011/01/frontierland-mine-train-bobcat.jpg] :wiki [https://en.wikipedia.org/wiki/Mine_Train_Through_Nature%27s_Wonderland] :opened 1956 :closed 1977)
+
+(@MINE-TRAIN-NOTES The (@MINE-TRAIN) was a magical ride to me as a child. The colored lighting effects on the many bubbling pools and waterfalls inside "Rainbow Canyon" still resonate with beauty and mystery. Like all the best (@DISNEY Disney) effects, I have no idea how it was done. The (@MINE-TRAIN Mine Train) was replaced with (@BIG-THUNDER Big Thunder Mountain Railroad), which is itself currently slated for re-theming due its racist connections with (@SONG-OF-THE-SOUTH The Song of the South).)
+
+(@MINE-TRAIN:notes (@MINE-TRAIN-NOTES))
+
+(s lost-attractions Lost attractions
+  (v lost-vegas
+    (@GRANDADVENTURES)
+    (@SPEED)
+    (@DESPERADO))
+  (v lost-disney
+    (@ATIS)
+    (@MINE-TRAIN)))

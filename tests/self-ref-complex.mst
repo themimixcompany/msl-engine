@@ -1,0 +1,6 @@
+(@WALT Walt Disney :birthplace Chicago, IL :city (@WALT:birthplace) /[^,]+/) → Walt Disney
+(@WALT:birthplace) → Chicago, IL
+(@WALT:city) → Chicago
+(@WALT) → (@WALT Walt Disney :birthplace Chicago, IL :city (@WALT:birthplace) /[^,]+/) → Walt Disney
+(@WALT:birthplace Urbana-Champaign, IL) → Urbana-Champaign, IL
+(@WALT:city) → Urbana-Champaign

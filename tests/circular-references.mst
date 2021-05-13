@@ -1,0 +1,11 @@
+(@DONALD Donald Duck) → (@DONALD Donald Duck) → Donald Duck
+(@DAISY Daisy Duck)
+(@DONALD :gf (@DAISY))
+(@DAISY :bf (@DONALD)) → Donald Duck
+(@DAISY :bf) → Donald Duck
+(@DONALD Donny)
+(@DAISY :bf) → Donny
+(@DAISY :bf (@DONALD Leopold)) → Leopold
+(@DAISY Elizabeth Duck)
+(@DONALD :gf) → Elizabeth Duck
+(@DAISY) → (@DAISY Elizabeth Duck :bf (@DONALD Leopold)) → Elizabeth Duck

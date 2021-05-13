@@ -1,0 +1,10 @@
+(@WALT Walt Disney) → Walt Disney
+(@WALT) → Walt Disney
+(@LILLIAN Lillian Disney) → Lillian Disney
+(@WALT:wife (@LILLIAN)) → Lillian Disney
+(@WALT:birthday 1901) → 1901
+(@WALT:birthplace (@CHICAGO Chicago, IL)) → Chicago, IL
+(@WALT) → (@WALT Walt Disney :wife (@LILLIAN) :birthday 1901 :birthplace (@CHICAGO Chicago, IL)) → Walt Disney
+(@WALT:wife) → Lillian Disney
+(@WALT:birthday) → 1901
+(@WALT:birthplace) → Chicago, IL
