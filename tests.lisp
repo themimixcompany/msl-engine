@@ -68,7 +68,7 @@
               ((∧ expr value)
                (format-line expression expr value))))))
 
-  (defun build-line (line)
+  (defun compose-line (line)
     "Return a new line from the expression in LINE containing the corresponding answers for the expr and value fields."
     (destructuring-bind (&optional expression expr value)
         (split-line (normalize-line line))
@@ -82,75 +82,32 @@
                 ((∧ expression expr value)
                  (format-line expression extract-expr extract-value)))))))
 
-  (defun line-passes-p (line)
-    "Return true if LINE evaluates to true."
-    (destructuring-bind (&optional expression expr value)
-        (split-line line)
-      (when expression
-        (multiple-value-bind (extract-expr extract-value)
-            (extract expression)
-          (if (¬ value)
-              (format t "~&|> MSL: ~S~%—> VAL: ~S~%<— VAL: ~S~%"
-                      expression expr extract-value)
-              (format t "~&|> MSL: ~S~%—> EXP: ~S~%<— EXP: ~S~%—> VAL: ~S~%<— VAL: ~S~%"
-                      expression expr extract-expr value extract-value))
-          (cond
-            ;; both the expected expression and value are specified in the test
-            ((∧ expr value)
-             (∧ (string= expr extract-expr)
-                (string= value extract-value)))
-            ;; only the expected value is specified in the test
-            ((∧ expr (¬ value))
-             (string= expr extract-value))
-            ;; neither the expected expression nor the expected value are specified in the test
-            ((∧ (¬ expr) (¬ value))
-             t)
-            ;; fallback
-            (t nil))))))
-
   (defm define-test (name description)
     "Define a macro for creating tests."
     `(test ,name ,description
-       ,@(loop :for line :in (read-test-file (string-downcase (string name)))
-               ;; test for equality instead of boolean
-               :collect `(is (line-passes-p ,line))))))
-
-;;; rebuild text-expr line
-
-;;; NOTE
-;;;
-;;; - TEST-ONE
-;;;   - accept line of msl
-;;;   - test it
-;;;   - if it passes, return NIL, done
-;;;   - otherwise, return both the expression and the value, and the original
-;;; - TEST-FILE
-;;;   - opens file from disk
-;;;   - takes the next line
-;;;   - calls TEST-ONE
-;;;   - if NIL, loop to the next line
-;;;   - otherwise, accumulate TEST-ONE results into a list
-;;;   - when the file is done
-;;;   - if the result list is empty, announce all tests passed, return NIL
-;;;   - otherwise, show the result list, one failure per line, return failure list
+       ,@(loop :for file-line :in (read-test-file (string-downcase (string name)))
+               :for line = (normalize-line file-line)
+               :for compose = (compose-line line)
+               :collect `(is (string= ,line ,compose))))))
 
 
 ;;--------------------------------------------------------------------------------------------------
 ;; tests
 ;;--------------------------------------------------------------------------------------------------
 
-(define-test walt "Basic build-up of an atom and its metadata")
-;; (define-test abstract-over-embed "Abstracting over an embedded atom and metadata")
-;; (define-test abstract-over-metadata "Abstracting over an embedded atom and metadata")
-;; (define-test chi-town-regex-currying "Regex currying")
-;; (define-test circular-references "Circularity of two atoms which refer to each other")
-;; (define-test complex-regex "Regex with inner expression or spaces")
-;; (define-test data-types-formats "Datatypes and formats")
-;; (define-test regex-on-embedding "Regex inside an embedded atom")
-;; (define-test self-ref-complex "A single expression refers to itself using complex regex")
-;; (define-test single-circular-reference "A single atom which refers to itself")
-;; (define-test transform-on-meta "Using a bracketed transform in a metadata value, with and without a literal <value")
-;;(define-test multiple-d-or-f "Multiple (d) or (f) in the same expression")
+(eval-always
+  (define-test walt "Basic build-up of an atom and its metadata")
+  (define-test abstract-over-embed "Abstracting over an embedded atom and metadata")
+  (define-test abstract-over-metadata "Abstracting over an embedded atom and metadata")
+  (define-test chi-town-regex-currying "Regex currying")
+  (define-test circular-references "Circularity of two atoms which refer to each other")
+  (define-test complex-regex "Regex with inner expression or spaces")
+  (define-test data-types-formats "Datatypes and formats")
+  (define-test regex-on-embedding "Regex inside an embedded atom")
+  (define-test self-ref-complex "A single expression refers to itself using complex regex")
+  (define-test single-circular-reference "A single atom which refers to itself")
+  (define-test transform-on-meta "Using a bracketed transform in a metadata value, with and without a literal <value")
+  (define-test multiple-d-or-f "Multiple (d) or (f) in the same expression"))
 
 (defun run-with-fresh-universe (test)
   (with-fresh-universe ()
