@@ -56,7 +56,7 @@
         :do (let ((v (funcall slot object)))
               (format t "~S -> ~S~%" slot v)
               (when (hash-table-p v)
-                (dump-table v)))))
+                (dump-table* v)))))
 
 (def (dump-universe dump) (&optional (universe *universe*))
   "Dump the contents of the universe."
@@ -73,10 +73,6 @@
           :do (progn
                 (format t "~%~A:~%" table-reader)
                 (dump-table* table)))))
-
-(def dump-table (table)
-  "Print information about TABLE recursively."
-  (dump-table* table))
 
 (def dump-path (table path)
   "Print the information in TABLE specified by PATH."
@@ -114,17 +110,6 @@
                    :atom-table (copy-table atom-table)
                    :sub-atom-counter sub-atom-counter
                    :sub-atom-table (copy-table sub-atom-table))))
-
-(def copy-table (table)
-  "Create a new hash table from TABLE."
-  (let ((ht (make-hash-table :test (hash-table-test table)
-                             :rehash-size (hash-table-rehash-size table)
-                             :rehash-threshold (hash-table-rehash-threshold table)
-                             :size (hash-table-size table))))
-    (loop :for key :being :the :hash-key :of table
-          :using (hash-value value)
-          :do (setf (gethash key ht) value)
-          :finally (return ht))))
 
 (def clear-path (table path)
   "Remove the specified entry in TABLE that matches PATH."

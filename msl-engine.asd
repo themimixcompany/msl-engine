@@ -11,7 +11,7 @@
   :description "msl-engine"
   :author "The Mimix Company <code@mimix.io>"
   :license "Blue Oak Model License 1.0.0"
-  :version "3.0.0"
+  :version "3.0.1"
   :class :package-inferred-system
   :depends-on (#:cl-ppcre
                #:clack

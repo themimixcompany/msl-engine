@@ -1,6 +1,6 @@
 (@CLEAR)
 (@WALT Walt Disney) → Walt Disney
-(@WALT) → Walt Disney
+(@WALT) → Walt Disnex
 (@LILLIAN Lillian Disney) → Lillian Disney
 (@WALT:wife (@LILLIAN)) → Lillian Disney
 (@WALT:birthday 1901) → 1901
