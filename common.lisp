@@ -200,9 +200,14 @@ body contents of the parser function."
   (clear-universe)
   (dump-universe))
 
+(defm with-universe ((&optional universe) &body body)
+  "Evaluate BODY in the universe UNIVERSE."
+  `(let ((msl-engine/specials:*universe* ,universe))
+     ,@body))
+
 (defm with-fresh-universe ((&optional) &body body)
   "Evaluate BODY in a separate universe."
-  `(let ((msl-engine/specials:*universe* (msl-engine/classes:make-universe)))
+  `(with-universe ((msl-engine/classes:make-universe))
      ,@body))
 
 (def uncomment (expr)

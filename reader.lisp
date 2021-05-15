@@ -680,3 +680,7 @@ function."
           (let ((expr (recall-expr expr :dispatch nil)))
             (values expr
                     value))))))
+
+(def recall! (expr)
+  "Return the expr and value recall of EXPR without logging."
+  (recall expr :log nil))
