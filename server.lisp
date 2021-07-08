@@ -63,7 +63,7 @@
 
 (def dump-headers (connection)
   "Print the headers information from CONNECTION."
-  (dump-table (connection-headers connection)))
+  (dump-table* (connection-headers connection)))
 
 (defun dump-thread-count ()
   "Print the current thread count information."

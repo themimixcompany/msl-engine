@@ -200,7 +200,7 @@ body contents of the parser function."
   (clear-universe)
   (dump-universe))
 
-(defm with-universe ((&optional universe) &body body)
+(defm with-universe ((universe) &body body)
   "Evaluate BODY in the universe UNIVERSE."
   `(let ((msl-engine/specials:*universe* ,universe))
      ,@body))
